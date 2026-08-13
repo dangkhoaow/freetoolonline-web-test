@@ -1,0 +1,454 @@
+<script>
+    // 3D scene archetype skeleton (local-bubble-interstellar-cavity) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton (see
+    // BODYJSsolarsystem.html / the single-scene BODYJSgalacticyearsunorbit.html)
+    // - this file implements ONE scene only (localbubble), not the full
+    // accumulated scene set. All geometry is procedural - no model files, no
+    // textures fetched.
+    //
+    // This is an EDUCATIONAL APPROXIMATION, not a physics simulation. The
+    // bubble's growth curve, the Sun's straight-line entry path, and the
+    // supernova counter's pacing are all illustrative - paced to match the real
+    // cited totals (14-million-year formation window, about 15 supernovae, 5
+    // million years since the Sun entered) rather than a precise chronology of
+    // individually dated events. The seven on-surface region markers sit at
+    // fixed, evenly-spread illustrative directions around the shell - they show
+    // that these regions surround the Sun in many different directions, not a
+    // 3D reconstruction of each region's real galactic coordinates.
+    //
+    // Published figures cited (Zucker, C. et al. 2022, "Star formation near the
+    // Sun is driven by expansion of the Local Bubble", Nature 601, 334-337 /
+    // arXiv:2201.05124; CfA/Harvard-Smithsonian press release 2022-01-12 via
+    // Smithsonian Magazine and Universe Today coverage; EarthSky; American
+    // Scientist; Gaia/VLBA-era distance papers for Ophiuchus and Taurus -
+    // cross-checked via WebSearch 2026-08-13):
+    //   - Diameter: about 1,000 light-years across
+    //   - Formation began about 14 million years ago; about 15 supernovae
+    //     exploded over millions of years to shape it (published range about
+    //     8-26)
+    //   - The Sun was more than 1,000 light-years from the bubble's birthplace
+    //     when it began forming, and only drifted into the bubble about 5
+    //     million years ago
+    //   - Current expansion speed: about 4 miles per second (about 6 km/s)
+    //   - Interior gas: roughly 1,000,000 K; published density estimates range
+    //     about 0.001-0.07 neutral-hydrogen atoms per cubic centimeter,
+    //     depending on source and gas phase - at least about 10x thinner than
+    //     the Milky Way's typical interstellar medium
+    //   - Seven known star-forming regions sit on the bubble's surface per
+    //     Zucker et al. (2022): Ophiuchus, Lupus, Pipe, Chamaeleon, and Musca
+    //     (the Scorpius-Centaurus association), Corona Australis, and the
+    //     Taurus molecular cloud. Ophiuchus and Taurus are each about 140
+    //     parsecs (about 460 and about 430-460 light-years) from the Sun.
+    //   - Two well-known nearby regions are NOT on this bubble's surface despite
+    //     common assumption: the Perseus molecular cloud sits on the far side of
+    //     a separate, related structure (the Perseus-Taurus Shell; Bialy et al.
+    //     2021, with Taurus on its near side); the Orion complex sits at the
+    //     intersection of two different superbubbles (the Orion Shell and the
+    //     larger Orion-Eridanus superbubble)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'local-bubble-interstellar-cavity';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        return 'localbubble';
+    }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.05), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    var T3D_LB_RADIUS = 34;
+    var T3D_LB_TOTAL_MYR = 14;
+    var T3D_LB_ENTRY_MYR = 9;
+    var T3D_LB_SUPERNOVA_MAX = 15;
+    var T3D_LB_FAR_DIST = 82;
+    var T3D_LB_DIAMETER_LY = '1,000';
+    var T3D_LB_SN_RANGE = '8-26';
+    var T3D_LB_ENTRY_AGO_MYR = 5;
+    var T3D_LB_EXPANSION_MI_S = 4;
+    var T3D_LB_TEMP_K = '1,000,000';
+    var T3D_LB_DENSITY_RANGE = '0.001-0.07';
+
+    // Seven regions published on the Local Bubble's surface (Zucker et al. 2022).
+    // Directions are fixed, evenly-spread illustrative unit vectors - NOT a
+    // reconstruction of each region's real galactic coordinates.
+    var T3D_LB_ON_SURFACE = [
+        { key: 'ophiuchus', label: 'Ophiuchus', dir: [0.82, 0.30, -0.49], fact: 'Part of the Scorpius-Centaurus association. About 140 parsecs (about 460 light-years) from the Sun - Gaia DR2 and VLBA astrometry (Ortiz-Leon et al. 2017/2018) place its sub-clumps at about 137-147 pc, right near this bubble\'s roughly 500-light-year radius.' },
+        { key: 'lupus', label: 'Lupus', dir: [-0.55, 0.62, 0.56], fact: 'Part of the Scorpius-Centaurus association, one of the surface regions named in Zucker et al. (2022) - roughly a few hundred light-years out, similar to its Sco-Cen neighbors.' },
+        { key: 'pipe', label: 'Pipe Nebula', dir: [0.20, -0.75, 0.63], fact: 'Part of the Scorpius-Centaurus association, one of the surface regions named in Zucker et al. (2022) - a dark, dust-filled molecular cloud roughly a few hundred light-years out.' },
+        { key: 'chamaeleon', label: 'Chamaeleon', dir: [-0.85, -0.28, -0.44], fact: 'Part of the Scorpius-Centaurus association, one of the surface regions named in Zucker et al. (2022) - a small, nearby star-forming cloud roughly a few hundred light-years out.' },
+        { key: 'musca', label: 'Musca', dir: [0.34, 0.86, 0.38], fact: 'Part of the Scorpius-Centaurus association, one of the surface regions named in Zucker et al. (2022) - roughly a few hundred light-years out, adjoining Chamaeleon.' },
+        { key: 'corona-australis', label: 'Corona Australis', dir: [-0.30, -0.86, 0.41], fact: 'One of the seven surface regions named in Zucker et al. (2022) - a compact, nearby star-forming cloud roughly a few hundred light-years out.' },
+        { key: 'taurus', label: 'Taurus molecular cloud', dir: [-0.78, 0.42, -0.46], fact: 'About 140 parsecs (about 430-460 light-years) from the Sun (Gaia DR2/VLBA astrometry, Galli et al. 2018/2019 place its sub-clumps at about 129-158 pc) - possibly the nearest large star-forming region to the Sun, and one of the seven Zucker et al. (2022) surface regions.' }
+    ];
+
+    // Two well-known nearby regions that are NOT on this bubble's surface,
+    // despite popular assumption - hidden by default behind a toggle.
+    var T3D_LB_NOT_ON_SURFACE = [
+        { key: 'perseus', label: 'Perseus molecular cloud', dir: [0.10, 0.98, 0.15], fact: 'NOT on the Local Bubble\'s surface, despite being one of the best-known nearby star-forming regions. Zucker et al. (2022) note Perseus sits on the FAR side of a separate, related structure - the Perseus-Taurus Shell (Bialy et al. 2021) - with the Taurus molecular cloud on that shell\'s near side.' },
+        { key: 'orion', label: 'Orion complex', dir: [0.65, -0.60, -0.47], fact: 'NOT on the Local Bubble\'s surface, despite being the most famous nearby star-forming region. Coverage of the research places the Orion A and Orion B clouds at the intersection of two different superbubbles - the Orion Shell and the larger Orion-Eridanus superbubble - a separate structure from the Local Bubble entirely.' }
+    ];
+
+    function t3dLbEasedFactor(elapsedMyr) {
+        return 0.15 + 0.85 * (Math.max(0, Math.min(T3D_LB_TOTAL_MYR, elapsedMyr)) / T3D_LB_TOTAL_MYR);
+    }
+
+    function t3dLocalBubble(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03020a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        var sunLight = new THREE.PointLight(0xfff3c4, 1.1, 160);
+        scene.add(sunLight);
+
+        var SCOUNT = shell.low ? 350 : 700;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(90 + Math.random() * 140);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.5, sizeAttenuation: false })));
+
+        // Amorphous "blobby" shell - a SphereGeometry whose vertices are
+        // displaced along their own normal by a fixed multi-harmonic function of
+        // their spherical angle. Deterministic, repeatable - not a real 3D shape
+        // reconstruction of the actual bubble's cavity.
+        var shellSegW = shell.low ? 28 : 44, shellSegH = shell.low ? 18 : 28;
+        var shellGeo = new THREE.SphereGeometry(1, shellSegW, shellSegH);
+        var posAttr = shellGeo.getAttribute('position');
+        for (var i = 0; i < posAttr.count; i++) {
+            var px = posAttr.getX(i), py = posAttr.getY(i), pz = posAttr.getZ(i);
+            var theta = Math.atan2(pz, px), phiAng = Math.acos(Math.max(-1, Math.min(1, py)));
+            var wob = 1 + 0.10 * Math.sin(3 * theta + 1.3) * Math.cos(2 * phiAng + 0.7) + 0.06 * Math.sin(5 * theta - 0.4);
+            posAttr.setXYZ(i, px * wob, py * wob, pz * wob);
+        }
+        shellGeo.computeVertexNormals();
+        var shellMesh = new THREE.Mesh(shellGeo, new THREE.MeshBasicMaterial({ color: 0xff8a50, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false }));
+        scene.add(shellMesh);
+        var shellWire = new THREE.LineSegments(new THREE.WireframeGeometry(shellGeo), new THREE.LineBasicMaterial({ color: 0xffab91, transparent: true, opacity: 0.16 }));
+        scene.add(shellWire);
+
+        // Drifting hot-interior-gas particles near the shell's surface.
+        var GCOUNT = shell.low ? 220 : 460;
+        var gasDirs = [];
+        var ggeo = new THREE.BufferGeometry();
+        var gpos = new Float32Array(GCOUNT * 3);
+        for (var g = 0; g < GCOUNT; g++) {
+            var gd = new THREE.Vector3().randomDirection();
+            gasDirs.push(gd);
+            gpos[g * 3] = gd.x; gpos[g * 3 + 1] = gd.y; gpos[g * 3 + 2] = gd.z;
+        }
+        ggeo.setAttribute('position', new THREE.BufferAttribute(gpos, 3));
+        var gasPoints = new THREE.Points(ggeo, new THREE.PointsMaterial({ color: 0xffccbc, size: shell.low ? 0.5 : 0.4, transparent: true, opacity: 0.55, sizeAttenuation: true }));
+        scene.add(gasPoints);
+
+        function addMarker(color, radiusScale, shape) {
+            var geo = shape === 'oct' ? new THREE.OctahedronGeometry(0.9, 0) : new THREE.SphereGeometry(0.7, 14, 10);
+            var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: color }));
+            scene.add(mesh);
+            return mesh;
+        }
+
+        var onSurfaceMeshes = T3D_LB_ON_SURFACE.map(function (r) { return addMarker(0x4fc3f7, 1, 'sphere'); });
+        var notOnSurfaceMeshes = T3D_LB_NOT_ON_SURFACE.map(function (r) { return addMarker(0xb0bec5, 1.18, 'oct'); });
+        notOnSurfaceMeshes.forEach(function (m) { m.visible = false; });
+
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(0.9, 18, 12), new THREE.MeshBasicMaterial({ color: 0xffee58 }));
+        scene.add(sun);
+        var sunGlow = new THREE.Mesh(new THREE.SphereGeometry(1.7, 14, 10), new THREE.MeshBasicMaterial({ color: 0xfff59d, transparent: true, opacity: 0.35 }));
+        scene.add(sunGlow);
+
+        var sunFarDir = new THREE.Vector3(0.6, 0.25, 0.75).normalize();
+        var sunRestPos = new THREE.Vector3(2.5, 0.6, 1.6);
+
+        var elapsedMyr = 2;
+        var playing = true;
+        var showNotOnSurface = false;
+        var lastEntryFlash = -1;
+        var selectedFact = null;
+
+        function panelHtml() {
+            var factor = t3dLbEasedFactor(elapsedMyr);
+            var radiusLy = Math.round(500 * factor);
+            var snCount = Math.round((elapsedMyr / T3D_LB_TOTAL_MYR) * T3D_LB_SUPERNOVA_MAX);
+            var sunInside = elapsedMyr >= T3D_LB_ENTRY_MYR;
+            var html = '<h3>The Local Bubble</h3>' +
+                '<p>' + elapsedMyr.toFixed(1) + ' of ' + T3D_LB_TOTAL_MYR + ' million years since the bubble began forming - illustrative radius now about ' + radiusLy.toLocaleString() + ' light-years, roughly ' + snCount + ' of about ' + T3D_LB_SUPERNOVA_MAX + ' supernovae "gone off" so far, Sun currently ' + (sunInside ? 'INSIDE the bubble' : 'still outside the bubble') + '.</p>';
+            if (selectedFact) { html += '<p class="t3d-note"><b>' + selectedFact.label + ':</b> ' + selectedFact.fact + '</p>'; }
+            html += '<table class="w3-table w3-bordered">' +
+                '<tr><td>Diameter</td><td>about ' + T3D_LB_DIAMETER_LY + ' light-years across</td></tr>' +
+                '<tr><td>Formed by</td><td>about ' + T3D_LB_SUPERNOVA_MAX + ' supernovae (published range ' + T3D_LB_SN_RANGE + ') beginning about ' + T3D_LB_TOTAL_MYR + ' million years ago</td></tr>' +
+                '<tr><td>The Sun\'s path</td><td>over 1,000 light-years away when the bubble began forming; drifted in about ' + T3D_LB_ENTRY_AGO_MYR + ' million years ago</td></tr>' +
+                '<tr><td>Current expansion speed</td><td>about ' + T3D_LB_EXPANSION_MI_S + ' miles per second (about 6 km/s)</td></tr>' +
+                '<tr><td>Interior gas</td><td>roughly ' + T3D_LB_TEMP_K + ' K; published density estimates ' + T3D_LB_DENSITY_RANGE + ' atoms/cm^3 depending on source and gas phase - at least 10x thinner than the Milky Way\'s typical interstellar gas</td></tr>' +
+                '<tr><td>Regions on the surface</td><td>7 published (Ophiuchus, Lupus, Pipe, Chamaeleon, Musca, Corona Australis, Taurus)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation, not a physics simulation. The bubble\'s growth curve, the Sun\'s straight-line entry path, and the supernova counter are illustrative, paced to the real cited totals above - not a precise chronology of individually dated events. The seven on-surface markers sit at fixed, evenly-spread illustrative directions, not each region\'s real reconstructed galactic coordinates.</p>';
+            return html;
+        }
+
+        function applyElapsed(myr) {
+            elapsedMyr = Math.max(0, Math.min(T3D_LB_TOTAL_MYR, myr));
+            var factor = t3dLbEasedFactor(elapsedMyr);
+            var r = T3D_LB_RADIUS * factor;
+            shellMesh.scale.setScalar(r);
+            shellWire.scale.setScalar(r);
+
+            for (var g = 0; g < gasDirs.length; g++) {
+                var gp = gasDirs[g];
+                gasPoints.geometry.attributes.position.setXYZ(g, gp.x * r * 0.94, gp.y * r * 0.94, gp.z * r * 0.94);
+            }
+            gasPoints.geometry.attributes.position.needsUpdate = true;
+
+            for (var m = 0; m < onSurfaceMeshes.length; m++) {
+                var d = T3D_LB_ON_SURFACE[m].dir;
+                onSurfaceMeshes[m].position.set(d[0] * r, d[1] * r, d[2] * r);
+            }
+            for (var n = 0; n < notOnSurfaceMeshes.length; n++) {
+                var nd = T3D_LB_NOT_ON_SURFACE[n].dir;
+                notOnSurfaceMeshes[n].position.set(nd[0] * r * 1.18, nd[1] * r * 1.18, nd[2] * r * 1.18);
+            }
+
+            var sunProgress = elapsedMyr / T3D_LB_TOTAL_MYR;
+            var sunFarPos = sunFarDir.clone().multiplyScalar(T3D_LB_FAR_DIST);
+            var sunPos = sunFarPos.clone().lerp(sunRestPos, sunProgress);
+            sun.position.copy(sunPos);
+            sunGlow.position.copy(sunPos);
+            sunLight.position.copy(sunPos);
+
+            if (elapsedMyr >= T3D_LB_ENTRY_MYR && lastEntryFlash < T3D_LB_ENTRY_MYR) {
+                t3dStatus('The Sun crosses into the Local Bubble - about 5 million years ago on this timeline.');
+            }
+            lastEntryFlash = elapsedMyr;
+
+            var slider = document.getElementById('t3dLbElapsed');
+            var label = document.getElementById('t3dLbElapsedLabel');
+            if (slider && Math.abs(parseFloat(slider.value || '0') - elapsedMyr) > 0.05) {
+                slider.value = String(elapsedMyr.toFixed(1));
+            }
+            if (label) label.textContent = elapsedMyr.toFixed(1) + ' / ' + T3D_LB_TOTAL_MYR + ' Myr';
+            t3dInfo(panelHtml());
+        }
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var targets = [sun].concat(onSurfaceMeshes).concat(showNotOnSurface ? notOnSurfaceMeshes : []);
+            var hits = ray.intersectObjects(targets, false);
+            if (!hits.length) return;
+            var obj = hits[0].object;
+            if (obj === sun) {
+                selectedFact = { label: 'The Sun', fact: 'Was more than 1,000 light-years from the bubble\'s birthplace when the first supernovae went off, and drifted into the bubble about 5 million years ago as it moved through the galaxy - it now sits roughly inside the bubble\'s interior.' };
+            } else {
+                var idx = onSurfaceMeshes.indexOf(obj);
+                if (idx >= 0) { selectedFact = T3D_LB_ON_SURFACE[idx]; }
+                else {
+                    var idx2 = notOnSurfaceMeshes.indexOf(obj);
+                    if (idx2 >= 0) { selectedFact = T3D_LB_NOT_ON_SURFACE[idx2]; }
+                }
+            }
+            t3dInfo(panelHtml());
+        };
+
+        var toggleBtn = document.getElementById('t3dLbToggleBtn');
+        function setToggle(next) {
+            showNotOnSurface = next;
+            notOnSurfaceMeshes.forEach(function (m) { m.visible = showNotOnSurface; });
+            if (toggleBtn) toggleBtn.textContent = showNotOnSurface ? 'Hide Perseus & Orion' : 'Show Perseus & Orion (not on this bubble)';
+            try { t3dSaveStore({ elapsedMyr: elapsedMyr, showNotOnSurface: showNotOnSurface }); } catch (e) {}
+        }
+        if (toggleBtn) toggleBtn.addEventListener('click', function () { setToggle(!showNotOnSurface); });
+
+        var store = t3dLoadStore();
+        if (typeof store.elapsedMyr === 'number') elapsedMyr = store.elapsedMyr;
+        setToggle(!!store.showNotOnSurface);
+        applyElapsed(elapsedMyr);
+
+        var playBtn = document.getElementById('t3dLbPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+        });
+        var slider = document.getElementById('t3dLbElapsed');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play';
+            applyElapsed(parseFloat(slider.value || '0'));
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the timeline to watch the bubble grow, or click the Sun and the region markers for their real figures.');
+        return function animate(dt) {
+            if (!playing) return;
+            var next = elapsedMyr + (dt / 1000) * 0.9;
+            if (next >= T3D_LB_TOTAL_MYR) {
+                next = T3D_LB_TOTAL_MYR;
+                playing = false;
+                if (playBtn) playBtn.textContent = 'Play';
+            }
+            applyElapsed(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { localbubble: 't3dLbControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        localbubble: { radius: 110, maxR: 320, minR: 20, phi: 0.85, theta: 0.55, targetY: 0 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dLocalBubble(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
