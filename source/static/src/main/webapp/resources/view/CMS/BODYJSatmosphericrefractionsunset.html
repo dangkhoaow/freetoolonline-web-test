@@ -1,0 +1,410 @@
+<script>
+    // 3D scene archetype skeleton (atmospheric-refraction-sunset) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural (SphereGeometry/RingGeometry/CircleGeometry/
+    // BufferGeometry) - no model files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this teaches why the setting Sun looks
+    // flattened, sits higher than its true (geometric) position, and can
+    // briefly flash green: atmospheric refraction bends sunlight more the
+    // closer it sits to the horizon. It is NOT a ray-traced atmosphere - the
+    // light-bend path is a stylized two-segment bend, and the internal
+    // formula driving the animation (a standard low-altitude refraction
+    // approximation) is a mechanism, not a displayed claim. Every number in
+    // the facts panel is a real published figure, stated verbatim.
+    //
+    // Published figures / facts (WebSearch 2026-08-14 against
+    // en.wikipedia.org/wiki/Green_flash, britastro.org/2019/atmospheric-
+    // refraction, and skyandtelescope.org "We Don't Really Know When the Sun
+    // Rises"):
+    //   - Standard atmospheric refraction at the horizon is about 34
+    //     arcminutes - slightly more than the Sun's own apparent diameter
+    //     (about 32 arcminutes) - a value traced to Newton and cited as a
+    //     standard since the 19th century.
+    //   - Sunrise/sunset is formally defined at a geocentric altitude of -50
+    //     arcminutes for the Sun's center: 34 arcminutes for atmospheric
+    //     refraction plus 16 arcminutes for the Sun's angular radius. So the
+    //     Sun you watch touch the horizon has, geometrically, already set.
+    //   - The setting Sun looks flattened (elliptical) because refraction is
+    //     not uniform across the disk: near the horizon the lower limb is
+    //     lifted by about 35 arcminutes while the upper limb is lifted by
+    //     only about 29 arcminutes - a roughly 6-arcminute gap on a disk only
+    //     about 32 arcminutes across.
+    //   - The green flash: green and blue light refract slightly more than
+    //     red, so the setting Sun's disk is really a stack of color-tinted
+    //     images - a flattened red-orange base with fainter green and blue
+    //     slivers above it. Blue and violet are usually scattered out of the
+    //     direct beam before reaching an observer, leaving green as the
+    //     color most likely to flash briefly (typically a second or two)
+    //     from the last visible sliver of the upper limb. The flash is more
+    //     reliably seen when mirage-friendly conditions (clean, stable air,
+    //     an unobstructed horizon such as open sea or desert) amplify and
+    //     prolong that last sliver.
+    //   - Separately, Rayleigh scattering (intensity roughly proportional to
+    //     1/wavelength^4) removes more blue light than red from the long, low
+    //     path sunlight travels near the horizon, reddening the direct disk -
+    //     a distinct mechanism from the differential-refraction color
+    //     banding above, and not separately ray-traced in this scene.
+    //
+    // Distinct from Twilight Types 3D Explorer (civil/nautical/astronomical
+    // sky-brightness bands across a much wider 0-18 degree depression-angle
+    // range, after the Sun is already well below the horizon) - this page is
+    // the one visualizing the sub-degree optical bending and color-splitting
+    // of the Sun's own disk right at the horizon crossing.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'atmospheric-refraction-sunset';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'atmosphericrefractionsunset'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { try { new ResizeObserver(resize).observe(host); } catch (e) {} }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // ---- Real published facts (see header comment for sources) ----------
+    var T3D_REFRACTION_HORIZON_ARCMIN = 34;
+    var T3D_SOLAR_DIAMETER_ARCMIN = 32;
+    var T3D_SUNSET_DEFINITION_ARCMIN = 50;
+    var T3D_UPPER_LIMB_LIFT_ARCMIN = 29;
+    var T3D_LOWER_LIMB_LIFT_ARCMIN = 35;
+
+    // Bennett-style low-altitude refraction approximation: R(arcmin) = 1 /
+    // tan(h + 7.31/(h+4.4)), h in degrees, standard atmosphere. Gives R about
+    // 34 arcmin at h=0, matching the published horizon figure above. This
+    // formula is the internal ANIMATION MECHANISM, not a displayed claim -
+    // the facts panel always states the named published figures verbatim.
+    function t3dRefractionArcmin(hDeg) {
+        var h = Math.max(hDeg, -1.9);
+        var denom = Math.tan((h + 7.31 / (h + 4.4)) * Math.PI / 180);
+        return denom > 0.0001 ? (1 / denom) : (T3D_REFRACTION_HORIZON_ARCMIN * 1.6);
+    }
+
+    function t3dAtmosphericRefractionSunset(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0b1626, 1);
+
+        // Stylized dusk sky dome - a big inward-facing sphere, vertex-colored
+        // from a warm horizon band up to a deep blue zenith.
+        var skyGeo = new THREE.SphereGeometry(220, 24, 16);
+        var skyPos = skyGeo.attributes.position;
+        var skyColors = [];
+        var cHorizon = new THREE.Color(0xffb35c);
+        var cMid = new THREE.Color(0xff7a59);
+        var cZenith = new THREE.Color(0x0c1c3a);
+        for (var i = 0; i < skyPos.count; i++) {
+            var y = skyPos.getY(i) / 220;
+            var t = Math.max(0, Math.min(1, (y + 0.15) / 0.9));
+            var col = t < 0.35
+                ? cHorizon.clone().lerp(cMid, t / 0.35)
+                : cMid.clone().lerp(cZenith, (t - 0.35) / 0.65);
+            skyColors.push(col.r, col.g, col.b);
+        }
+        skyGeo.setAttribute('color', new THREE.Float32BufferAttribute(skyColors, 3));
+        var sky = new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false }));
+        scene.add(sky);
+
+        // Ground / sea horizon disc.
+        var ground = new THREE.Mesh(
+            new THREE.CircleGeometry(200, 48),
+            new THREE.MeshBasicMaterial({ color: 0x0a1a22 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.02;
+        scene.add(ground);
+
+        var eyeHeight = 1.2;
+        var sunDist = 70;
+
+        // Horizon reference ring at the observer's eye height (theta=0 line).
+        var horizonPts = [];
+        for (var hi = 0; hi <= 96; hi++) {
+            var ha = (hi / 96) * Math.PI * 2;
+            horizonPts.push(new THREE.Vector3(Math.sin(ha) * sunDist, eyeHeight, Math.cos(ha) * -sunDist));
+        }
+        scene.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(horizonPts),
+            new THREE.LineBasicMaterial({ color: 0x3d5a66, transparent: true, opacity: 0.55 })
+        ));
+
+        function skyPointAt(altDeg) {
+            var rad = THREE.MathUtils.degToRad(altDeg);
+            return new THREE.Vector3(0, eyeHeight + sunDist * Math.sin(rad), -sunDist * Math.cos(rad));
+        }
+
+        // TRUE (geometric) sun marker - a faint dashed-look ring, since below
+        // the horizon it is not actually visible to an observer at all.
+        var trueMarker = new THREE.Mesh(
+            new THREE.RingGeometry(1.1, 1.5, 24),
+            new THREE.MeshBasicMaterial({ color: 0x90a4ae, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false })
+        );
+        scene.add(trueMarker);
+
+        // APPARENT sun disc - squashed per differential limb refraction, with
+        // a vertical color gradient (red-orange base rising through yellow to
+        // a green/blue-tinged upper sliver) approximating the real color
+        // layering behind the green flash.
+        var sunGeo = new THREE.SphereGeometry(1.7, 40, 28);
+        var sp = sunGeo.attributes.position;
+        var sunColorArr = [];
+        var cRed = new THREE.Color(0xff5a3c);
+        var cYellow = new THREE.Color(0xffd54f);
+        var cGreen = new THREE.Color(0x7cffb2);
+        for (var si = 0; si < sp.count; si++) {
+            var sy = sp.getY(si) / 1.7;
+            var sc = sy < 0
+                ? cRed.clone().lerp(cYellow, sy + 1)
+                : cYellow.clone().lerp(cGreen, sy);
+            sunColorArr.push(sc.r, sc.g, sc.b);
+        }
+        sunGeo.setAttribute('color', new THREE.Float32BufferAttribute(sunColorArr, 3));
+        var sunDisc = new THREE.Mesh(sunGeo, new THREE.MeshBasicMaterial({ vertexColors: true }));
+        scene.add(sunDisc);
+        var sunGlow = new THREE.Mesh(new THREE.SphereGeometry(2.6, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffd54f, transparent: true, opacity: 0.18, depthWrite: false }));
+        sunDisc.add(sunGlow);
+
+        // Bent light-ray path from the observer's eye to the apparent disc,
+        // via the true (unrefracted) direction near the ground - a stylized
+        // two-segment bend, not a ray-traced atmosphere.
+        var rayGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]);
+        var rayLine = new THREE.Line(rayGeo, new THREE.LineDashedMaterial({ color: 0xffe9a8, dashSize: 0.6, gapSize: 0.35, transparent: true, opacity: 0.8 }));
+        scene.add(rayLine);
+
+        var eyePos = new THREE.Vector3(0, eyeHeight, 0);
+        var state = { altDeg: 0.6, stableAir: false, playing: false, showRay: true };
+
+        function greenFlashWindowDeg() { return state.stableAir ? 0.22 : 0.09; }
+
+        function apply() {
+            var trueDeg = state.altDeg;
+            var refrArcmin = t3dRefractionArcmin(trueDeg);
+            var apparentDeg = trueDeg + refrArcmin / 60;
+
+            var truePos = skyPointAt(trueDeg);
+            trueMarker.position.copy(truePos);
+            trueMarker.lookAt(shell.camera.position);
+            trueMarker.visible = state.showRay;
+
+            var apparentPos = skyPointAt(apparentDeg);
+            sunDisc.position.copy(apparentPos);
+            sunDisc.lookAt(shell.camera.position);
+
+            var halfDiskDeg = (T3D_SOLAR_DIAMETER_ARCMIN / 2) / 60;
+            var rTop = t3dRefractionArcmin(trueDeg + halfDiskDeg);
+            var rBot = t3dRefractionArcmin(trueDeg - halfDiskDeg);
+            var apparentVertArcmin = Math.max(6, T3D_SOLAR_DIAMETER_ARCMIN - (rBot - rTop) * (state.stableAir ? 1.15 : 1));
+            var squash = Math.max(0.28, Math.min(1, apparentVertArcmin / T3D_SOLAR_DIAMETER_ARCMIN));
+            sunDisc.scale.set(1, squash, 1);
+
+            if (state.showRay) {
+                var pts = rayLine.geometry.attributes.position.array;
+                var mid = eyePos.clone().lerp(truePos, 0.55);
+                mid.y += 0.15;
+                pts[0] = eyePos.x; pts[1] = eyePos.y; pts[2] = eyePos.z;
+                pts[3] = mid.x; pts[4] = mid.y; pts[5] = mid.z;
+                pts[6] = apparentPos.x; pts[7] = apparentPos.y; pts[8] = apparentPos.z;
+                rayLine.geometry.attributes.position.needsUpdate = true;
+                rayLine.computeLineDistances();
+            }
+            rayLine.visible = state.showRay;
+
+            var slider = document.getElementById('t3dRefractionSlider');
+            var label = document.getElementById('t3dRefractionSliderLabel');
+            if (slider) slider.value = String(Math.round((trueDeg + 1.5) * 20));
+            if (label) label.textContent = trueDeg.toFixed(2) + ' deg';
+
+            var win = greenFlashWindowDeg();
+            var nearSet = Math.abs(trueDeg) < win && apparentDeg > -0.02;
+            var geomSet = trueDeg <= 0;
+            var phase = !geomSet ? 'The Sun is above the true horizon' :
+                (apparentDeg > 0 ? 'Geometrically set, but refraction still shows it above the horizon' : 'Fully set - refraction can no longer lift it into view');
+            var flashNote = nearSet
+                ? '<p><b>Green flash window:</b> right now the last visible sliver of the upper limb can flash emerald for a second or two, if the air is clean and stable.</p>'
+                : '';
+            t3dInfo('<h3>' + phase + '</h3>' + flashNote +
+                '<p>Atmospheric refraction is bending sunlight so the Sun looks about ' + Math.round(refrArcmin) + ' arcmin higher than its true (geometric) direction right now.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Refraction at the horizon</td><td>about ' + T3D_REFRACTION_HORIZON_ARCMIN + ' arcmin</td></tr>' +
+                '<tr><td>Sun\'s true angular diameter</td><td>about ' + T3D_SOLAR_DIAMETER_ARCMIN + ' arcmin</td></tr>' +
+                '<tr><td>Standard sunset/sunrise altitude</td><td>-' + T3D_SUNSET_DEFINITION_ARCMIN + ' arcmin (disk center)</td></tr>' +
+                '<tr><td>Upper-limb lift near the horizon</td><td>about ' + T3D_UPPER_LIMB_LIFT_ARCMIN + ' arcmin</td></tr>' +
+                '<tr><td>Lower-limb lift near the horizon</td><td>about ' + T3D_LOWER_LIMB_LIFT_ARCMIN + ' arcmin</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational geometry approximation (a standard low-altitude refraction model) - not a ray-traced atmosphere or tonight\'s actual sky. Rayleigh scattering (roughly 1/wavelength^4) also reddens the direct disc near the horizon; it is not separately ray-traced here. This is not a physical simulation.</p>');
+            t3dStatus(phase + ' - drag to orbit, scroll to zoom.');
+            try { t3dSaveStore({ altDeg: state.altDeg, stableAir: state.stableAir }); } catch (e) {}
+        }
+
+        function setAlt(v) { state.altDeg = Math.max(-1.5, Math.min(4, v)); apply(); }
+
+        var slider = document.getElementById('t3dRefractionSlider');
+        if (slider) slider.addEventListener('input', function () {
+            state.playing = false;
+            var pb = document.getElementById('t3dRefractionPlayBtn');
+            if (pb) pb.textContent = 'Play sunset';
+            setAlt(parseFloat(slider.value || '42') / 20 - 1.5);
+        });
+        var playBtn = document.getElementById('t3dRefractionPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            state.playing = !state.playing;
+            playBtn.textContent = state.playing ? 'Pause sunset' : 'Play sunset';
+            if (state.playing && state.altDeg <= -1.4) setAlt(4);
+        });
+        var airBtn = document.getElementById('t3dRefractionAirBtn');
+        if (airBtn) airBtn.addEventListener('click', function () {
+            state.stableAir = !state.stableAir;
+            airBtn.className = 'w3-button w3-small ' + (state.stableAir ? 'w3-amber' : 'w3-light-grey');
+            apply();
+        });
+        var rayBtn = document.getElementById('t3dRefractionRayBtn');
+        if (rayBtn) rayBtn.addEventListener('click', function () {
+            state.showRay = !state.showRay;
+            rayBtn.textContent = state.showRay ? 'Hide light-bend path' : 'Show light-bend path';
+            apply();
+        });
+
+        var stored = t3dLoadStore();
+        if (typeof stored.altDeg === 'number') state.altDeg = Math.max(-1.5, Math.min(4, stored.altDeg));
+        if (typeof stored.stableAir === 'boolean') state.stableAir = stored.stableAir;
+        apply();
+
+        return function animate(dt) {
+            sky.rotation.y += dt * 0.00001;
+            if (state.playing) {
+                var next = state.altDeg - (dt / 1000) * 0.55;
+                if (next < -1.5) { next = 4; }
+                setAlt(next);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { atmosphericrefractionsunset: 't3dRefractionControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { atmosphericrefractionsunset: { radius: 42, maxR: 140, minR: 12, phi: 1.28, theta: 0.12, targetY: 2 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dAtmosphericRefractionSunset(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
