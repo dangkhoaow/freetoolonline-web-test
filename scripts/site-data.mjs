@@ -30707,7 +30707,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/sidereal-vs-solar-day-step-by-step.html',
   '/guides/vi/sidereal-vs-solar-day-vs-alternatives.html',
   '/guides/vi/sidereal-vs-solar-day-when.html',
-  '/guides/vi/sign-pdf-add-signature-step-by-step.html',
   '/guides/vi/sign-pdf-add-signature-vs-alternatives.html',
   '/guides/vi/sign-pdf-add-signature-when.html',
   '/guides/vi/signature-maker-draw-download-step-by-step.html',
@@ -30906,7 +30905,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/vi/type-ia-supernova-standard-candle-step-by-step.html",
   "/guides/vi/type-ia-supernova-standard-candle-vs-alternatives.html",
   "/guides/vi/type-ia-supernova-standard-candle-when.html",
-  "/guides/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html",
   // consolidation fire50 (2026-08-12): vi tyrannosaurus-rex-size-comparison un-excluded (301 target).
   "/guides/vi/unix-timestamps-explained.html",
   "/guides/vi/unlock-zip-file-online.html",
@@ -30945,7 +30943,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/vi/vesta-rheasilvia-step-by-step.html",
   "/guides/vi/vesta-rheasilvia-vs-alternatives.html",
   "/guides/vi/vesta-rheasilvia-when.html",
-  "/guides/vi/video-compressor-step-by-step.html",
   "/guides/vi/video-compressor-vs-alternatives.html",
   "/guides/vi/video-compressor-when.html",
   "/guides/vi/video-converter-online-free.html",
@@ -31572,7 +31569,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/foucault-pendulum-vs-alternatives.html",
   "/guides/de/foucault-pendulum-when.html",
   "/guides/de/free-online-tools-that-work-without-uploading-files.html",
-  "/guides/de/front-camera-test.html",
   "/guides/de/galaxy-3d-simulator-step-by-step.html",
   "/guides/de/galaxy-3d-simulator-vs-alternatives.html",
   "/guides/de/galaxy-3d-simulator-when.html",
@@ -35419,7 +35415,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/hover-racing-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/hover-racing-when.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-check-camera-quality-on-your-phone.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-check-webcam-and-microphone-before-an-interview.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-compress-a-jpg-for-email-attachment-limits.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-convert-100-heic-photos-to-jpg.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-convert-units-online.html', // pruned 2026-07-29 zero-evidence id
@@ -36072,7 +36067,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/mars-terrain-when.html',
   '/guides/id/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
   '/guides/id/md5-decrypt-online.html',
-  '/guides/id/md5-decrypter.html',
   '/guides/id/md5-to-text-why-you-cannot-convert-back.html',
   '/guides/id/md5-vs-sha256-when-to-hash.html',
   '/guides/id/medieval-wall-defense-vs-alternatives.html',
