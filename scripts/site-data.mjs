@@ -12500,12 +12500,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/lightning-math-battle-vs-alternatives.html',
   '/guides/de/lightning-math-battle-vs-alternatives.html',
   // fire106 precision-bounce-loop
-  '/guides/how-to-play-precision-bounce-loop.html',
-  '/guides/pt/how-to-play-precision-bounce-loop.html',
-  '/guides/es/how-to-play-precision-bounce-loop.html',
-  '/guides/vi/how-to-play-precision-bounce-loop.html',
-  '/guides/id/how-to-play-precision-bounce-loop.html',
-  '/guides/de/how-to-play-precision-bounce-loop.html',
   '/guides/precision-bounce-loop-when.html',
   '/guides/pt/precision-bounce-loop-when.html',
   '/guides/es/precision-bounce-loop-when.html',
@@ -14312,6 +14306,29 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // consolidation fire61 (2026-08-14): retire the how-to-play-precision-bounce-loop
+  // doorway family into its canonical GAME page. Backlog item
+  // topical-map-games.precision-bounce-loop (1 live excess family; across all 6
+  // routes 0 clicks / 0 AI citations / 9 impr 28d, 0 allowlisted, 5 of 6 already
+  // sitemap-excluded, and the ONLY links_to edge into the family was the keeper's
+  // own pointer link). The 4 pt/es/id/de mirrors were title-translated only - their
+  // bodies were untranslated English - so no locale content is lost. Unique facts
+  // were folded into the keeper BEFORE the 301: the combo tip appearing on the score
+  // panel, plus three features the framing menu had UNCOVERED and the engine
+  // confirms (P or Escape pauses and Space resumes, Enter returns to the title menu,
+  // forbidden zones at the screen edges penalize a miss). The guide's "slide the
+  // tablet left and right" was NOT folded - it is wrong: Tablet.frameLoop binds
+  // KeyW/ArrowUp and KeyS/ArrowDown to vy as well as KeyA/KeyD to vx. The keeper's
+  // pointer link to the retired route was removed and the keeper gained a
+  // /games.html hub link, so no internal link is lost. Edge layer patched in the
+  // same push. Locale mirrors 301 to the EN canonical because game pages have no
+  // locale variants.
+  '/guides/how-to-play-precision-bounce-loop.html': '/games/precision-bounce-loop.html',
+  '/guides/pt/how-to-play-precision-bounce-loop.html': '/games/precision-bounce-loop.html',
+  '/guides/es/how-to-play-precision-bounce-loop.html': '/games/precision-bounce-loop.html',
+  '/guides/vi/how-to-play-precision-bounce-loop.html': '/games/precision-bounce-loop.html',
+  '/guides/id/how-to-play-precision-bounce-loop.html': '/games/precision-bounce-loop.html',
+  '/guides/de/how-to-play-precision-bounce-loop.html': '/games/precision-bounce-loop.html',
   // consolidation fire59 (2026-08-13): retire the how-to-play-floor-thirteen-horror
   // + how-to-play-lightning-math-battle doorway families into their canonical GAME
   // pages. Backlog items topical-map-games.floor-thirteen-horror and
@@ -19495,12 +19512,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/lightning-math-battle-vs-alternatives.html': 'guide/de/lightning-math-battle-vs-alternatives.jsp',
   '/games/lightning-math-battle.html': 'games/lightning-math-battle.jsp',
   // fire106 precision-bounce-loop guides
-  '/guides/how-to-play-precision-bounce-loop.html': 'guide/how-to-play-precision-bounce-loop.jsp',
-  '/guides/pt/how-to-play-precision-bounce-loop.html': 'guide/pt/how-to-play-precision-bounce-loop.jsp',
-  '/guides/es/how-to-play-precision-bounce-loop.html': 'guide/es/how-to-play-precision-bounce-loop.jsp',
-  '/guides/vi/how-to-play-precision-bounce-loop.html': 'guide/vi/how-to-play-precision-bounce-loop.jsp',
-  '/guides/id/how-to-play-precision-bounce-loop.html': 'guide/id/how-to-play-precision-bounce-loop.jsp',
-  '/guides/de/how-to-play-precision-bounce-loop.html': 'guide/de/how-to-play-precision-bounce-loop.jsp',
   '/guides/precision-bounce-loop-when.html': 'guide/precision-bounce-loop-when.jsp',
   '/guides/pt/precision-bounce-loop-when.html': 'guide/pt/precision-bounce-loop-when.jsp',
   '/guides/es/precision-bounce-loop-when.html': 'guide/es/precision-bounce-loop-when.jsp',
@@ -29817,7 +29828,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/how-to-play-pixel-realm-rpg.html',
   '/guides/vi/how-to-play-pixel-spike-run.html',
   '/guides/vi/how-to-play-potion-brew-shop.html',
-  '/guides/vi/how-to-play-precision-bounce-loop.html',
   '/guides/vi/how-to-play-procedural-horde-game.html',
   '/guides/vi/how-to-play-progress-knight.html',
   '/guides/vi/how-to-play-quantum-optics-puzzle.html',
@@ -31132,7 +31142,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/how-to-play-pixel-realm-rpg.html",
   "/guides/de/how-to-play-pixel-spike-run.html",
   "/guides/de/how-to-play-potion-brew-shop.html",
-  "/guides/de/how-to-play-precision-bounce-loop.html",
   "/guides/de/how-to-play-procedural-horde-game.html",
   "/guides/de/how-to-play-progress-knight.html",
   "/guides/de/how-to-play-quantum-optics-puzzle.html",
@@ -32540,7 +32549,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/how-to-play-pixel-realm-rpg.html',
   '/guides/pt/how-to-play-pixel-spike-run.html',
   '/guides/pt/how-to-play-potion-brew-shop.html',
-  '/guides/pt/how-to-play-precision-bounce-loop.html',
   '/guides/pt/how-to-play-procedural-horde-game.html',
   '/guides/pt/how-to-play-progress-knight.html',
   '/guides/pt/how-to-play-quantum-optics-puzzle.html',
@@ -33941,7 +33949,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/how-to-play-pixel-realm-rpg.html',
   '/guides/es/how-to-play-pixel-spike-run.html',
   '/guides/es/how-to-play-potion-brew-shop.html',
-  '/guides/es/how-to-play-precision-bounce-loop.html',
   '/guides/es/how-to-play-procedural-horde-game.html',
   '/guides/es/how-to-play-progress-knight.html',
   '/guides/es/how-to-play-quantum-optics-puzzle.html',
@@ -35631,7 +35638,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/how-to-play-pixel-realm-rpg.html',
   '/guides/id/how-to-play-pixel-spike-run.html',
   '/guides/id/how-to-play-potion-brew-shop.html',
-  '/guides/id/how-to-play-precision-bounce-loop.html',
   '/guides/id/how-to-play-procedural-horde-game.html',
   '/guides/id/how-to-play-progress-knight.html',
   '/guides/id/how-to-play-quantum-optics-puzzle.html',
