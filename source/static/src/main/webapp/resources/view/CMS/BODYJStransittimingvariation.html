@@ -1,0 +1,388 @@
+<script>
+    // 3D scene archetype skeleton (transit-timing-variation) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only. All geometry
+    // is procedural (SphereGeometry/TorusGeometry/BufferGeometry/Points) - no
+    // model files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this teaches the transit-timing variation
+    // (TTV) exoplanet-detection method: a SECOND, unseen planet's gravity tugs
+    // on a transiting planet, making its transits arrive slightly early or
+    // late on a repeating pattern. It is NOT a numerical N-body integrator -
+    // the timing-offset curve is a stylized sinusoid tuned to the real,
+    // published amplitude/period for the Kepler-19 preset and to a broadly
+    // representative pace for the other two (disclosed in the panel); the
+    // orbital PERIOD RATIO between the two planets in each preset is the real
+    // published value.
+    //
+    // Published figures / facts (cross-checked via WebSearch 2026-08-14
+    // against en.wikipedia.org/wiki/Kepler-19c, en.wikipedia.org/wiki/
+    // Transit-timing_variation, the discovery paper Ballard et al. 2011 (ApJ
+    // 743, 200) for Kepler-19; Holman et al. 2010 (Science 330, 51) for
+    // Kepler-9; and Carter et al. 2012 (Science 337, 556) + en.wikipedia.org/
+    // wiki/Kepler-36b for Kepler-36):
+    //   - Kepler-19b: 9.287-day orbital period. Kepler-19c: inferred purely
+    //     from TTV at a 28.7-day period (later refined 28.731 days) and mass
+    //     13.1 Earth masses, and independently confirmed by radial-velocity
+    //     follow-up. Kepler-19b's transits drift up to about 5 minutes early
+    //     or late on a roughly 300-day repeating cycle. Kepler-19c has NEVER
+    //     been observed transiting its own star - it is known only from the
+    //     pull it puts on Kepler-19b.
+    //   - Kepler-9b + Kepler-9c: 19.2-day and 38.9-day orbits, close to a 2:1
+    //     orbital resonance - the first system ever confirmed by transit-
+    //     timing variations (Holman et al. 2010). Kepler-9b's transits drift
+    //     by about 4 minutes per orbit on average and Kepler-9c's by about 39
+    //     minutes per orbit - among the largest TTV drift rates measured.
+    //   - Kepler-36b + Kepler-36c: 13.8-day and 16.2-day orbits, passing
+    //     within about 0.013 AU of each other at closest approach - the
+    //     tightest spacing known between two confirmed planets. The resulting
+    //     TTV signal alone (no radial-velocity data needed) pinned down both
+    //     masses (4.1 and 7.5 Earth masses) despite a striking density
+    //     contrast: 7.46 vs 0.89 grams per cubic centimeter.
+    //   - As of February 2020 the NASA Exoplanet Archive credited the TTV
+    //     method with 21 confirmed planet discoveries.
+    //
+    // Distinct from Exoplanet Transit 3D Explorer (a single planet's own
+    // brightness-dip light curve - the DIRECT detection signal) - this page
+    // visualizes the SECOND, INDIRECT signal that reveals a planet no one has
+    // ever seen transit at all.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'transit-timing-variation';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'transittimingvariation'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { try { new ResizeObserver(resize).observe(host); } catch (e) {} }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // ---- Real published TTV facts per preset (see header comment for sources) ----
+    var T3D_TTV_PRESETS = [
+        {
+            id: 'kepler19', label: 'Kepler-19b + 19c', bLabel: 'Kepler-19b', cLabel: 'Kepler-19c',
+            bPeriodDays: 9.287, cPeriodDays: 28.731, ampMinutes: 5, superPeriodDays: 300,
+            oscTransits: 300 / 9.287, hasRealAmplitude: true,
+            fact: 'Kepler-19b (9.287-day orbit) arrives at its star up to about 5 minutes early or late, repeating on a roughly 300-day cycle. Kepler-19c has NEVER once been seen transiting its own star - its 28.7-day orbit and 13.1-Earth-mass were inferred purely from the pull it puts on Kepler-19b, then confirmed independently by radial-velocity measurements.'
+        },
+        {
+            id: 'kepler9', label: 'Kepler-9b + 9c', bLabel: 'Kepler-9b', cLabel: 'Kepler-9c',
+            bPeriodDays: 19.2, cPeriodDays: 38.9, driftBMinPerOrbit: 4, driftCMinPerOrbit: 39,
+            oscTransits: 8, hasRealAmplitude: false,
+            fact: 'Discovered by NASA\'s Kepler mission in 2010, this was the first system ever confirmed by transit-timing variations. Kepler-9b (19.2-day orbit) and Kepler-9c (38.9-day orbit) sit close to a 2:1 orbital resonance - Kepler-9b\'s transits drift by about 4 minutes per orbit on average, Kepler-9c\'s by about 39 minutes per orbit, among the largest TTV drift rates ever measured.'
+        },
+        {
+            id: 'kepler36', label: 'Kepler-36b + 36c', bLabel: 'Kepler-36b', cLabel: 'Kepler-36c',
+            bPeriodDays: 13.8, cPeriodDays: 16.2, massBEarth: 4.1, massCEarth: 7.5,
+            densityB: 7.46, densityC: 0.89, closestApproachAU: 0.013,
+            oscTransits: 5, hasRealAmplitude: false,
+            fact: 'Kepler-36b (13.8-day orbit) and Kepler-36c (16.2-day orbit) pass within about 0.013 AU of each other at closest approach - the tightest spacing known between two confirmed planets. The resulting TTV signal alone, with no radial-velocity data at all, pinned down both masses (4.1 and 7.5 Earth masses) despite a striking density contrast: 7.46 versus 0.89 grams per cubic centimeter.'
+        }
+    ];
+    var T3D_TTV_MAX_TRANSITS = 40;
+    var T3D_TTV_EXAGGERATION = 1.35;
+
+    function t3dTtvOffset(n, p) { return Math.sin((2 * Math.PI * n) / p.oscTransits); }
+
+    function t3dTtvDrawStrip(canvas, p, currentN) {
+        if (!canvas || !canvas.getContext) return;
+        var w = canvas.width, h = canvas.height;
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+        var midY = h / 2, padL = 30, padR = 10;
+        var plotW = w - padL - padR;
+        ctx.strokeStyle = '#4a4a4a';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(padL, midY); ctx.lineTo(w - padR, midY); ctx.stroke();
+        ctx.strokeStyle = '#8899aa';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        for (var x = 0; x <= T3D_TTV_MAX_TRANSITS; x += 0.5) {
+            var y = midY - t3dTtvOffset(x, p) * (h * 0.36);
+            var px = padL + (x / T3D_TTV_MAX_TRANSITS) * plotW;
+            if (x === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y);
+        }
+        ctx.stroke();
+        ctx.fillStyle = '#42a5f5';
+        for (var n = 0; n <= currentN; n++) {
+            var yy = midY - t3dTtvOffset(n, p) * (h * 0.36);
+            var xx = padL + (n / T3D_TTV_MAX_TRANSITS) * plotW;
+            ctx.beginPath(); ctx.arc(xx, yy, n === currentN ? 4.2 : 2.2, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.fillStyle = '#cfd8dc';
+        ctx.font = '11px sans-serif';
+        ctx.fillText(p.hasRealAmplitude ? ('+' + p.ampMinutes + ' min') : 'early', 2, midY - h * 0.36 + 4);
+        ctx.fillText(p.hasRealAmplitude ? ('-' + p.ampMinutes + ' min') : 'late', 2, midY + h * 0.36 + 8);
+        ctx.fillText('transit #' + currentN, padL, h - 4);
+    }
+
+    function t3dTransitTimingVariation(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+        var starLight = new THREE.PointLight(0xfff3d0, 900, 0, 1.7);
+        scene.add(starLight);
+
+        var star = new THREE.Mesh(new THREE.SphereGeometry(1.7, 40, 28), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        scene.add(star);
+
+        var orbitB = 6.4, orbitC = 10.6;
+        var ringB = new THREE.Mesh(new THREE.TorusGeometry(orbitB, 0.02, 6, 96), new THREE.MeshBasicMaterial({ color: 0x37474f }));
+        ringB.rotation.x = Math.PI / 2;
+        scene.add(ringB);
+        var ringC = new THREE.Mesh(new THREE.TorusGeometry(orbitC, 0.02, 6, 96), new THREE.MeshBasicMaterial({ color: 0x5d4037, transparent: true, opacity: 0.55 }));
+        ringC.rotation.x = Math.PI / 2;
+        ringC.visible = false;
+        scene.add(ringC);
+
+        var planetB = new THREE.Mesh(new THREE.SphereGeometry(0.42, 24, 18), new THREE.MeshLambertMaterial({ color: 0x5c6bc0, emissive: 0x0d1030 }));
+        scene.add(planetB);
+        var planetC = new THREE.Mesh(new THREE.SphereGeometry(0.58, 24, 18), new THREE.MeshLambertMaterial({ color: 0xef9a9a, emissive: 0x220a0a }));
+        planetC.visible = false;
+        scene.add(planetC);
+
+        // Expected (perfectly periodic) transit marker - fixed at the crossing point.
+        var expectedMarker = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.035, 6, 28), new THREE.MeshBasicMaterial({ color: 0x90a4ae }));
+        expectedMarker.position.set(orbitB, 0, 0);
+        scene.add(expectedMarker);
+        // Actual-arrival marker - its VERTICAL position is a stylized (exaggerated,
+        // disclosed) readout of the timing offset, not a real spatial displacement.
+        var actualMarker = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffee58 }));
+        actualMarker.position.set(orbitB, 0, 0);
+        scene.add(actualMarker);
+        var stickGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(orbitB, 0, 0), new THREE.Vector3(orbitB, 0, 0)]);
+        var stick = new THREE.Line(stickGeo, new THREE.LineBasicMaterial({ color: 0xffee58, transparent: true, opacity: 0.75 }));
+        scene.add(stick);
+
+        var state = { presetIdx: 0, revealHidden: false, transitIndex: 0, playing: false, angB: 0, angC: 0 };
+
+        function preset() { return T3D_TTV_PRESETS[state.presetIdx]; }
+
+        function updateMarkers() {
+            var p = preset();
+            var off = t3dTtvOffset(state.transitIndex, p);
+            var yy = off * T3D_TTV_EXAGGERATION;
+            actualMarker.position.set(orbitB, yy, 0);
+            var pts = stickGeo.attributes.position.array;
+            pts[0] = orbitB; pts[1] = 0; pts[2] = 0;
+            pts[3] = orbitB; pts[4] = yy; pts[5] = 0;
+            stickGeo.attributes.position.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            var p = preset();
+            var off = t3dTtvOffset(state.transitIndex, p);
+            var earlyLate = off > 0.05 ? 'early' : (off < -0.05 ? 'late' : 'on time');
+            var readout = p.hasRealAmplitude
+                ? ('<b>' + (off * p.ampMinutes).toFixed(1) + ' min</b> ' + earlyLate + ' (real amplitude: up to ' + p.ampMinutes + ' min, cycle length about ' + p.superPeriodDays + ' days)')
+                : ('running ' + earlyLate + ' (illustrative pacing - see the sourced drift-rate / mass figures below)');
+            var html = '<h3>' + p.label + '</h3><p>' + p.fact + '</p>';
+            html += '<p><b>Transit #' + state.transitIndex + ':</b> ' + p.bLabel + ' is ' + readout + '.</p>';
+            html += '<table class="w3-table w3-bordered">' +
+                '<tr><td>' + p.bLabel + ' orbital period</td><td>' + p.bPeriodDays + ' days</td></tr>' +
+                '<tr><td>' + p.cLabel + ' orbital period</td><td>' + p.cPeriodDays + ' days</td></tr>' +
+                (p.hasRealAmplitude ? ('<tr><td>Timing-drift amplitude</td><td>up to ' + p.ampMinutes + ' minutes</td></tr><tr><td>Repeating cycle length</td><td>about ' + p.superPeriodDays + ' days</td></tr>') :
+                    (p.driftBMinPerOrbit ? ('<tr><td>' + p.bLabel + ' drift rate</td><td>about ' + p.driftBMinPerOrbit + ' min/orbit</td></tr><tr><td>' + p.cLabel + ' drift rate</td><td>about ' + p.driftCMinPerOrbit + ' min/orbit</td></tr>') :
+                        ('<tr><td>' + p.bLabel + ' mass (from TTV)</td><td>' + p.massBEarth + ' Earth masses</td></tr><tr><td>' + p.cLabel + ' mass (from TTV)</td><td>' + p.massCEarth + ' Earth masses</td></tr>'))) +
+                '</table>';
+            if (!state.revealHidden) { html += '<p class="t3d-note">' + p.cLabel + ' is hidden - press "Reveal hidden planet" to see the unseen world this timing wobble points to.</p>'; }
+            html += '<p class="t3d-note">Educational approximation, not a numerical N-body integrator. The bright marker\'s up/down position is a stylized, exaggerated readout of the timing offset only - real TTVs are a difference in ARRIVAL TIME, never an actual spatial displacement of the planet. The two orbit periods shown are the real published values; the wobble\'s exact shape is illustrative.</p>';
+            return html;
+        }
+
+        function presetButtons() {
+            for (var i = 0; i < T3D_TTV_PRESETS.length; i++) {
+                var btn = document.getElementById('t3dTtvBtn-' + T3D_TTV_PRESETS[i].id);
+                if (btn) btn.className = 'w3-button w3-small ' + (i === state.presetIdx ? 'w3-amber' : 'w3-light-grey');
+            }
+        }
+
+        function apply() {
+            planetC.visible = state.revealHidden;
+            ringC.visible = state.revealHidden;
+            updateMarkers();
+            presetButtons();
+            var revealBtn = document.getElementById('t3dTtvRevealBtn');
+            if (revealBtn) revealBtn.textContent = state.revealHidden ? 'Hide the second planet' : 'Reveal hidden planet';
+            var slider = document.getElementById('t3dTtvSlider');
+            var label = document.getElementById('t3dTtvSliderLabel');
+            if (slider) slider.value = String(state.transitIndex);
+            if (label) label.textContent = 'Transit #' + state.transitIndex;
+            t3dInfo(panelHtml());
+            t3dStatus(preset().label + ' - drag to orbit, scroll to zoom.');
+            t3dTtvDrawStrip(document.getElementById('t3dTtvStrip'), preset(), state.transitIndex);
+            try { t3dSaveStore({ presetIdx: state.presetIdx, revealHidden: state.revealHidden }); } catch (e) {}
+        }
+
+        function setPreset(i) { state.presetIdx = Math.max(0, Math.min(T3D_TTV_PRESETS.length - 1, i)); state.transitIndex = 0; apply(); }
+        function setTransitIndex(n) { state.transitIndex = Math.max(0, Math.min(T3D_TTV_MAX_TRANSITS, n)); apply(); }
+
+        for (var bi = 0; bi < T3D_TTV_PRESETS.length; bi++) {
+            (function (i) {
+                var btn = document.getElementById('t3dTtvBtn-' + T3D_TTV_PRESETS[i].id);
+                if (btn) btn.addEventListener('click', function () { setPreset(i); });
+            })(bi);
+        }
+        var revealBtn = document.getElementById('t3dTtvRevealBtn');
+        if (revealBtn) revealBtn.addEventListener('click', function () { state.revealHidden = !state.revealHidden; apply(); });
+        var playBtn = document.getElementById('t3dTtvPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () { state.playing = !state.playing; playBtn.textContent = state.playing ? 'Pause' : 'Play transits'; });
+        var slider = document.getElementById('t3dTtvSlider');
+        if (slider) slider.addEventListener('input', function () { state.playing = false; if (playBtn) playBtn.textContent = 'Play transits'; setTransitIndex(parseInt(slider.value || '0', 10)); });
+
+        var stored = t3dLoadStore();
+        if (typeof stored.presetIdx === 'number') state.presetIdx = Math.max(0, Math.min(T3D_TTV_PRESETS.length - 1, stored.presetIdx));
+        if (typeof stored.revealHidden === 'boolean') state.revealHidden = stored.revealHidden;
+        apply();
+
+        var accum = 0;
+        return function animate(dt) {
+            var p = preset();
+            state.angB += dt * 0.0016;
+            state.angC += dt * 0.0016 * (p.bPeriodDays / p.cPeriodDays);
+            planetB.position.set(Math.cos(state.angB) * orbitB, 0, Math.sin(state.angB) * orbitB);
+            planetC.position.set(Math.cos(state.angC) * orbitC, 0, Math.sin(state.angC) * orbitC);
+            var overlap = Math.max(0, 1 - Math.abs(planetB.position.z) / 0.85);
+            var dim = 1 - 0.5 * overlap;
+            star.material.color.setRGB(1 * dim, 0.835 * dim, 0.33 * dim);
+            if (state.playing) {
+                accum += dt;
+                if (accum > 260) {
+                    accum = 0;
+                    var next = state.transitIndex + 1;
+                    if (next > T3D_TTV_MAX_TRANSITS) next = 0;
+                    setTransitIndex(next);
+                }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { transittimingvariation: 't3dTtvControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { transittimingvariation: { radius: 13, maxR: 42, minR: 6, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dTransitTimingVariation(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
