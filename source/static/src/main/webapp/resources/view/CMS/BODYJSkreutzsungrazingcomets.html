@@ -1,0 +1,395 @@
+<script>
+    // 3D scene archetype skeleton (kreutz-sungrazing-comets) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only. All geometry
+    // is procedural (SphereGeometry/TorusGeometry/BufferGeometry/ConeGeometry) -
+    // no model files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this teaches the Kreutz sungrazer comet
+    // family: fragments of one ancestral comet nucleus that share nearly the
+    // same extreme, near-parabolic orbit passing within about 1 solar radius
+    // of the Sun's surface at perihelion. It is NOT a numerical N-body
+    // integrator or an ephemeris - the shared orbit shape is a stylized,
+    // compressed ellipse (real eccentricity is far more extreme than fits one
+    // screen) and the "family fan" of sibling orbit lines is illustrative
+    // spread, not per-member measured elements. The three named historical
+    // presets use their real published perihelion distance and brightness
+    // figures; the default "typical family member" preset is a representative
+    // teaching case, not a specific catalogued object.
+    //
+    // Published figures / facts (WebSearch 2026-08-14 against
+    // esa.int/Science_Exploration (1000th Kreutz sungrazer discovered by
+    // SOHO), en.wikipedia.org/wiki/Kreutz_sungrazer, en.wikipedia.org/wiki/
+    // List_of_Kreutz_sungrazers, en.wikipedia.org/wiki/1843_I,
+    // en.wikipedia.org/wiki/1882_II, en.wikipedia.org/wiki/Comet_Ikeya-Seki,
+    // en.wikipedia.org/wiki/C/2020_X3_(SOHO), and the arXiv Kreutz-population
+    // survey at arxiv.org/pdf/2212.11919):
+    //   - Named for German astronomer Heinrich Kreutz, who showed in 1888
+    //     that several bright sungrazing comets share nearly identical
+    //     orbits and must be fragments of one ancestor.
+    //   - Formal "sungrazer" perihelion threshold: within about 3.45 solar
+    //     radii of the Sun's center; most Kreutz members pass far closer,
+    //     around 1-2 solar radii. Orbital inclination is about 143 degrees
+    //     (a steep, retrograde orbit).
+    //   - The Sun's radius is about 0.00465 AU; a typical Kreutz perihelion
+    //     distance is only about 0.005 AU - so most fragments pass through
+    //     intense heating almost at the visible surface and disintegrate
+    //     into dust at or before perihelion. Surviving the passage, as the
+    //     three historical comets below did, is the exception, not the rule.
+    //   - Before SOHO's December 1995 launch only about 30 Kreutz members
+    //     were known. SOHO's LASCO coronagraphs (nested 1.1-30 solar-radius
+    //     fields of view) then found comets at a rate of 200-plus per year -
+    //     roughly one every two days - and by October 2022 SOHO had found
+    //     over 4,500 comets total, with about 85 percent of them Kreutz
+    //     fragments (ESA; Wikipedia List of Kreutz sungrazers). SOHO's 1000th
+    //     Kreutz discovery (amateur comet hunter Arkadiusz Kubczak) was also
+    //     the 1,185th comet found in SOHO imagery overall.
+    //   - Great Comet of 1843 (C/1843 D1): discovered 1843-02-05, became a
+    //     great comet within days; a Kreutz Population I fragment traced to
+    //     a parent breakup around February 1106.
+    //   - Great Comet of 1882 (C/1882 R1): became bright in September 1882
+    //     and was visible in the daytime sky right next to the Sun at
+    //     perihelion, reportedly around 100 times the brightness of the full
+    //     Moon at its peak; it visibly fragmented near the Sun, which is the
+    //     direct evidence Kreutz used for his 1888 fragmentation theory.
+    //     Comet du Toit (1945) and Comet Ikeya-Seki (1965) are believed to
+    //     be sibling fragments from that same, more recent breakup event.
+    //   - Comet Ikeya-Seki (C/1965 S1): discovered 1965-09-18 by two Japanese
+    //     amateur astronomers; passed perihelion on 1965-10-21 at only about
+    //     0.0078 AU (roughly 291,000 miles / 468,000 km above the Sun's
+    //     surface), reaching at least magnitude -7 (about eight times
+    //     brighter than Venus) and, at peak, about ten times the brightness
+    //     of the full Moon - visible in daylight by blocking the Sun with a
+    //     hand or a building. Its tail stretched up to about 70 million
+    //     miles, the fourth-longest ever recorded.
+    //   - The single ancestral nucleus - estimated over 100 km across -
+    //     broke apart in a close solar passage over 2,000 years ago; several
+    //     of the resulting fragments have themselves broken apart further in
+    //     later close passages, which is why sibling Kreutz orbits cluster
+    //     tightly but are not perfectly identical.
+    //
+    // Distinct from Comet Orbit 3D Explorer (a single Halley-type periodic
+    // comet on a moderate ellipse, q about 0.586 AU - nowhere near the Sun)
+    // and Comet Tail Types 3D Explorer (generic ion-vs-dust tail physics at
+    // any distance) - this page is the one page on the site visualizing the
+    // specific, real population of comets that nearly touch the Sun and
+    // mostly do not survive it.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'kreutz-sungrazing-comets';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'kreutzsungrazingcomets'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { try { new ResizeObserver(resize).observe(host); } catch (e) {} }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // ---- Real published facts per preset (see header comment for sources) ----
+    var T3D_KREUTZ_PRESETS = [
+        {
+            id: 'typical', label: 'Typical family member', survives: false,
+            perihelionText: 'about 1-2 solar radii (formal sungrazer limit: 3.45 solar radii)',
+            fact: 'Most Kreutz fragments look like this: unnamed, discovered only by SOHO\'s LASCO coronagraphs, and gone within hours of perihelion. The Sun\'s radius is about 0.00465 AU and a typical Kreutz perihelion distance is only about 0.005 AU, so the intense heating this close in vaporizes most fragments into dust at or before closest approach.'
+        },
+        {
+            id: 'c1843', label: 'Great Comet of 1843', survives: true,
+            perihelionText: 'about 0.0055 AU (roughly 1.2 solar radii)',
+            fact: 'Discovered 1843-02-05 and a great comet within days, this is a Kreutz Population I fragment traced to a parent breakup around February 1106. It survived perihelion and remained a bright, long-tailed naked-eye object afterward.'
+        },
+        {
+            id: 'c1882', label: 'Great Comet of 1882', survives: true,
+            perihelionText: 'close approach visible beside the Sun in the daytime sky',
+            fact: 'Bright from September 1882 and visible right next to the Sun in broad daylight at perihelion, reportedly about 100 times the brightness of the full Moon at peak. It visibly split into fragments near the Sun - the direct evidence Heinrich Kreutz used in 1888 to propose that all these comets share one shattered ancestor. Comet du Toit (1945) and Comet Ikeya-Seki (1965) are believed to be its siblings from that same, more recent breakup.'
+        },
+        {
+            id: 'ikeyaseki', label: 'Ikeya-Seki (1965)', survives: true,
+            perihelionText: '0.0078 AU (about 291,000 miles / 468,000 km above the surface)',
+            fact: 'Discovered 1965-09-18 by two Japanese amateur astronomers and reaching perihelion on 1965-10-21, this comet hit at least magnitude -7 (about 8x Venus) and, at peak, roughly 10 times the brightness of the full Moon - visible in daylight by blocking the Sun with a hand or a building. Its tail reached about 70 million miles, the fourth-longest ever recorded.'
+        }
+    ];
+
+    function t3dKreutzSungrazers(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.22));
+        var sunLight = new THREE.PointLight(0xfff3c4, 1.7, 260);
+        scene.add(sunLight);
+
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(0.55, 32, 24), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        scene.add(sun);
+
+        // Shared Kreutz-family orbit shape: one extreme ellipse (compressed for
+        // one-screen readability - the real orbit is far more elongated),
+        // focus at the Sun. All family members share nearly this exact shape.
+        var E = 0.965;
+        var A_VIS = 16, B_VIS = A_VIS * Math.sqrt(1 - E * E), C_VIS = A_VIS * E;
+        function orbitPoints(tiltY, tiltZ) {
+            var pts = [];
+            for (var i = 0; i <= 160; i++) {
+                var th = (i / 160) * Math.PI * 2;
+                var x = A_VIS * Math.cos(th) + C_VIS, z = B_VIS * Math.sin(th), y = 0;
+                var v = new THREE.Vector3(x, y, z);
+                v.applyAxisAngle(new THREE.Vector3(0, 1, 0), tiltY || 0);
+                v.applyAxisAngle(new THREE.Vector3(0, 0, 1), tiltZ || 0);
+                pts.push(v);
+            }
+            return pts;
+        }
+        // The hero orbit (bright) that the animated nucleus travels on.
+        var heroPts = orbitPoints(0, 0);
+        var heroLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(heroPts),
+            new THREE.LineBasicMaterial({ color: 0xb0d8ff, transparent: true, opacity: 0.85 })
+        );
+        scene.add(heroLine);
+        // The "family fan" - illustrative sibling orbits at small tilts, sharing
+        // the same shape (real family members cluster tightly but are not
+        // perfectly identical - this fan is a teaching illustration, not
+        // per-member measured orbital elements).
+        var fanTilts = [[0.09, 0.03], [-0.07, 0.05], [0.05, -0.06], [-0.1, -0.02]];
+        for (var f = 0; f < fanTilts.length; f++) {
+            var fp = orbitPoints(fanTilts[f][0], fanTilts[f][1]);
+            scene.add(new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(fp),
+                new THREE.LineBasicMaterial({ color: 0x37506b, transparent: true, opacity: 0.4 })
+            ));
+        }
+
+        var nucleus = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12), new THREE.MeshLambertMaterial({ color: 0xcfd8dc, emissive: 0x333333 }));
+        scene.add(nucleus);
+        function makeTail(color, len, width) {
+            var g = new THREE.ConeGeometry(width, len, 10, 1, true);
+            g.translate(0, -len / 2, 0);
+            return new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false }));
+        }
+        var ionTail = makeTail(0x90caf9, 5.2, 0.16);
+        var dustTail = makeTail(0xffe0a3, 3.4, 0.32);
+        nucleus.add(ionTail);
+        nucleus.add(dustTail);
+
+        var state = { presetIdx: 0, progress: 0.02, playing: false };
+        function preset() { return T3D_KREUTZ_PRESETS[state.presetIdx]; }
+        function cometPos(prog) {
+            var nu = prog * Math.PI * 2;
+            var x = A_VIS * Math.cos(nu) + C_VIS, z = B_VIS * Math.sin(nu);
+            return new THREE.Vector3(x, 0, z);
+        }
+        function orientTails(pos) {
+            var away = pos.clone().normalize();
+            var quat = new THREE.Quaternion();
+            quat.setFromUnitVectors(new THREE.Vector3(0, -1, 0), away);
+            ionTail.setRotationFromQuaternion(quat);
+            dustTail.setRotationFromQuaternion(quat);
+            var near = Math.max(0.1, 1 - Math.min(1, pos.length() / (A_VIS * 1.15)));
+            ionTail.scale.set(1, 0.5 + near * 1.6, 1);
+            dustTail.scale.set(1, 0.4 + near * 1.2, 1);
+        }
+        function nearPerihelion(prog) {
+            // progress 0.5 is the perihelion point (opposite side from aphelion at 0/1).
+            var d = Math.min(Math.abs(prog - 0.5), 1 - Math.abs(prog - 0.5));
+            return d < 0.06;
+        }
+        function panelHtml() {
+            var p = preset();
+            var disintegrated = !p.survives && state.progress > 0.56;
+            var statusLine = disintegrated
+                ? '<p><b>This fragment did not survive perihelion</b> - it vaporized into dust at closest approach, the fate of most Kreutz comets.</p>'
+                : (p.survives && state.progress > 0.52 ? '<p><b>This one survived perihelion</b> and is now departing back toward the outer solar system.</p>' : '');
+            var html = '<h3>' + p.label + '</h3><p>' + p.fact + '</p>' + statusLine;
+            html += '<table class="w3-table w3-bordered">' +
+                '<tr><td>Perihelion distance</td><td>' + p.perihelionText + '</td></tr>' +
+                '<tr><td>Family orbital inclination</td><td>about 143 deg (retrograde)</td></tr>' +
+                '<tr><td>SOHO Kreutz discoveries (by Oct 2022)</td><td>3,800-plus (about 85% of 4,500-plus total SOHO comets)</td></tr>' +
+                '<tr><td>Discovery rate</td><td>200-plus per year, about 1 every 2 days</td></tr>' +
+                '</table>';
+            html += '<p class="t3d-note">Orbit shape and solar distance are compressed and the family fan is illustrative, not per-member measured data - this is an educational geometry visualization, not an N-body or ephemeris simulation. The three named comets\' perihelion distances and brightness figures are the real published values.</p>';
+            return html;
+        }
+        function presetButtons() {
+            for (var i = 0; i < T3D_KREUTZ_PRESETS.length; i++) {
+                var btn = document.getElementById('t3dKreutzBtn-' + T3D_KREUTZ_PRESETS[i].id);
+                if (btn) btn.className = 'w3-button w3-small ' + (i === state.presetIdx ? 'w3-amber' : 'w3-light-grey');
+            }
+        }
+        function apply() {
+            var pos = cometPos(state.progress);
+            nucleus.position.copy(pos);
+            orientTails(pos);
+            var p = preset();
+            var faded = !p.survives && state.progress > 0.56 && !nearPerihelion(state.progress);
+            nucleus.visible = !faded;
+            ionTail.visible = !faded;
+            dustTail.visible = !faded;
+            var slider = document.getElementById('t3dKreutzSlider');
+            var label = document.getElementById('t3dKreutzSliderLabel');
+            if (slider) slider.value = String(Math.round(state.progress * 100));
+            if (label) label.textContent = Math.round(state.progress * 100) + '%';
+            presetButtons();
+            t3dInfo(panelHtml());
+            t3dStatus(p.label + ' - drag to orbit, scroll to zoom.');
+            try { t3dSaveStore({ presetIdx: state.presetIdx }); } catch (e) {}
+        }
+        function setPreset(i) { state.presetIdx = Math.max(0, Math.min(T3D_KREUTZ_PRESETS.length - 1, i)); state.progress = 0.02; apply(); }
+        function setProgress(p) { state.progress = Math.max(0, Math.min(1, p)); apply(); }
+
+        for (var bi = 0; bi < T3D_KREUTZ_PRESETS.length; bi++) {
+            (function (i) {
+                var btn = document.getElementById('t3dKreutzBtn-' + T3D_KREUTZ_PRESETS[i].id);
+                if (btn) btn.addEventListener('click', function () { setPreset(i); });
+            })(bi);
+        }
+        var playBtn = document.getElementById('t3dKreutzPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            state.playing = !state.playing;
+            playBtn.textContent = state.playing ? 'Pause sweep' : 'Play sweep';
+        });
+        var slider = document.getElementById('t3dKreutzSlider');
+        if (slider) slider.addEventListener('input', function () {
+            state.playing = false;
+            if (playBtn) playBtn.textContent = 'Play sweep';
+            setProgress(parseFloat(slider.value || '2') / 100);
+        });
+
+        var stored = t3dLoadStore();
+        if (typeof stored.presetIdx === 'number') state.presetIdx = Math.max(0, Math.min(T3D_KREUTZ_PRESETS.length - 1, stored.presetIdx));
+        apply();
+
+        return function animate(dt) {
+            if (state.playing) {
+                var next = state.progress + (dt / 1000) * 0.05;
+                if (next > 1) next = 0.02;
+                setProgress(next);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { kreutzsungrazingcomets: 't3dKreutzControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { kreutzsungrazingcomets: { radius: 22, maxR: 70, minR: 6, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dKreutzSungrazers(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

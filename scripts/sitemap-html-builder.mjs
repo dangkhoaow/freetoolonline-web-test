@@ -171,7 +171,7 @@ function classifyGuide(slug) {
   if (/(^|-)(snake|tank|garden-defense|voxel|city-time-machine|sky-gates|2048|city-drive|browser-game|how-to-play|fps|freedoom|highway|hover|shooter|horde|procedural|server-survival|survival-td|connect-four|connect-four-ai|elm-street|elm-street-delivery)/.test(slug)) {
     return 'games';
   }
-  if (/(^|-)(solar-system|black-hole|galaxy|planet|space-3d|earth-3d|sagittarius|radio-burst|red-giant|supernova|chandrasekhar|standard-candle|helioseismology|pulsar|stellar-spectral|yorp)/.test(slug)) {
+  if (/(^|-)(solar-system|black-hole|galaxy|planet|space-3d|earth-3d|sagittarius|radio-burst|red-giant|supernova|chandrasekhar|standard-candle|helioseismology|pulsar|stellar-spectral|yorp|kreutz|sungrazing)/.test(slug)) {
     return 'space';
   }
   // dinosaur-loop (2026-07-15): guides for the /dinosaur-3d cluster. Species

@@ -786,6 +786,7 @@ try {
     { title: "Local Bubble Interstellar Cavity 3D Explorer", url: "https://freetoolonline.com/space-3d/local-bubble-interstellar-cavity.html", include: !1, tags: "space-3d" },
     { title: "Hubble Tuning Fork 3D Explorer", url: "https://freetoolonline.com/space-3d/hubble-tuning-fork.html", include: !1, tags: "space-3d" },
     { title: "Transit-Timing Variation 3D Explorer", url: "https://freetoolonline.com/space-3d/transit-timing-variation.html", include: !1, tags: "space-3d" },
+    { title: "Kreutz Sungrazing Comets 3D Explorer", url: "https://freetoolonline.com/space-3d/kreutz-sungrazing-comets.html", include: !1, tags: "space-3d" },
     { title: "Parker Solar Probe 3D Explorer", url: "https://freetoolonline.com/space-3d/parker-solar-probe.html", include: !1, tags: "space-3d" },
     { title: "Rosetta + Philae 67P 3D Explorer", url: "https://freetoolonline.com/space-3d/rosetta-philae-67p.html", include: !1, tags: "space-3d" },
     { title: "Space Elevator Physics 3D Explorer", url: "https://freetoolonline.com/space-3d/space-elevator-physics.html", include: !1, tags: "space-3d" },
