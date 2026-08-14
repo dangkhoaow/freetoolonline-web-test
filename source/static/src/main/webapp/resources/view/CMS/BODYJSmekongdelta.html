@@ -1,0 +1,366 @@
+<script>
+    // 3D scene archetype skeleton (mekong-delta) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only (mekong-delta).
+    // All geometry is procedural. places-3d cluster, authored 2026-08-14.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey hydrology.
+    // Published figures (encyclopedic consensus, cross-checked 2026-08-14):
+    //   - Mekong Delta area about 40,000-43,000 sq km in southwest Vietnam
+    //   - Population about 18-19 million people across the delta region
+    //   - Historically nine distributary mouths (Cuu Long, "Nine Dragons");
+    //     two have since silted shut, commonly seven to eight open today
+    //   - Produces roughly half of Vietnam's rice output
+    //   - Mekong River commonly cited about 4,350-4,900 km, through China,
+    //     Myanmar, Laos, Thailand, Cambodia and Vietnam
+    //   - Two main branches on entering Vietnam: Tien Giang (Mekong proper)
+    //     and Hau Giang (Bassac)
+    //   - Cai Rang floating market near Can Tho, commonly several hundred
+    //     boats trading each morning
+    //   - Seasonal monsoon flood pulse, roughly June to November
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'mekong-delta';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesmekongdelta'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a2436, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+        var key = new THREE.DirectionalLight(0xfff2d0, 1.0);
+        key.position.set(-9, 18, -5);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 })), geo: geo, pos: pos };
+        }
+
+        // Braided-delta fan: x = east-west (across the delta), z = north-south
+        // (north = inland/Cambodia direction, south = the coast and the open
+        // sea beyond it). A single trunk (all 9 centerlines coincide) enters
+        // at the north edge, converges through NORTH_Z..FAN_Z, then fans out
+        // to 9 distributary mouths spread across the coastline - the real
+        // Mekong splits into two branches on entering Vietnam (Tien Giang /
+        // Hau Giang) which further divide toward the sea; this scene
+        // simplifies that to one converge-then-fan network, matching the
+        // "nine mouths" (Cuu Long) figure the page's own copy describes.
+        var NORTH_Z = -9, FAN_Z = -3, SEA_Z = 3, MOUTH_Z = 6;
+        var N_CHANNELS = 9, NORTH_H = 0.5, BASE_HALF = 0.20, WIDEN_AMT = 0.35, GROOVE_MAX = 0.22, LEVEE_H = 0.06;
+        var MOUTH_X = [];
+        for (var mi = 0; mi < N_CHANNELS; mi++) {
+            MOUTH_X.push(-8 + mi * 2 + (hash2(mi * 3.1 + 4.2, 7.7) - 0.5) * 0.6);
+        }
+
+        function convergeFactor(z) { return smooth(NORTH_Z, FAN_Z, z); }
+        function meander(i, z) {
+            return (fbm(z * 0.22 + i * 3.7, i * 5.1 + 2, 3) - 0.5) * 1.3 * convergeFactor(z);
+        }
+        function centerlineX(i, z) { return MOUTH_X[i] * convergeFactor(z) + meander(i, z); }
+        function channelHalfWidth(z) { return BASE_HALF + WIDEN_AMT * smooth(FAN_Z, MOUTH_Z, z); }
+        function channelProx(x, z) {
+            var half = channelHalfWidth(z), best = 1e9;
+            for (var i = 0; i < N_CHANNELS; i++) {
+                var d = Math.abs(x - centerlineX(i, z)) / half;
+                if (d < best) best = d;
+            }
+            return { dn: best, half: half };
+        }
+        function plainHeight(z) {
+            if (z <= SEA_Z) { return NORTH_H * (1 - smooth(NORTH_Z, SEA_Z, z)); }
+            return -0.05 - 0.30 * smooth(SEA_Z, MOUTH_Z + 3, z);
+        }
+        function height(x, z) {
+            var plain = plainHeight(z);
+            var micro = 0.025 * (fbm(x * 1.1 + 5, z * 1.1 + 2, 3) - 0.5);
+            var prox = channelProx(x, z);
+            var grooveT = 1 - smooth(0, 1, prox.dn);
+            var lv = 0;
+            if (prox.dn >= 1 && prox.dn < 2.4) {
+                var up = smooth(1.0, 1.6, prox.dn), down = 1 - smooth(1.6, 2.4, prox.dn);
+                lv = LEVEE_H * Math.max(0, Math.min(up, down));
+            }
+            return plain + micro + lv - GROOVE_MAX * grooveT;
+        }
+
+        var col = {
+            land: new THREE.Color(0x5d8f4c), flood: new THREE.Color(0x3f7f8c),
+            bank: new THREE.Color(0x9c8a5e), mud: new THREE.Color(0x7a6038),
+            brackish: new THREE.Color(0x2f7d8a),
+            seaShallow: new THREE.Color(0x1f6f86), seaDeep: new THREE.Color(0x0b3550)
+        };
+        var floodOn = false, marketOn = true;
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.6 + 3, z * 1.6 + 8, 3);
+            var prox = channelProx(x, z);
+            var inChan = 1 - smooth(0.5, 1.0, prox.dn);
+            if (inChan > 0.03) {
+                var mouthT = smooth(FAN_Z, MOUTH_Z, z);
+                var water = col.mud.clone().lerp(col.brackish, mouthT);
+                if (inChan < 0.85) { water.lerp(col.bank, (1 - inChan) * 0.7); }
+                c.copy(water).multiplyScalar(n);
+                return;
+            }
+            if (h < -0.02) {
+                var depthT = smooth(-0.02, -0.34, h);
+                c.copy(col.seaShallow).lerp(col.seaDeep, depthT).multiplyScalar(n);
+                return;
+            }
+            if (floodOn) {
+                var lowT = 1 - smooth(0.0, 0.22, h);
+                var nearT = 1 - smooth(0.5, 1.8, prox.dn);
+                var floodT = Math.max(0, Math.min(1, Math.max(lowT, nearT * 0.75)));
+                c.copy(col.land).lerp(col.flood, floodT).multiplyScalar(n);
+            } else {
+                c.copy(col.land).multiplyScalar(n);
+            }
+        }
+        var terrainInfo = makeTerrain(20, 22, shell.low ? 110 : 170, shell.low ? 120 : 190, height, color);
+        scene.add(terrainInfo.mesh);
+
+        // Open-sea water surface: translucent plane over the whole domain,
+        // near sea level - matches the plain's own height cue instead of a
+        // separate hard-edged shoreline mesh.
+        var water = new THREE.Mesh(
+            new THREE.PlaneGeometry(20, 22),
+            new THREE.MeshStandardMaterial({ color: 0x0d5a78, transparent: true, opacity: 0.28, roughness: 0.15, metalness: 0.1 })
+        );
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = -0.03;
+        scene.add(water);
+
+        // Cai Rang floating-market marker: sampled on a mid-delta distributary
+        // (standing in for the Hau Giang / Bassac branch near Can Tho) so the
+        // marker always lands on a real channel regardless of parameter tuning.
+        var MARKET_CH = 4, MARKET_Z = -0.6;
+        var marketX = centerlineX(MARKET_CH, MARKET_Z);
+        var marketY = height(marketX, MARKET_Z);
+        var marketGroup = new THREE.Group();
+        var boatColors = [0xd9502f, 0xe0a72f, 0x3f8f4a, 0xd9502f, 0xe0a72f];
+        for (var bi = 0; bi < 5; bi++) {
+            var bx = marketX + (hash2(bi + 3.1, 7.7) - 0.5) * 0.5;
+            var bz = MARKET_Z + (bi - 2) * 0.22;
+            var boat = new THREE.Mesh(
+                new THREE.BoxGeometry(0.14, 0.06, 0.08),
+                new THREE.MeshStandardMaterial({ color: boatColors[bi % boatColors.length], roughness: 0.6 })
+            );
+            boat.position.set(bx, marketY + 0.05, bz);
+            marketGroup.add(boat);
+        }
+        var marketRing = new THREE.Mesh(
+            new THREE.RingGeometry(0.32, 0.46, 28),
+            new THREE.MeshBasicMaterial({ color: 0xf2b84a, transparent: true, opacity: 0.6, side: THREE.DoubleSide })
+        );
+        marketRing.rotation.x = -Math.PI / 2;
+        marketRing.position.set(marketX, marketY + 0.02, MARKET_Z);
+        marketGroup.add(marketRing);
+        scene.add(marketGroup);
+
+        function recolor() {
+            var pos = terrainInfo.pos, geo = terrainInfo.geo, colors = geo.attributes.color, col2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                color(col2, pos.getY(i), pos.getX(i), pos.getZ(i));
+                colors.setXYZ(i, col2.r, col2.g, col2.b);
+            }
+            colors.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Mekong Delta: one river becomes many</h3>' +
+                '<p>A single trunk enters from inland Cambodia, converges into one channel, then fans into a network of muddy distributary channels crossing a flat, low-lying plain before reaching the South China Sea.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Delta area</td><td>about 40,000-43,000 sq km in southwest Vietnam, depending on the source</td></tr>' +
+                '<tr><td>Population</td><td>about 18-19 million people across the delta region</td></tr>' +
+                '<tr><td>Distributary mouths</td><td>historically nine (Cuu Long, "Nine Dragons"); commonly seven to eight open today</td></tr>' +
+                '<tr><td>Rice production</td><td>roughly half of Vietnam\'s rice output</td></tr>' +
+                '<tr><td>Mekong River length</td><td>commonly cited about 4,350-4,900 km across six countries</td></tr>' +
+                '<tr><td>Main branches</td><td>Tien Giang (Mekong proper) and Hau Giang (Bassac)</td></tr>' +
+                '<tr><td>Flood season</td><td>a seasonal monsoon flood pulse, roughly June to November</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the channel network, plain profile, and vertical scale are schematic teaching cues, not survey hydrology.</p>';
+        }
+
+        function apply() {
+            marketGroup.visible = marketOn;
+            var fb = document.getElementById('t3dPmdFloodBtn');
+            if (fb) fb.textContent = 'Flood season: ' + (floodOn ? 'On' : 'Off');
+            var mb = document.getElementById('t3dPmdMarketBtn');
+            if (mb) mb.textContent = 'Floating market marker: ' + (marketOn ? 'On' : 'Off');
+            recolor();
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ floodOn: floodOn, marketOn: marketOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.floodOn === 'boolean') floodOn = store.floodOn;
+        if (typeof store.marketOn === 'boolean') marketOn = store.marketOn;
+        apply();
+
+        var floodBtn = document.getElementById('t3dPmdFloodBtn');
+        if (floodBtn) floodBtn.addEventListener('click', function () { floodOn = !floodOn; apply(); });
+        var marketBtn = document.getElementById('t3dPmdMarketBtn');
+        if (marketBtn) marketBtn.addEventListener('click', function () { marketOn = !marketOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle flood season or the floating market marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmekongdelta: 't3dPmdControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesmekongdelta: { radius: 27, maxR: 60, minR: 8, phi: 0.6, theta: 0.42, targetY: -0.6 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
