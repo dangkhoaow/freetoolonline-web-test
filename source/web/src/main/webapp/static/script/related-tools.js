@@ -936,6 +936,7 @@ try {
     { title: "AI Grammar Checker - Private, In Your Browser", url: "https://freetoolonline.com/utility-tools/grammar-checker.html", include: !1, tags: "utility" },
     { title: "AI Paraphrasing Tool - Private, In Your Browser", url: "https://freetoolonline.com/utility-tools/paraphrasing-tool.html", include: !1, tags: "utility" },
     { title: "Chat with PDF - Ask Your PDF Questions Privately", url: "https://freetoolonline.com/pdf-tools/chat-with-pdf.html", include: !1, tags: "pdf" },
+    { title: "Blur Faces in Photos", url: "https://freetoolonline.com/image-tools/face-blur.html", include: !1, tags: "image-editing" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

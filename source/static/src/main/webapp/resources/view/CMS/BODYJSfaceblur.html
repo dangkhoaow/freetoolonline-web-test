@@ -1,0 +1,394 @@
+<script>
+    // In-browser FACE BLUR (face-blur) - UltraFace detection via ONNX Runtime Web
+    // + canvas pixelate/gaussian. 100% client-side: the PHOTO never leaves the
+    // browser; only the ~1.3 MB detector downloads once, on an explicit click.
+    // Registry Gate-H entry: face_blur_ultraface_onnx (verified 2026-08-14 in a
+    // real headless-Chromium probe - I/O signature, detection on two public-
+    // domain portraits, and a visual blur composite all confirmed before this
+    // skeleton was authored).
+    //
+    // ENGINE (raw onnxruntime-web, NOT transformers.js - UltraFace is not a
+    // transformers.js pipeline task): model onnx/models UltraFace
+    // `version-RFB-320.onnx` (MIT, 1,270,727 bytes, sha256-pinned below and
+    // VERIFIED after every fetch). I/O: input `input` float32 [1,3,240,320]
+    // planar RGB normalized (px-127)/128; outputs `scores` float32 [1,4420,2]
+    // (bg/face confidence pairs) + `boxes` float32 [1,4420,4] (corner-form
+    // x1,y1,x2,y2 normalized 0..1). Post: face-confidence > 0.7, greedy NMS at
+    // IoU 0.4, ~12% padding per side, blur applied on the FULL-RESOLUTION
+    // canvas so the rest of the photo stays pixel-perfect.
+    //
+    // LADDER (ai-local class rule 1): (1) no Chrome Built-in tier - no face-
+    // detection API ships broadly in any browser; (2) on-device UltraFace
+    // (this); (3) a deterministic no-download BRUSH fallback - paint any region
+    // (a missed face, a licence plate, a tattoo) and blur just that area with
+    // zero network. The G16 zero-interaction/zero-download demo (a REAL
+    // before/after pair produced by this same detector) is baked into the
+    // paired BODYHTML and renders on load without touching this script.
+    //
+    // Framework contract: doAfterPageRendered(); no top-level DOM. web.localUpload
+    // = false (plain <input type=file>, no server upload widget).
+
+    web.localUpload = false;
+
+    var FB_SLUG = 'face-blur';
+    var FB_ORT_CDN = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js';
+    var FB_ORT_WASM_DIR = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
+    var FB_MODEL_URL = 'https://media.githubusercontent.com/media/onnx/models/main/validated/vision/body_analysis/ultraface/models/version-RFB-320.onnx';
+    var FB_MODEL_SHA256 = '34cd7e60aeff28744c657de7a3dc64e872d506741de66987f3426f2b79f88017';
+    var FB_CACHE_NAME = 'ftol-ai-models';
+    var FB_IN_W = 320, FB_IN_H = 240;   // fixed model input size
+    var FB_CONF = 0.7;                  // face-confidence threshold
+    var FB_NMS_IOU = 0.4;
+
+    var fbOrtPromise = null;
+    function fbLoadOrt() {
+        if (window.ort) return Promise.resolve(window.ort);
+        if (fbOrtPromise) return fbOrtPromise;
+        fbOrtPromise = new Promise(function (res, rej) {
+            var s = document.createElement('script');
+            s.src = FB_ORT_CDN;
+            s.onload = function () {
+                try {
+                    window.ort.env.wasm.numThreads = 1;   // avoid COOP/COEP requirement
+                    window.ort.env.wasm.simd = true;
+                    window.ort.env.wasm.proxy = false;
+                    window.ort.env.wasm.wasmPaths = FB_ORT_WASM_DIR;
+                    res(window.ort);
+                } catch (e) { rej(e); }
+            };
+            s.onerror = function () { rej(new Error('Could not load the ONNX runtime from the CDN.')); };
+            document.head.appendChild(s);
+        });
+        return fbOrtPromise;
+    }
+
+    async function fbSha256Hex(bytes) {
+        var digest = await crypto.subtle.digest('SHA-256', bytes);
+        var arr = new Uint8Array(digest);
+        var hex = '';
+        for (var i = 0; i < arr.length; i++) hex += (arr[i] < 16 ? '0' : '') + arr[i].toString(16);
+        return hex;
+    }
+
+    // Fetch the model bytes with Cache API storage (repeat visits skip the
+    // network) and a MANDATORY sha256 integrity check on every load path.
+    async function fbFetchModelBytes(setStatus) {
+        var resp = null, fromCache = false;
+        try {
+            if (window.caches) {
+                var cache = await caches.open(FB_CACHE_NAME);
+                var hit = await cache.match(FB_MODEL_URL);
+                if (hit) { resp = hit; fromCache = true; }
+            }
+        } catch (e) { /* private mode / cache unavailable - fall through to network */ }
+        if (!resp) {
+            setStatus('Downloading the face detector (about 1.3 MB, one time - it is cached for next visit) ...');
+            resp = await fetch(FB_MODEL_URL);
+            if (!resp.ok) throw new Error('model download failed (HTTP ' + resp.status + ')');
+            try {
+                if (window.caches) {
+                    var cache2 = await caches.open(FB_CACHE_NAME);
+                    await cache2.put(FB_MODEL_URL, resp.clone());
+                }
+            } catch (e) { /* cache write is best-effort */ }
+        } else {
+            setStatus('Loading the face detector from your browser cache ...');
+        }
+        var bytes = new Uint8Array(await resp.arrayBuffer());
+        var hex = await fbSha256Hex(bytes);
+        if (hex !== FB_MODEL_SHA256) {
+            try { if (fromCache && window.caches) { var c3 = await caches.open(FB_CACHE_NAME); await c3.delete(FB_MODEL_URL); } } catch (e) { }
+            throw new Error('the downloaded detector failed its integrity check - please try again');
+        }
+        return bytes;
+    }
+
+    var fbSessionPromise = null;
+    function fbLoadModel(setStatus) {
+        if (fbSessionPromise) return fbSessionPromise;
+        fbSessionPromise = (async function () {
+            var ort = await fbLoadOrt();
+            var bytes = await fbFetchModelBytes(setStatus);
+            setStatus('Starting the face detector in your browser ...');
+            var session = await ort.InferenceSession.create(bytes, { executionProviders: ['wasm'] });
+            return { ort: ort, session: session };
+        })();
+        fbSessionPromise.catch(function () { fbSessionPromise = null; }); // allow retry after a failure
+        return fbSessionPromise;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('faceBlurTool');
+        if (!root) return; // not a face-blur page
+
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="fbFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div id="fbStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Choose a photo. It never leaves your browser - everything runs on your device.</div>' +
+            '<div class="w3-row" style="margin:6px 0;">' +
+              '<label style="font-size:.9em;color:#555;">Style <select id="fbMode" class="w3-select w3-border w3-small" style="width:auto;padding:2px 6px;"><option value="pixelate" selected>Pixelate</option><option value="gaussian">Smooth blur</option></select></label> ' +
+              '<label style="font-size:.9em;color:#555;">Strength <input type="range" id="fbStrength" min="1" max="10" value="5" style="vertical-align:middle;width:110px;"></label>' +
+            '</div>' +
+            '<div class="w3-row" style="margin:6px 0;">' +
+              '<label style="font-size:.9em;color:#555;">Brush size <input type="range" id="fbBrush" min="8" max="80" value="34" style="vertical-align:middle;width:110px;"></label> ' +
+              '<button id="fbClear" type="button" class="w3-button w3-white w3-border w3-small" disabled>Clear brush</button>' +
+            '</div>' +
+            '<div class="w3-row" style="position:relative;display:inline-block;max-width:100%;"><canvas id="fbCanvas" class="outputImgs" style="visibility:visible !important;max-width:90vw;touch-action:none;border:1px solid #ddd;cursor:crosshair;background:#f4f4f4;"></canvas></div>' +
+            '<div style="margin-top:8px;">' +
+              '<button id="fbRunAi" type="button" class="w3-button w3-green w3-large" disabled>Blur all faces (AI, ~1.3 MB one-time download)</button> ' +
+              '<button id="fbRunBrush" type="button" class="w3-button w3-amber" disabled>Blur painted area (no download)</button> ' +
+              '<a id="fbDownload" class="w3-button w3-blue" style="display:none;">Download PNG</a>' +
+            '</div>' +
+            '<div id="fbErr" style="color:#b00020;margin-top:6px;min-height:1em;"></div>';
+
+        var fileEl = root.querySelector('#fbFile');
+        var canvas = root.querySelector('#fbCanvas');
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+        var modeEl = root.querySelector('#fbMode');
+        var strengthEl = root.querySelector('#fbStrength');
+        var brushEl = root.querySelector('#fbBrush');
+        var clearBtn = root.querySelector('#fbClear');
+        var aiBtn = root.querySelector('#fbRunAi');
+        var brushBtn = root.querySelector('#fbRunBrush');
+        var dl = root.querySelector('#fbDownload');
+        var statusEl = root.querySelector('#fbStatus');
+        var errEl = root.querySelector('#fbErr');
+
+        function setStatus(m) { statusEl.textContent = m; }
+        function setErr(m) { errEl.textContent = m || ''; }
+
+        var natW = 0, natH = 0;      // native image size
+        var baseImage = null;        // current ImageData (native res)
+        var maskArr = null;          // Uint8Array natW*natH: 1 = painted, 0 = untouched
+        var painting = false, hasMask = false, currentURL = null;
+
+        function redraw() {
+            if (!baseImage) return;
+            ctx.putImageData(baseImage, 0, 0);
+            if (hasMask) {
+                var overlay = ctx.getImageData(0, 0, natW, natH);
+                var d = overlay.data;
+                for (var i = 0; i < maskArr.length; i++) {
+                    if (maskArr[i]) { // tint painted pixels blue at ~45%
+                        d[i * 4] = Math.round(d[i * 4] * 0.55 + 30 * 0.45);
+                        d[i * 4 + 1] = Math.round(d[i * 4 + 1] * 0.55 + 90 * 0.45);
+                        d[i * 4 + 2] = Math.round(d[i * 4 + 2] * 0.55 + 220 * 0.45);
+                    }
+                }
+                ctx.putImageData(overlay, 0, 0);
+            }
+        }
+
+        function loadFile(f) {
+            if (!f) return;
+            setErr(''); if (dl) dl.style.display = 'none';
+            if (currentURL) URL.revokeObjectURL(currentURL);
+            currentURL = URL.createObjectURL(f);
+            var img = new Image();
+            img.onload = function () {
+                natW = img.naturalWidth; natH = img.naturalHeight;
+                canvas.width = natW; canvas.height = natH;
+                ctx.clearRect(0, 0, natW, natH); ctx.drawImage(img, 0, 0);
+                baseImage = ctx.getImageData(0, 0, natW, natH);
+                maskArr = new Uint8Array(natW * natH);
+                hasMask = false;
+                aiBtn.disabled = false; brushBtn.disabled = false; clearBtn.disabled = false;
+                setStatus('Click "Blur all faces (AI)" - or paint an area by hand and use the no-download button.');
+            };
+            img.onerror = function () { setErr('Could not read that image.'); };
+            img.src = currentURL;
+        }
+
+        fileEl.addEventListener('change', function () { loadFile(fileEl.files && fileEl.files[0]); });
+
+        // Brush painting: client coords -> image coords, stamp a filled disc into maskArr.
+        function paintAt(clientX, clientY) {
+            if (!baseImage) return;
+            var rect = canvas.getBoundingClientRect();
+            var sx = natW / rect.width, sy = natH / rect.height;
+            var cx = Math.round((clientX - rect.left) * sx);
+            var cy = Math.round((clientY - rect.top) * sy);
+            var r = Math.max(4, Math.round(parseInt(brushEl.value, 10) * sx));
+            var r2 = r * r;
+            for (var y = Math.max(0, cy - r); y < Math.min(natH, cy + r); y++) {
+                for (var x = Math.max(0, cx - r); x < Math.min(natW, cx + r); x++) {
+                    var dx = x - cx, dy = y - cy;
+                    if (dx * dx + dy * dy <= r2) maskArr[y * natW + x] = 1;
+                }
+            }
+            hasMask = true;
+            redraw();
+        }
+        function evtDown(e) { painting = true; e.preventDefault(); var t = e.touches ? e.touches[0] : e; paintAt(t.clientX, t.clientY); }
+        function evtMove(e) { if (!painting) return; e.preventDefault(); var t = e.touches ? e.touches[0] : e; paintAt(t.clientX, t.clientY); }
+        function evtUp() { painting = false; }
+        canvas.addEventListener('mousedown', evtDown);
+        canvas.addEventListener('mousemove', evtMove);
+        window.addEventListener('mouseup', evtUp);
+        canvas.addEventListener('touchstart', evtDown, { passive: false });
+        canvas.addEventListener('touchmove', evtMove, { passive: false });
+        canvas.addEventListener('touchend', evtUp);
+
+        clearBtn.addEventListener('click', function () {
+            if (!maskArr) return;
+            maskArr.fill(0); hasMask = false; redraw(); setErr(''); if (dl) dl.style.display = 'none';
+            setStatus('Brush cleared. Paint over anything you want blurred, or use the AI button for faces.');
+        });
+
+        function finish(name) {
+            canvas.toBlob(function (blob) {
+                var u = URL.createObjectURL(blob);
+                dl.href = u; dl.download = name; dl.style.display = '';
+            }, 'image/png');
+        }
+
+        // Blur one rectangular region of baseImage IN PLACE on an offscreen
+        // canvas holding the current image. mode: 'pixelate' | 'gaussian'.
+        // Returns nothing; mutates workCanvas.
+        function blurRegion(workCanvas, bx, by, bw, bh) {
+            if (bw < 2 || bh < 2) return;
+            var wctx = workCanvas.getContext('2d');
+            var s = parseInt(strengthEl.value, 10) || 5;
+            if (modeEl.value === 'gaussian') {
+                var rad = Math.max(2, Math.round(Math.max(bw, bh) * (0.02 + 0.008 * s)));
+                var pad = rad * 2;
+                var tx = Math.max(0, bx - pad), ty = Math.max(0, by - pad);
+                var tw = Math.min(workCanvas.width, bx + bw + pad) - tx;
+                var th = Math.min(workCanvas.height, by + bh + pad) - ty;
+                var tmp = document.createElement('canvas');
+                tmp.width = tw; tmp.height = th;
+                var tctx = tmp.getContext('2d');
+                tctx.filter = 'blur(' + rad + 'px)';
+                tctx.drawImage(workCanvas, tx, ty, tw, th, 0, 0, tw, th);
+                tctx.filter = 'none';
+                wctx.drawImage(tmp, bx - tx, by - ty, bw, bh, bx, by, bw, bh);
+            } else {
+                var px = Math.max(2, Math.round(bw * (0.03 + 0.012 * s)));
+                var tmp2 = document.createElement('canvas');
+                tmp2.width = Math.max(1, Math.round(bw / px));
+                tmp2.height = Math.max(1, Math.round(bh / px));
+                var t2 = tmp2.getContext('2d');
+                t2.drawImage(workCanvas, bx, by, bw, bh, 0, 0, tmp2.width, tmp2.height);
+                wctx.imageSmoothingEnabled = false;
+                wctx.drawImage(tmp2, 0, 0, tmp2.width, tmp2.height, bx, by, bw, bh);
+                wctx.imageSmoothingEnabled = true;
+            }
+        }
+
+        function workCanvasFromBase() {
+            var wc = document.createElement('canvas');
+            wc.width = natW; wc.height = natH;
+            wc.getContext('2d').putImageData(baseImage, 0, 0);
+            return wc;
+        }
+
+        function commit(workCanvas, doneMsg, fileName) {
+            baseImage = workCanvas.getContext('2d').getImageData(0, 0, natW, natH);
+            canvas.width = natW; canvas.height = natH;
+            ctx.putImageData(baseImage, 0, 0);
+            hasMask = false; if (maskArr) maskArr.fill(0);
+            finish(fileName);
+            setStatus(doneMsg);
+        }
+
+        // TIER 2: on-device UltraFace detection -> blur every padded face box.
+        aiBtn.addEventListener('click', async function () {
+            if (!baseImage) { setErr('Choose a photo first.'); return; }
+            setErr(''); aiBtn.disabled = true; brushBtn.disabled = true;
+            try {
+                var m = await fbLoadModel(setStatus);
+                setStatus('Finding faces in your browser (nothing is uploaded) ...');
+                // preprocess: draw current image at 320x240, normalize (px-127)/128
+                var dc = document.createElement('canvas'); dc.width = FB_IN_W; dc.height = FB_IN_H;
+                var dcx = dc.getContext('2d');
+                dcx.drawImage(workCanvasFromBase(), 0, 0, FB_IN_W, FB_IN_H);
+                var pd = dcx.getImageData(0, 0, FB_IN_W, FB_IN_H).data;
+                var plane = FB_IN_W * FB_IN_H;
+                var f = new Float32Array(3 * plane);
+                for (var i = 0; i < plane; i++) {
+                    f[i] = (pd[i * 4] - 127) / 128;
+                    f[plane + i] = (pd[i * 4 + 1] - 127) / 128;
+                    f[2 * plane + i] = (pd[i * 4 + 2] - 127) / 128;
+                }
+                var feeds = {};
+                feeds[m.session.inputNames[0]] = new m.ort.Tensor('float32', f, [1, 3, FB_IN_H, FB_IN_W]);
+                var out = await m.session.run(feeds);
+                var scores = out[m.session.outputNames[0]];
+                var boxes = out[m.session.outputNames[1]];
+                var dets = [];
+                var n = scores.dims[1];
+                for (var k = 0; k < n; k++) {
+                    var conf = scores.data[k * 2 + 1];
+                    if (conf > FB_CONF) {
+                        dets.push({ conf: conf, x1: boxes.data[k * 4], y1: boxes.data[k * 4 + 1], x2: boxes.data[k * 4 + 2], y2: boxes.data[k * 4 + 3] });
+                    }
+                }
+                dets.sort(function (a, b) { return b.conf - a.conf; });
+                function iou(a, b) {
+                    var ix = Math.max(0, Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1));
+                    var iy = Math.max(0, Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1));
+                    var inter = ix * iy;
+                    var ua = (a.x2 - a.x1) * (a.y2 - a.y1) + (b.x2 - b.x1) * (b.y2 - b.y1) - inter;
+                    return ua > 0 ? inter / ua : 0;
+                }
+                var kept = [];
+                for (var d = 0; d < dets.length; d++) {
+                    var cand = dets[d], dup = false;
+                    for (var e = 0; e < kept.length; e++) { if (iou(kept[e], cand) > FB_NMS_IOU) { dup = true; break; } }
+                    if (!dup) kept.push(cand);
+                }
+                if (!kept.length) {
+                    setStatus('No face cleared the 70% confidence bar. Small, turned-away, or partly covered faces can be missed - paint over them with the brush and use "Blur painted area" instead.');
+                    return;
+                }
+                var wc = workCanvasFromBase();
+                for (var q = 0; q < kept.length; q++) {
+                    var kb = kept[q];
+                    var padX = (kb.x2 - kb.x1) * 0.12, padY = (kb.y2 - kb.y1) * 0.12;
+                    var bx = Math.round(Math.max(0, kb.x1 - padX) * natW);
+                    var by = Math.round(Math.max(0, kb.y1 - padY) * natH);
+                    var bw = Math.round(Math.min(1, kb.x2 + padX) * natW) - bx;
+                    var bh = Math.round(Math.min(1, kb.y2 + padY) * natH) - by;
+                    blurRegion(wc, bx, by, bw, bh);
+                }
+                commit(wc, kept.length + (kept.length === 1 ? ' face' : ' faces') + ' blurred on your device - no upload. Run again, brush extra areas, or download the PNG.', 'faces-blurred.png');
+            } catch (err) {
+                setErr('Could not run the face detector: ' + (err && err.message ? err.message : String(err)) + '. The brush + "Blur painted area (no download)" path still works.');
+            } finally { aiBtn.disabled = false; brushBtn.disabled = false; }
+        });
+
+        // TIER 3 (deterministic, zero network): blur exactly the painted pixels.
+        brushBtn.addEventListener('click', function () {
+            if (!baseImage) { setErr('Choose a photo first.'); return; }
+            if (!hasMask) { setErr('Paint over the area you want blurred first.'); return; }
+            setErr('');
+            // bounding box of the painted mask
+            var minX = natW, minY = natH, maxX = -1, maxY = -1;
+            for (var y = 0; y < natH; y++) {
+                for (var x = 0; x < natW; x++) {
+                    if (maskArr[y * natW + x]) {
+                        if (x < minX) minX = x; if (x > maxX) maxX = x;
+                        if (y < minY) minY = y; if (y > maxY) maxY = y;
+                    }
+                }
+            }
+            if (maxX < 0) { setErr('Paint over the area you want blurred first.'); return; }
+            var wc = workCanvasFromBase();
+            blurRegion(wc, minX, minY, maxX - minX + 1, maxY - minY + 1);
+            // copy back ONLY painted pixels so the blur follows the brush shape
+            var blurred = wc.getContext('2d').getImageData(0, 0, natW, natH).data;
+            var result = ctx.createImageData(natW, natH);
+            var bd = baseImage.data;
+            for (var i2 = 0; i2 < natW * natH; i2++) {
+                var src = maskArr[i2] ? blurred : bd;
+                result.data[i2 * 4] = src[i2 * 4];
+                result.data[i2 * 4 + 1] = src[i2 * 4 + 1];
+                result.data[i2 * 4 + 2] = src[i2 * 4 + 2];
+                result.data[i2 * 4 + 3] = 255;
+            }
+            var wc2 = document.createElement('canvas');
+            wc2.width = natW; wc2.height = natH;
+            wc2.getContext('2d').putImageData(result, 0, 0);
+            commit(wc2, 'Painted area blurred - instant, no download, nothing uploaded. Paint more, run the AI on faces, or download the PNG.', 'area-blurred.png');
+        });
+    }
+</script>

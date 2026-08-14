@@ -16241,6 +16241,7 @@ export const ALIAS_ROUTES = {
   '/grammar-checker.html': '/utility-tools/grammar-checker.html',
   '/paraphrasing-tool.html': '/utility-tools/paraphrasing-tool.html',
   '/chat-with-pdf.html': '/pdf-tools/chat-with-pdf.html',
+  '/face-blur.html': '/image-tools/face-blur.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28931,6 +28932,7 @@ export const JSP_BY_ROUTE = {
   '/utility-tools/grammar-checker.html': 'utility/grammar-checker.jsp',
   '/utility-tools/paraphrasing-tool.html': 'utility/paraphrasing-tool.jsp',
   '/pdf-tools/chat-with-pdf.html': 'pdf/chat-with-pdf.jsp',
+  '/image-tools/face-blur.html': 'convert/face-blur.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
