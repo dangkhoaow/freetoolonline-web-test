@@ -120,26 +120,98 @@
     const TEST_ULD_SIZE_MB = 1;
     const DEFAULT_ULD_PARALLEL = 4;
     var IS_ADS_INIT = false;
+    /* Identity of the no-op `loadAds` stub declared in the page bootstrap, captured
+     * HERE because this script runs before module-loader.js can reassign it.
+     * module-loader.js is fetched ASYNCHRONOUSLY (loadScript() inside startScripts()),
+     * so `loadAds` can still be the stub when an ad trigger fires. Comparing identity
+     * is how we tell "the real loader is ready" from "still the stub" without depending
+     * on anything inside the minified bundle. See initAdsOnce() below. */
+    var ADS_LOADER_STUB = (typeof loadAds === 'function') ? loadAds : null;
 </script>
 <script src="https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/1.12.4/jquery.min.js"></script>
 <script>
+    /* -- AD INITIALISATION (one-shot) ---------------------------------------------
+     * Extracted from the first-user-interaction handler on 2026-08-14. The BODY of
+     * this function is byte-for-byte the previous logic; what changed is only WHEN
+     * it can run, plus one new bail-out. Two measured defects motivated it:
+     *
+     * DEFECT 1 - no trigger without interaction (render-rate 63%).
+     *   Ad init was reachable ONLY from the interaction handler below (click /
+     *   mousemove / keydown / touch...). No timer, no DOMContentLoaded, no scroll.
+     *   A visitor who landed, read and left without moving the mouse or tapping
+     *   NEVER requested an ad. Measured over 2026-07-16..08-13: AdSense served on
+     *   44,940 pageviews vs 71,301 GA4 human pageviews = 63.0%; the 37% shortfall
+     *   reproduced at 58-71% on every top-earning page, all correctly ad-enabled.
+     *   At $3.03 page-RPM that is ~$86/30d gross. Fixed by the retry timer below.
+     *
+     * DEFECT 2 - a trigger that fires TOO EARLY permanently killed the pageview.
+     *   module-loader.js (which assigns the real `loadAds`) is fetched async from
+     *   startScripts(), while the interaction handler is bound immediately. An early
+     *   mousemove therefore set IS_ADS_INIT = true and called the no-op STUB: no ad
+     *   request, no retry, and because isLoadAds was true the slots were not even
+     *   stripped - so the reader got empty reserved ad boxes for the whole pageview.
+     *   Fixed by the ADS_LOADER_STUB identity check, which bails WITHOUT consuming
+     *   the one-shot guard so a later trigger still succeeds.
+     *
+     * PRESERVED DELIBERATELY (do not "simplify" these away):
+     *   - the `disableAd` cookie path (:67) and the top-nav disable-ads button: when
+     *     ads are off, isLoadAds is false, so this function still takes the else
+     *     branch and strips .ad-section exactly as before. $("#disableAds").show()
+     *     stays inside the real loadAds in module-loader.js, untouched.
+     *   - the `?noads=1` escape hatch.
+     *   - the one-shot IS_ADS_INIT guard: adsbygoogle.push({}) must never run twice
+     *     for one slot.
+     * @returns {boolean} true when the one-shot decision was made (no retry needed).
+     */
+    function initAdsOnce() {
+        try {
+            if (IS_ADS_INIT) { return true; }
+            var slotsVisible = $('.ad-section > .adsbygoogle:visible').length > 0;
+            var adsWanted = isLoadAds && slotsVisible && getParamValue('noads') == null;
+            /* DEFECT 2 guard: the real loader has not been assigned yet. Do NOT set
+             * IS_ADS_INIT - return false so the retry timer / next interaction tries
+             * again once module-loader.js has parsed. */
+            if (adsWanted && ADS_LOADER_STUB !== null && loadAds === ADS_LOADER_STUB) {
+                return false;
+            }
+            IS_ADS_INIT = true;
+            isLoadAds = isLoadAds && slotsVisible;
+            if (isLoadAds && getParamValue('noads') == null) {
+                loadAds();
+            } else {
+                document.querySelectorAll('.ad-section' + (w_winds < 1000 ? ':not(.top-ad)' : '')).forEach(function(element) {
+                    element.remove();
+                });
+            }
+            return true;
+        } catch (e){}
+        return false;
+    }
+
     $(document).ready(function() {
         startScripts();
-        $(document).on("click dblclick mousedown mouseup mousemove mouseenter mouseleave keydown keyup touchstart touchmove touchend", function(event) {
-            try {
-                if (IS_ADS_INIT == false) {
-                    IS_ADS_INIT = true;
-                    isLoadAds = isLoadAds && $('.ad-section > .adsbygoogle:visible').length > 0;
-                    if (isLoadAds && getParamValue('noads') == null) {
-                        loadAds();
-                    } else {
-                        document.querySelectorAll('.ad-section' + (w_winds < 1000 ? ':not(.top-ad)' : '')).forEach(function(element) {
-                            element.remove();
-                        });
-                    }
-                }
-            } catch (e){}
+        /* Fast path, unchanged: the first real interaction initialises ads. `scroll`
+         * is added because a scroll-only reader is exactly the cohort DEFECT 1
+         * describes and it costs nothing to catch them immediately. */
+        $(document).on("scroll click dblclick mousedown mouseup mousemove mouseenter mouseleave keydown keyup touchstart touchmove touchend", function(event) {
+            initAdsOnce();
         });
+
+        /* DEFECT 1 + 2 fix: an interaction-independent retry. Runs until the decision
+         * is actually made, so it also covers the window where module-loader.js has
+         * not finished loading. Bounded (25 x 400ms = 10s) so it can never spin.
+         * No CLS risk: every slot's box is size-reserved before fill (.adslot_0 90px,
+         * .ad-panel 600px), and `ads-disabled` - the class that collapses those boxes -
+         * was already removed at :71 for opted-in visitors, so filling a reserved box
+         * shifts nothing. Kill switch: ?noads=1 still short-circuits inside
+         * initAdsOnce(). */
+        var adsRetryCount = 0;
+        var adsRetryTimer = setInterval(function() {
+            adsRetryCount += 1;
+            if (initAdsOnce() || adsRetryCount >= 25) {
+                clearInterval(adsRetryTimer);
+            }
+        }, 400);
 
         if (!isLoadAds || getParamValue('noads') == null) {
             $('html.main-html').removeClass('ads-init');
