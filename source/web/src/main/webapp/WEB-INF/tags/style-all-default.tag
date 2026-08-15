@@ -2814,4 +2814,270 @@ html.main-html.dark .w3-sand,html.main-html.dark .w3-khaki{background-color:#2d2
 .w3-border-yellow{border-color:#ffeb3b!important}
 .w3-border-teal{border-color:#009688!important}
 .w3-border-red{border-color:#f44336!important}
+
+/* ============================================================
+ * .ftol-client-tool - the shared "do it in your browser" box
+ * used by 9 in-browser sections across 8 BODYHTML fragments
+ * (heictojpg, extractgiftoimageframes, pdftoimages, imagestopdf,
+ *  flattenpdf x2, hdvideoconverter, joinpdffrommultiplefiles, zipfile).
+ *
+ * WHY THIS BLOCK EXISTS. Before 2026-08-15 there was NO shared CSS for
+ * this component at all - `grep -rl "client-disclosure" source/` matched
+ * 8 .html files and ZERO .css files, and `.stepHeading` (used by 6 of the
+ * 9 summaries) has no definition anywhere in the repo. So every ship
+ * picked its own container, grid, label style and download affordance,
+ * and 9 ships produced 4 container variants, 5 grid variants and 3
+ * download affordances for one identical feature.
+ *
+ * SYMPTOM (measured with Playwright/Chromium 145 against the real head
+ * order): every <select> inside these sections rendered 62.0px tall
+ * instead of 42px, and `input.w3-input` overflowed its section box by
+ * 2px (panel tools) or 18px (extractgif, zipfile).
+ *
+ * ROOT CAUSE. Chromium wraps <details> content in the pseudo-element
+ * ::details-content. The sitewide reset at line 329 of this file,
+ * `*,*:before,*:after{box-sizing:inherit}`, does NOT match that pseudo,
+ * so it keeps the UA default `content-box`, and every descendant of
+ * <details> inherits content-box from it. Declared height/width then get
+ * padding and border ADDED on top: 42 + 18 padding + 2 border = 62.
+ *
+ * ISOLATION TEST that proves it (same CSS, same markup, 3 branches):
+ *   inside <details>                          -> 62.0px, content-box
+ *   outside <details>                         -> 42.0px, border-box
+ *   inside <details> + box-sizing:border-box  -> 42.0px, border-box
+ * and getComputedStyle(details,'::details-content').boxSizing === 'content-box'.
+ * This also explains why the SAME w3-select class looks correct in the
+ * Settings modal and in the server row above - those are not inside a
+ * <details>.
+ *
+ * WHY RULE 1 MAKES THE DEFECT IMPOSSIBLE, not merely less likely: it
+ * re-asserts border-box on the component root, on every descendant, AND
+ * on ::details-content itself. There is no remaining path by which a
+ * child of this component can inherit content-box.
+ *
+ * CLS CONTRACT (CLAUDE.md requires CLS <= 0.1 at mobile-390, and the
+ * sitewide_stochastic_header_reflow defect is still OPEN, so this block
+ * must not add to it). Every box that JS later fills or reveals has its
+ * height reserved up front: .ftol-ct-status min-height 36px (JS writes
+ * progress text into an element that is 0px tall today), .ftol-ct-actions
+ * min-height 44px (the Download button is revealed with style.display=''),
+ * .ftol-ct-progzone min-height 26px. All controls carry an absolute
+ * height. This block adds 0 requests, 0 images and 0 web fonts.
+ *
+ * SCOPE. Cosmetic only, per operator decision 2026-08-15: it does not
+ * move the section, does not un-collapse <details>, does not touch any
+ * id, and does not touch the server upload flow.
+ *
+ * LABEL: ROOT_CAUSE
+ * ============================================================ */
+
+/* 1. ROOT-CAUSE RULE - must stay first in this block */
+.ftol-client-tool,
+.ftol-client-tool *,
+.ftol-client-tool *::before,
+.ftol-client-tool *::after { box-sizing: border-box; }
+.ftol-client-tool::details-content { box-sizing: border-box; }
+
+/* 2. CONTAINER - one treatment for all 9 sections. On <details> so the
+ *    collapsed state also has a frame (fixes the two tools that render
+ *    white-on-white today). */
+.ftol-client-tool {
+    display: block;
+    margin: 16px 0;
+    padding: 0 14px;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid #2196F3;
+    border-radius: 4px;
+    background: #f4f5f7;
+    color: inherit;
+}
+html.main-html.dark .ftol-client-tool {
+    border-color: #30363d;
+    border-left-color: #388bfd;
+    background: #12181f;
+}
+
+/* 3. SUMMARY - 44px hit area (WCAG target size), own chevron. */
+.ftol-ct-sum {
+    list-style: none;
+    cursor: pointer;
+    position: relative;
+    margin: 0 -14px;
+    padding: 12px 14px 12px 38px;
+    min-height: 44px;
+    line-height: 20px;
+    font-weight: 700;
+    font-size: 15px;
+}
+.ftol-ct-sum::-webkit-details-marker { display: none; }
+.ftol-ct-sum::before {
+    content: '\25B8';
+    position: absolute; left: 16px; top: 12px;
+    width: 12px; height: 20px; line-height: 20px;
+    transition: transform .15s ease;
+    color: #2196F3;
+}
+.ftol-client-tool[open] > .ftol-ct-sum::before { transform: rotate(90deg); }
+.ftol-ct-sum:hover { color: #1a73e8; }
+.ftol-ct-sum:focus-visible { outline: 2px solid #2196F3; outline-offset: -2px; }
+
+/* 3b. ADVANCED-OPTIONS variant. hdvideoconverter's disclosure is not a
+ *     "no upload" panel - that whole page is already client-side FFmpeg.wasm -
+ *     it is an advanced-encoding-options panel. Same geometry, neutral accent,
+ *     so a reader does not read it as a second processing path. */
+.ftol-client-tool.ftol-ct-adv { border-left-color: #94a3b8; }
+.ftol-client-tool.ftol-ct-adv .ftol-ct-sum::before { color: #64748b; }
+html.main-html.dark .ftol-client-tool.ftol-ct-adv { border-left-color: #4b5563; }
+
+/* 4. NOTE line under the summary */
+.ftol-ct-note { margin: 0 0 10px; font-size: 13px; line-height: 1.45; color: #64748b; }
+html.main-html.dark .ftol-ct-note { color: #9aa4b2; }
+
+/* 5. FILE ROW - width 100% + border-box ends the 18px overflow */
+.ftol-ct-file { margin: 0 0 12px; }
+.ftol-client-tool input[type=file] {
+    display: block; width: 100%; max-width: 100%;
+    height: 44px; padding: 10px; line-height: 22px;
+    border: 1px solid #cbd5e1; border-radius: 4px;
+    background: #fff; font-size: 14px;
+}
+html.main-html.dark .ftol-client-tool input[type=file] { background: #0d1117; border-color: #30363d; }
+
+/* 6. GRID - one rule serving 1, 2, 3 or 4 controls with no dead space.
+ *    auto-fit means a display:none cell leaves no gap, unlike the float
+ *    grid where 2 hidden cells still ate 67% of the row. */
+.ftol-ct-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px 16px;
+    margin: 0 0 12px;
+    float: none;
+}
+.ftol-ct-grid::before, .ftol-ct-grid::after { content: none; display: none; }
+.ftol-ct-cell {
+    float: none !important;
+    width: auto !important;
+    min-width: 0;
+    padding: 0;
+    min-height: 88px;   /* 40 label + 44 control + 4 gap */
+}
+@media (max-width: 480px) {
+    .ftol-ct-grid { grid-template-columns: 1fr; gap: 10px; }
+}
+
+/* 7. LABEL - single line, fixed height so neighbouring cells line up */
+.ftol-ct-label {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    height: 40px; line-height: 20px; margin: 0 0 4px;
+    font-size: 12px; font-weight: 600;
+    white-space: normal; overflow: hidden;
+    color: #475569;
+}
+html.main-html.dark .ftol-ct-label { color: #9aa4b2; }
+.ftol-ct-label.is-inline { height: auto; white-space: normal; font-weight: 400; }
+
+/* 8. SELECT - 44px, not 62px. Horizontal padding restored. */
+.ftol-client-tool select {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 44px; padding: 10px 12px;
+    border: 1px solid #cbd5e1; border-radius: 4px;
+    background: #fff; color: inherit;
+    font-size: 14px; line-height: 22px;
+}
+html.main-html.dark .ftol-client-tool select { background: #0d1117; border-color: #30363d; }
+
+/* 9. TEXT / NUMBER - same shell as select */
+.ftol-client-tool input[type=text],
+.ftol-client-tool input[type=number] {
+    display: block;
+    width: 100%; max-width: 100% !important;
+    height: 44px; padding: 10px 12px;
+    border: 1px solid #cbd5e1; border-radius: 4px;
+    background: #fff; font-size: 14px; line-height: 22px;
+}
+html.main-html.dark .ftol-client-tool input[type=text],
+html.main-html.dark .ftol-client-tool input[type=number] { background: #0d1117; border-color: #30363d; }
+
+/* 10. RANGE - 44px hit area, no stray underline from w3-input, thumb
+ *     matched to the site .slider styling. */
+.ftol-client-tool input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    display: block; width: 100%; height: 44px;
+    padding: 0; margin: 0;
+    border: 0 !important;
+    background: transparent; cursor: pointer;
+}
+.ftol-client-tool input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: #d3d3d3; }
+.ftol-client-tool input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: #d3d3d3; }
+.ftol-client-tool input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px; margin-top: -7px;
+    border: 0; border-radius: 50%; background: #232f3e; cursor: pointer;
+}
+.ftol-client-tool input[type=range]::-moz-range-thumb {
+    width: 20px; height: 20px; border: 0; border-radius: 50%; background: #232f3e; cursor: pointer;
+}
+.ftol-client-tool input[type=range]:focus-visible { outline: 2px solid #2196F3; outline-offset: 2px; }
+
+/* 11. CHECKBOX - cancels .w3-check{position:relative;top:6px} */
+.ftol-client-tool input[type=checkbox] {
+    width: 16px; height: 16px; margin: 0 6px 0 0;
+    position: static; top: auto; vertical-align: -2px;
+}
+
+/* 12. ACTION ROW - flex instead of float. min-height reserves the slot
+ *     for the Download button so revealing it shifts nothing. */
+.ftol-ct-actions {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 10px; margin: 4px 0 0; min-height: 44px;
+}
+.ftol-ct-actions > .w3-button,
+.ftol-ct-actions > a.w3-button,
+.ftol-ct-actions > button {
+    float: none !important;
+    height: 40px; padding: 0 16px; line-height: 40px;
+    border-radius: 4px; font-size: 14px; white-space: nowrap;
+}
+.ftol-ct-actions > .ftol-ct-dl { margin-left: auto; }
+.ftol-client-tool.ftol-ct-has-prog .ftol-ct-actions { margin-bottom: 26px; }
+@media (max-width: 480px) {
+    .ftol-ct-actions { min-height: 98px; }
+    .ftol-ct-actions > .w3-button,
+    .ftol-ct-actions > a.w3-button { width: 100%; }
+    .ftol-ct-actions > .ftol-ct-dl { margin-left: 0; }
+}
+
+/* 13. STATUS - two lines reserved. This is the single largest CLS
+ *     source in these sections today: the element is 0px tall until JS
+ *     writes progress text into it, well after the 500ms user-input
+ *     exemption window. */
+.ftol-ct-status {
+    margin: 8px 0 0; min-height: 36px;
+    font-size: 12px; line-height: 18px;
+    color: #64748b; overflow-wrap: anywhere;
+}
+html.main-html.dark .ftol-ct-status { color: #9aa4b2; }
+
+/* 14. PROGRESS */
+.ftol-ct-progzone { min-height: 26px; }
+.ftol-ct-progress { margin: 0; }
+.ftol-client-tool progress {
+    display: block; width: 100%; height: 8px;
+    border: 0; border-radius: 4px;
+    vertical-align: middle; accent-color: #2196F3;
+}
+
+/* 15. OUTPUT */
+.ftol-ct-out { margin: 10px 0 0; float: none; }
+.ftol-ct-out::before, .ftol-ct-out::after { content: none; display: none; }
+.ftol-ct-out img, .ftol-ct-out canvas { max-width: 100%; height: auto; }
+
+/* 16. Overflow backstop */
+.ftol-client-tool img,
+.ftol-client-tool canvas,
+.ftol-client-tool table { max-width: 100%; }
+
 </style>
