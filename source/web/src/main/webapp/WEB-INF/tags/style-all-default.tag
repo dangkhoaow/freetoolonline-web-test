@@ -3080,4 +3080,164 @@ html.main-html.dark .ftol-ct-status { color: #9aa4b2; }
 .ftol-client-tool canvas,
 .ftol-client-tool table { max-width: 100%; }
 
+/* ============================================================
+ * 2026-08-15 follow-up (operator screenshot catch). Three more
+ * defects in the same component, same underlying cause: there was
+ * never a shared file-picker affordance, so every in-browser tool
+ * shipped the browser's raw <input type=file>.
+ *
+ * SYMPTOM 1 (rules 17-18). The in-browser panel's picker renders as
+ * a bare UA control - a grey "Choose File" button plus a filename -
+ * inside a 1px box, while the SERVER upload widget 200px above it on
+ * the same page is a 2px-dashed drop area reading "Drag and drop
+ * files or click to select". Two pickers, two visual languages, one
+ * page. Measured DOM census (not a text grep - a grep cannot tell a
+ * real input from one inside a BODYJS innerHTML template): 41 pages
+ * render an in-browser file picker, and every one of them was the
+ * raw control.
+ *
+ * ROOT CAUSE. No shared dropzone component existed. The 9 <details>
+ * panels wrote `class="w3-input w3-border"` and the 26 JS-built
+ * client tools wrote the identical string inside an innerHTML
+ * template - w3.css has no drop-area primitive, so "bordered box"
+ * was the best either could reach for.
+ *
+ * WHY 17-18 MAKE IT IMPOSSIBLE, not merely fixed once: the picker
+ * chrome now lives in ONE rule set keyed off .ftol-ct-drop, and the
+ * native input is stretched over it at opacity 0 - so click,
+ * keyboard and native drag-and-drop all keep working with zero JS,
+ * and a new tool inherits the affordance by using the class (or, for
+ * a JS-built tool, for free via the shared upgrade in
+ * extended-body-content.html). Nothing per-page to remember.
+ *
+ * SYMPTOM 2 (rule 19). heic-to-jpg, pdf-to-images, images-to-pdf,
+ * flatten-pdf (x2) and join-pdf render TWO stacked blue vertical
+ * bars down the left edge of the panel, and two nested tinted
+ * boxes.
+ *
+ * ROOT CAUSE. Those 6 sections predate this component and wrap it in
+ * a legacy `<div class="w3-panel w3-pale-blue w3-leftbar
+ * w3-border-blue">`. That wrapper draws a 6px blue left border and a
+ * pale-blue fill; rule 2 above then draws the component's OWN 4px
+ * blue left border and grey fill inside it. Two containers, two
+ * accents. The wrapper was correct before rule 2 existed and became
+ * redundant the moment the component got its own frame.
+ *
+ * ISOLATION TEST: delete `w3-leftbar w3-border-blue` from the
+ * wrapper -> one bar. Delete rule 2's border-left -> one bar. Both
+ * present -> two bars. So it is the pair, not either one.
+ *
+ * WHY 19 IS THE ROOT-CAUSE FIX rather than editing the 6 fragments:
+ * the parent-selector rule neutralises ANY legacy panel that wraps
+ * this component, including the ones a future ship copy-pastes from
+ * the 6 existing examples. Editing 6 files fixes 6 files; this fixes
+ * the class. An engine that cannot parse :has() simply drops the
+ * rule and renders today's (cosmetic) double bar - it cannot break
+ * layout. Measured after the fix: 0 double-bar panels across the
+ * census.
+ *
+ * LABEL: ROOT_CAUSE
+ * ============================================================ */
+
+/* 17. DROPZONE - the shared file-picker affordance. The <label> is
+ *     the visible drop area; the real input is stretched over it at
+ *     opacity 0, which is what keeps native drag-and-drop, click and
+ *     keyboard activation working without a line of JS. Height is
+ *     fixed up front (CLS contract above). */
+.ftol-ct-drop {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-height: 104px;
+    padding: 18px 14px;
+    border: 2px dashed #93c5fd;
+    border-radius: 6px;
+    background: #fff;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s ease, background-color .15s ease;
+}
+.ftol-ct-drop:hover,
+.ftol-ct-drop.is-dragover { border-color: #2196F3; background: #f0f7ff; }
+.ftol-ct-drop.is-dragover { border-style: solid; }
+.ftol-ct-drop:focus-within { border-color: #2196F3; outline: 2px solid #2196F3; outline-offset: 2px; }
+html.main-html.dark .ftol-ct-drop { background: #0d1117; border-color: #30588a; }
+html.main-html.dark .ftol-ct-drop:hover,
+html.main-html.dark .ftol-ct-drop.is-dragover { background: #111c2b; border-color: #388bfd; }
+
+/* Specificity note: rule 5 above is `.ftol-client-tool input[type=file]`
+ * (0,2,1), so the covering rule must carry at least that weight. */
+.ftol-client-tool .ftol-ct-drop input[type=file],
+.ftol-ct-drop input[type=file] {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    min-height: 0;
+    margin: 0; padding: 0;
+    border: 0; border-radius: 6px;
+    background: none;
+    opacity: 0;
+    cursor: pointer;
+}
+.ftol-ct-drop-cta {
+    display: block;
+    font-weight: 600; font-size: 15px; line-height: 22px;
+    color: #1f2937;
+}
+html.main-html.dark .ftol-ct-drop-cta { color: #e6edf3; }
+.ftol-ct-drop-hint {
+    display: block; margin-top: 4px;
+    font-size: 12.5px; line-height: 18px;
+    color: #64748b;
+}
+html.main-html.dark .ftol-ct-drop-hint { color: #9aa4b2; }
+/* Selected-file list. min-height reserves the line before JS writes
+ * it; :empty::before supplies the resting text with no JS at all. */
+.ftol-ct-drop-files {
+    display: block; margin-top: 8px;
+    min-height: 20px;
+    font-size: 13px; line-height: 20px;
+    color: #0b6bcb; overflow-wrap: anywhere;
+}
+html.main-html.dark .ftol-ct-drop-files { color: #6cb6ff; }
+.ftol-ct-drop-files:empty::before { content: attr(data-ftol-drop-empty); color: #94a3b8; }
+
+/* 18. RESULT CARDS - per-output preview + its own download, for the
+ *     tools that emit many files from one run. Image height is fixed
+ *     so a 40-card grid does not reflow as thumbnails decode. */
+.ftol-ct-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin: 10px 0 0;
+}
+.ftol-ct-card {
+    border: 1px solid #cbd5e1; border-radius: 4px;
+    background: #fff; padding: 8px;
+    text-align: center; overflow: hidden;
+}
+html.main-html.dark .ftol-ct-card { background: #0d1117; border-color: #30363d; }
+.ftol-ct-card img {
+    display: block; width: 100%; height: 110px;
+    object-fit: contain;
+    background: #f1f5f9; border-radius: 2px;
+}
+html.main-html.dark .ftol-ct-card img { background: #161b22; }
+.ftol-ct-card-name {
+    display: block; margin: 6px 0 4px;
+    height: 32px; overflow: hidden;
+    font-size: 11.5px; line-height: 16px;
+    color: #64748b; overflow-wrap: anywhere;
+}
+html.main-html.dark .ftol-ct-card-name { color: #9aa4b2; }
+.ftol-ct-card > .w3-button { display: block; width: 100%; }
+
+/* 19. NO DOUBLE CONTAINER - see SYMPTOM 2 above. */
+.w3-panel:has(> .ftol-client-tool) {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+}
+
 </style>

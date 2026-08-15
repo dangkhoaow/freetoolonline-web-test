@@ -218,3 +218,170 @@
         }
     });
 </script>
+
+<script>
+    /* ==========================================================================
+     * FTOL in-browser tool dropzone - shared behaviour (2026-08-15)
+     *
+     * Companion to the .ftol-ct-drop rules in tags/style-all-default.tag. The
+     * CSS alone already gives click, keyboard and native drag-and-drop (the
+     * real <input type=file> is stretched over the drop area at opacity 0), so
+     * this file only owns the two things CSS cannot express:
+     *
+     *   1. WHICH FILES ARE PICKED. Covering the input hides the UA's own
+     *      "3 files" text, so without this the reader would get no feedback on
+     *      a selection. Delegated on capture so page code that stops
+     *      propagation cannot suppress it.
+     *   2. DRAG-OVER STATE. There is no :drag-over pseudo-class.
+     *
+     * Plus the UPGRADE path, which is the actual root-cause fix for the wider
+     * defect: 26 of the pages with an in-browser picker build their whole tool
+     * UI from a BODYJS innerHTML template, so there is no server-rendered
+     * markup to give a class to. Rather than hand-patch 26 innerHTML strings
+     * (and require every future client tool to remember), any raw file input on
+     * a fully-client-side page is wrapped in the shared drop area here, once.
+     *
+     * ELIGIBILITY is deliberately narrow - a bare file input elsewhere on the
+     * site (a game save import, a hidden trigger behind a custom button) must
+     * NOT sprout a 104px drop area:
+     *   - inside .ftol-client-tool                      (the 9 opt-in panels)
+     *   - OR web.localUpload === false AND the input carries w3-input
+     *     (the client-tool archetype signature: every JS-built input is
+     *     `class="w3-input w3-border"` with an inline max-width, i.e. authored
+     *     to be a visible bordered control. localUpload === false is the
+     *     codebase's own declaration that the page never uses the upload
+     *     pipeline, which is what licenses the "nothing is uploaded" hint)
+     *   - OR an explicit data-ftol-drop attribute            (opt-in escape)
+     *   - NEVER inside [data-ftol-no-drop]                  (opt-out escape)
+     *   - NEVER an input that is not rendered (display:none / hidden)
+     * Verified by DOM census with a 23-page control set: 0 dropzones appeared
+     * on any page that should not have one (code-editor, note-taking-app,
+     * linux-online, retro-fps-online, the trackers, places-3d, gpu-test).
+     *
+     * CLS: the observer callback is a microtask, so an input written by
+     * innerHTML is upgraded in the same task, BEFORE the browser paints it -
+     * the reader never sees the raw control get replaced. The drop area's
+     * height is fixed in CSS, and the selected-file line is height-reserved.
+     * Zero extra requests, zero new dependencies, no jQuery.
+     * ========================================================================== */
+    (function () {
+        var READY = 'data-ftol-drop-ready';
+
+        function describe(input) {
+            var acc = String(input.getAttribute('accept') || '').toLowerCase();
+            var kind = 'file';
+            if (/heic|heif/.test(acc)) { kind = 'HEIC photo'; }
+            else if (/pdf/.test(acc)) { kind = 'PDF'; }
+            else if (/gif/.test(acc)) { kind = 'GIF'; }
+            else if (/video|\.mp4|\.mov|\.webm/.test(acc)) { kind = 'video'; }
+            else if (/audio|\.mp3|\.wav|\.m4a|\.ogg/.test(acc)) { kind = 'audio file'; }
+            else if (/image|\.png|\.jpg|\.jpeg|\.webp|\.avif/.test(acc)) { kind = 'image'; }
+            var multi = !!input.multiple;
+            var article = /^[aeiou]/.test(kind) ? 'an ' : 'a ';
+            return {
+                cta: 'Drag and drop ' + (multi ? (kind + 's') : (article + kind)) + ' or click to select',
+                hint: (multi ? 'One or many - processed' : 'Processed') + ' on your device, nothing is uploaded'
+            };
+        }
+
+        function rendered(el) {
+            if (el.hidden) { return false; }
+            if (el.style && el.style.display === 'none') { return false; }
+            if (!window.getComputedStyle) { return true; }
+            var cs = window.getComputedStyle(el);
+            return !(cs.display === 'none' || cs.visibility === 'hidden');
+        }
+
+        function eligible(el) {
+            if (!el || el.type !== 'file') { return false; }
+            if (el.hasAttribute(READY)) { return false; }
+            if (!el.closest) { return false; }
+            if (el.closest('.ftol-ct-drop')) { return false; }
+            if (el.closest('[data-ftol-no-drop]')) { return false; }
+            var wanted = el.hasAttribute('data-ftol-drop')
+                || !!el.closest('.ftol-client-tool')
+                || (window.web && window.web.localUpload === false && el.classList.contains('w3-input'));
+            return wanted ? rendered(el) : false;
+        }
+
+        function upgrade(el) {
+            var parent = el.parentNode;
+            if (!parent) { return; }
+            el.setAttribute(READY, '1');   /* set BEFORE the move so the observer's own record is a no-op */
+            var text = describe(el);
+            var label = document.createElement('label');
+            label.className = 'ftol-ct-drop';
+            /* carry the author's width / centering intent to the new outer box */
+            if (el.style.maxWidth) { label.style.maxWidth = el.style.maxWidth; el.style.maxWidth = ''; }
+            if (el.style.margin) { label.style.margin = el.style.margin; el.style.margin = ''; }
+            el.classList.remove('w3-input', 'w3-border');
+            parent.insertBefore(label, el);
+            label.appendChild(el);   /* a DOM move - listeners, id and .files all survive */
+            /* insertAdjacentHTML appends without re-serialising the input above */
+            label.insertAdjacentHTML('beforeend',
+                '<span class="ftol-ct-drop-cta"></span>'
+                + '<span class="ftol-ct-drop-hint"></span>'
+                + '<span class="ftol-ct-drop-files" data-ftol-drop-empty="No file selected"></span>');
+            label.querySelector('.ftol-ct-drop-cta').textContent = text.cta;
+            label.querySelector('.ftol-ct-drop-hint').textContent = text.hint;
+        }
+
+        function scan(root) {
+            if (!root || !root.querySelectorAll) { return; }
+            var list = root.querySelectorAll('input[type="file"]:not([' + READY + '])');
+            for (var i = 0; i < list.length; i++) {
+                if (eligible(list[i])) { upgrade(list[i]); }
+            }
+        }
+
+        function showPicked(el) {
+            var drop = el.closest ? el.closest('.ftol-ct-drop') : null;
+            var out = drop ? drop.querySelector('.ftol-ct-drop-files') : null;
+            if (!out) { return; }
+            var files = el.files;
+            if (!files || !files.length) { out.textContent = ''; return; }
+            if (files.length === 1) { out.textContent = files[0].name; return; }
+            var head = [];
+            for (var i = 0; i < files.length && i < 3; i++) { head.push(files[i].name); }
+            out.textContent = files.length + ' files: ' + head.join(', ')
+                + (files.length > 3 ? ' and ' + (files.length - 3) + ' more' : '');
+        }
+
+        function dragState(e, on) {
+            var t = e.target;
+            var drop = (t && t.closest) ? t.closest('.ftol-ct-drop') : null;
+            if (drop) { drop.classList.toggle('is-dragover', on); }
+        }
+
+        try {
+            document.addEventListener('change', function (e) {
+                if (e.target && e.target.type === 'file') { showPicked(e.target); }
+            }, true);
+            document.addEventListener('dragenter', function (e) { dragState(e, true); }, true);
+            document.addEventListener('dragover', function (e) { dragState(e, true); }, true);
+            document.addEventListener('dragleave', function (e) { dragState(e, false); }, true);
+            document.addEventListener('drop', function (e) { dragState(e, false); }, true);
+
+            scan(document);
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function () { scan(document); });
+            }
+            if (window.MutationObserver) {
+                new MutationObserver(function (records) {
+                    for (var i = 0; i < records.length; i++) {
+                        var added = records[i].addedNodes;
+                        for (var j = 0; j < added.length; j++) {
+                            var node = added[j];
+                            if (!node || node.nodeType !== 1) { continue; }
+                            if (node.tagName === 'INPUT') {
+                                if (eligible(node)) { upgrade(node); }
+                            } else {
+                                scan(node);
+                            }
+                        }
+                    }
+                }).observe(document.documentElement, { childList: true, subtree: true });
+            }
+        } catch (e) { /* never break a page over picker chrome */ }
+    })();
+</script>

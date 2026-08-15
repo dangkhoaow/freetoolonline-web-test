@@ -188,6 +188,108 @@
         });
     }
 
+    /* ----------------------------------------------------------------------
+     * BATCH in-browser convert (2026-08-15, operator ask).
+     *
+     * Was: one file per click, one #hjDownload anchor, no preview. The panel
+     * accepted a single file while the SERVER path above it has always taken a
+     * batch - so a reader with 30 iPhone photos had to either upload them or
+     * click through the panel 30 times, and the page's own copy ("Upload one
+     * photo or a batch") only held for the server path.
+     *
+     * Now: N files converted sequentially (sequential, not parallel - libheif
+     * WASM decode is memory-heavy and a 30-photo parallel fan-out is how you
+     * OOM a phone), one preview card + its own download per photo, plus
+     * "Download all as ZIP" for the whole run. Mirrors the shape already proven
+     * on extract-gif-to-image-frames (#gfZipBtn / gfRenderFrames / gfZipAll)
+     * rather than inventing a fourth output affordance.
+     *
+     * A per-file failure does NOT abort the run - it is counted and reported,
+     * and the photos that did convert stay downloadable.
+     *
+     * Backwards-compatible on purpose: with exactly ONE file picked the legacy
+     * #hjDownload anchor is still populated, so the tool-heictojpg E2E flow
+     * (expect_visible #hjDownload[href]) keeps passing unchanged.
+     * -------------------------------------------------------------------- */
+    var hjResults = [];
+    var hjJszipLoading = false;
+
+    function hjId(id) { return document.getElementById(id); }
+    function hjVal(id, d) { var el = hjId(id); return el ? el.value : d; }
+    function hjSetStatus(m) { var el = hjId('hjStatus'); if (el) { el.textContent = m; } }
+    function hjEscape(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+    function hjSetProgress(pct, label) {
+        var wrap = hjId('hjProgressWrap'); if (wrap) { wrap.style.display = (pct == null) ? 'none' : ''; }
+        var bar = hjId('hjProgress'); if (bar && pct != null) { bar.value = pct; }
+        var txt = hjId('hjProgressVal');
+        if (txt) { txt.textContent = (pct == null) ? '' : ((label ? label + ' ' : '') + Math.round(pct) + '%'); }
+    }
+
+    function hjEnsureJszip(cb) {
+        if (typeof JSZip !== 'undefined') { cb(); return; }
+        if (hjJszipLoading) { setTimeout(function () { hjEnsureJszip(cb); }, 150); return; }
+        hjJszipLoading = true;
+        var url = 'https://dkbg1jftzfsd2.cloudfront.net/script/lib/jszip.min.js';
+        if (typeof loadScript === 'function') {
+            loadScript(url, function () { hjJszipLoading = false; cb(); });
+        } else {
+            var s = document.createElement('script');
+            s.src = url; s.async = true;
+            s.onload = function () { hjJszipLoading = false; cb(); };
+            s.onerror = function () { hjJszipLoading = false; cb(); };
+            document.head.appendChild(s);
+        }
+    }
+
+    function hjClearResults() {
+        for (var i = 0; i < hjResults.length; i++) {
+            try { URL.revokeObjectURL(hjResults[i].url); } catch (e) {}
+        }
+        hjResults = [];
+        var out = hjId('hjOut'); if (out) { out.innerHTML = ''; }
+        var zip = hjId('hjZipBtn'); if (zip) { zip.style.display = 'none'; }
+        var dl = hjId('hjDownload');
+        if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); dl.removeAttribute('download'); }
+    }
+
+    function hjRenderCards(list) {
+        var out = hjId('hjOut'); if (!out) { return; }
+        var html = '';
+        for (var i = 0; i < list.length; i++) {
+            html += '<div class="ftol-ct-card">'
+                 + '<img loading="lazy" alt="" src="' + list[i].url + '">'
+                 + '<span class="ftol-ct-card-name">' + hjEscape(list[i].name) + '</span>'
+                 + '<a class="w3-button w3-small w3-light-grey" href="' + list[i].url + '" download="' + hjEscape(list[i].name) + '">Download</a>'
+                 + '</div>';
+        }
+        out.innerHTML = html;
+    }
+
+    function hjZipAll() {
+        if (!hjResults.length) { return; }
+        var btn = hjId('hjZipBtn');
+        if (btn) { btn.disabled = true; }
+        hjEnsureJszip(function () {
+            if (typeof JSZip === 'undefined') {
+                hjSetStatus('Could not load the zip library in this browser. Use the per-photo Download buttons below.');
+                if (btn) { btn.disabled = false; }
+                return;
+            }
+            var zip = new JSZip();
+            for (var i = 0; i < hjResults.length; i++) { zip.file(hjResults[i].name, hjResults[i].blob); }
+            zip.generateAsync({ type: 'blob' }).then(function (blob) {
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'heic-converted-' + (typeof getCurrentDateTime === 'function' ? getCurrentDateTime() : 'export') + '.zip';
+                a.click();
+                setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (e) {} }, 30000);
+            }).catch(function () {
+                hjSetStatus('Could not build the zip file. Use the per-photo Download buttons below.');
+            }).then(function () { if (btn) { btn.disabled = false; } });
+        });
+    }
+
     // Guarded wiring to the client-mode controls (added in ui_and_skill). No-op until then.
     function ftoWireClientHeicToJpg() {
         var input = document.getElementById('hjClientFile');
@@ -198,39 +300,81 @@
         var __ftoRow = btn.closest ? btn.closest('.w3-row') : null;
         var __ftoStep = __ftoRow && __ftoRow.closest ? __ftoRow.closest('.step') : null;
         if (__ftoStep && __ftoStep.parentNode) { __ftoStep.parentNode.insertBefore(__ftoRow, __ftoStep.nextSibling); }
-        var status = document.getElementById('hjStatus');
         var dl = document.getElementById('hjDownload');
-        function val(id, d) { var el = document.getElementById(id); return el ? el.value : d; }
-        function setStatus(m) { if (status) { status.textContent = m; } }
+        var zipBtn = document.getElementById('hjZipBtn');
+
+        hjSetProgress(null);
+        if (zipBtn) {
+            zipBtn.addEventListener('click', function () { hjZipAll(); });
+        }
+        input.addEventListener('change', function () { hjClearResults(); hjSetStatus(''); hjSetProgress(null); });
+
         btn.addEventListener('click', function () {
-            var f = input.files && input.files[0];
-            if (!f) { setStatus('Select a HEIC file to convert.'); return; }
+            var files = (input.files && input.files.length) ? Array.prototype.slice.call(input.files) : [];
+            if (!files.length) { hjSetStatus('Select one or more HEIC files to convert.'); return; }
             btn.disabled = true;
-            if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); }
-            setStatus('Converting in your browser ...');
-            var doConvert = function () {
-                var fmt = val('hjFormat', 'jpg');
-                return ftoClientHeicConvert(f, { format: fmt, quality: val('hjQuality', '80') }, function (frac) {
-                    setStatus('Converting in your browser ... ' + Math.round(frac * 100) + '%');
+            hjClearResults();
+            var fmt = hjVal('hjFormat', 'jpg');
+            var quality = hjVal('hjQuality', '80');
+            var done = [], failed = 0, index = 0;
+            hjSetStatus(files.length === 1
+                ? 'Converting in your browser ...'
+                : 'Converting ' + files.length + ' photos in your browser, one at a time ...');
+            hjSetProgress(0, 'photos');
+
+            function finish() {
+                hjResults = done;
+                hjRenderCards(done);
+                hjSetProgress(100, 'done');
+                setTimeout(function () { hjSetProgress(null); }, 800);
+                if (done.length > 1 && zipBtn) { zipBtn.style.display = ''; }
+                if (done.length === 1 && dl) {
+                    // legacy single-file affordance - keeps the E2E flow green
+                    dl.href = done[0].url; dl.download = done[0].name;
+                    dl.style.display = ''; dl.textContent = 'Download .' + fmt;
+                }
+                var kb = 0;
+                for (var i = 0; i < done.length; i++) { kb += done[i].blob.size / 1024; }
+                if (!done.length) {
+                    hjSetStatus('Could not convert any of those files in the browser. The server convert above still works.');
+                } else {
+                    hjSetStatus('Done in your browser - no upload. '
+                        + done.length + (done.length === 1 ? ' photo' : ' photos') + ' converted to ' + fmt.toUpperCase()
+                        + ' (' + kb.toFixed(0) + ' KB total)'
+                        + (failed ? '. ' + failed + (failed === 1 ? ' file' : ' files') + ' could not be read and were skipped.' : '.'));
+                }
+                btn.disabled = false;
+            }
+
+            function next() {
+                if (index >= files.length) { finish(); return; }
+                var file = files[index];
+                var base = index * (100 / files.length);
+                ftoClientHeicConvert(file, { format: fmt, quality: quality }, function (frac) {
+                    hjSetProgress(base + (frac * 100 / files.length), 'photo ' + (index + 1) + ' of ' + files.length);
                 }).then(function (res) {
-                    var url = URL.createObjectURL(res.blob);
-                    var baseName = (f.name || 'image').replace(/\.[^.]+$/, '');
-                    if (dl) {
-                        dl.href = url; dl.download = baseName + '.' + res.ext;
-                        dl.style.display = ''; dl.textContent = 'Download .' + res.ext;
-                    }
-                    setStatus('Done in your browser - no upload. Converted to ' + res.ext.toUpperCase() + ' (' + (res.blob.size / 1024).toFixed(0) + ' KB).');
+                    var name = ((file.name || 'image').replace(/\.[^.]+$/, '') || 'image') + '.' + res.ext;
+                    done.push({ name: name, blob: res.blob, url: URL.createObjectURL(res.blob) });
+                }).catch(function () {
+                    failed += 1;
+                }).then(function () {
+                    index += 1;
+                    hjSetProgress(index * (100 / files.length), 'photos');
+                    next();
                 });
-            };
-            // Optional pre-check: warn (do not block) if the file does not look like HEIC.
+            }
+
+            // Optional pre-check on the first file: warn (do not block) if it does not look like HEIC.
             ftoLoadHeicTo().then(function () {
-                return (window.HeicTo && window.HeicTo.isHeic) ? window.HeicTo.isHeic(f).catch(function () { return true; }) : true;
+                return (window.HeicTo && window.HeicTo.isHeic) ? window.HeicTo.isHeic(files[0]).catch(function () { return true; }) : true;
             }).then(function (isH) {
-                if (isH === false) { setStatus('That file does not look like HEIC; trying anyway ...'); }
-                return doConvert();
+                if (isH === false) { hjSetStatus('That file does not look like HEIC; trying anyway ...'); }
+                next();
             }).catch(function (err) {
-                setStatus('Could not convert in the browser: ' + (err && err.message ? err.message : 'unknown error') + '. The server convert above still works.');
-            }).then(function () { btn.disabled = false; });
+                hjSetProgress(null);
+                hjSetStatus('Could not convert in the browser: ' + (err && err.message ? err.message : 'unknown error') + '. The server convert above still works.');
+                btn.disabled = false;
+            });
         });
     }
 
