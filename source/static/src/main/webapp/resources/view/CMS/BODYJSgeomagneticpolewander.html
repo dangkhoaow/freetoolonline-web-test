@@ -408,7 +408,17 @@
         function boot() {
             ftoLoadThree().then(function (THREE) {
                 try {
-                    var presets = { geomagneticpolewander: { radius: 24, maxR: 60, minR: 13, phi: 0.95, theta: 0.55, targetY: 0, fov: 50 } };
+                    // Camera aims at the ARCTIC CAP, not the globe centre. Fixed 2026-08-16
+                    // when the pre-ship render probe screenshot showed the subject off-frame:
+                    // with targetY 0 / radius 24 / phi 0.95 the camera looked at the equator, and
+                    // since every waypoint sits at lat 70-86N - i.e. inside a cap only ~3.4 units
+                    // wide on a radius-10 globe, at y 9.4-10.0 - the whole pole track projected
+                    // into the top edge of a 0.62-aspect canvas and clipped. A reader saw a plain
+                    // blue sphere. targetY 6.6 raises the look-at point into the northern
+                    // hemisphere and phi 0.52 puts the camera above it, so the track and its ten
+                    // markers are the subject while the globe still reads as a globe. minR/maxR
+                    // still let the reader zoom from close-on-the-cap out to the whole planet.
+                    var presets = { geomagneticpolewander: { radius: 17, maxR: 60, minR: 11, phi: 0.52, theta: 0.55, targetY: 6.6, fov: 50 } };
                     var shell = t3dShell(THREE, host, presets[kind]);
                     var animate = t3dGeomagneticPoleWander(shell);
                     var last = performance.now();
