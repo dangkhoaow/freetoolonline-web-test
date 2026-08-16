@@ -1,0 +1,433 @@
+<script>
+    // 3D scene archetype skeleton (geomagnetic-pole-wander) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only. All geometry is
+    // procedural (SphereGeometry/ConeGeometry/BufferGeometry/Line) - no model
+    // files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this teaches the WANDERING PATH of Earth's
+    // magnetic north pole: a marker moves across a globe through 10 real
+    // recorded (ground-survey) or modelled (WMM/IGRF) positions from 1831 to
+    // 2025. It is NOT a dynamo simulation of the geomagnetic field - the curve
+    // drawn BETWEEN two recorded points is a disclosed shortest-arc (spherical
+    // linear interpolation) across the globe surface, not a claim about the
+    // pole's exact day-by-day route. Every position and every drift-speed
+    // figure shown is a real published number.
+    //
+    // Published figures / facts (cross-checked via WebSearch + WebFetch
+    // 2026-08-15 against ncei.noaa.gov/products/wandering-geomagnetic-poles,
+    // ncei.noaa.gov/news/2025-wmm-annual-report-released,
+    // en.wikipedia.org/wiki/North_magnetic_pole (IGRF/WMM-sourced table), and
+    // sciencealert.com quoting British Geological Survey geophysicist Ciaran
+    // Beggan):
+    //   - 1831 (James Clark Ross, first-ever location): 70.09N -96.77W.
+    //   - 1904 (Amundsen): 70.52N -96.57W.
+    //   - 1948 / 1962 / 1994 (Canadian ground surveys): 73.9N -100.9W /
+    //     75.1N -100.8W / 78.3N -104.0W.
+    //   - 2001 (joint Canada-France ground survey): 81.3N -110.8W.
+    //   - 2007 (the LAST physical ground survey ever conducted): 83.95N -120.72W.
+    //   - 2010 / 2020 (WMM/IGRF-13 modelled positions, ground surveys stopped
+    //     after 2007): 85.02N -132.83W / 86.49N 162.87E (crossed the 180-degree
+    //     meridian into the longitude band toward Siberia).
+    //   - 2025 (NOAA WMM2025-epoch modelled position): 85.76N 139.30E.
+    //   - Total distance traveled since 1831: about 2,250 km (about 1,400 miles).
+    //   - Drift speed: at or below about 15 km/year for centuries before the
+    //     1990s (Beggan: "much faster than at any time for at least four
+    //     centuries" describes the change since then); accelerated to roughly
+    //     55-60 km/year during the 1990s-2000s; slowed to roughly 35-40 km/year
+    //     around 2015; NOAA's 2025 WMM Annual Report measured 36 km/year (north)
+    //     versus 9 km/year (south) - the north pole is currently drifting about
+    //     four times faster than the south.
+    //   - The pole has NOT crossed into Russian territory - since the 1990s it
+    //     has been over Arctic Ocean sea ice, longitudinally closer to Siberia's
+    //     side of the Arctic than to Canada's, but not on land.
+    //
+    // Distinct from Earth's Magnetosphere 3D Explorer (the field's present-day
+    // 3D shape/tilt/strength) and the Kp-Index Geomagnetic Storm Scale page
+    // (storm-intensity index) - this page is the pole's own historical POSITION
+    // over time, a subject neither of those pages covers.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'geomagnetic-pole-wander';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'geomagneticpolewander'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { try { new ResizeObserver(resize).observe(host); } catch (e) {} }
+        var dragging = false, lastX = 0, lastY = 0, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY; moved = 0;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function (e) {
+            dragging = false;
+            if (moved < 8 && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            moved += Math.abs(dx) + Math.abs(dy);
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        var shell = {
+            THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit,
+            applyCamera: applyCamera, low: low, resize: resize, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ---- Real published pole positions (see header comment for sources) ----
+    var T3D_EARTH_R = 10;
+    var T3D_POLE_WAYPOINTS = [
+        { year: 1831, lat: 70.09, lon: -96.77, label: 'James Clark Ross - first-ever location' },
+        { year: 1904, lat: 70.52, lon: -96.57, label: 'Amundsen observation' },
+        { year: 1948, lat: 73.9, lon: -100.9, label: 'Canadian ground survey' },
+        { year: 1962, lat: 75.1, lon: -100.8, label: 'Canadian ground survey' },
+        { year: 1994, lat: 78.3, lon: -104.0, label: 'Canadian ground survey' },
+        { year: 2001, lat: 81.3, lon: -110.8, label: 'Canada-France ground survey' },
+        { year: 2007, lat: 83.95, lon: -120.72, label: 'last physical ground survey ever conducted' },
+        { year: 2010, lat: 85.02, lon: -132.83, label: 'WMM / IGRF-13 modelled position' },
+        { year: 2020, lat: 86.49, lon: 162.87, label: 'WMM / IGRF-13 modelled position - crossed toward Siberia\'s longitude' },
+        { year: 2025, lat: 85.76, lon: 139.30, label: 'NOAA WMM2025-epoch modelled position' }
+    ];
+
+    function t3dLatLonToVec3(THREE, latDeg, lonDeg, r) {
+        var latRad = latDeg * Math.PI / 180, lonRad = lonDeg * Math.PI / 180;
+        return new THREE.Vector3(
+            r * Math.cos(latRad) * Math.cos(lonRad),
+            r * Math.sin(latRad),
+            r * Math.cos(latRad) * Math.sin(lonRad)
+        );
+    }
+
+    // Spherical linear interpolation between two same-length vectors - follows
+    // the shortest great-circle-style arc across the globe surface, which
+    // handles the 2010-to-2020 longitude jump (-132.83 to 162.87) correctly
+    // where a naive degree-lerp would wrap the wrong way around.
+    function t3dSlerpVec(THREE, a, b, t) {
+        var r = a.length();
+        var an = a.clone().normalize(), bn = b.clone().normalize();
+        var dot = Math.max(-1, Math.min(1, an.dot(bn)));
+        var theta = Math.acos(dot) * t;
+        if (theta < 1e-6) return a.clone();
+        var rel = bn.clone().sub(an.clone().multiplyScalar(dot));
+        if (rel.lengthSq() < 1e-10) return a.clone();
+        rel.normalize();
+        return an.clone().multiplyScalar(Math.cos(theta)).add(rel.multiplyScalar(Math.sin(theta))).multiplyScalar(r);
+    }
+
+    function t3dPoleEraFact(year) {
+        if (year < 1990) {
+            return 'At or below about 15 km/year for centuries before the 1990s - British Geological Survey geophysicist Ciaran Beggan: "The movement since the 1990s is much faster than at any time for at least four centuries."';
+        }
+        if (year < 2015) {
+            return 'Accelerated to roughly 55-60 km/year during this period - an unprecedented jump in the surveyed record.';
+        }
+        if (year < 2025) {
+            return 'Slowed to roughly 35-40 km/year around this period, after the 1990s-2000s acceleration.';
+        }
+        return 'NOAA\'s 2025 WMM Annual Report measured 36 km/year for the north magnetic pole versus 9 km/year for the south - the north pole is currently drifting about four times faster than the south.';
+    }
+
+    function t3dPoleBracket(year) {
+        var wp = T3D_POLE_WAYPOINTS;
+        if (year <= wp[0].year) return { i: 0, j: 0, t: 0 };
+        if (year >= wp[wp.length - 1].year) return { i: wp.length - 1, j: wp.length - 1, t: 0 };
+        for (var i = 0; i < wp.length - 1; i++) {
+            if (year >= wp[i].year && year <= wp[i + 1].year) {
+                var t = (year - wp[i].year) / (wp[i + 1].year - wp[i].year);
+                return { i: i, j: i + 1, t: t };
+            }
+        }
+        return { i: 0, j: 0, t: 0 };
+    }
+
+    function t3dGeomagneticPoleWander(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03060c, 1);
+        scene.add(new THREE.AmbientLight(0x445566, 0.55));
+        var sunLight = new THREE.DirectionalLight(0xfff6e0, 1.05);
+        sunLight.position.set(40, 60, 30);
+        scene.add(sunLight);
+
+        var r = T3D_EARTH_R;
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(r, 48, 32),
+            new THREE.MeshPhongMaterial({ color: 0x1a5276, emissive: 0x061018, shininess: 10 })
+        );
+        scene.add(earth);
+        var atmos = new THREE.Mesh(
+            new THREE.SphereGeometry(r * 1.02, 32, 24),
+            new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.1, depthWrite: false })
+        );
+        scene.add(atmos);
+
+        // Background stars so the canvas always paints pixels even before boot.
+        var SCOUNT = shell.low ? 350 : 800;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(90 + Math.random() * 160);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.5, sizeAttenuation: false })));
+
+        // Faint latitude rings for northward-distance visual context (60N/70N/80N).
+        [60, 70, 80].forEach(function (latDeg) {
+            var latRad = latDeg * Math.PI / 180;
+            var ringY = r * Math.sin(latRad), ringR = r * Math.cos(latRad);
+            var pts = [];
+            for (var a = 0; a <= 64; a++) {
+                var ang = (a / 64) * Math.PI * 2;
+                pts.push(new THREE.Vector3(Math.cos(ang) * ringR, ringY, Math.sin(ang) * ringR));
+            }
+            var ring = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(pts),
+                new THREE.LineBasicMaterial({ color: 0x607d8b, transparent: true, opacity: 0.35 })
+            );
+            scene.add(ring);
+        });
+
+        // Two fixed regional reference pins - approximate, not a territorial claim.
+        function pin(latDeg, lonDeg, color) {
+            var p = t3dLatLonToVec3(THREE, latDeg, lonDeg, r * 1.01);
+            var cone = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.9, 10), new THREE.MeshBasicMaterial({ color: color }));
+            cone.position.copy(p);
+            cone.lookAt(p.clone().multiplyScalar(1.5));
+            scene.add(cone);
+            return cone;
+        }
+        pin(75, -100, 0x66bb6a);   // Canadian Arctic Archipelago area (approximate)
+        pin(76, 140, 0xff7043);    // Siberian / East Siberian Sea coast area (approximate)
+
+        // Static path: subdivided slerp arcs through every real waypoint.
+        var wpVecs = T3D_POLE_WAYPOINTS.map(function (w) { return t3dLatLonToVec3(THREE, w.lat, w.lon, r * 1.006); });
+        var pathPts = [];
+        for (var k = 0; k < wpVecs.length - 1; k++) {
+            for (var seg = 0; seg <= 20; seg++) {
+                pathPts.push(t3dSlerpVec(THREE, wpVecs[k], wpVecs[k + 1], seg / 20));
+            }
+        }
+        var pathLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(pathPts),
+            new THREE.LineBasicMaterial({ color: 0xffca28, transparent: true, opacity: 0.85 })
+        );
+        scene.add(pathLine);
+
+        // Waypoint markers (raycast targets).
+        var waypointMeshes = [];
+        for (var wi = 0; wi < T3D_POLE_WAYPOINTS.length; wi++) {
+            var wm = new THREE.Mesh(new THREE.SphereGeometry(0.26, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffab40 }));
+            wm.position.copy(wpVecs[wi]);
+            wm.userData = { idx: wi };
+            scene.add(wm);
+            waypointMeshes.push(wm);
+        }
+
+        // Scrub marker - the current interpolated (or exact) pole position.
+        var scrubMarker = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        scene.add(scrubMarker);
+
+        var state = { year: T3D_POLE_WAYPOINTS[0].year, playing: false };
+
+        function positionForYear(year) {
+            var br = t3dPoleBracket(year);
+            if (br.i === br.j) return wpVecs[br.i].clone();
+            return t3dSlerpVec(THREE, wpVecs[br.i], wpVecs[br.j], br.t);
+        }
+
+        function panelForYear(year) {
+            var br = t3dPoleBracket(year);
+            var wpA = T3D_POLE_WAYPOINTS[br.i], wpB = T3D_POLE_WAYPOINTS[br.j];
+            var exact = br.i === br.j;
+            var html = '<h3>Geomagnetic north pole - year ' + year + '</h3>';
+            if (exact) {
+                html += '<p><b>Real recorded/modelled position:</b> ' + wpA.lat.toFixed(2) + 'N, ' + Math.abs(wpA.lon).toFixed(2) + (wpA.lon < 0 ? 'W' : 'E') + ' - ' + wpA.label + '.</p>';
+            } else {
+                html += '<p>Interpolated position between the ' + wpA.year + ' (' + wpA.label + ') and ' + wpB.year + ' (' + wpB.label + ') recorded points - a shortest-arc visual interpolation, not a claim about the pole\'s exact route between them.</p>';
+            }
+            html += '<p><b>Drift speed this period:</b> ' + t3dPoleEraFact(year) + '</p>';
+            html += '<table class="w3-table w3-bordered"><tr><td>Discovered</td><td>1831, by James Clark Ross</td></tr><tr><td>Total distance since 1831</td><td>about 2,250 km (about 1,400 miles)</td></tr><tr><td>2025 position</td><td>85.76N, 139.30E</td></tr><tr><td>Now closer to</td><td>Siberia\'s side of the Arctic than Canada\'s (still over sea ice, not on land)</td></tr></table>';
+            html += '<p class="t3d-note">Educational visualization - only the 10 marked years are real recorded (ground-survey) or modelled (WMM/IGRF) positions; the glowing path between them is a disclosed shortest-arc interpolation, not a physical simulation of the geomagnetic dynamo. The pole has not crossed into Russian territory.</p>';
+            return html;
+        }
+
+        function apply() {
+            scrubMarker.position.copy(positionForYear(state.year));
+            var slider = document.getElementById('t3dPoleYearSlider');
+            var label = document.getElementById('t3dPoleYearLabel');
+            if (slider && parseInt(slider.value, 10) !== state.year) slider.value = String(state.year);
+            if (label) label.textContent = String(state.year);
+            t3dInfo(panelForYear(state.year));
+            try { t3dSaveStore({ year: state.year }); } catch (e) {}
+        }
+
+        function setYear(y) {
+            state.year = Math.max(T3D_POLE_WAYPOINTS[0].year, Math.min(T3D_POLE_WAYPOINTS[T3D_POLE_WAYPOINTS.length - 1].year, y));
+            apply();
+        }
+
+        var slider = document.getElementById('t3dPoleYearSlider');
+        if (slider) slider.addEventListener('input', function () {
+            state.playing = false;
+            var pb = document.getElementById('t3dPolePlayBtn');
+            if (pb) pb.textContent = 'Play history';
+            setYear(parseInt(slider.value || '1831', 10));
+        });
+        var playBtn = document.getElementById('t3dPolePlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            state.playing = !state.playing;
+            playBtn.textContent = state.playing ? 'Pause' : 'Play history';
+        });
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects(waypointMeshes, false);
+            if (!hits.length) return;
+            state.playing = false;
+            if (playBtn) playBtn.textContent = 'Play history';
+            setYear(T3D_POLE_WAYPOINTS[hits[0].object.userData.idx].year);
+        };
+
+        var stored = t3dLoadStore();
+        if (typeof stored.year === 'number') state.year = Math.max(1831, Math.min(2025, stored.year));
+        apply();
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Scrub the year slider or press Play history.');
+
+        var accum = 0;
+        return function animate(dt) {
+            if (!state.playing) return;
+            accum += dt;
+            if (accum > 90) {
+                accum = 0;
+                var next = state.year + 3;
+                if (next > 2025) { next = 1831; }
+                setYear(next);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { geomagneticpolewander: 't3dPoleControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { geomagneticpolewander: { radius: 24, maxR: 60, minR: 13, phi: 0.95, theta: 0.55, targetY: 0, fov: 50 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dGeomagneticPoleWander(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
