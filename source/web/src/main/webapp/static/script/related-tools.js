@@ -764,7 +764,7 @@ try {
     { title: "Niagara Falls 3D Explorer", url: "https://freetoolonline.com/places-3d/niagara-falls.html", include: !1, tags: "places-3d" },
     { title: "Grand Prismatic Spring 3D Explorer", url: "https://freetoolonline.com/places-3d/grand-prismatic-spring.html", include: !1, tags: "places-3d" },
     { title: "Salar de Uyuni 3D Explorer", url: "https://freetoolonline.com/places-3d/salar-de-uyuni.html", include: !1, tags: "places-3d" },
-  { url: '/places-3d/dong-van-plateau.html', tags: 'places-3d' },
+    { title: "Dong Van Stone Plateau 3D Explorer - Vietnam", url: "https://freetoolonline.com/places-3d/dong-van-plateau.html", include: !1, tags: "places-3d" },
     { title: "Nile River 3D Explorer - World's Longest River", url: "https://freetoolonline.com/places-3d/nile-river.html", include: !1, tags: "places-3d" },
     { title: "Tibetan Plateau 3D Explorer", url: "https://freetoolonline.com/places-3d/tibetan-plateau.html", include: !1, tags: "places-3d" },
     { title: "Cappadocia 3D Explorer - Fairy Chimneys & Ihlara Valley", url: "https://freetoolonline.com/places-3d/cappadocia.html", include: !1, tags: "places-3d" },
