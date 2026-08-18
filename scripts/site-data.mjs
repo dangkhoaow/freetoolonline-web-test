@@ -1602,19 +1602,16 @@ export const INFO_ROUTES = new Set([
   '/guides/color-contrast-checker-wcag-vs-alternatives.html',
   '/guides/de/color-contrast-checker-wcag-vs-alternatives.html',
   '/guides/id/color-contrast-checker-wcag-vs-alternatives.html',
-  '/guides/vi/color-contrast-checker-wcag-vs-alternatives.html',
   '/guides/es/color-contrast-checker-wcag-vs-alternatives.html',
   '/guides/pt/color-contrast-checker-wcag-vs-alternatives.html',
   '/guides/color-contrast-checker-wcag-step-by-step.html',
   '/guides/de/color-contrast-checker-wcag-step-by-step.html',
   '/guides/id/color-contrast-checker-wcag-step-by-step.html',
-  '/guides/vi/color-contrast-checker-wcag-step-by-step.html',
   '/guides/es/color-contrast-checker-wcag-step-by-step.html',
   '/guides/pt/color-contrast-checker-wcag-step-by-step.html',
   '/guides/color-contrast-checker-wcag-when.html',
   '/guides/de/color-contrast-checker-wcag-when.html',
   '/guides/id/color-contrast-checker-wcag-when.html',
-  '/guides/vi/color-contrast-checker-wcag-when.html',
   '/guides/es/color-contrast-checker-wcag-when.html',
   '/guides/pt/color-contrast-checker-wcag-when.html',
   '/guides/html-markdown-converter-vs-alternatives.html',
@@ -3624,19 +3621,16 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/comet-orbit-when.html',
   '/guides/es/comet-orbit-when.html',
   '/guides/de/comet-orbit-when.html',
-  '/guides/vi/comet-orbit-when.html',
   '/guides/id/comet-orbit-when.html',
   '/guides/comet-orbit-step-by-step.html',
   '/guides/pt/comet-orbit-step-by-step.html',
   '/guides/es/comet-orbit-step-by-step.html',
   '/guides/de/comet-orbit-step-by-step.html',
-  '/guides/vi/comet-orbit-step-by-step.html',
   '/guides/id/comet-orbit-step-by-step.html',
   '/guides/comet-orbit-vs-alternatives.html',
   '/guides/pt/comet-orbit-vs-alternatives.html',
   '/guides/es/comet-orbit-vs-alternatives.html',
   '/guides/de/comet-orbit-vs-alternatives.html',
-  '/guides/vi/comet-orbit-vs-alternatives.html',
   '/guides/id/comet-orbit-vs-alternatives.html',
   '/guides/seasons-earth-when.html',
   '/guides/pt/seasons-earth-when.html',
@@ -4865,7 +4859,6 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/equation-of-time-vs-alternatives.html',
   '/guides/vi/zodiacal-light-vs-alternatives.html',
   '/guides/vi/stellar-proper-motion-vs-alternatives.html',
-  '/guides/vi/aberration-of-starlight-vs-alternatives.html',
   '/guides/vi/planetary-conjunction-vs-alternatives.html',
   '/guides/vi/planetary-oblateness-vs-alternatives.html',
   '/guides/vi/coriolis-effect-vs-alternatives.html',
@@ -5291,7 +5284,6 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/equation-of-time-when.html',
   '/guides/vi/zodiacal-light-when.html',
   '/guides/vi/stellar-proper-motion-when.html',
-  '/guides/vi/aberration-of-starlight-when.html',
   '/guides/vi/planetary-conjunction-when.html',
   '/guides/vi/planetary-oblateness-when.html',
   '/guides/vi/coriolis-effect-when.html',
@@ -5717,7 +5709,6 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/equation-of-time-step-by-step.html',
   '/guides/vi/zodiacal-light-step-by-step.html',
   '/guides/vi/stellar-proper-motion-step-by-step.html',
-  '/guides/vi/aberration-of-starlight-step-by-step.html',
   '/guides/vi/planetary-conjunction-step-by-step.html',
   '/guides/vi/planetary-oblateness-step-by-step.html',
   '/guides/vi/coriolis-effect-step-by-step.html',
@@ -7818,7 +7809,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/ankylosaurus-size-comparison.html',
   '/guides/pt/ankylosaurus-size-comparison.html',
   '/guides/es/ankylosaurus-size-comparison.html',
-  '/guides/vi/ankylosaurus-size-comparison.html',
   '/guides/id/ankylosaurus-size-comparison.html',
   '/guides/de/ankylosaurus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire24 (2026-07-17): ankylosaurus-3d-viewer-vs-ar-apps
@@ -7826,7 +7816,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/ankylosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/ankylosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/es/ankylosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/ankylosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/ankylosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/ankylosaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire25 (2026-07-17): how-to-view-parasaurolophus-in-3d
@@ -7890,7 +7879,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/allosaurus-size-comparison.html',
   '/guides/pt/allosaurus-size-comparison.html',
   '/guides/es/allosaurus-size-comparison.html',
-  '/guides/vi/allosaurus-size-comparison.html',
   '/guides/id/allosaurus-size-comparison.html',
   '/guides/de/allosaurus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire33 (2026-07-17): allosaurus-3d-viewer-vs-ar-apps
@@ -7898,7 +7886,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/allosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/allosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/es/allosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/allosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/allosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/allosaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire34 (2026-07-17): how-to-view-giganotosaurus-in-3d
@@ -7986,7 +7973,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/carnotaurus-size-comparison.html',
   '/guides/pt/carnotaurus-size-comparison.html',
   '/guides/es/carnotaurus-size-comparison.html',
-  '/guides/vi/carnotaurus-size-comparison.html',
   '/guides/id/carnotaurus-size-comparison.html',
   '/guides/de/carnotaurus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire45 (2026-07-18): carnotaurus-3d-viewer-vs-ar-apps
@@ -7994,7 +7980,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/carnotaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/carnotaurus-3d-viewer-vs-ar-apps.html',
   '/guides/es/carnotaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/carnotaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/carnotaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/carnotaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire46 (2026-07-18): how-to-view-dilophosaurus-in-3d
@@ -8178,7 +8163,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/baryonyx-size-comparison.html',
   '/guides/pt/baryonyx-size-comparison.html',
   '/guides/es/baryonyx-size-comparison.html',
-  '/guides/vi/baryonyx-size-comparison.html',
   '/guides/id/baryonyx-size-comparison.html',
   '/guides/de/baryonyx-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire69 (2026-07-18): baryonyx-3d-viewer-vs-ar-apps
@@ -8186,7 +8170,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/baryonyx-3d-viewer-vs-ar-apps.html',
   '/guides/pt/baryonyx-3d-viewer-vs-ar-apps.html',
   '/guides/es/baryonyx-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/baryonyx-3d-viewer-vs-ar-apps.html',
   '/guides/id/baryonyx-3d-viewer-vs-ar-apps.html',
   '/guides/de/baryonyx-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire70 (2026-07-18): how-to-view-plesiosaurus-in-3d
@@ -8322,7 +8305,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/ceratosaurus-size-comparison.html',
   '/guides/pt/ceratosaurus-size-comparison.html',
   '/guides/es/ceratosaurus-size-comparison.html',
-  '/guides/vi/ceratosaurus-size-comparison.html',
   '/guides/id/ceratosaurus-size-comparison.html',
   '/guides/de/ceratosaurus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire87 (2026-07-18): ceratosaurus-3d-viewer-vs-ar-apps
@@ -8330,7 +8312,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/ceratosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/ceratosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/es/ceratosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/ceratosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/ceratosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/ceratosaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire88 (2026-07-18): how-to-view-protoceratops-in-3d
@@ -8370,7 +8351,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/brontosaurus-size-comparison.html',
   '/guides/pt/brontosaurus-size-comparison.html',
   '/guides/es/brontosaurus-size-comparison.html',
-  '/guides/vi/brontosaurus-size-comparison.html',
   '/guides/id/brontosaurus-size-comparison.html',
   '/guides/de/brontosaurus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire93 (2026-07-18): brontosaurus-3d-viewer-vs-ar-apps
@@ -8378,7 +8358,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/brontosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/brontosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/es/brontosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/brontosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/brontosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/brontosaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire94 (2026-07-18): how-to-view-megalosaurus-in-3d
@@ -8898,7 +8877,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/brachylophosaurus-size-comparison.html',
   '/guides/pt/brachylophosaurus-size-comparison.html',
   '/guides/es/brachylophosaurus-size-comparison.html',
-  '/guides/vi/brachylophosaurus-size-comparison.html',
   '/guides/id/brachylophosaurus-size-comparison.html',
   '/guides/de/brachylophosaurus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire159 (2026-07-20): brachylophosaurus-3d-viewer-vs-ar-apps
@@ -8906,7 +8884,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/brachylophosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/brachylophosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/es/brachylophosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/brachylophosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/brachylophosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/brachylophosaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire160 (2026-07-20): how-to-view-shuangmiaosaurus-in-3d
@@ -9450,7 +9427,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/acrocanthosaurus-size-comparison.html',
   '/guides/pt/acrocanthosaurus-size-comparison.html',
   '/guides/es/acrocanthosaurus-size-comparison.html',
-  '/guides/vi/acrocanthosaurus-size-comparison.html',
   '/guides/id/acrocanthosaurus-size-comparison.html',
   '/guides/de/acrocanthosaurus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire228 (2026-07-20): acrocanthosaurus-3d-viewer-vs-ar-apps
@@ -9458,7 +9434,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/acrocanthosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/acrocanthosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/es/acrocanthosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/acrocanthosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/acrocanthosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/acrocanthosaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire229 (2026-07-21): how-to-view-abelisaurus-in-3d
@@ -9474,7 +9449,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/abelisaurus-size-comparison.html',
   '/guides/pt/abelisaurus-size-comparison.html',
   '/guides/es/abelisaurus-size-comparison.html',
-  '/guides/vi/abelisaurus-size-comparison.html',
   '/guides/id/abelisaurus-size-comparison.html',
   '/guides/de/abelisaurus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire231 (2026-07-21): abelisaurus-3d-viewer-vs-ar-apps
@@ -9482,7 +9456,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/abelisaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/abelisaurus-3d-viewer-vs-ar-apps.html',
   '/guides/es/abelisaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/abelisaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/abelisaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/abelisaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire232 (2026-07-21): how-to-view-chasmosaurus-in-3d
@@ -12365,13 +12338,11 @@ export const GUIDE_ROUTES = new Set([
   '/guides/abyss-signal-diver-when.html',
   '/guides/pt/abyss-signal-diver-when.html',
   '/guides/es/abyss-signal-diver-when.html',
-  '/guides/vi/abyss-signal-diver-when.html',
   '/guides/id/abyss-signal-diver-when.html',
   '/guides/de/abyss-signal-diver-when.html',
   '/guides/abyss-signal-diver-vs-alternatives.html',
   '/guides/pt/abyss-signal-diver-vs-alternatives.html',
   '/guides/es/abyss-signal-diver-vs-alternatives.html',
-  '/guides/vi/abyss-signal-diver-vs-alternatives.html',
   '/guides/id/abyss-signal-diver-vs-alternatives.html',
   '/guides/de/abyss-signal-diver-vs-alternatives.html',
 
@@ -14476,6 +14447,38 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  '/guides/vi/comet-orbit-when.html': '/guides/comet-orbit-when.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/comet-orbit-vs-alternatives.html': '/guides/comet-orbit-vs-alternatives.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/comet-orbit-step-by-step.html': '/guides/comet-orbit-step-by-step.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/color-contrast-checker-wcag-when.html': '/guides/color-contrast-checker-wcag-when.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/color-contrast-checker-wcag-vs-alternatives.html': '/guides/color-contrast-checker-wcag-vs-alternatives.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/color-contrast-checker-wcag-step-by-step.html': '/guides/color-contrast-checker-wcag-step-by-step.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/ceratosaurus-size-comparison.html': '/guides/ceratosaurus-size-comparison.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/ceratosaurus-3d-viewer-vs-ar-apps.html': '/guides/ceratosaurus-3d-viewer-vs-ar-apps.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/carnotaurus-size-comparison.html': '/guides/carnotaurus-size-comparison.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/carnotaurus-3d-viewer-vs-ar-apps.html': '/guides/carnotaurus-3d-viewer-vs-ar-apps.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/brontosaurus-size-comparison.html': '/guides/brontosaurus-size-comparison.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/brontosaurus-3d-viewer-vs-ar-apps.html': '/guides/brontosaurus-3d-viewer-vs-ar-apps.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/brachylophosaurus-size-comparison.html': '/guides/brachylophosaurus-size-comparison.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/brachylophosaurus-3d-viewer-vs-ar-apps.html': '/guides/brachylophosaurus-3d-viewer-vs-ar-apps.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/baryonyx-size-comparison.html': '/guides/baryonyx-size-comparison.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/baryonyx-3d-viewer-vs-ar-apps.html': '/guides/baryonyx-3d-viewer-vs-ar-apps.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/ankylosaurus-size-comparison.html': '/guides/ankylosaurus-size-comparison.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/ankylosaurus-3d-viewer-vs-ar-apps.html': '/guides/ankylosaurus-3d-viewer-vs-ar-apps.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/allosaurus-size-comparison.html': '/guides/allosaurus-size-comparison.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/allosaurus-3d-viewer-vs-ar-apps.html': '/guides/allosaurus-3d-viewer-vs-ar-apps.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/acrocanthosaurus-size-comparison.html': '/guides/acrocanthosaurus-size-comparison.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/acrocanthosaurus-3d-viewer-vs-ar-apps.html': '/guides/acrocanthosaurus-3d-viewer-vs-ar-apps.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/abyss-signal-diver-when.html': '/guides/abyss-signal-diver-when.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/abyss-signal-diver-vs-alternatives.html': '/guides/abyss-signal-diver-vs-alternatives.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/aberration-of-starlight-when.html': '/guides/aberration-of-starlight-when.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/aberration-of-starlight-vs-alternatives.html': '/guides/aberration-of-starlight-vs-alternatives.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/aberration-of-starlight-step-by-step.html': '/guides/aberration-of-starlight-step-by-step.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/abelisaurus-size-comparison.html': '/guides/abelisaurus-size-comparison.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/abelisaurus-3d-viewer-vs-ar-apps.html': '/guides/abelisaurus-3d-viewer-vs-ar-apps.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/2048-game-merge-numbers-puzzle-when.html': '/guides/2048-game-merge-numbers-puzzle-when.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/2048-game-merge-numbers-puzzle-vs-alternatives.html': '/guides/2048-game-merge-numbers-puzzle-vs-alternatives.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
+  '/guides/vi/2048-game-merge-numbers-puzzle-step-by-step.html': '/guides/2048-game-merge-numbers-puzzle-step-by-step.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
   // consolidation fire61 (2026-08-14): retire the how-to-play-precision-bounce-loop
   // doorway family into its canonical GAME page. Backlog item
   // topical-map-games.precision-bounce-loop (1 live excess family; across all 6
@@ -19468,13 +19471,11 @@ export const JSP_BY_ROUTE = {
   '/guides/abyss-signal-diver-when.html': 'guide/abyss-signal-diver-when.jsp',
   '/guides/pt/abyss-signal-diver-when.html': 'guide/pt/abyss-signal-diver-when.jsp',
   '/guides/es/abyss-signal-diver-when.html': 'guide/es/abyss-signal-diver-when.jsp',
-  '/guides/vi/abyss-signal-diver-when.html': 'guide/vi/abyss-signal-diver-when.jsp',
   '/guides/id/abyss-signal-diver-when.html': 'guide/id/abyss-signal-diver-when.jsp',
   '/guides/de/abyss-signal-diver-when.html': 'guide/de/abyss-signal-diver-when.jsp',
   '/guides/abyss-signal-diver-vs-alternatives.html': 'guide/abyss-signal-diver-vs-alternatives.jsp',
   '/guides/pt/abyss-signal-diver-vs-alternatives.html': 'guide/pt/abyss-signal-diver-vs-alternatives.jsp',
   '/guides/es/abyss-signal-diver-vs-alternatives.html': 'guide/es/abyss-signal-diver-vs-alternatives.jsp',
-  '/guides/vi/abyss-signal-diver-vs-alternatives.html': 'guide/vi/abyss-signal-diver-vs-alternatives.jsp',
   '/guides/id/abyss-signal-diver-vs-alternatives.html': 'guide/id/abyss-signal-diver-vs-alternatives.jsp',
   '/guides/de/abyss-signal-diver-vs-alternatives.html': 'guide/de/abyss-signal-diver-vs-alternatives.jsp',
   '/games/abyss-signal-diver.html': 'games/abyss-signal-diver.jsp',
@@ -20383,7 +20384,6 @@ export const JSP_BY_ROUTE = {
   '/guides/ankylosaurus-size-comparison.html': 'guide/ankylosaurus-size-comparison.jsp',
   '/guides/pt/ankylosaurus-size-comparison.html': 'guide/pt/ankylosaurus-size-comparison.jsp',
   '/guides/es/ankylosaurus-size-comparison.html': 'guide/es/ankylosaurus-size-comparison.jsp',
-  '/guides/vi/ankylosaurus-size-comparison.html': 'guide/vi/ankylosaurus-size-comparison.jsp',
   '/guides/id/ankylosaurus-size-comparison.html': 'guide/id/ankylosaurus-size-comparison.jsp',
   '/guides/de/ankylosaurus-size-comparison.html': 'guide/de/ankylosaurus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire24 (2026-07-17): ankylosaurus-3d-viewer-vs-ar-apps
@@ -20391,7 +20391,6 @@ export const JSP_BY_ROUTE = {
   '/guides/ankylosaurus-3d-viewer-vs-ar-apps.html': 'guide/ankylosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/ankylosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/ankylosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/ankylosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/ankylosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/ankylosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/ankylosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/ankylosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/ankylosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/ankylosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/ankylosaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire25 (2026-07-17): how-to-view-parasaurolophus-in-3d
@@ -20455,7 +20454,6 @@ export const JSP_BY_ROUTE = {
   '/guides/allosaurus-size-comparison.html': 'guide/allosaurus-size-comparison.jsp',
   '/guides/pt/allosaurus-size-comparison.html': 'guide/pt/allosaurus-size-comparison.jsp',
   '/guides/es/allosaurus-size-comparison.html': 'guide/es/allosaurus-size-comparison.jsp',
-  '/guides/vi/allosaurus-size-comparison.html': 'guide/vi/allosaurus-size-comparison.jsp',
   '/guides/id/allosaurus-size-comparison.html': 'guide/id/allosaurus-size-comparison.jsp',
   '/guides/de/allosaurus-size-comparison.html': 'guide/de/allosaurus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire33 (2026-07-17): allosaurus-3d-viewer-vs-ar-apps
@@ -20463,7 +20461,6 @@ export const JSP_BY_ROUTE = {
   '/guides/allosaurus-3d-viewer-vs-ar-apps.html': 'guide/allosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/allosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/allosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/allosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/allosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/allosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/allosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/allosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/allosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/allosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/allosaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire34 (2026-07-17): how-to-view-giganotosaurus-in-3d
@@ -20551,7 +20548,6 @@ export const JSP_BY_ROUTE = {
   '/guides/carnotaurus-size-comparison.html': 'guide/carnotaurus-size-comparison.jsp',
   '/guides/pt/carnotaurus-size-comparison.html': 'guide/pt/carnotaurus-size-comparison.jsp',
   '/guides/es/carnotaurus-size-comparison.html': 'guide/es/carnotaurus-size-comparison.jsp',
-  '/guides/vi/carnotaurus-size-comparison.html': 'guide/vi/carnotaurus-size-comparison.jsp',
   '/guides/id/carnotaurus-size-comparison.html': 'guide/id/carnotaurus-size-comparison.jsp',
   '/guides/de/carnotaurus-size-comparison.html': 'guide/de/carnotaurus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire45 (2026-07-18): carnotaurus-3d-viewer-vs-ar-apps
@@ -20559,7 +20555,6 @@ export const JSP_BY_ROUTE = {
   '/guides/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/carnotaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/carnotaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/es/carnotaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/carnotaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/id/carnotaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/de/carnotaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire46 (2026-07-18): how-to-view-dilophosaurus-in-3d
@@ -20743,7 +20738,6 @@ export const JSP_BY_ROUTE = {
   '/guides/baryonyx-size-comparison.html': 'guide/baryonyx-size-comparison.jsp',
   '/guides/pt/baryonyx-size-comparison.html': 'guide/pt/baryonyx-size-comparison.jsp',
   '/guides/es/baryonyx-size-comparison.html': 'guide/es/baryonyx-size-comparison.jsp',
-  '/guides/vi/baryonyx-size-comparison.html': 'guide/vi/baryonyx-size-comparison.jsp',
   '/guides/id/baryonyx-size-comparison.html': 'guide/id/baryonyx-size-comparison.jsp',
   '/guides/de/baryonyx-size-comparison.html': 'guide/de/baryonyx-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire69 (2026-07-18): baryonyx-3d-viewer-vs-ar-apps
@@ -20751,7 +20745,6 @@ export const JSP_BY_ROUTE = {
   '/guides/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/baryonyx-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/pt/baryonyx-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/es/baryonyx-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/vi/baryonyx-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/id/baryonyx-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/de/baryonyx-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire70 (2026-07-18): how-to-view-plesiosaurus-in-3d
@@ -20887,7 +20880,6 @@ export const JSP_BY_ROUTE = {
   '/guides/ceratosaurus-size-comparison.html': 'guide/ceratosaurus-size-comparison.jsp',
   '/guides/pt/ceratosaurus-size-comparison.html': 'guide/pt/ceratosaurus-size-comparison.jsp',
   '/guides/es/ceratosaurus-size-comparison.html': 'guide/es/ceratosaurus-size-comparison.jsp',
-  '/guides/vi/ceratosaurus-size-comparison.html': 'guide/vi/ceratosaurus-size-comparison.jsp',
   '/guides/id/ceratosaurus-size-comparison.html': 'guide/id/ceratosaurus-size-comparison.jsp',
   '/guides/de/ceratosaurus-size-comparison.html': 'guide/de/ceratosaurus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire87 (2026-07-18): ceratosaurus-3d-viewer-vs-ar-apps
@@ -20895,7 +20887,6 @@ export const JSP_BY_ROUTE = {
   '/guides/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire88 (2026-07-18): how-to-view-protoceratops-in-3d
@@ -20935,7 +20926,6 @@ export const JSP_BY_ROUTE = {
   '/guides/brontosaurus-size-comparison.html': 'guide/brontosaurus-size-comparison.jsp',
   '/guides/pt/brontosaurus-size-comparison.html': 'guide/pt/brontosaurus-size-comparison.jsp',
   '/guides/es/brontosaurus-size-comparison.html': 'guide/es/brontosaurus-size-comparison.jsp',
-  '/guides/vi/brontosaurus-size-comparison.html': 'guide/vi/brontosaurus-size-comparison.jsp',
   '/guides/id/brontosaurus-size-comparison.html': 'guide/id/brontosaurus-size-comparison.jsp',
   '/guides/de/brontosaurus-size-comparison.html': 'guide/de/brontosaurus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire93 (2026-07-18): brontosaurus-3d-viewer-vs-ar-apps
@@ -20943,7 +20933,6 @@ export const JSP_BY_ROUTE = {
   '/guides/brontosaurus-3d-viewer-vs-ar-apps.html': 'guide/brontosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/brontosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/brontosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/brontosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/brontosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/brontosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/brontosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/brontosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/brontosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/brontosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/brontosaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire94 (2026-07-18): how-to-view-megalosaurus-in-3d
@@ -21463,7 +21452,6 @@ export const JSP_BY_ROUTE = {
   '/guides/brachylophosaurus-size-comparison.html': 'guide/brachylophosaurus-size-comparison.jsp',
   '/guides/pt/brachylophosaurus-size-comparison.html': 'guide/pt/brachylophosaurus-size-comparison.jsp',
   '/guides/es/brachylophosaurus-size-comparison.html': 'guide/es/brachylophosaurus-size-comparison.jsp',
-  '/guides/vi/brachylophosaurus-size-comparison.html': 'guide/vi/brachylophosaurus-size-comparison.jsp',
   '/guides/id/brachylophosaurus-size-comparison.html': 'guide/id/brachylophosaurus-size-comparison.jsp',
   '/guides/de/brachylophosaurus-size-comparison.html': 'guide/de/brachylophosaurus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire159 (2026-07-20): brachylophosaurus-3d-viewer-vs-ar-apps
@@ -21471,7 +21459,6 @@ export const JSP_BY_ROUTE = {
   '/guides/brachylophosaurus-3d-viewer-vs-ar-apps.html': 'guide/brachylophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/brachylophosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/brachylophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/brachylophosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/brachylophosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/brachylophosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/brachylophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/brachylophosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/brachylophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/brachylophosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/brachylophosaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire160 (2026-07-20): how-to-view-shuangmiaosaurus-in-3d
@@ -22015,7 +22002,6 @@ export const JSP_BY_ROUTE = {
   '/guides/acrocanthosaurus-size-comparison.html': 'guide/acrocanthosaurus-size-comparison.jsp',
   '/guides/pt/acrocanthosaurus-size-comparison.html': 'guide/pt/acrocanthosaurus-size-comparison.jsp',
   '/guides/es/acrocanthosaurus-size-comparison.html': 'guide/es/acrocanthosaurus-size-comparison.jsp',
-  '/guides/vi/acrocanthosaurus-size-comparison.html': 'guide/vi/acrocanthosaurus-size-comparison.jsp',
   '/guides/id/acrocanthosaurus-size-comparison.html': 'guide/id/acrocanthosaurus-size-comparison.jsp',
   '/guides/de/acrocanthosaurus-size-comparison.html': 'guide/de/acrocanthosaurus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire228 (2026-07-20): acrocanthosaurus-3d-viewer-vs-ar-apps
@@ -22023,7 +22009,6 @@ export const JSP_BY_ROUTE = {
   '/guides/acrocanthosaurus-3d-viewer-vs-ar-apps.html': 'guide/acrocanthosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/acrocanthosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/acrocanthosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/acrocanthosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/acrocanthosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/acrocanthosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/acrocanthosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/acrocanthosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/acrocanthosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/acrocanthosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/acrocanthosaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire229 (2026-07-21): how-to-view-abelisaurus-in-3d
@@ -22039,7 +22024,6 @@ export const JSP_BY_ROUTE = {
   '/guides/abelisaurus-size-comparison.html': 'guide/abelisaurus-size-comparison.jsp',
   '/guides/pt/abelisaurus-size-comparison.html': 'guide/pt/abelisaurus-size-comparison.jsp',
   '/guides/es/abelisaurus-size-comparison.html': 'guide/es/abelisaurus-size-comparison.jsp',
-  '/guides/vi/abelisaurus-size-comparison.html': 'guide/vi/abelisaurus-size-comparison.jsp',
   '/guides/id/abelisaurus-size-comparison.html': 'guide/id/abelisaurus-size-comparison.jsp',
   '/guides/de/abelisaurus-size-comparison.html': 'guide/de/abelisaurus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire231 (2026-07-21): abelisaurus-3d-viewer-vs-ar-apps
@@ -22047,7 +22031,6 @@ export const JSP_BY_ROUTE = {
   '/guides/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/abelisaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/abelisaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/es/abelisaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/abelisaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/id/abelisaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/de/abelisaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire232 (2026-07-21): how-to-view-chasmosaurus-in-3d
@@ -22469,9 +22452,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/2048-game-merge-numbers-puzzle-when.html': 'guide/es/2048-game-merge-numbers-puzzle-when.jsp',
   '/guides/es/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/es/2048-game-merge-numbers-puzzle-step-by-step.jsp',
   '/guides/es/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/es/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
-  '/guides/vi/2048-game-merge-numbers-puzzle-when.html': 'guide/vi/2048-game-merge-numbers-puzzle-when.jsp',
-  '/guides/vi/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/vi/2048-game-merge-numbers-puzzle-step-by-step.jsp',
-  '/guides/vi/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/vi/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
   '/guides/id/2048-game-merge-numbers-puzzle-when.html': 'guide/id/2048-game-merge-numbers-puzzle-when.jsp',
   '/guides/id/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/id/2048-game-merge-numbers-puzzle-step-by-step.jsp',
   '/guides/id/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/id/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
@@ -24004,7 +23984,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/equation-of-time-vs-alternatives.html': 'guide/vi/equation-of-time-vs-alternatives.jsp',
   '/guides/vi/zodiacal-light-vs-alternatives.html': 'guide/vi/zodiacal-light-vs-alternatives.jsp',
   '/guides/vi/stellar-proper-motion-vs-alternatives.html': 'guide/vi/stellar-proper-motion-vs-alternatives.jsp',
-  '/guides/vi/aberration-of-starlight-vs-alternatives.html': 'guide/vi/aberration-of-starlight-vs-alternatives.jsp',
   '/guides/vi/planetary-conjunction-vs-alternatives.html': 'guide/vi/planetary-conjunction-vs-alternatives.jsp',
   '/guides/vi/planetary-oblateness-vs-alternatives.html': 'guide/vi/planetary-oblateness-vs-alternatives.jsp',
   '/guides/vi/coriolis-effect-vs-alternatives.html': 'guide/vi/coriolis-effect-vs-alternatives.jsp',
@@ -24076,7 +24055,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/equation-of-time-when.html': 'guide/vi/equation-of-time-when.jsp',
   '/guides/vi/zodiacal-light-when.html': 'guide/vi/zodiacal-light-when.jsp',
   '/guides/vi/stellar-proper-motion-when.html': 'guide/vi/stellar-proper-motion-when.jsp',
-  '/guides/vi/aberration-of-starlight-when.html': 'guide/vi/aberration-of-starlight-when.jsp',
   '/guides/vi/planetary-conjunction-when.html': 'guide/vi/planetary-conjunction-when.jsp',
   '/guides/vi/planetary-oblateness-when.html': 'guide/vi/planetary-oblateness-when.jsp',
   '/guides/vi/coriolis-effect-when.html': 'guide/vi/coriolis-effect-when.jsp',
@@ -24146,7 +24124,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/equation-of-time-step-by-step.html': 'guide/vi/equation-of-time-step-by-step.jsp',
   '/guides/vi/zodiacal-light-step-by-step.html': 'guide/vi/zodiacal-light-step-by-step.jsp',
   '/guides/vi/stellar-proper-motion-step-by-step.html': 'guide/vi/stellar-proper-motion-step-by-step.jsp',
-  '/guides/vi/aberration-of-starlight-step-by-step.html': 'guide/vi/aberration-of-starlight-step-by-step.jsp',
   '/guides/vi/planetary-conjunction-step-by-step.html': 'guide/vi/planetary-conjunction-step-by-step.jsp',
   '/guides/vi/planetary-oblateness-step-by-step.html': 'guide/vi/planetary-oblateness-step-by-step.jsp',
   '/guides/vi/coriolis-effect-step-by-step.html': 'guide/vi/coriolis-effect-step-by-step.jsp',
@@ -24663,19 +24640,16 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/comet-orbit-when.html': 'guide/pt/comet-orbit-when.jsp',
   '/guides/es/comet-orbit-when.html': 'guide/es/comet-orbit-when.jsp',
   '/guides/de/comet-orbit-when.html': 'guide/de/comet-orbit-when.jsp',
-  '/guides/vi/comet-orbit-when.html': 'guide/vi/comet-orbit-when.jsp',
   '/guides/id/comet-orbit-when.html': 'guide/id/comet-orbit-when.jsp',
   '/guides/comet-orbit-step-by-step.html': 'guide/comet-orbit-step-by-step.jsp',
   '/guides/pt/comet-orbit-step-by-step.html': 'guide/pt/comet-orbit-step-by-step.jsp',
   '/guides/es/comet-orbit-step-by-step.html': 'guide/es/comet-orbit-step-by-step.jsp',
   '/guides/de/comet-orbit-step-by-step.html': 'guide/de/comet-orbit-step-by-step.jsp',
-  '/guides/vi/comet-orbit-step-by-step.html': 'guide/vi/comet-orbit-step-by-step.jsp',
   '/guides/id/comet-orbit-step-by-step.html': 'guide/id/comet-orbit-step-by-step.jsp',
   '/guides/comet-orbit-vs-alternatives.html': 'guide/comet-orbit-vs-alternatives.jsp',
   '/guides/pt/comet-orbit-vs-alternatives.html': 'guide/pt/comet-orbit-vs-alternatives.jsp',
   '/guides/es/comet-orbit-vs-alternatives.html': 'guide/es/comet-orbit-vs-alternatives.jsp',
   '/guides/de/comet-orbit-vs-alternatives.html': 'guide/de/comet-orbit-vs-alternatives.jsp',
-  '/guides/vi/comet-orbit-vs-alternatives.html': 'guide/vi/comet-orbit-vs-alternatives.jsp',
   '/guides/id/comet-orbit-vs-alternatives.html': 'guide/id/comet-orbit-vs-alternatives.jsp',
   '/guides/seasons-earth-when.html': 'guide/seasons-earth-when.jsp',
   '/guides/pt/seasons-earth-when.html': 'guide/pt/seasons-earth-when.jsp',
@@ -26208,19 +26182,16 @@ export const JSP_BY_ROUTE = {
   '/guides/color-contrast-checker-wcag-when.html': 'guide/color-contrast-checker-wcag-when.jsp',
   '/guides/de/color-contrast-checker-wcag-when.html': 'guide/de/color-contrast-checker-wcag-when.jsp',
   '/guides/id/color-contrast-checker-wcag-when.html': 'guide/id/color-contrast-checker-wcag-when.jsp',
-  '/guides/vi/color-contrast-checker-wcag-when.html': 'guide/vi/color-contrast-checker-wcag-when.jsp',
   '/guides/es/color-contrast-checker-wcag-when.html': 'guide/es/color-contrast-checker-wcag-when.jsp',
   '/guides/pt/color-contrast-checker-wcag-when.html': 'guide/pt/color-contrast-checker-wcag-when.jsp',
   '/guides/color-contrast-checker-wcag-step-by-step.html': 'guide/color-contrast-checker-wcag-step-by-step.jsp',
   '/guides/de/color-contrast-checker-wcag-step-by-step.html': 'guide/de/color-contrast-checker-wcag-step-by-step.jsp',
   '/guides/id/color-contrast-checker-wcag-step-by-step.html': 'guide/id/color-contrast-checker-wcag-step-by-step.jsp',
-  '/guides/vi/color-contrast-checker-wcag-step-by-step.html': 'guide/vi/color-contrast-checker-wcag-step-by-step.jsp',
   '/guides/es/color-contrast-checker-wcag-step-by-step.html': 'guide/es/color-contrast-checker-wcag-step-by-step.jsp',
   '/guides/pt/color-contrast-checker-wcag-step-by-step.html': 'guide/pt/color-contrast-checker-wcag-step-by-step.jsp',
   '/guides/color-contrast-checker-wcag-vs-alternatives.html': 'guide/color-contrast-checker-wcag-vs-alternatives.jsp',
   '/guides/de/color-contrast-checker-wcag-vs-alternatives.html': 'guide/de/color-contrast-checker-wcag-vs-alternatives.jsp',
   '/guides/id/color-contrast-checker-wcag-vs-alternatives.html': 'guide/id/color-contrast-checker-wcag-vs-alternatives.jsp',
-  '/guides/vi/color-contrast-checker-wcag-vs-alternatives.html': 'guide/vi/color-contrast-checker-wcag-vs-alternatives.jsp',
   '/guides/es/color-contrast-checker-wcag-vs-alternatives.html': 'guide/es/color-contrast-checker-wcag-vs-alternatives.jsp',
   '/guides/pt/color-contrast-checker-wcag-vs-alternatives.html': 'guide/pt/color-contrast-checker-wcag-vs-alternatives.jsp',
   '/developer-tools/svg-optimizer.html': 'utility/svg-optimizer.jsp',
@@ -29127,23 +29098,11 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   // search. The abort-in-place pattern; rare.
 
   // pruned 2026-07-28 zero-evidence vi - batch vi-batch-1 (200 routes)
-  '/guides/vi/2048-game-merge-numbers-puzzle-step-by-step.html',
-  '/guides/vi/2048-game-merge-numbers-puzzle-vs-alternatives.html',
-  '/guides/vi/2048-game-merge-numbers-puzzle-when.html',
-  '/guides/vi/abelisaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/abelisaurus-size-comparison.html',
-  '/guides/vi/aberration-of-starlight-step-by-step.html',
-  '/guides/vi/aberration-of-starlight-vs-alternatives.html',
-  '/guides/vi/aberration-of-starlight-when.html',
-  '/guides/vi/abyss-signal-diver-vs-alternatives.html',
-  '/guides/vi/abyss-signal-diver-when.html',
   '/guides/vi/accelerate-slow-motion-video-step-by-step.html',
   '/guides/vi/accelerate-slow-motion-video-vs-alternatives.html',
   '/guides/vi/accelerate-slow-motion-video-when.html',
   '/guides/vi/achillobator-3d-viewer-vs-ar-apps.html',
   '/guides/vi/achillobator-size-comparison.html',
-  '/guides/vi/acrocanthosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/acrocanthosaurus-size-comparison.html',
   '/guides/vi/add-annotation-to-pdf-step-by-step.html',
   '/guides/vi/add-annotation-to-pdf-vs-alternatives.html',
   '/guides/vi/add-annotation-to-pdf-when.html',
@@ -29191,13 +29150,9 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/align-elements-in-svg-step-by-step.html',
   '/guides/vi/align-elements-in-svg-vs-alternatives.html',
   '/guides/vi/align-elements-in-svg-when.html',
-  '/guides/vi/allosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/allosaurus-size-comparison.html',
   '/guides/vi/animate-text-in-video-step-by-step.html',
   '/guides/vi/animate-text-in-video-vs-alternatives.html',
   '/guides/vi/animate-text-in-video-when.html',
-  '/guides/vi/ankylosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/ankylosaurus-size-comparison.html',
   '/guides/vi/annotate-pdf-with-drawings-step-by-step.html',
   '/guides/vi/annotate-pdf-with-drawings-vs-alternatives.html',
   '/guides/vi/annotate-pdf-with-drawings-when.html',
@@ -29248,8 +29203,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/background-remover-step-by-step.html',
   '/guides/vi/background-remover-vs-alternatives.html',
   '/guides/vi/background-remover-when.html',
-  '/guides/vi/baryonyx-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/baryonyx-size-comparison.html',
   '/guides/vi/base64-to-image-step-by-step.html',
   '/guides/vi/base64-to-image-vs-alternatives.html',
   '/guides/vi/base64-to-image-when.html',
@@ -29291,23 +29244,15 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/blur-image-step-by-step.html',
   '/guides/vi/blur-image-vs-alternatives.html',
   '/guides/vi/blur-image-when.html',
-  '/guides/vi/brachylophosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/brachylophosaurus-size-comparison.html',
   '/guides/vi/brachiosaur-3d-viewer-vs-ar-apps.html',
   '/guides/vi/brachiosaur-size-comparison.html',
-  '/guides/vi/brontosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/brontosaurus-size-comparison.html',
   '/guides/vi/bubble-pop-vs-alternatives.html',
   '/guides/vi/bubble-pop-when.html',
   '/guides/vi/camera-test-step-by-step.html',
   '/guides/vi/camera-test-vs-alternatives.html',
   '/guides/vi/camera-test-when.html',
-  '/guides/vi/carnotaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/carnotaurus-size-comparison.html',
   '/guides/vi/catch-the-dot-vs-alternatives.html',
   '/guides/vi/catch-the-dot-when.html',
-  '/guides/vi/ceratosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/ceratosaurus-size-comparison.html',
   '/guides/vi/change-background-color-step-by-step.html',
   '/guides/vi/change-background-color-vs-alternatives.html',
   '/guides/vi/change-background-color-when.html',
@@ -29327,12 +29272,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/cipiti-size-comparison.html',
   '/guides/vi/coahuilaceratops-3d-viewer-vs-ar-apps.html',
   '/guides/vi/coahuilaceratops-size-comparison.html',
-  '/guides/vi/color-contrast-checker-wcag-step-by-step.html',
-  '/guides/vi/color-contrast-checker-wcag-vs-alternatives.html',
-  '/guides/vi/color-contrast-checker-wcag-when.html',
-  '/guides/vi/comet-orbit-step-by-step.html',
-  '/guides/vi/comet-orbit-vs-alternatives.html',
-  '/guides/vi/comet-orbit-when.html',
 
   // pruned 2026-07-28 zero-evidence vi - batch vi-batch-2 (200 routes)
   '/guides/vi/add-page-numbers-pdf-step-by-step.html',
