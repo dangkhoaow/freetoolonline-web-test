@@ -2,61 +2,20 @@
     display:none
 }
 
-/* RPM-sprint experiment RPM4 (2026-08-10): reclaim MOBILE ad density on this
- * page only.
+/* WARNING: THIS FILE IS SERVED TO READERS, COMMENTS INCLUDED - it is inlined into
+ * this page's head <style>. Never write revenue, traffic or other internal
+ * business figures here. Rationale, measurements and verdicts belong in
+ * prompts/rpm-sprint-runbook/_ledger.json and seo-reports/, never in shipped
+ * markup. (A prior revision of this comment published a per-page AdSense
+ * earnings table to every visitor; removed 2026-08-18.)
  *
- * SYMPTOM (measured this fire at 390x844 on live staging AND live prod): this
- * page emits 5 provisioned AdSense units and renders exactly ONE visible slot
- * on mobile - the 320x100 top banner at y=50 - inside a page 7,473px tall. So
- * roughly 7,400px of content carries no ad at all. Desktop is unaffected and
- * already serves 3 of 5 (top, right panel, and the in-content unit that
- * experiment RPM1 un-hid sitewide but deliberately only above 1000px). The
- * other two units cannot be reached from here: the right panel is
- * desktop-layout-only by design, and the bottom banner 8829154851 is still
- * hard-hidden sitewide by an unconditional inline display-none-important on a
- * container carrying no distinguishing class, so only the shared fragment could
- * ever un-hide it - never page CSS.
- *
- * FIX: un-hide the in-content slot below 1001px for THIS page only. The unit is
- * already provisioned, already emitted into the HTML, and already sized for
- * mobile by the shared fragment (.adslot_2 -> 320x100 at <= 728px), so the
- * 100px band is RESERVED by CSS in the head before first paint and a filled
- * slot pays no layout shift. Verified BEFORE shipping by injecting exactly this
- * CSS into the live staging page's head via response interception: mobile
- * visible slots 1 -> 2 of 5, the slot lands at y=4197 = 55.2% of page depth
- * (mid-page, well clear of the top banner), no horizontal overflow, and CLS
- * median over 4 loads was 0.0201 against a 0.0201 no-CSS baseline - a delta of
- * exactly 0.0000. Desktop was unchanged at 3 of 5 with in-content still at
- * y=2299, confirming RPM1 is not perturbed.
- *
- * WHY THIS PAGE: it is the highest-headroom target that is both ELIGIBLE and
- * ADMISSIBLE this fire. The three pages above it by headroom (lcd-test $46.38,
- * remove-zip-password $23.46, zip-file $19.65) each carry a live experiment
- * awaiting its Day+7 readout, and the next two (crop-image $2.44,
- * photo-editor $1.14) were rejected for a MEASURED reason, not a judgment call:
- * their mobile CLS baselines are 0.1243 and 0.2120 (median of 6 loads each),
- * both already above the runbook's 0.10 absolute cap before any edit, so no
- * mobile experiment on either can satisfy the CLS guard. This page measures
- * 0.0201. Its audience also prices well: 91.0% of its 7d revenue is United
- * States, the most US-concentrated share in the eligible set.
- *
- * REPLICATION AND ITS LIMIT, STATED HONESTLY: this is the SAME intervention as
- * RPM2 (remove-zip-password) and RPM3 (zip-file), and it ships before either
- * has read out. It is therefore not an independent third test of the mechanism
- * but a third instance of one unproven recipe. Worse, this page takes only 153
- * pageviews and 2 clicks per 7 days, so its own Day+7 readout has LOW power -
- * a single extra click moves its RPM by tens of percent. Read it pooled with
- * RPM2/RPM3 as replication evidence, never as a standalone verdict, and do not
- * auto-revert it on a sub-noise RPM move alone. What justifies shipping anyway
- * is that the change is monotone by construction: it only ever makes a
- * currently-dormant slot visible and never moves, resizes or removes an
- * earning one, so the realistic downside is "no gain" rather than a loss.
- *
- * SCOPE: page-scoped by construction. PAGESTYLE<slug>.css is read only for this
- * slug and injected into this page's head <style>, so this cannot touch any
- * other page. That is also what keeps the readouts separable: RPM1 is sitewide
- * but desktop-only, RPM2/RPM3/RPM4 are mobile-only on three different pages, so
- * no two live experiments share both a page and a form factor.
+ * WHAT THIS DOES: un-hides the already-provisioned in-content ad slot below
+ * 1001px for THIS page only (experiment RPM4, 2026-08-10). The slot is emitted
+ * into the HTML and sized by the shared fragment (.adslot_2 -> 320x100 at
+ * <= 728px) regardless; this only makes it visible, so the band is reserved by
+ * head CSS before first paint and an enabled slot pays no layout shift.
+ * Full hypothesis, baselines, CLS/density measurements and scope reasoning:
+ * the RPM4 entry in the ledger above.
  *
  * SPECIFICITY (deliberate, not incidental). The shared fragment's rules live in
  * a body <style> that comes AFTER this head <style>, so ties in source order go
