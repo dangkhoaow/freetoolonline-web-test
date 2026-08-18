@@ -1,0 +1,230 @@
+<script>
+    // Game-server-status archetype skeleton (game-server-status) - live-data class,
+    // no upload, no backend, no vendored lib. Registry Gate-H entry:
+    // game_server_status_multiapi. Two data sources, both keyless:
+    //   (a) hosted-statuspage public status APIs (status.epicgames.com,
+    //       status.roblox.com, discordstatus.com - /api/v2/status.json,
+    //       CORS access-control-allow-origin: *), and
+    //   (b) the community mcstatus.io v2 API for per-server Minecraft
+    //       lookups (CORS *; mcstatus.io's servers ping the game server -
+    //       a web page cannot open a raw game-port TCP connection itself).
+    // G16 NOTE: unlike the vehicle-recall/wildfire siblings, the
+    // zero-interaction visible output here is the SYNCHRONOUS render (the
+    // three platform cards in their checking state + the full explainer
+    // block) - gaming domains are a commonly firewalled category (schools,
+    // offices), so the page must read as complete BEFORE any fetch
+    // resolves, and every card must degrade to a visible, honest error
+    // line, never a blank panel.
+    // HONESTY NOTE: platform cards read each platform's own public status
+    // API; the Minecraft query (the address the reader types) goes to the
+    // mcstatus.io service, never to this site's servers. The page states
+    // both plainly and never claims "never leaves your browser".
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top
+    // level. In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var GSS_PLATFORMS = [
+        { id: 'epic', name: 'Fortnite / Epic Games services', api: 'https://status.epicgames.com/api/v2/status.json', page: 'https://status.epicgames.com' },
+        { id: 'roblox', name: 'Roblox', api: 'https://status.roblox.com/api/v2/status.json', page: 'https://status.roblox.com' },
+        { id: 'discord', name: 'Discord', api: 'https://discordstatus.com/api/v2/status.json', page: 'https://discordstatus.com' }
+    ];
+    var GSS_MC_API = 'https://api.mcstatus.io/v2/status/';
+    var GSS_MC_EXAMPLE = 'mc.hypixel.net';
+    var GSS_INDICATORS = {
+        none: { label: 'All systems operational', color: '#2e7d32' },
+        minor: { label: 'Partial issue', color: '#b58900' },
+        major: { label: 'Major outage on some services', color: '#ef6c00' },
+        critical: { label: 'Platform-wide outage', color: '#b00020' }
+    };
+
+    function gssEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function gssFetchJson(url) {
+        return fetch(url, { headers: { 'Accept': 'application/json' } }).then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        });
+    }
+
+    function gssIndicatorBadge(indicator, description) {
+        var meta = GSS_INDICATORS[String(indicator || '').toLowerCase()] || null;
+        var color = meta ? meta.color : '#555';
+        var text = description || (meta ? meta.label : 'Status unknown');
+        return '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + color + ';margin-right:6px;vertical-align:baseline;"></span>' +
+            '<span style="color:' + color + ';font-weight:600;">' + gssEsc(text) + '</span>';
+    }
+
+    function gssRenderPlatformCards(root) {
+        var box = root.querySelector('#gssPlatforms');
+        if (!box) return;
+        var html = '';
+        for (var i = 0; i < GSS_PLATFORMS.length; i++) {
+            var p = GSS_PLATFORMS[i];
+            html += '<div id="gssCard-' + p.id + '" style="border:1px solid #e0e0e0;border-radius:4px;padding:10px 14px;margin:6px 12px 6px 0;display:inline-block;vertical-align:top;min-width:240px;">';
+            html += '<div style="font-weight:600;">' + gssEsc(p.name) + '</div>';
+            html += '<div class="gss-card-body" style="margin-top:4px;color:#555;">Checking live status...</div>';
+            html += '<div style="margin-top:4px;font-size:0.85em;"><a href="' + p.page + '" target="_blank" rel="noopener">Official status page</a></div>';
+            html += '</div>';
+        }
+        box.innerHTML = html;
+    }
+
+    function gssRefreshPlatform(root, p) {
+        var card = root.querySelector('#gssCard-' + p.id);
+        if (!card) return;
+        var body = card.querySelector('.gss-card-body');
+        gssFetchJson(p.api).then(function (data) {
+            var st = (data && data.status) ? data.status : {};
+            if (body) {
+                body.innerHTML = gssIndicatorBadge(st.indicator, st.description) +
+                    '<div style="color:#777;font-size:0.85em;margin-top:2px;">Checked ' + gssEsc(new Date().toLocaleTimeString()) + ' (official API)</div>';
+            }
+        }).catch(function (e) {
+            if (body) {
+                body.innerHTML = '<span style="color:#b00020;">Could not reach the status API from your network' +
+                    (e && e.message ? ' (' + gssEsc(e.message) + ')' : '') +
+                    '. Some school and office firewalls block gaming domains - the official page linked below may still open.</span>';
+            }
+        });
+    }
+
+    function gssMcStatusLine(root, msg, isError) {
+        var el = root.querySelector('#gssMcStatus');
+        if (!el) return;
+        el.style.color = isError ? '#b00020' : '#555';
+        el.textContent = msg;
+    }
+
+    function gssRenderMcResult(root, data, address, edition, isExample) {
+        var box = root.querySelector('#gssMcResult');
+        if (!box) return;
+        var head = '';
+        if (isExample) {
+            head += '<p style="color:#777;font-size:0.9em;margin:8px 0 2px;">Example lookup so you can see what results look like - check your own server above.</p>';
+        }
+        var online = !!(data && data.online);
+        var players = (data && data.players) ? data.players : {};
+        var version = (data && data.version) ? data.version : {};
+        var motd = (data && data.motd && data.motd.clean) ? String(data.motd.clean).split('\n')[0] : '';
+        var versionName = version.name_clean || version.name || '';
+        var html = head + '<div style="border:1px solid #e0e0e0;border-left:4px solid ' + (online ? '#2e7d32' : '#9e9e9e') + ';border-radius:4px;padding:10px 14px;margin-top:8px;">';
+        html += '<div style="font-weight:600;">' + gssEsc(address) + ' <span style="color:#777;font-weight:400;">(' + (edition === 'bedrock' ? 'Bedrock' : 'Java') + ' Edition)</span></div>';
+        if (online) {
+            html += '<div style="color:#2e7d32;font-weight:600;margin-top:2px;">Online</div>';
+            if (players && typeof players.online === 'number') {
+                html += '<div style="margin-top:2px;">Players: <b>' + players.online + '</b>' + (typeof players.max === 'number' ? ' / ' + players.max : '') + '</div>';
+            }
+            if (versionName) html += '<div style="margin-top:2px;">Version: ' + gssEsc(versionName) + '</div>';
+            if (motd) html += '<div style="margin-top:2px;color:#555;">MOTD: ' + gssEsc(motd) + '</div>';
+        } else {
+            html += '<div style="color:#555;margin-top:2px;"><b>Offline or not reachable.</b> The server did not answer the status ping. Double-check the exact address and port with the server owner or listing page - a restart can also take a minute to show here.</div>';
+        }
+        html += '<div style="color:#777;font-size:0.85em;margin-top:6px;">Checked via the mcstatus.io service; results can lag a server restart by about a minute.</div>';
+        html += '</div>';
+        box.innerHTML = html;
+    }
+
+    function gssCheckMinecraft(root, address, edition, isExample) {
+        var addr = String(address || '').trim().toLowerCase();
+        if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d{1,5})?$/.test(addr)) {
+            gssMcStatusLine(root, 'Type a server address like mc.hypixel.net or play.example.org:19132, then press Check server.', true);
+            return;
+        }
+        gssMcStatusLine(root, 'Asking mcstatus.io to ping ' + addr + '...');
+        var resBox = root.querySelector('#gssMcResult');
+        if (resBox) resBox.innerHTML = '';
+        gssFetchJson(GSS_MC_API + (edition === 'bedrock' ? 'bedrock/' : 'java/') + encodeURIComponent(addr)).then(function (data) {
+            gssMcStatusLine(root, 'Last checked: ' + new Date().toLocaleString() + ' (source: api.mcstatus.io)');
+            gssRenderMcResult(root, data, addr, edition, !!isExample);
+        }).catch(function (e) {
+            gssMcStatusLine(root, 'Could not reach the mcstatus.io lookup service' + (e && e.message ? ' (' + e.message + ')' : '') + '. Some school and office firewalls block gaming domains - try again from another network.', true);
+        });
+    }
+
+    function gssRenderExplainer() {
+        var rows = [
+            ['All systems operational', 'The platform reports no known problem. If your game still will not connect, the issue is usually local: your connection, your client version, or an account-specific block.'],
+            ['Partial issue', 'One or a few services are degraded - logins, a store, or voice chat may fail while gameplay works. Waiting it out is usually the only fix.'],
+            ['Major outage on some services', 'A core service is down for many players. Matchmaking or logins typically fail until the platform posts a fix.'],
+            ['Platform-wide outage', 'The platform is effectively down for everyone. Nothing on your side will fix it - watch the official status page for the all-clear.']
+        ];
+        var out = '<table style="border-collapse:collapse;margin-top:8px;font-size:0.92em;"><thead><tr><th style="text-align:left;padding:4px 8px;">Level</th><th style="text-align:left;padding:4px 8px;">What it means for you</th></tr></thead><tbody>';
+        for (var i = 0; i < rows.length; i++) {
+            out += '<tr><td style="padding:4px 8px;font-weight:600;vertical-align:top;white-space:nowrap;">' + rows[i][0] + '</td><td style="padding:4px 8px;">' + rows[i][1] + '</td></tr>';
+        }
+        out += '</tbody></table>';
+        out += '<div style="font-weight:bold;margin-top:12px;">When a game will not connect</div>' +
+            '<ol style="margin:6px 0 0 18px;padding:0;">' +
+            '<li>Check the platform card above first - if the platform itself is down, nothing local will help.</li>' +
+            '<li>Remember patch days: statuses often flip to maintenance around big game updates, then recover on their own.</li>' +
+            '<li>If the platform shows operational, restart the game client, then the router, and confirm your client is on the latest version.</li>' +
+            '<li>For a Minecraft server, confirm the exact address and port with the server owner - a typo shows as offline here.</li>' +
+            '<li>Follow the official status page linked on each card for incident timelines and the all-clear.</li>' +
+            '</ol>' +
+            '<p style="font-size:0.92em;color:#555;margin-top:8px;">The three platform cards read each platform\'s own public status API - the same feed behind their official status pages. The Minecraft check asks the mcstatus.io service, whose servers ping the game server for you; a web page cannot open a raw game-port connection itself, so the address you type goes to mcstatus.io, never to this site\'s servers, and this page does not store it. This page is not affiliated with Epic Games, Roblox, Discord or Mojang, and it shows platform-level status only - it cannot diagnose a single account, match or queue.</p>';
+        return out;
+    }
+
+    function gssSetEdition(root, edition) {
+        var javaTab = root.querySelector('#gssModeJava');
+        var bedrockTab = root.querySelector('#gssModeBedrock');
+        var isBedrock = edition === 'bedrock';
+        if (javaTab) javaTab.className = isBedrock ? 'w3-button w3-light-grey' : 'w3-button w3-blue';
+        if (bedrockTab) bedrockTab.className = isBedrock ? 'w3-button w3-blue' : 'w3-button w3-light-grey';
+        root.setAttribute('data-gss-edition', isBedrock ? 'bedrock' : 'java');
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('gameServerStatusTool');
+        if (!root) return; // not a game-server-status page
+        try {
+            // Synchronous render FIRST (G16 anchor): platform cards in their
+            // checking state + the full explainer - visible output that does
+            // not depend on any network fetch resolving.
+            gssRenderPlatformCards(root);
+            var explainBox = root.querySelector('#gssExplainer');
+            if (explainBox) explainBox.innerHTML = gssRenderExplainer();
+
+            var mcInput = root.querySelector('#gssMcInput');
+            var mcBtn = root.querySelector('#gssMcBtn');
+            var javaTab = root.querySelector('#gssModeJava');
+            var bedrockTab = root.querySelector('#gssModeBedrock');
+
+            if (javaTab) javaTab.addEventListener('click', function () { gssSetEdition(root, 'java'); });
+            if (bedrockTab) bedrockTab.addEventListener('click', function () { gssSetEdition(root, 'bedrock'); });
+            if (mcBtn) {
+                mcBtn.addEventListener('click', function () {
+                    gssCheckMinecraft(root, mcInput ? mcInput.value : '', root.getAttribute('data-gss-edition') || 'java', false);
+                });
+            }
+            if (mcInput) {
+                mcInput.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter') {
+                        ev.preventDefault();
+                        gssCheckMinecraft(root, mcInput.value, root.getAttribute('data-gss-edition') || 'java', false);
+                    }
+                });
+            }
+
+            gssSetEdition(root, 'java');
+            if (mcInput) mcInput.value = GSS_MC_EXAMPLE;
+
+            // Live refresh AFTER the synchronous frame is in place.
+            for (var i = 0; i < GSS_PLATFORMS.length; i++) {
+                gssRefreshPlatform(root, GSS_PLATFORMS[i]);
+            }
+            // On-load example lookup (clearly labeled on-page) so the reader
+            // sees the real result shape before typing anything.
+            gssCheckMinecraft(root, GSS_MC_EXAMPLE, 'java', true);
+        } catch (e) {
+            root.innerHTML = '<p style="color:#b00020;">Could not start the tool: ' + gssEsc(e && e.message ? e.message : String(e)) + '</p>';
+        }
+    }
+</script>

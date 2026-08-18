@@ -14,6 +14,26 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // game-server-status companion guides (new-tool-discovery-loop fire728)
+  '/guides/game-server-status-step-by-step.html',
+  '/guides/game-server-status-when.html',
+  '/guides/game-server-status-vs-alternatives.html',
+  '/guides/pt/game-server-status-step-by-step.html',
+  '/guides/pt/game-server-status-when.html',
+  '/guides/pt/game-server-status-vs-alternatives.html',
+  '/guides/es/game-server-status-step-by-step.html',
+  '/guides/es/game-server-status-when.html',
+  '/guides/es/game-server-status-vs-alternatives.html',
+  '/guides/vi/game-server-status-step-by-step.html',
+  '/guides/vi/game-server-status-when.html',
+  '/guides/vi/game-server-status-vs-alternatives.html',
+  '/guides/id/game-server-status-step-by-step.html',
+  '/guides/id/game-server-status-when.html',
+  '/guides/id/game-server-status-vs-alternatives.html',
+  '/guides/de/game-server-status-step-by-step.html',
+  '/guides/de/game-server-status-when.html',
+  '/guides/de/game-server-status-vs-alternatives.html',
+
   '/guides/vehicle-recall-lookup-vs-alternatives.html',
   '/guides/vehicle-recall-lookup-step-by-step.html',
   '/guides/vehicle-recall-lookup-when.html',
@@ -16320,6 +16340,7 @@ export const ALIAS_ROUTES = {
   '/paraphrasing-tool.html': '/utility-tools/paraphrasing-tool.html',
   '/chat-with-pdf.html': '/pdf-tools/chat-with-pdf.html',
   '/face-blur.html': '/image-tools/face-blur.html',
+  '/game-server-status.html': '/utility-tools/game-server-status.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -16348,6 +16369,26 @@ export const ALIAS_ROUTES = {
 // non-kebab entries to this map.
 // ─────────────────────────────────────────────────────────────────────────
 export const JSP_BY_ROUTE = {
+  // game-server-status companion guides (new-tool-discovery-loop fire728)
+  '/guides/game-server-status-step-by-step.html': 'guide/game-server-status-step-by-step.jsp',
+  '/guides/game-server-status-when.html': 'guide/game-server-status-when.jsp',
+  '/guides/game-server-status-vs-alternatives.html': 'guide/game-server-status-vs-alternatives.jsp',
+  '/guides/pt/game-server-status-step-by-step.html': 'guide/pt/game-server-status-step-by-step.jsp',
+  '/guides/pt/game-server-status-when.html': 'guide/pt/game-server-status-when.jsp',
+  '/guides/pt/game-server-status-vs-alternatives.html': 'guide/pt/game-server-status-vs-alternatives.jsp',
+  '/guides/es/game-server-status-step-by-step.html': 'guide/es/game-server-status-step-by-step.jsp',
+  '/guides/es/game-server-status-when.html': 'guide/es/game-server-status-when.jsp',
+  '/guides/es/game-server-status-vs-alternatives.html': 'guide/es/game-server-status-vs-alternatives.jsp',
+  '/guides/vi/game-server-status-step-by-step.html': 'guide/vi/game-server-status-step-by-step.jsp',
+  '/guides/vi/game-server-status-when.html': 'guide/vi/game-server-status-when.jsp',
+  '/guides/vi/game-server-status-vs-alternatives.html': 'guide/vi/game-server-status-vs-alternatives.jsp',
+  '/guides/id/game-server-status-step-by-step.html': 'guide/id/game-server-status-step-by-step.jsp',
+  '/guides/id/game-server-status-when.html': 'guide/id/game-server-status-when.jsp',
+  '/guides/id/game-server-status-vs-alternatives.html': 'guide/id/game-server-status-vs-alternatives.jsp',
+  '/guides/de/game-server-status-step-by-step.html': 'guide/de/game-server-status-step-by-step.jsp',
+  '/guides/de/game-server-status-when.html': 'guide/de/game-server-status-when.jsp',
+  '/guides/de/game-server-status-vs-alternatives.html': 'guide/de/game-server-status-vs-alternatives.jsp',
+
   '/guides/what-national-day-is-today-step-by-step.html': 'guide/what-national-day-is-today-step-by-step.jsp',
   '/guides/what-national-day-is-today-when.html': 'guide/what-national-day-is-today-when.jsp',
   '/guides/what-national-day-is-today-vs-alternatives.html': 'guide/what-national-day-is-today-vs-alternatives.jsp',
@@ -29051,6 +29092,7 @@ export const JSP_BY_ROUTE = {
   '/utility-tools/paraphrasing-tool.html': 'utility/paraphrasing-tool.jsp',
   '/pdf-tools/chat-with-pdf.html': 'pdf/chat-with-pdf.jsp',
   '/image-tools/face-blur.html': 'convert/face-blur.jsp',
+  '/utility-tools/game-server-status.html': 'utility/game-server-status.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

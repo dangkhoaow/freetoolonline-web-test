@@ -940,6 +940,7 @@ try {
     { title: "AI Paraphrasing Tool - Private, In Your Browser", url: "https://freetoolonline.com/utility-tools/paraphrasing-tool.html", include: !1, tags: "utility" },
     { title: "Chat with PDF - Ask Your PDF Questions Privately", url: "https://freetoolonline.com/pdf-tools/chat-with-pdf.html", include: !1, tags: "pdf" },
     { title: "Blur Faces in Photos", url: "https://freetoolonline.com/image-tools/face-blur.html", include: !1, tags: "image-editing" },
+    { title: "Game Server Status Checker - Fortnite, Roblox, Discord, Minecraft", url: "https://freetoolonline.com/utility-tools/game-server-status.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
