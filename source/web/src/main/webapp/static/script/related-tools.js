@@ -943,6 +943,7 @@ try {
     { title: "Game Server Status Checker - Fortnite, Roblox, Discord, Minecraft", url: "https://freetoolonline.com/utility-tools/game-server-status.html", include: !1, tags: "utility" },
     { title: "Foxit Pdf Editor Browser", url: "https://freetoolonline.com/image-converter-tools/foxit-pdf-editor-browser.html", include: !1, tags: "image-conversion" },
     { title: "Adobe Pdf Editor Browser", url: "https://freetoolonline.com/image-converter-tools/adobe-pdf-editor-browser.html", include: !1, tags: "image-conversion" },
+    { title: "Pdf Xchange Editor Browser Plugin Edge", url: "https://freetoolonline.com/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
