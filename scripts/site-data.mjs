@@ -14,6 +14,7 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/devtools-style-pdf-element-inspector-editor-android-when.html',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/client-side-pdf-editor-toolkit-when.html',
@@ -25,6 +26,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/es/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/vi/adobe-pdf-editor-browser-step-by-step.html',
+  '/guides/id/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/adobe-pdf-editor-browser-when.html',
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html',
   '/guides/foxit-pdf-editor-browser-step-by-step.html',
@@ -7340,6 +7342,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/adobe-pdf-editor-browser-step-by-step.html',
   // adobe-pdf-editor-browser-step-by-step vi locale (create_new_guide_page 20260819-946)
   '/guides/vi/adobe-pdf-editor-browser-step-by-step.html',
+  // adobe-pdf-editor-browser-step-by-step id locale (create_new_guide_page 20260819-947)
+  '/guides/id/adobe-pdf-editor-browser-step-by-step.html',
   // what-national-day-is-today companion guides (new-tool-discovery-loop-runbook fire718)
   '/guides/what-national-day-is-today-step-by-step.html',
   '/guides/what-national-day-is-today-when.html',
@@ -16393,6 +16397,7 @@ export const ALIAS_ROUTES = {
   '/adobe-pdf-editor-browser.html': '/image-converter-tools/adobe-pdf-editor-browser.html',
   '/pdf-xchange-editor-browser-plugin-edge.html': '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html',
   '/client-side-pdf-editor-toolkit.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
+  '/devtools-style-pdf-element-inspector-editor-android.html': '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28902,6 +28907,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/adobe-pdf-editor-browser-step-by-step.html': 'guide/pt/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/es/adobe-pdf-editor-browser-step-by-step.html': 'guide/es/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/vi/adobe-pdf-editor-browser-step-by-step.html': 'guide/vi/adobe-pdf-editor-browser-step-by-step.jsp',
+  '/guides/id/adobe-pdf-editor-browser-step-by-step.html': 'guide/id/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/adobe-pdf-editor-browser-when.html': 'guide/adobe-pdf-editor-browser-when.jsp',
   '/guides/adobe-pdf-editor-browser-step-by-step.html': 'guide/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/adobe-pdf-editor-browser-vs-alternatives.jsp',
@@ -28913,6 +28919,8 @@ export const JSP_BY_ROUTE = {
   '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
+  '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html': 'convert/devtools-style-pdf-element-inspector-editor-android.jsp',
+  '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
