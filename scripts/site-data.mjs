@@ -14,8 +14,6 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
-  '/guides/modern-pdf-editor-optimizer-professionals-2026-step-by-step.html',
-  '/guides/modern-pdf-editor-optimizer-professionals-2026-when.html',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html',
@@ -16403,7 +16401,6 @@ export const ALIAS_ROUTES = {
   '/pdf-xchange-editor-browser-plugin-edge.html': '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html',
   '/client-side-pdf-editor-toolkit.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
   '/devtools-style-pdf-element-inspector-editor-android.html': '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html',
-  '/modern-pdf-editor-optimizer-professionals-2026.html': '/image-converter-tools/modern-pdf-editor-optimizer-professionals-2026.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28924,9 +28921,6 @@ export const JSP_BY_ROUTE = {
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html': 'convert/devtools-style-pdf-element-inspector-editor-android.jsp',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
-  '/image-converter-tools/modern-pdf-editor-optimizer-professionals-2026.html': 'convert/modern-pdf-editor-optimizer-professionals-2026.jsp',
-  '/guides/modern-pdf-editor-optimizer-professionals-2026-when.html': 'guide/modern-pdf-editor-optimizer-professionals-2026-when.jsp',
-  '/guides/modern-pdf-editor-optimizer-professionals-2026-step-by-step.html': 'guide/modern-pdf-editor-optimizer-professionals-2026-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
