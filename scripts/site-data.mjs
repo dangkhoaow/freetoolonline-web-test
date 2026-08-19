@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/foxit-pdf-editor-browser-vs-alternatives.html',
+  '/guides/foxit-pdf-editor-browser-step-by-step.html',
+  '/guides/foxit-pdf-editor-browser-when.html',
   // game-server-status companion guides (new-tool-discovery-loop fire728)
   '/guides/game-server-status-step-by-step.html',
   '/guides/game-server-status-when.html',
@@ -16346,6 +16349,7 @@ export const ALIAS_ROUTES = {
   '/chat-with-pdf.html': '/pdf-tools/chat-with-pdf.html',
   '/face-blur.html': '/image-tools/face-blur.html',
   '/game-server-status.html': '/utility-tools/game-server-status.html',
+  '/foxit-pdf-editor-browser.html': '/image-converter-tools/foxit-pdf-editor-browser.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28925,6 +28929,10 @@ export const JSP_BY_ROUTE = {
   '/pdf-tools/chat-with-pdf.html': 'pdf/chat-with-pdf.jsp',
   '/image-tools/face-blur.html': 'convert/face-blur.jsp',
   '/utility-tools/game-server-status.html': 'utility/game-server-status.jsp',
+  '/image-converter-tools/foxit-pdf-editor-browser.html': 'convert/foxit-pdf-editor-browser.jsp',
+  '/guides/foxit-pdf-editor-browser-when.html': 'guide/foxit-pdf-editor-browser-when.jsp',
+  '/guides/foxit-pdf-editor-browser-step-by-step.html': 'guide/foxit-pdf-editor-browser-step-by-step.jsp',
+  '/guides/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/foxit-pdf-editor-browser-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
