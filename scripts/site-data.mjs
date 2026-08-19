@@ -2983,7 +2983,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/zip-file-converter.html', '/guides/es/zip-file-converter.html', '/guides/vi/zip-file-converter.html', '/guides/id/zip-file-converter.html', '/guides/de/zip-file-converter.html',
   '/guides/pt/led-test.html', '/guides/es/led-test.html', '/guides/vi/led-test.html', '/guides/id/led-test.html', '/guides/de/led-test.html',
   // plan-warm-pascal-v3 S2 batch 5 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/hd-video-converter-vs-alternatives.html', '/guides/es/hd-video-converter-vs-alternatives.html', '/guides/vi/hd-video-converter-vs-alternatives.html', '/guides/id/hd-video-converter-vs-alternatives.html', '/guides/de/hd-video-converter-vs-alternatives.html',
+  '/guides/pt/hd-video-converter-vs-alternatives.html', '/guides/es/hd-video-converter-vs-alternatives.html', '/guides/id/hd-video-converter-vs-alternatives.html', '/guides/de/hd-video-converter-vs-alternatives.html',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/json-formatter-step-by-step.html', '/guides/es/json-formatter-step-by-step.html', '/guides/vi/json-formatter-step-by-step.html', '/guides/id/json-formatter-step-by-step.html', '/guides/de/json-formatter-step-by-step.html',
@@ -3036,7 +3036,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/file-compressor.html', '/guides/es/file-compressor.html', '/guides/id/file-compressor.html', '/guides/de/file-compressor.html',
   // Cycle 20260610-12 P12.D - 5 locale variants for gif-to-frames-converter
   // Cycle 20260610-14 - 5 locale variants for gif-to-frame
-  '/guides/pt/gif-to-frame.html', '/guides/es/gif-to-frame.html', '/guides/vi/gif-to-frame.html', '/guides/id/gif-to-frame.html', '/guides/de/gif-to-frame.html',
+  '/guides/pt/gif-to-frame.html', '/guides/es/gif-to-frame.html', '/guides/id/gif-to-frame.html', '/guides/de/gif-to-frame.html',
   // plan-warm-pascal-v3 S2 batch 20 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/heic-vs-jpg-vs-webp.html', '/guides/es/heic-vs-jpg-vs-webp.html', '/guides/vi/heic-vs-jpg-vs-webp.html', '/guides/id/heic-vs-jpg-vs-webp.html', '/guides/de/heic-vs-jpg-vs-webp.html',
   '/guides/pt/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/es/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/id/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/de/ffmpeg-online-vs-video-converter-which-to-pick.html',
@@ -3068,7 +3068,7 @@ export const INFO_ROUTES = new Set([
   // evidence-led-expansion-runbook fire 11, Stream B - locale fanout for extract-first-frame-of-gif
   '/guides/pt/extract-first-frame-of-gif.html', '/guides/es/extract-first-frame-of-gif.html', '/guides/vi/extract-first-frame-of-gif.html', '/guides/id/extract-first-frame-of-gif.html', '/guides/de/extract-first-frame-of-gif.html',
   // plan-warm-pascal-v3 S2 batch 25 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/es/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/vi/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/de/gif-frame-extractor-output-looks-wrong-three-causes.html',
+  '/guides/pt/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/es/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/de/gif-frame-extractor-output-looks-wrong-three-causes.html',
   '/guides/pt/heic-to-jpg-claims-what-actually-works.html', '/guides/es/heic-to-jpg-claims-what-actually-works.html', '/guides/vi/heic-to-jpg-claims-what-actually-works.html', '/guides/id/heic-to-jpg-claims-what-actually-works.html', '/guides/de/heic-to-jpg-claims-what-actually-works.html',
   '/guides/pt/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/es/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/vi/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/id/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/de/how-to-compress-a-jpg-for-email-attachment-limits.html',
   // plan-warm-pascal-v3 S2 batch 26 (2026-05-29) - 5 locale variants × 3 guides
@@ -4069,19 +4069,16 @@ export const INFO_ROUTES = new Set([
   '/guides/impact-crater-formation-step-by-step.html',
   '/guides/pt/impact-crater-formation-step-by-step.html',
   '/guides/es/impact-crater-formation-step-by-step.html',
-  '/guides/vi/impact-crater-formation-step-by-step.html',
   '/guides/id/impact-crater-formation-step-by-step.html',
   '/guides/de/impact-crater-formation-step-by-step.html',
   '/guides/impact-crater-formation-when.html',
   '/guides/pt/impact-crater-formation-when.html',
   '/guides/es/impact-crater-formation-when.html',
-  '/guides/vi/impact-crater-formation-when.html',
   '/guides/id/impact-crater-formation-when.html',
   '/guides/de/impact-crater-formation-when.html',
   '/guides/impact-crater-formation-vs-alternatives.html',
   '/guides/pt/impact-crater-formation-vs-alternatives.html',
   '/guides/es/impact-crater-formation-vs-alternatives.html',
-  '/guides/vi/impact-crater-formation-vs-alternatives.html',
   '/guides/id/impact-crater-formation-vs-alternatives.html',
   '/guides/de/impact-crater-formation-vs-alternatives.html',
   '/guides/moon-formation-giant-impact-step-by-step.html',
@@ -6101,7 +6098,6 @@ export const INFO_ROUTES = new Set([
   '/guides/how-to-play-server-survival-td.html',
   '/guides/pt/how-to-play-server-survival-td.html',
   '/guides/es/how-to-play-server-survival-td.html',
-  '/guides/vi/how-to-play-server-survival-td.html',
   '/guides/id/how-to-play-server-survival-td.html',
   '/guides/de/how-to-play-server-survival-td.html',
   '/guides/server-survival-td-when.html',
@@ -11689,7 +11685,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/how-to-play-server-survival-td.html',
   '/guides/pt/how-to-play-server-survival-td.html',
   '/guides/es/how-to-play-server-survival-td.html',
-  '/guides/vi/how-to-play-server-survival-td.html',
   '/guides/id/how-to-play-server-survival-td.html',
   '/guides/de/how-to-play-server-survival-td.html',
   '/guides/server-survival-td-when.html',
@@ -12619,19 +12614,16 @@ export const GUIDE_ROUTES = new Set([
   '/guides/impact-crater-formation-step-by-step.html',
   '/guides/pt/impact-crater-formation-step-by-step.html',
   '/guides/es/impact-crater-formation-step-by-step.html',
-  '/guides/vi/impact-crater-formation-step-by-step.html',
   '/guides/id/impact-crater-formation-step-by-step.html',
   '/guides/de/impact-crater-formation-step-by-step.html',
   '/guides/impact-crater-formation-when.html',
   '/guides/pt/impact-crater-formation-when.html',
   '/guides/es/impact-crater-formation-when.html',
-  '/guides/vi/impact-crater-formation-when.html',
   '/guides/id/impact-crater-formation-when.html',
   '/guides/de/impact-crater-formation-when.html',
   '/guides/impact-crater-formation-vs-alternatives.html',
   '/guides/pt/impact-crater-formation-vs-alternatives.html',
   '/guides/es/impact-crater-formation-vs-alternatives.html',
-  '/guides/vi/impact-crater-formation-vs-alternatives.html',
   '/guides/id/impact-crater-formation-vs-alternatives.html',
   '/guides/de/impact-crater-formation-vs-alternatives.html',
   '/guides/moon-formation-giant-impact-step-by-step.html',
@@ -14258,6 +14250,14 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  '/guides/vi/gif-frame-extractor-output-looks-wrong-three-causes.html': '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html', // Phase-B 301 vi-batch-4 fire337
+  '/guides/vi/gif-to-frame.html': '/guides/en/gif-to-frame.html', // Phase-B 301 vi-batch-4 fire337
+  '/guides/vi/hd-video-converter-vs-alternatives.html': '/guides/en/hd-video-converter-vs-alternatives.html', // Phase-B 301 vi-batch-4 fire337
+  '/guides/vi/how-to-extract-a-file-online-zip-rar-7z.html': '/guides/en/how-to-extract-a-file-online-zip-rar-7z.html', // Phase-B 301 vi-batch-4 fire337
+  '/guides/vi/impact-crater-formation-step-by-step.html': '/guides/impact-crater-formation-step-by-step.html', // Phase-B 301 vi-batch-4 fire337
+  '/guides/vi/impact-crater-formation-vs-alternatives.html': '/guides/impact-crater-formation-vs-alternatives.html', // Phase-B 301 vi-batch-4 fire337
+  '/guides/vi/impact-crater-formation-when.html': '/guides/impact-crater-formation-when.html', // Phase-B 301 vi-batch-4 fire337
+  '/guides/vi/how-to-play-server-survival-td.html': '/guides/how-to-play-server-survival-td.html', // Phase-B 301 vi-batch-4 fire337
   '/guides/vi/find-replace-text-vs-alternatives.html': '/guides/find-replace-text-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont3 fire336
   '/guides/vi/find-replace-text-when.html': '/guides/find-replace-text-when.html', // Phase-B 301 vi-batch-3-cont3 fire336
   '/guides/vi/flashcards-spaced-repetition-step-by-step.html': '/guides/flashcards-spaced-repetition-step-by-step.html', // Phase-B 301 vi-batch-3-cont3 fire336
@@ -17089,7 +17089,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/zip-file-converter.html': 'guide/pt/zip-file-converter.jsp', '/guides/es/zip-file-converter.html': 'guide/es/zip-file-converter.jsp', '/guides/vi/zip-file-converter.html': 'guide/vi/zip-file-converter.jsp', '/guides/id/zip-file-converter.html': 'guide/id/zip-file-converter.jsp', '/guides/de/zip-file-converter.html': 'guide/de/zip-file-converter.jsp',
   '/guides/pt/led-test.html': 'guide/pt/led-test.jsp', '/guides/es/led-test.html': 'guide/es/led-test.jsp', '/guides/vi/led-test.html': 'guide/vi/led-test.jsp', '/guides/id/led-test.html': 'guide/id/led-test.jsp', '/guides/de/led-test.html': 'guide/de/led-test.jsp',
   // plan-warm-pascal-v3 S2 batch 5 (2026-05-29) - 5 locale variants × 3 guides (hd-video-converter-step-by-step + compress-zip-file-to-smaller-size + hd-video-converter-vs-alternatives)
-  '/guides/pt/hd-video-converter-vs-alternatives.html': 'guide/pt/hd-video-converter-vs-alternatives.jsp', '/guides/es/hd-video-converter-vs-alternatives.html': 'guide/es/hd-video-converter-vs-alternatives.jsp', '/guides/vi/hd-video-converter-vs-alternatives.html': 'guide/vi/hd-video-converter-vs-alternatives.jsp', '/guides/id/hd-video-converter-vs-alternatives.html': 'guide/id/hd-video-converter-vs-alternatives.jsp', '/guides/de/hd-video-converter-vs-alternatives.html': 'guide/de/hd-video-converter-vs-alternatives.jsp',
+  '/guides/pt/hd-video-converter-vs-alternatives.html': 'guide/pt/hd-video-converter-vs-alternatives.jsp', '/guides/es/hd-video-converter-vs-alternatives.html': 'guide/es/hd-video-converter-vs-alternatives.jsp', '/guides/id/hd-video-converter-vs-alternatives.html': 'guide/id/hd-video-converter-vs-alternatives.jsp', '/guides/de/hd-video-converter-vs-alternatives.html': 'guide/de/hd-video-converter-vs-alternatives.jsp',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides (compress-zip + gif-into-frames + reduce-zip-file-size-online)
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides (json-formatter-step-by-step + zip-compress + json-formatter-vs-alternatives)
   '/guides/pt/json-formatter-step-by-step.html': 'guide/pt/json-formatter-step-by-step.jsp', '/guides/es/json-formatter-step-by-step.html': 'guide/es/json-formatter-step-by-step.jsp', '/guides/vi/json-formatter-step-by-step.html': 'guide/vi/json-formatter-step-by-step.jsp', '/guides/id/json-formatter-step-by-step.html': 'guide/id/json-formatter-step-by-step.jsp', '/guides/de/json-formatter-step-by-step.html': 'guide/de/json-formatter-step-by-step.jsp',
@@ -17141,7 +17141,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/file-compressor.html': 'guide/pt/file-compressor.jsp', '/guides/es/file-compressor.html': 'guide/es/file-compressor.jsp', '/guides/id/file-compressor.html': 'guide/id/file-compressor.jsp', '/guides/de/file-compressor.html': 'guide/de/file-compressor.jsp',
   // Cycle 20260610-12 P12.D - 5 locale JSP routes for gif-to-frames-converter
   // Cycle 20260610-14 - 5 locale JSP routes for gif-to-frame
-  '/guides/pt/gif-to-frame.html': 'guide/pt/gif-to-frame.jsp', '/guides/es/gif-to-frame.html': 'guide/es/gif-to-frame.jsp', '/guides/vi/gif-to-frame.html': 'guide/vi/gif-to-frame.jsp', '/guides/id/gif-to-frame.html': 'guide/id/gif-to-frame.jsp', '/guides/de/gif-to-frame.html': 'guide/de/gif-to-frame.jsp',
+  '/guides/pt/gif-to-frame.html': 'guide/pt/gif-to-frame.jsp', '/guides/es/gif-to-frame.html': 'guide/es/gif-to-frame.jsp', '/guides/id/gif-to-frame.html': 'guide/id/gif-to-frame.jsp', '/guides/de/gif-to-frame.html': 'guide/de/gif-to-frame.jsp',
   // plan-warm-pascal-v3 S2 batch 20 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/heic-vs-jpg-vs-webp.html': 'guide/pt/heic-vs-jpg-vs-webp.jsp', '/guides/es/heic-vs-jpg-vs-webp.html': 'guide/es/heic-vs-jpg-vs-webp.jsp', '/guides/vi/heic-vs-jpg-vs-webp.html': 'guide/vi/heic-vs-jpg-vs-webp.jsp', '/guides/id/heic-vs-jpg-vs-webp.html': 'guide/id/heic-vs-jpg-vs-webp.jsp', '/guides/de/heic-vs-jpg-vs-webp.html': 'guide/de/heic-vs-jpg-vs-webp.jsp',
   '/guides/pt/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/pt/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/es/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/es/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/id/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/id/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/de/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/de/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
@@ -17168,7 +17168,7 @@ export const JSP_BY_ROUTE = {
   // evidence-led-expansion-runbook fire 11, Stream B - locale fanout for extract-first-frame-of-gif
   '/guides/pt/extract-first-frame-of-gif.html': 'guide/pt/extract-first-frame-of-gif.jsp', '/guides/es/extract-first-frame-of-gif.html': 'guide/es/extract-first-frame-of-gif.jsp', '/guides/vi/extract-first-frame-of-gif.html': 'guide/vi/extract-first-frame-of-gif.jsp', '/guides/id/extract-first-frame-of-gif.html': 'guide/id/extract-first-frame-of-gif.jsp', '/guides/de/extract-first-frame-of-gif.html': 'guide/de/extract-first-frame-of-gif.jsp',
   // plan-warm-pascal-v3 S2 batch 25 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/pt/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/es/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/es/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/vi/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/vi/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/id/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/de/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/de/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
+  '/guides/pt/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/pt/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/es/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/es/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/id/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/de/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/de/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
   '/guides/pt/heic-to-jpg-claims-what-actually-works.html': 'guide/pt/heic-to-jpg-claims-what-actually-works.jsp', '/guides/es/heic-to-jpg-claims-what-actually-works.html': 'guide/es/heic-to-jpg-claims-what-actually-works.jsp', '/guides/vi/heic-to-jpg-claims-what-actually-works.html': 'guide/vi/heic-to-jpg-claims-what-actually-works.jsp', '/guides/id/heic-to-jpg-claims-what-actually-works.html': 'guide/id/heic-to-jpg-claims-what-actually-works.jsp', '/guides/de/heic-to-jpg-claims-what-actually-works.html': 'guide/de/heic-to-jpg-claims-what-actually-works.jsp',
   '/guides/pt/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/pt/how-to-compress-a-jpg-for-email-attachment-limits.jsp', '/guides/es/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/es/how-to-compress-a-jpg-for-email-attachment-limits.jsp', '/guides/vi/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/vi/how-to-compress-a-jpg-for-email-attachment-limits.jsp', '/guides/id/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/id/how-to-compress-a-jpg-for-email-attachment-limits.jsp', '/guides/de/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/de/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // plan-warm-pascal-v3 S2 batch 26 (2026-05-29) - 5 locale variants × 3 guides
@@ -18964,7 +18964,6 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-play-server-survival-td.html': 'guide/how-to-play-server-survival-td.jsp',
   '/guides/pt/how-to-play-server-survival-td.html': 'guide/pt/how-to-play-server-survival-td.jsp',
   '/guides/es/how-to-play-server-survival-td.html': 'guide/es/how-to-play-server-survival-td.jsp',
-  '/guides/vi/how-to-play-server-survival-td.html': 'guide/vi/how-to-play-server-survival-td.jsp',
   '/guides/id/how-to-play-server-survival-td.html': 'guide/id/how-to-play-server-survival-td.jsp',
   '/guides/de/how-to-play-server-survival-td.html': 'guide/de/how-to-play-server-survival-td.jsp',
   '/guides/server-survival-td-when.html': 'guide/server-survival-td-when.jsp',
@@ -25036,19 +25035,16 @@ export const JSP_BY_ROUTE = {
   '/guides/impact-crater-formation-step-by-step.html': 'guide/impact-crater-formation-step-by-step.jsp',
   '/guides/pt/impact-crater-formation-step-by-step.html': 'guide/pt/impact-crater-formation-step-by-step.jsp',
   '/guides/es/impact-crater-formation-step-by-step.html': 'guide/es/impact-crater-formation-step-by-step.jsp',
-  '/guides/vi/impact-crater-formation-step-by-step.html': 'guide/vi/impact-crater-formation-step-by-step.jsp',
   '/guides/id/impact-crater-formation-step-by-step.html': 'guide/id/impact-crater-formation-step-by-step.jsp',
   '/guides/de/impact-crater-formation-step-by-step.html': 'guide/de/impact-crater-formation-step-by-step.jsp',
   '/guides/impact-crater-formation-when.html': 'guide/impact-crater-formation-when.jsp',
   '/guides/pt/impact-crater-formation-when.html': 'guide/pt/impact-crater-formation-when.jsp',
   '/guides/es/impact-crater-formation-when.html': 'guide/es/impact-crater-formation-when.jsp',
-  '/guides/vi/impact-crater-formation-when.html': 'guide/vi/impact-crater-formation-when.jsp',
   '/guides/id/impact-crater-formation-when.html': 'guide/id/impact-crater-formation-when.jsp',
   '/guides/de/impact-crater-formation-when.html': 'guide/de/impact-crater-formation-when.jsp',
   '/guides/impact-crater-formation-vs-alternatives.html': 'guide/impact-crater-formation-vs-alternatives.jsp',
   '/guides/pt/impact-crater-formation-vs-alternatives.html': 'guide/pt/impact-crater-formation-vs-alternatives.jsp',
   '/guides/es/impact-crater-formation-vs-alternatives.html': 'guide/es/impact-crater-formation-vs-alternatives.jsp',
-  '/guides/vi/impact-crater-formation-vs-alternatives.html': 'guide/vi/impact-crater-formation-vs-alternatives.jsp',
   '/guides/id/impact-crater-formation-vs-alternatives.html': 'guide/id/impact-crater-formation-vs-alternatives.jsp',
   '/guides/de/impact-crater-formation-vs-alternatives.html': 'guide/de/impact-crater-formation-vs-alternatives.jsp',
   '/guides/moon-formation-giant-impact-step-by-step.html': 'guide/moon-formation-giant-impact-step-by-step.jsp',
@@ -29279,10 +29275,8 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   // geo-batch-fire161: restored - Bing AI citations found (was pruned zero-evidence on GSC-only signal)
 
   // pruned 2026-07-28 zero-evidence vi - batch vi-batch-4 (200 routes)
-  '/guides/vi/gif-frame-extractor-output-looks-wrong-three-causes.html',
   '/guides/vi/gif-frame-extractor.html',
   '/guides/vi/gif-into-frames.html',
-  '/guides/vi/gif-to-frame.html',
   '/guides/vi/give-images-a-vintage-look.html',
   '/guides/vi/glacier-formation-step-by-step.html',
   '/guides/vi/glacier-formation-vs-alternatives.html',
@@ -29303,7 +29297,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/haptic-feedback-test-when.html',
   '/guides/vi/hash-generator-vs-alternatives.html',
   '/guides/vi/hash-generator-when.html',
-  '/guides/vi/hd-video-converter-vs-alternatives.html',
   '/guides/vi/hd-video-converter-when.html',
   '/guides/vi/heic-to-jpg-output-looks-wrong-three-causes.html',
   '/guides/vi/heic-to-jpg-step-by-step.html',
@@ -29362,7 +29355,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/how-to-edit-pdf-file.html',
   '/guides/vi/how-to-encrypt-a-file.html',
   '/guides/vi/how-to-encrypt-file.html',
-  '/guides/vi/how-to-extract-a-file-online-zip-rar-7z.html',
   '/guides/vi/how-to-extract-from-zip-rar-7z.html',
   '/guides/vi/how-to-extract-images-from-gif.html',
   '/guides/vi/how-to-extract-zip-rar-7z.html',
@@ -29480,10 +29472,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/image-to-pdf-step-by-step.html',
   '/guides/vi/image-to-pdf-vs-alternatives.html',
   '/guides/vi/image-to-pdf-when.html',
-  '/guides/vi/impact-crater-formation-step-by-step.html',
-  '/guides/vi/impact-crater-formation-vs-alternatives.html',
-  '/guides/vi/impact-crater-formation-when.html',
-  '/guides/vi/how-to-play-server-survival-td.html',
   // pruned 2026-07-28 zero-evidence vi - batch vi-batch-5 (200 routes)
   '/guides/vi/gif-to-frames-converter.html',
   '/guides/vi/giganotosaurus-3d-viewer-vs-ar-apps.html',
