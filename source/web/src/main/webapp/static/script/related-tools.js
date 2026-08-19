@@ -945,7 +945,6 @@ try {
     { title: "Adobe Pdf Editor Browser", url: "https://freetoolonline.com/image-converter-tools/adobe-pdf-editor-browser.html", include: !1, tags: "image-conversion" },
     { title: "Pdf Xchange Editor Browser Plugin Edge", url: "https://freetoolonline.com/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html", include: !1, tags: "image-conversion" },
     { title: "Client Side PDF editor Toolkit", url: "https://freetoolonline.com/image-converter-tools/client-side-pdf-editor-toolkit.html", include: !1, tags: "image-conversion" },
-    { title: "Acrobat Editor 2026 - Pro PDF Annotations", url: "https://freetoolonline.com/image-converter-tools/acrobat-editor-2026-pro-pdf-annotations.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

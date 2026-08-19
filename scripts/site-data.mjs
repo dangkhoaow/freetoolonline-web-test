@@ -14,9 +14,6 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
-  '/guides/acrobat-editor-2026-pro-pdf-annotations-vs-alternatives.html',
-  '/guides/acrobat-editor-2026-pro-pdf-annotations-step-by-step.html',
-  '/guides/acrobat-editor-2026-pro-pdf-annotations-when.html',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/client-side-pdf-editor-toolkit-when.html',
@@ -16396,7 +16393,6 @@ export const ALIAS_ROUTES = {
   '/adobe-pdf-editor-browser.html': '/image-converter-tools/adobe-pdf-editor-browser.html',
   '/pdf-xchange-editor-browser-plugin-edge.html': '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html',
   '/client-side-pdf-editor-toolkit.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
-  '/acrobat-editor-2026-pro-pdf-annotations.html': '/image-converter-tools/acrobat-editor-2026-pro-pdf-annotations.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28917,10 +28913,6 @@ export const JSP_BY_ROUTE = {
   '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
-  '/image-converter-tools/acrobat-editor-2026-pro-pdf-annotations.html': 'convert/acrobat-editor-2026-pro-pdf-annotations.jsp',
-  '/guides/acrobat-editor-2026-pro-pdf-annotations-when.html': 'guide/acrobat-editor-2026-pro-pdf-annotations-when.jsp',
-  '/guides/acrobat-editor-2026-pro-pdf-annotations-step-by-step.html': 'guide/acrobat-editor-2026-pro-pdf-annotations-step-by-step.jsp',
-  '/guides/acrobat-editor-2026-pro-pdf-annotations-vs-alternatives.html': 'guide/acrobat-editor-2026-pro-pdf-annotations-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
