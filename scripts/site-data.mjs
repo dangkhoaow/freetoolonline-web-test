@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/acrobat-editor-2026-pro-pdf-annotations-vs-alternatives.html',
+  '/guides/acrobat-editor-2026-pro-pdf-annotations-step-by-step.html',
+  '/guides/acrobat-editor-2026-pro-pdf-annotations-when.html',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/client-side-pdf-editor-toolkit-when.html',
@@ -24,6 +27,7 @@ export const INFO_ROUTES = new Set([
   '/guides/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/pt/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/es/adobe-pdf-editor-browser-step-by-step.html',
+  '/guides/vi/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/adobe-pdf-editor-browser-when.html',
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html',
   '/guides/foxit-pdf-editor-browser-step-by-step.html',
@@ -7337,6 +7341,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/adobe-pdf-editor-browser-step-by-step.html',
   // adobe-pdf-editor-browser-step-by-step es locale (create_new_guide_page 20260819-6)
   '/guides/es/adobe-pdf-editor-browser-step-by-step.html',
+  // adobe-pdf-editor-browser-step-by-step vi locale (create_new_guide_page 20260819-946)
+  '/guides/vi/adobe-pdf-editor-browser-step-by-step.html',
   // what-national-day-is-today companion guides (new-tool-discovery-loop-runbook fire718)
   '/guides/what-national-day-is-today-step-by-step.html',
   '/guides/what-national-day-is-today-when.html',
@@ -16390,6 +16396,7 @@ export const ALIAS_ROUTES = {
   '/adobe-pdf-editor-browser.html': '/image-converter-tools/adobe-pdf-editor-browser.html',
   '/pdf-xchange-editor-browser-plugin-edge.html': '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html',
   '/client-side-pdf-editor-toolkit.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
+  '/acrobat-editor-2026-pro-pdf-annotations.html': '/image-converter-tools/acrobat-editor-2026-pro-pdf-annotations.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28898,6 +28905,7 @@ export const JSP_BY_ROUTE = {
   '/image-converter-tools/adobe-pdf-editor-browser.html': 'convert/adobe-pdf-editor-browser.jsp',
   '/guides/pt/adobe-pdf-editor-browser-step-by-step.html': 'guide/pt/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/es/adobe-pdf-editor-browser-step-by-step.html': 'guide/es/adobe-pdf-editor-browser-step-by-step.jsp',
+  '/guides/vi/adobe-pdf-editor-browser-step-by-step.html': 'guide/vi/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/adobe-pdf-editor-browser-when.html': 'guide/adobe-pdf-editor-browser-when.jsp',
   '/guides/adobe-pdf-editor-browser-step-by-step.html': 'guide/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/adobe-pdf-editor-browser-vs-alternatives.jsp',
@@ -28909,6 +28917,10 @@ export const JSP_BY_ROUTE = {
   '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
+  '/image-converter-tools/acrobat-editor-2026-pro-pdf-annotations.html': 'convert/acrobat-editor-2026-pro-pdf-annotations.jsp',
+  '/guides/acrobat-editor-2026-pro-pdf-annotations-when.html': 'guide/acrobat-editor-2026-pro-pdf-annotations-when.jsp',
+  '/guides/acrobat-editor-2026-pro-pdf-annotations-step-by-step.html': 'guide/acrobat-editor-2026-pro-pdf-annotations-step-by-step.jsp',
+  '/guides/acrobat-editor-2026-pro-pdf-annotations-vs-alternatives.html': 'guide/acrobat-editor-2026-pro-pdf-annotations-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
