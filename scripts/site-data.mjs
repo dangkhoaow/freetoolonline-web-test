@@ -14,6 +14,8 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/modern-pdf-editor-optimizer-professionals-2026-step-by-step.html',
+  '/guides/modern-pdf-editor-optimizer-professionals-2026-when.html',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html',
@@ -27,6 +29,7 @@ export const INFO_ROUTES = new Set([
   '/guides/es/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/vi/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/id/adobe-pdf-editor-browser-step-by-step.html',
+  '/guides/de/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/adobe-pdf-editor-browser-when.html',
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html',
   '/guides/foxit-pdf-editor-browser-step-by-step.html',
@@ -7340,6 +7343,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/adobe-pdf-editor-browser-step-by-step.html',
   // adobe-pdf-editor-browser-step-by-step id locale (create_new_guide_page 20260819-947)
   '/guides/id/adobe-pdf-editor-browser-step-by-step.html',
+  // adobe-pdf-editor-browser-step-by-step de locale (create_new_guide_page 20260820-936)
+  '/guides/de/adobe-pdf-editor-browser-step-by-step.html',
   // what-national-day-is-today companion guides (new-tool-discovery-loop-runbook fire718)
   '/guides/what-national-day-is-today-step-by-step.html',
   '/guides/what-national-day-is-today-when.html',
@@ -16398,6 +16403,7 @@ export const ALIAS_ROUTES = {
   '/pdf-xchange-editor-browser-plugin-edge.html': '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html',
   '/client-side-pdf-editor-toolkit.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
   '/devtools-style-pdf-element-inspector-editor-android.html': '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html',
+  '/modern-pdf-editor-optimizer-professionals-2026.html': '/image-converter-tools/modern-pdf-editor-optimizer-professionals-2026.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28904,6 +28910,7 @@ export const JSP_BY_ROUTE = {
   '/guides/es/adobe-pdf-editor-browser-step-by-step.html': 'guide/es/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/vi/adobe-pdf-editor-browser-step-by-step.html': 'guide/vi/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/id/adobe-pdf-editor-browser-step-by-step.html': 'guide/id/adobe-pdf-editor-browser-step-by-step.jsp',
+  '/guides/de/adobe-pdf-editor-browser-step-by-step.html': 'guide/de/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/adobe-pdf-editor-browser-when.html': 'guide/adobe-pdf-editor-browser-when.jsp',
   '/guides/adobe-pdf-editor-browser-step-by-step.html': 'guide/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/adobe-pdf-editor-browser-vs-alternatives.jsp',
@@ -28917,6 +28924,9 @@ export const JSP_BY_ROUTE = {
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html': 'convert/devtools-style-pdf-element-inspector-editor-android.jsp',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
+  '/image-converter-tools/modern-pdf-editor-optimizer-professionals-2026.html': 'convert/modern-pdf-editor-optimizer-professionals-2026.jsp',
+  '/guides/modern-pdf-editor-optimizer-professionals-2026-when.html': 'guide/modern-pdf-editor-optimizer-professionals-2026-when.jsp',
+  '/guides/modern-pdf-editor-optimizer-professionals-2026-step-by-step.html': 'guide/modern-pdf-editor-optimizer-professionals-2026-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
