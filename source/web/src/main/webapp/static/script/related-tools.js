@@ -942,6 +942,7 @@ try {
     { title: "Blur Faces in Photos", url: "https://freetoolonline.com/image-tools/face-blur.html", include: !1, tags: "image-editing" },
     { title: "Game Server Status Checker - Fortnite, Roblox, Discord, Minecraft", url: "https://freetoolonline.com/utility-tools/game-server-status.html", include: !1, tags: "utility" },
     { title: "Foxit Pdf Editor Browser", url: "https://freetoolonline.com/image-converter-tools/foxit-pdf-editor-browser.html", include: !1, tags: "image-conversion" },
+    { title: "Adobe Pdf Editor Browser", url: "https://freetoolonline.com/image-converter-tools/adobe-pdf-editor-browser.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

@@ -14,8 +14,12 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/adobe-pdf-editor-browser-vs-alternatives.html',
+  '/guides/adobe-pdf-editor-browser-step-by-step.html',
+  '/guides/adobe-pdf-editor-browser-when.html',
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html',
   '/guides/foxit-pdf-editor-browser-step-by-step.html',
+  '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/foxit-pdf-editor-browser-when.html',
   // game-server-status companion guides (new-tool-discovery-loop fire728)
   '/guides/game-server-status-step-by-step.html',
@@ -7351,6 +7355,8 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // foxit-pdf-editor-browser-step-by-step pt locale (create_new_guide_page 20260819-4)
+  '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   // what-national-day-is-today companion guides (new-tool-discovery-loop-runbook fire718)
   '/guides/what-national-day-is-today-step-by-step.html',
   '/guides/what-national-day-is-today-when.html',
@@ -16350,6 +16356,7 @@ export const ALIAS_ROUTES = {
   '/face-blur.html': '/image-tools/face-blur.html',
   '/game-server-status.html': '/utility-tools/game-server-status.html',
   '/foxit-pdf-editor-browser.html': '/image-converter-tools/foxit-pdf-editor-browser.html',
+  '/adobe-pdf-editor-browser.html': '/image-converter-tools/adobe-pdf-editor-browser.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28932,7 +28939,12 @@ export const JSP_BY_ROUTE = {
   '/image-converter-tools/foxit-pdf-editor-browser.html': 'convert/foxit-pdf-editor-browser.jsp',
   '/guides/foxit-pdf-editor-browser-when.html': 'guide/foxit-pdf-editor-browser-when.jsp',
   '/guides/foxit-pdf-editor-browser-step-by-step.html': 'guide/foxit-pdf-editor-browser-step-by-step.jsp',
+  '/guides/pt/foxit-pdf-editor-browser-step-by-step.html': 'guide/pt/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/foxit-pdf-editor-browser-vs-alternatives.jsp',
+  '/image-converter-tools/adobe-pdf-editor-browser.html': 'convert/adobe-pdf-editor-browser.jsp',
+  '/guides/adobe-pdf-editor-browser-when.html': 'guide/adobe-pdf-editor-browser-when.jsp',
+  '/guides/adobe-pdf-editor-browser-step-by-step.html': 'guide/adobe-pdf-editor-browser-step-by-step.jsp',
+  '/guides/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/adobe-pdf-editor-browser-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
