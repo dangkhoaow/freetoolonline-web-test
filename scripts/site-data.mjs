@@ -7865,7 +7865,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/diplodocus-size-comparison.html',
   '/guides/pt/diplodocus-size-comparison.html',
   '/guides/es/diplodocus-size-comparison.html',
-  '/guides/vi/diplodocus-size-comparison.html',
   '/guides/id/diplodocus-size-comparison.html',
   '/guides/de/diplodocus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire39 (2026-07-17): diplodocus-3d-viewer-vs-ar-apps
@@ -7873,7 +7872,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/diplodocus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/diplodocus-3d-viewer-vs-ar-apps.html',
   '/guides/es/diplodocus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/diplodocus-3d-viewer-vs-ar-apps.html',
   '/guides/id/diplodocus-3d-viewer-vs-ar-apps.html',
   '/guides/de/diplodocus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire40 (2026-07-18): how-to-view-apatosaurus-in-3d
@@ -7933,7 +7931,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/dilophosaurus-size-comparison.html',
   '/guides/pt/dilophosaurus-size-comparison.html',
   '/guides/es/dilophosaurus-size-comparison.html',
-  '/guides/vi/dilophosaurus-size-comparison.html',
   '/guides/id/dilophosaurus-size-comparison.html',
   '/guides/de/dilophosaurus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire48 (2026-07-18): dilophosaurus-3d-viewer-vs-ar-apps
@@ -7941,7 +7938,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/dilophosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/dilophosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/es/dilophosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/dilophosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/dilophosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/dilophosaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire49 (2026-07-18): how-to-view-iguanodon-in-3d
@@ -8053,7 +8049,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/deinonychus-size-comparison.html',
   '/guides/pt/deinonychus-size-comparison.html',
   '/guides/es/deinonychus-size-comparison.html',
-  '/guides/vi/deinonychus-size-comparison.html',
   '/guides/id/deinonychus-size-comparison.html',
   '/guides/de/deinonychus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire63 (2026-07-18): deinonychus-3d-viewer-vs-ar-apps
@@ -8061,7 +8056,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/deinonychus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/deinonychus-3d-viewer-vs-ar-apps.html',
   '/guides/es/deinonychus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/deinonychus-3d-viewer-vs-ar-apps.html',
   '/guides/id/deinonychus-3d-viewer-vs-ar-apps.html',
   '/guides/de/deinonychus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire64 (2026-07-18): how-to-view-utahraptor-in-3d
@@ -8219,7 +8213,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/edmontosaurus-size-comparison.html',
   '/guides/pt/edmontosaurus-size-comparison.html',
   '/guides/es/edmontosaurus-size-comparison.html',
-  '/guides/vi/edmontosaurus-size-comparison.html',
   '/guides/id/edmontosaurus-size-comparison.html',
   '/guides/de/edmontosaurus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire84 (2026-07-18): edmontosaurus-3d-viewer-vs-ar-apps
@@ -8227,7 +8220,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/edmontosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/edmontosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/es/edmontosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/edmontosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/edmontosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/edmontosaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire85 (2026-07-18): how-to-view-ceratosaurus-in-3d
@@ -8547,7 +8539,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/dimetrodon-size-comparison.html',
   '/guides/pt/dimetrodon-size-comparison.html',
   '/guides/es/dimetrodon-size-comparison.html',
-  '/guides/vi/dimetrodon-size-comparison.html',
   '/guides/id/dimetrodon-size-comparison.html',
   '/guides/de/dimetrodon-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire126 (2026-07-19): dimetrodon-3d-viewer-vs-ar-apps
@@ -8555,7 +8546,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/dimetrodon-3d-viewer-vs-ar-apps.html',
   '/guides/pt/dimetrodon-3d-viewer-vs-ar-apps.html',
   '/guides/es/dimetrodon-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/dimetrodon-3d-viewer-vs-ar-apps.html',
   '/guides/id/dimetrodon-3d-viewer-vs-ar-apps.html',
   '/guides/de/dimetrodon-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire127 (2026-07-19): how-to-view-ichthyovenator-in-3d
@@ -8761,7 +8751,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/dracovenator-size-comparison.html',
   '/guides/pt/dracovenator-size-comparison.html',
   '/guides/es/dracovenator-size-comparison.html',
-  '/guides/vi/dracovenator-size-comparison.html',
   '/guides/id/dracovenator-size-comparison.html',
   '/guides/de/dracovenator-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire153 (2026-07-19): dracovenator-3d-viewer-vs-ar-apps
@@ -8769,7 +8758,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/dracovenator-3d-viewer-vs-ar-apps.html',
   '/guides/pt/dracovenator-3d-viewer-vs-ar-apps.html',
   '/guides/es/dracovenator-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/dracovenator-3d-viewer-vs-ar-apps.html',
   '/guides/id/dracovenator-3d-viewer-vs-ar-apps.html',
   '/guides/de/dracovenator-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire154 (2026-07-19): how-to-view-sauropelta-in-3d
@@ -8877,7 +8865,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/doliosauriscus-size-comparison.html',
   '/guides/pt/doliosauriscus-size-comparison.html',
   '/guides/es/doliosauriscus-size-comparison.html',
-  '/guides/vi/doliosauriscus-size-comparison.html',
   '/guides/id/doliosauriscus-size-comparison.html',
   '/guides/de/doliosauriscus-size-comparison.html',
   // dinosaur-3d-guides-loop-runbook fire168 (2026-07-20): doliosauriscus-3d-viewer-vs-ar-apps
@@ -8885,7 +8872,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/doliosauriscus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/doliosauriscus-3d-viewer-vs-ar-apps.html',
   '/guides/es/doliosauriscus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/doliosauriscus-3d-viewer-vs-ar-apps.html',
   '/guides/id/doliosauriscus-3d-viewer-vs-ar-apps.html',
   '/guides/de/doliosauriscus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire169 (2026-07-20): how-to-view-brontotherium-in-3d
@@ -9675,9 +9661,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/delete-pdf-pages-when.html',
   '/guides/es/delete-pdf-pages-step-by-step.html',
   '/guides/es/delete-pdf-pages-vs-alternatives.html',
-  '/guides/vi/delete-pdf-pages-when.html',
-  '/guides/vi/delete-pdf-pages-step-by-step.html',
-  '/guides/vi/delete-pdf-pages-vs-alternatives.html',
   '/guides/id/delete-pdf-pages-when.html',
   '/guides/id/delete-pdf-pages-step-by-step.html',
   '/guides/id/delete-pdf-pages-vs-alternatives.html',
@@ -11812,8 +11795,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/desk-cat-coder-when.html',
   '/guides/es/desk-cat-coder-vs-alternatives.html',
   '/guides/vi/how-to-play-desk-cat-coder.html',
-  '/guides/vi/desk-cat-coder-when.html',
-  '/guides/vi/desk-cat-coder-vs-alternatives.html',
   '/guides/id/how-to-play-desk-cat-coder.html',
   '/guides/id/desk-cat-coder-when.html',
   '/guides/id/desk-cat-coder-vs-alternatives.html',
@@ -12652,19 +12633,16 @@ export const GUIDE_ROUTES = new Set([
   '/guides/dwarf-planet-comparison-step-by-step.html',
   '/guides/pt/dwarf-planet-comparison-step-by-step.html',
   '/guides/es/dwarf-planet-comparison-step-by-step.html',
-  '/guides/vi/dwarf-planet-comparison-step-by-step.html',
   '/guides/id/dwarf-planet-comparison-step-by-step.html',
   '/guides/de/dwarf-planet-comparison-step-by-step.html',
   '/guides/dwarf-planet-comparison-when.html',
   '/guides/pt/dwarf-planet-comparison-when.html',
   '/guides/es/dwarf-planet-comparison-when.html',
-  '/guides/vi/dwarf-planet-comparison-when.html',
   '/guides/id/dwarf-planet-comparison-when.html',
   '/guides/de/dwarf-planet-comparison-when.html',
   '/guides/dwarf-planet-comparison-vs-alternatives.html',
   '/guides/pt/dwarf-planet-comparison-vs-alternatives.html',
   '/guides/es/dwarf-planet-comparison-vs-alternatives.html',
-  '/guides/vi/dwarf-planet-comparison-vs-alternatives.html',
   '/guides/id/dwarf-planet-comparison-vs-alternatives.html',
   '/guides/de/dwarf-planet-comparison-vs-alternatives.html',
   '/guides/impact-crater-formation-step-by-step.html',
@@ -13116,9 +13094,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/earth-perihelion-aphelion-step-by-step.html',
   '/guides/es/earth-perihelion-aphelion-when.html',
   '/guides/es/earth-perihelion-aphelion-vs-alternatives.html',
-  '/guides/vi/earth-perihelion-aphelion-step-by-step.html',
-  '/guides/vi/earth-perihelion-aphelion-when.html',
-  '/guides/vi/earth-perihelion-aphelion-vs-alternatives.html',
   '/guides/id/earth-perihelion-aphelion-step-by-step.html',
   '/guides/id/earth-perihelion-aphelion-when.html',
   '/guides/id/earth-perihelion-aphelion-vs-alternatives.html',
@@ -14324,6 +14299,56 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  '/guides/vi/deinonychus-3d-viewer-vs-ar-apps.html': '/guides/deinonychus-3d-viewer-vs-ar-apps.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/deinonychus-size-comparison.html': '/guides/deinonychus-size-comparison.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/delete-pdf-pages-step-by-step.html': '/guides/delete-pdf-pages-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/delete-pdf-pages-vs-alternatives.html': '/guides/delete-pdf-pages-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/delete-pdf-pages-when.html': '/guides/delete-pdf-pages-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/desk-cat-coder-vs-alternatives.html': '/guides/desk-cat-coder-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/desk-cat-coder-when.html': '/guides/desk-cat-coder-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/device-test-checklist-for-remote-work.html': '/guides/en/device-test-checklist-for-remote-work.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/dice-roller-step-by-step.html': '/guides/dice-roller-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/digital-clock-step-by-step.html': '/guides/digital-clock-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/dilophosaurus-3d-viewer-vs-ar-apps.html': '/guides/dilophosaurus-3d-viewer-vs-ar-apps.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/dilophosaurus-size-comparison.html': '/guides/dilophosaurus-size-comparison.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/dimetrodon-3d-viewer-vs-ar-apps.html': '/guides/dimetrodon-3d-viewer-vs-ar-apps.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/dimetrodon-size-comparison.html': '/guides/dimetrodon-size-comparison.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/diplodocus-3d-viewer-vs-ar-apps.html': '/guides/diplodocus-3d-viewer-vs-ar-apps.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/diplodocus-size-comparison.html': '/guides/diplodocus-size-comparison.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/document-scanner-pdf-step-by-step.html': '/guides/document-scanner-pdf-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/document-scanner-pdf-vs-alternatives.html': '/guides/document-scanner-pdf-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/document-scanner-pdf-when.html': '/guides/document-scanner-pdf-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/doliosauriscus-3d-viewer-vs-ar-apps.html': '/guides/doliosauriscus-3d-viewer-vs-ar-apps.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/doliosauriscus-size-comparison.html': '/guides/doliosauriscus-size-comparison.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/doppler-radial-velocity-step-by-step.html': '/guides/doppler-radial-velocity-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/doppler-radial-velocity-vs-alternatives.html': '/guides/doppler-radial-velocity-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/doppler-radial-velocity-when.html': '/guides/doppler-radial-velocity-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/download-link-not-appearing-after-conversion-five-fixes.html': '/guides/en/download-link-not-appearing-after-conversion-five-fixes.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/dracovenator-3d-viewer-vs-ar-apps.html': '/guides/dracovenator-3d-viewer-vs-ar-apps.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/dracovenator-size-comparison.html': '/guides/dracovenator-size-comparison.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/duplicate-word-remover-step-by-step.html': '/guides/duplicate-word-remover-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/duplicate-word-remover-vs-alternatives.html': '/guides/duplicate-word-remover-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/duplicate-word-remover-when.html': '/guides/duplicate-word-remover-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/dwarf-planet-comparison-step-by-step.html': '/guides/dwarf-planet-comparison-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/dwarf-planet-comparison-vs-alternatives.html': '/guides/dwarf-planet-comparison-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/dwarf-planet-comparison-when.html': '/guides/dwarf-planet-comparison-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earth-3d-globe-live-day-night-map-step-by-step.html': '/guides/earth-3d-globe-live-day-night-map-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html': '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earth-3d-globe-live-day-night-map-when.html': '/guides/earth-3d-globe-live-day-night-map-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earth-magnetosphere-when.html': '/guides/earth-magnetosphere-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earth-moon-barycenter-step-by-step.html': '/guides/earth-moon-barycenter-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earth-moon-barycenter-vs-alternatives.html': '/guides/earth-moon-barycenter-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earth-moon-barycenter-when.html': '/guides/earth-moon-barycenter-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earth-perihelion-aphelion-step-by-step.html': '/guides/earth-perihelion-aphelion-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earth-perihelion-aphelion-vs-alternatives.html': '/guides/earth-perihelion-aphelion-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earth-perihelion-aphelion-when.html': '/guides/earth-perihelion-aphelion-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earthshine-step-by-step.html': '/guides/earthshine-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earthshine-vs-alternatives.html': '/guides/earthshine-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/earthshine-when.html': '/guides/earthshine-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/ecliptic-zodiac-step-by-step.html': '/guides/ecliptic-zodiac-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/ecliptic-zodiac-when.html': '/guides/ecliptic-zodiac-when.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/edmontosaurus-3d-viewer-vs-ar-apps.html': '/guides/edmontosaurus-3d-viewer-vs-ar-apps.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/edmontosaurus-size-comparison.html': '/guides/edmontosaurus-size-comparison.html', // Phase-B 301 vi-batch-3-cont fire334
   '/guides/vi/cosmic-distance-ladder-step-by-step.html': '/guides/cosmic-distance-ladder-step-by-step.html', // Phase-B 301 vi-batch-3 fire333
   '/guides/vi/cosmic-distance-ladder-vs-alternatives.html': '/guides/cosmic-distance-ladder-vs-alternatives.html', // Phase-B 301 vi-batch-3 fire333
   '/guides/vi/cosmic-distance-ladder-when.html': '/guides/cosmic-distance-ladder-when.html', // Phase-B 301 vi-batch-3 fire333
@@ -17049,12 +17074,12 @@ export const JSP_BY_ROUTE = {
   // plan-warm-pascal-v3 S2 batch 16 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/camera-test-permission-blocked-how-to-allow-it.html': 'guide/pt/camera-test-permission-blocked-how-to-allow-it.jsp', '/guides/es/camera-test-permission-blocked-how-to-allow-it.html': 'guide/es/camera-test-permission-blocked-how-to-allow-it.jsp', '/guides/vi/camera-test-permission-blocked-how-to-allow-it.html': 'guide/vi/camera-test-permission-blocked-how-to-allow-it.jsp', '/guides/id/camera-test-permission-blocked-how-to-allow-it.html': 'guide/id/camera-test-permission-blocked-how-to-allow-it.jsp', '/guides/de/camera-test-permission-blocked-how-to-allow-it.html': 'guide/de/camera-test-permission-blocked-how-to-allow-it.jsp',
   '/guides/pt/css-minifier-vs-uglifier-vs-tree-shaking.html': 'guide/pt/css-minifier-vs-uglifier-vs-tree-shaking.jsp', '/guides/es/css-minifier-vs-uglifier-vs-tree-shaking.html': 'guide/es/css-minifier-vs-uglifier-vs-tree-shaking.jsp', '/guides/vi/css-minifier-vs-uglifier-vs-tree-shaking.html': 'guide/vi/css-minifier-vs-uglifier-vs-tree-shaking.jsp', '/guides/id/css-minifier-vs-uglifier-vs-tree-shaking.html': 'guide/id/css-minifier-vs-uglifier-vs-tree-shaking.jsp', '/guides/de/css-minifier-vs-uglifier-vs-tree-shaking.html': 'guide/de/css-minifier-vs-uglifier-vs-tree-shaking.jsp',
-  '/guides/pt/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/pt/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/es/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/es/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/vi/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/vi/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/id/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/id/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/de/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/de/download-link-not-appearing-after-conversion-five-fixes.jsp',
+  '/guides/pt/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/pt/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/es/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/es/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/id/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/id/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/de/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/de/download-link-not-appearing-after-conversion-five-fixes.jsp',
   // plan-warm-pascal-v3 S2 batch 17 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/pt/camera-test-vs-webcam-test-which-do-you-need.jsp', '/guides/es/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/es/camera-test-vs-webcam-test-which-do-you-need.jsp', '/guides/vi/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/vi/camera-test-vs-webcam-test-which-do-you-need.jsp', '/guides/id/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/id/camera-test-vs-webcam-test-which-do-you-need.jsp', '/guides/de/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/de/camera-test-vs-webcam-test-which-do-you-need.jsp',
   // Cycle 20260610-13 - LCD test for laptop screens (device-test) - 5 locale variants
   '/guides/pt/lcd-test-laptop.html': 'guide/pt/lcd-test-laptop.jsp', '/guides/es/lcd-test-laptop.html': 'guide/es/lcd-test-laptop.jsp', '/guides/vi/lcd-test-laptop.html': 'guide/vi/lcd-test-laptop.jsp', '/guides/id/lcd-test-laptop.html': 'guide/id/lcd-test-laptop.jsp', '/guides/de/lcd-test-laptop.html': 'guide/de/lcd-test-laptop.jsp',
-  '/guides/pt/device-test-checklist-for-remote-work.html': 'guide/pt/device-test-checklist-for-remote-work.jsp', '/guides/es/device-test-checklist-for-remote-work.html': 'guide/es/device-test-checklist-for-remote-work.jsp', '/guides/vi/device-test-checklist-for-remote-work.html': 'guide/vi/device-test-checklist-for-remote-work.jsp', '/guides/id/device-test-checklist-for-remote-work.html': 'guide/id/device-test-checklist-for-remote-work.jsp', '/guides/de/device-test-checklist-for-remote-work.html': 'guide/de/device-test-checklist-for-remote-work.jsp',
+  '/guides/pt/device-test-checklist-for-remote-work.html': 'guide/pt/device-test-checklist-for-remote-work.jsp', '/guides/es/device-test-checklist-for-remote-work.html': 'guide/es/device-test-checklist-for-remote-work.jsp', '/guides/id/device-test-checklist-for-remote-work.html': 'guide/id/device-test-checklist-for-remote-work.jsp', '/guides/de/device-test-checklist-for-remote-work.html': 'guide/de/device-test-checklist-for-remote-work.jsp',
   '/guides/pt/before-a-video-call-which-tools-to-run.html': 'guide/pt/before-a-video-call-which-tools-to-run.jsp', '/guides/es/before-a-video-call-which-tools-to-run.html': 'guide/es/before-a-video-call-which-tools-to-run.jsp', '/guides/vi/before-a-video-call-which-tools-to-run.html': 'guide/vi/before-a-video-call-which-tools-to-run.jsp', '/guides/id/before-a-video-call-which-tools-to-run.html': 'guide/id/before-a-video-call-which-tools-to-run.jsp', '/guides/de/before-a-video-call-which-tools-to-run.html': 'guide/de/before-a-video-call-which-tools-to-run.jsp',
   // plan-warm-pascal-v3 S2 batch 18 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/pt/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/es/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/es/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/vi/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/vi/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/id/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/id/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/de/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/de/extract-gif-frames-png-vs-jpg-which-format.jsp',
@@ -17371,7 +17396,6 @@ export const JSP_BY_ROUTE = {
   '/guides/digital-clock-step-by-step.html': 'guide/digital-clock-step-by-step.jsp',
   '/guides/pt/digital-clock-step-by-step.html': 'guide/pt/digital-clock-step-by-step.jsp',
   '/guides/es/digital-clock-step-by-step.html': 'guide/es/digital-clock-step-by-step.jsp',
-  '/guides/vi/digital-clock-step-by-step.html': 'guide/vi/digital-clock-step-by-step.jsp',
   '/guides/id/digital-clock-step-by-step.html': 'guide/id/digital-clock-step-by-step.jsp',
   '/guides/de/digital-clock-step-by-step.html': 'guide/de/digital-clock-step-by-step.jsp',
   '/utility-tools/countdown-timer.html': 'utility/countdown-timer.jsp',
@@ -17405,7 +17429,6 @@ export const JSP_BY_ROUTE = {
   '/guides/dice-roller-step-by-step.html': 'guide/dice-roller-step-by-step.jsp',
   '/guides/pt/dice-roller-step-by-step.html': 'guide/pt/dice-roller-step-by-step.jsp',
   '/guides/es/dice-roller-step-by-step.html': 'guide/es/dice-roller-step-by-step.jsp',
-  '/guides/vi/dice-roller-step-by-step.html': 'guide/vi/dice-roller-step-by-step.jsp',
   '/guides/id/dice-roller-step-by-step.html': 'guide/id/dice-roller-step-by-step.jsp',
   '/guides/de/dice-roller-step-by-step.html': 'guide/de/dice-roller-step-by-step.jsp',
   '/utility-tools/coin-flip.html': 'utility/coin-flip.jsp',
@@ -18985,8 +19008,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/desk-cat-coder-when.html': 'guide/es/desk-cat-coder-when.jsp',
   '/guides/es/desk-cat-coder-vs-alternatives.html': 'guide/es/desk-cat-coder-vs-alternatives.jsp',
   '/guides/vi/how-to-play-desk-cat-coder.html': 'guide/vi/how-to-play-desk-cat-coder.jsp',
-  '/guides/vi/desk-cat-coder-when.html': 'guide/vi/desk-cat-coder-when.jsp',
-  '/guides/vi/desk-cat-coder-vs-alternatives.html': 'guide/vi/desk-cat-coder-vs-alternatives.jsp',
   '/guides/id/how-to-play-desk-cat-coder.html': 'guide/id/how-to-play-desk-cat-coder.jsp',
   '/guides/id/desk-cat-coder-when.html': 'guide/id/desk-cat-coder-when.jsp',
   '/guides/id/desk-cat-coder-vs-alternatives.html': 'guide/id/desk-cat-coder-vs-alternatives.jsp',
@@ -20466,7 +20487,6 @@ export const JSP_BY_ROUTE = {
   '/guides/diplodocus-size-comparison.html': 'guide/diplodocus-size-comparison.jsp',
   '/guides/pt/diplodocus-size-comparison.html': 'guide/pt/diplodocus-size-comparison.jsp',
   '/guides/es/diplodocus-size-comparison.html': 'guide/es/diplodocus-size-comparison.jsp',
-  '/guides/vi/diplodocus-size-comparison.html': 'guide/vi/diplodocus-size-comparison.jsp',
   '/guides/id/diplodocus-size-comparison.html': 'guide/id/diplodocus-size-comparison.jsp',
   '/guides/de/diplodocus-size-comparison.html': 'guide/de/diplodocus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire39 (2026-07-17): diplodocus-3d-viewer-vs-ar-apps
@@ -20474,7 +20494,6 @@ export const JSP_BY_ROUTE = {
   '/guides/diplodocus-3d-viewer-vs-ar-apps.html': 'guide/diplodocus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/diplodocus-3d-viewer-vs-ar-apps.html': 'guide/pt/diplodocus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/diplodocus-3d-viewer-vs-ar-apps.html': 'guide/es/diplodocus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/diplodocus-3d-viewer-vs-ar-apps.html': 'guide/vi/diplodocus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/diplodocus-3d-viewer-vs-ar-apps.html': 'guide/id/diplodocus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/diplodocus-3d-viewer-vs-ar-apps.html': 'guide/de/diplodocus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire40 (2026-07-18): how-to-view-apatosaurus-in-3d
@@ -20534,7 +20553,6 @@ export const JSP_BY_ROUTE = {
   '/guides/dilophosaurus-size-comparison.html': 'guide/dilophosaurus-size-comparison.jsp',
   '/guides/pt/dilophosaurus-size-comparison.html': 'guide/pt/dilophosaurus-size-comparison.jsp',
   '/guides/es/dilophosaurus-size-comparison.html': 'guide/es/dilophosaurus-size-comparison.jsp',
-  '/guides/vi/dilophosaurus-size-comparison.html': 'guide/vi/dilophosaurus-size-comparison.jsp',
   '/guides/id/dilophosaurus-size-comparison.html': 'guide/id/dilophosaurus-size-comparison.jsp',
   '/guides/de/dilophosaurus-size-comparison.html': 'guide/de/dilophosaurus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire48 (2026-07-18): dilophosaurus-3d-viewer-vs-ar-apps
@@ -20542,7 +20560,6 @@ export const JSP_BY_ROUTE = {
   '/guides/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire49 (2026-07-18): how-to-view-iguanodon-in-3d
@@ -20654,7 +20671,6 @@ export const JSP_BY_ROUTE = {
   '/guides/deinonychus-size-comparison.html': 'guide/deinonychus-size-comparison.jsp',
   '/guides/pt/deinonychus-size-comparison.html': 'guide/pt/deinonychus-size-comparison.jsp',
   '/guides/es/deinonychus-size-comparison.html': 'guide/es/deinonychus-size-comparison.jsp',
-  '/guides/vi/deinonychus-size-comparison.html': 'guide/vi/deinonychus-size-comparison.jsp',
   '/guides/id/deinonychus-size-comparison.html': 'guide/id/deinonychus-size-comparison.jsp',
   '/guides/de/deinonychus-size-comparison.html': 'guide/de/deinonychus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire63 (2026-07-18): deinonychus-3d-viewer-vs-ar-apps
@@ -20662,7 +20678,6 @@ export const JSP_BY_ROUTE = {
   '/guides/deinonychus-3d-viewer-vs-ar-apps.html': 'guide/deinonychus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/deinonychus-3d-viewer-vs-ar-apps.html': 'guide/pt/deinonychus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/deinonychus-3d-viewer-vs-ar-apps.html': 'guide/es/deinonychus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/deinonychus-3d-viewer-vs-ar-apps.html': 'guide/vi/deinonychus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/deinonychus-3d-viewer-vs-ar-apps.html': 'guide/id/deinonychus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/deinonychus-3d-viewer-vs-ar-apps.html': 'guide/de/deinonychus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire64 (2026-07-18): how-to-view-utahraptor-in-3d
@@ -20820,7 +20835,6 @@ export const JSP_BY_ROUTE = {
   '/guides/edmontosaurus-size-comparison.html': 'guide/edmontosaurus-size-comparison.jsp',
   '/guides/pt/edmontosaurus-size-comparison.html': 'guide/pt/edmontosaurus-size-comparison.jsp',
   '/guides/es/edmontosaurus-size-comparison.html': 'guide/es/edmontosaurus-size-comparison.jsp',
-  '/guides/vi/edmontosaurus-size-comparison.html': 'guide/vi/edmontosaurus-size-comparison.jsp',
   '/guides/id/edmontosaurus-size-comparison.html': 'guide/id/edmontosaurus-size-comparison.jsp',
   '/guides/de/edmontosaurus-size-comparison.html': 'guide/de/edmontosaurus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire84 (2026-07-18): edmontosaurus-3d-viewer-vs-ar-apps
@@ -20828,7 +20842,6 @@ export const JSP_BY_ROUTE = {
   '/guides/edmontosaurus-3d-viewer-vs-ar-apps.html': 'guide/edmontosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/edmontosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/edmontosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/edmontosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/edmontosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/edmontosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/edmontosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/edmontosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/edmontosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/edmontosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/edmontosaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire85 (2026-07-18): how-to-view-ceratosaurus-in-3d
@@ -21148,7 +21161,6 @@ export const JSP_BY_ROUTE = {
   '/guides/dimetrodon-size-comparison.html': 'guide/dimetrodon-size-comparison.jsp',
   '/guides/pt/dimetrodon-size-comparison.html': 'guide/pt/dimetrodon-size-comparison.jsp',
   '/guides/es/dimetrodon-size-comparison.html': 'guide/es/dimetrodon-size-comparison.jsp',
-  '/guides/vi/dimetrodon-size-comparison.html': 'guide/vi/dimetrodon-size-comparison.jsp',
   '/guides/id/dimetrodon-size-comparison.html': 'guide/id/dimetrodon-size-comparison.jsp',
   '/guides/de/dimetrodon-size-comparison.html': 'guide/de/dimetrodon-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire126 (2026-07-19): dimetrodon-3d-viewer-vs-ar-apps
@@ -21156,7 +21168,6 @@ export const JSP_BY_ROUTE = {
   '/guides/dimetrodon-3d-viewer-vs-ar-apps.html': 'guide/dimetrodon-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/dimetrodon-3d-viewer-vs-ar-apps.html': 'guide/pt/dimetrodon-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/dimetrodon-3d-viewer-vs-ar-apps.html': 'guide/es/dimetrodon-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/dimetrodon-3d-viewer-vs-ar-apps.html': 'guide/vi/dimetrodon-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/dimetrodon-3d-viewer-vs-ar-apps.html': 'guide/id/dimetrodon-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/dimetrodon-3d-viewer-vs-ar-apps.html': 'guide/de/dimetrodon-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire127 (2026-07-19): how-to-view-ichthyovenator-in-3d
@@ -21362,7 +21373,6 @@ export const JSP_BY_ROUTE = {
   '/guides/dracovenator-size-comparison.html': 'guide/dracovenator-size-comparison.jsp',
   '/guides/pt/dracovenator-size-comparison.html': 'guide/pt/dracovenator-size-comparison.jsp',
   '/guides/es/dracovenator-size-comparison.html': 'guide/es/dracovenator-size-comparison.jsp',
-  '/guides/vi/dracovenator-size-comparison.html': 'guide/vi/dracovenator-size-comparison.jsp',
   '/guides/id/dracovenator-size-comparison.html': 'guide/id/dracovenator-size-comparison.jsp',
   '/guides/de/dracovenator-size-comparison.html': 'guide/de/dracovenator-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire153 (2026-07-19): dracovenator-3d-viewer-vs-ar-apps
@@ -21370,7 +21380,6 @@ export const JSP_BY_ROUTE = {
   '/guides/dracovenator-3d-viewer-vs-ar-apps.html': 'guide/dracovenator-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/dracovenator-3d-viewer-vs-ar-apps.html': 'guide/pt/dracovenator-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/dracovenator-3d-viewer-vs-ar-apps.html': 'guide/es/dracovenator-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/dracovenator-3d-viewer-vs-ar-apps.html': 'guide/vi/dracovenator-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/dracovenator-3d-viewer-vs-ar-apps.html': 'guide/id/dracovenator-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/dracovenator-3d-viewer-vs-ar-apps.html': 'guide/de/dracovenator-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire154 (2026-07-19): how-to-view-sauropelta-in-3d
@@ -21478,7 +21487,6 @@ export const JSP_BY_ROUTE = {
   '/guides/doliosauriscus-size-comparison.html': 'guide/doliosauriscus-size-comparison.jsp',
   '/guides/pt/doliosauriscus-size-comparison.html': 'guide/pt/doliosauriscus-size-comparison.jsp',
   '/guides/es/doliosauriscus-size-comparison.html': 'guide/es/doliosauriscus-size-comparison.jsp',
-  '/guides/vi/doliosauriscus-size-comparison.html': 'guide/vi/doliosauriscus-size-comparison.jsp',
   '/guides/id/doliosauriscus-size-comparison.html': 'guide/id/doliosauriscus-size-comparison.jsp',
   '/guides/de/doliosauriscus-size-comparison.html': 'guide/de/doliosauriscus-size-comparison.jsp',
   // dinosaur-3d-guides-loop-runbook fire168 (2026-07-20): doliosauriscus-3d-viewer-vs-ar-apps
@@ -21486,7 +21494,6 @@ export const JSP_BY_ROUTE = {
   '/guides/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
   '/guides/pt/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/pt/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
   '/guides/es/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/es/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/vi/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/id/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/de/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire169 (2026-07-20): how-to-view-brontotherium-in-3d
@@ -23907,7 +23914,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/hill-sphere-vs-alternatives.html': 'guide/vi/hill-sphere-vs-alternatives.jsp',
   '/guides/vi/cepheid-variable-vs-alternatives.html': 'guide/vi/cepheid-variable-vs-alternatives.jsp',
   '/guides/vi/expanding-universe-vs-alternatives.html': 'guide/vi/expanding-universe-vs-alternatives.jsp',
-  '/guides/vi/doppler-radial-velocity-vs-alternatives.html': 'guide/vi/doppler-radial-velocity-vs-alternatives.jsp',
   '/guides/vi/star-trails-vs-alternatives.html': 'guide/vi/star-trails-vs-alternatives.jsp',
   '/guides/vi/tidal-heating-vs-alternatives.html': 'guide/vi/tidal-heating-vs-alternatives.jsp',
   '/guides/vi/planetary-rings-comparison-vs-alternatives.html': 'guide/vi/planetary-rings-comparison-vs-alternatives.jsp',
@@ -23930,12 +23936,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/planetary-conjunction-vs-alternatives.html': 'guide/vi/planetary-conjunction-vs-alternatives.jsp',
   '/guides/vi/planetary-oblateness-vs-alternatives.html': 'guide/vi/planetary-oblateness-vs-alternatives.jsp',
   '/guides/vi/coriolis-effect-vs-alternatives.html': 'guide/vi/coriolis-effect-vs-alternatives.jsp',
-  '/guides/vi/earthshine-vs-alternatives.html': 'guide/vi/earthshine-vs-alternatives.jsp',
   '/guides/vi/roche-lobe-binary-vs-alternatives.html': 'guide/vi/roche-lobe-binary-vs-alternatives.jsp',
   '/guides/vi/foucault-pendulum-vs-alternatives.html': 'guide/vi/foucault-pendulum-vs-alternatives.jsp',
   '/guides/vi/magnetic-reconnection-vs-alternatives.html': 'guide/vi/magnetic-reconnection-vs-alternatives.jsp',
   '/guides/vi/synodic-lunar-month-vs-alternatives.html': 'guide/vi/synodic-lunar-month-vs-alternatives.jsp',
-  '/guides/vi/earth-moon-barycenter-vs-alternatives.html': 'guide/vi/earth-moon-barycenter-vs-alternatives.jsp',
   '/guides/vi/apollo-landing-sites-vs-alternatives.html': 'guide/vi/apollo-landing-sites-vs-alternatives.jsp',
   '/guides/vi/lunar-nodes-eclipse-seasons-vs-alternatives.html': 'guide/vi/lunar-nodes-eclipse-seasons-vs-alternatives.jsp',
   '/guides/vi/venus-phases-galileo-vs-alternatives.html': 'guide/vi/venus-phases-galileo-vs-alternatives.jsp',
@@ -23974,7 +23978,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/hill-sphere-when.html': 'guide/vi/hill-sphere-when.jsp',
   '/guides/vi/cepheid-variable-when.html': 'guide/vi/cepheid-variable-when.jsp',
   '/guides/vi/expanding-universe-when.html': 'guide/vi/expanding-universe-when.jsp',
-  '/guides/vi/doppler-radial-velocity-when.html': 'guide/vi/doppler-radial-velocity-when.jsp',
   '/guides/vi/star-trails-when.html': 'guide/vi/star-trails-when.jsp',
   '/guides/vi/tidal-heating-when.html': 'guide/vi/tidal-heating-when.jsp',
   '/guides/vi/planetary-rings-comparison-when.html': 'guide/vi/planetary-rings-comparison-when.jsp',
@@ -23998,12 +24001,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/planetary-conjunction-when.html': 'guide/vi/planetary-conjunction-when.jsp',
   '/guides/vi/planetary-oblateness-when.html': 'guide/vi/planetary-oblateness-when.jsp',
   '/guides/vi/coriolis-effect-when.html': 'guide/vi/coriolis-effect-when.jsp',
-  '/guides/vi/earthshine-when.html': 'guide/vi/earthshine-when.jsp',
   '/guides/vi/roche-lobe-binary-when.html': 'guide/vi/roche-lobe-binary-when.jsp',
   '/guides/vi/foucault-pendulum-when.html': 'guide/vi/foucault-pendulum-when.jsp',
   '/guides/vi/magnetic-reconnection-when.html': 'guide/vi/magnetic-reconnection-when.jsp',
   '/guides/vi/synodic-lunar-month-when.html': 'guide/vi/synodic-lunar-month-when.jsp',
-  '/guides/vi/earth-moon-barycenter-when.html': 'guide/vi/earth-moon-barycenter-when.jsp',
   '/guides/vi/apollo-landing-sites-when.html': 'guide/vi/apollo-landing-sites-when.jsp',
   '/guides/vi/lunar-nodes-eclipse-seasons-when.html': 'guide/vi/lunar-nodes-eclipse-seasons-when.jsp',
   '/guides/vi/venus-phases-galileo-when.html': 'guide/vi/venus-phases-galileo-when.jsp',
@@ -24041,7 +24042,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/hill-sphere-step-by-step.html': 'guide/vi/hill-sphere-step-by-step.jsp',
   '/guides/vi/cepheid-variable-step-by-step.html': 'guide/vi/cepheid-variable-step-by-step.jsp',
   '/guides/vi/expanding-universe-step-by-step.html': 'guide/vi/expanding-universe-step-by-step.jsp',
-  '/guides/vi/doppler-radial-velocity-step-by-step.html': 'guide/vi/doppler-radial-velocity-step-by-step.jsp',
   '/guides/vi/star-trails-step-by-step.html': 'guide/vi/star-trails-step-by-step.jsp',
   '/guides/vi/tidal-heating-step-by-step.html': 'guide/vi/tidal-heating-step-by-step.jsp',
   '/guides/vi/planetary-rings-comparison-step-by-step.html': 'guide/vi/planetary-rings-comparison-step-by-step.jsp',
@@ -24064,12 +24064,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/planetary-conjunction-step-by-step.html': 'guide/vi/planetary-conjunction-step-by-step.jsp',
   '/guides/vi/planetary-oblateness-step-by-step.html': 'guide/vi/planetary-oblateness-step-by-step.jsp',
   '/guides/vi/coriolis-effect-step-by-step.html': 'guide/vi/coriolis-effect-step-by-step.jsp',
-  '/guides/vi/earthshine-step-by-step.html': 'guide/vi/earthshine-step-by-step.jsp',
   '/guides/vi/roche-lobe-binary-step-by-step.html': 'guide/vi/roche-lobe-binary-step-by-step.jsp',
   '/guides/vi/foucault-pendulum-step-by-step.html': 'guide/vi/foucault-pendulum-step-by-step.jsp',
   '/guides/vi/magnetic-reconnection-step-by-step.html': 'guide/vi/magnetic-reconnection-step-by-step.jsp',
   '/guides/vi/synodic-lunar-month-step-by-step.html': 'guide/vi/synodic-lunar-month-step-by-step.jsp',
-  '/guides/vi/earth-moon-barycenter-step-by-step.html': 'guide/vi/earth-moon-barycenter-step-by-step.jsp',
   '/guides/vi/apollo-landing-sites-step-by-step.html': 'guide/vi/apollo-landing-sites-step-by-step.jsp',
   '/guides/vi/lunar-nodes-eclipse-seasons-step-by-step.html': 'guide/vi/lunar-nodes-eclipse-seasons-step-by-step.jsp',
   '/guides/vi/venus-phases-galileo-step-by-step.html': 'guide/vi/venus-phases-galileo-step-by-step.jsp',
@@ -24121,7 +24119,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/uranus-tilt-step-by-step.html': 'guide/vi/uranus-tilt-step-by-step.jsp',
   '/guides/vi/sunspot-cycle-when.html': 'guide/vi/sunspot-cycle-when.jsp',
   '/guides/vi/sunspot-cycle-step-by-step.html': 'guide/vi/sunspot-cycle-step-by-step.jsp',
-  '/guides/vi/earth-magnetosphere-when.html': 'guide/vi/earth-magnetosphere-when.jsp',
   '/guides/id/orbital-velocity-vs-alternatives.html': 'guide/id/orbital-velocity-vs-alternatives.jsp',
   '/guides/id/sunspot-cycle-vs-alternatives.html': 'guide/id/sunspot-cycle-vs-alternatives.jsp',
   '/guides/id/uranus-tilt-vs-alternatives.html': 'guide/id/uranus-tilt-vs-alternatives.jsp',
@@ -24728,13 +24725,11 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/ecliptic-zodiac-when.html': 'guide/pt/ecliptic-zodiac-when.jsp',
   '/guides/es/ecliptic-zodiac-when.html': 'guide/es/ecliptic-zodiac-when.jsp',
   '/guides/de/ecliptic-zodiac-when.html': 'guide/de/ecliptic-zodiac-when.jsp',
-  '/guides/vi/ecliptic-zodiac-when.html': 'guide/vi/ecliptic-zodiac-when.jsp',
   '/guides/id/ecliptic-zodiac-when.html': 'guide/id/ecliptic-zodiac-when.jsp',
   '/guides/ecliptic-zodiac-step-by-step.html': 'guide/ecliptic-zodiac-step-by-step.jsp',
   '/guides/pt/ecliptic-zodiac-step-by-step.html': 'guide/pt/ecliptic-zodiac-step-by-step.jsp',
   '/guides/es/ecliptic-zodiac-step-by-step.html': 'guide/es/ecliptic-zodiac-step-by-step.jsp',
   '/guides/de/ecliptic-zodiac-step-by-step.html': 'guide/de/ecliptic-zodiac-step-by-step.jsp',
-  '/guides/vi/ecliptic-zodiac-step-by-step.html': 'guide/vi/ecliptic-zodiac-step-by-step.jsp',
   '/guides/id/ecliptic-zodiac-step-by-step.html': 'guide/id/ecliptic-zodiac-step-by-step.jsp',
   '/guides/ecliptic-zodiac-vs-alternatives.html': 'guide/ecliptic-zodiac-vs-alternatives.jsp',
   '/guides/pt/ecliptic-zodiac-vs-alternatives.html': 'guide/pt/ecliptic-zodiac-vs-alternatives.jsp',
@@ -24902,13 +24897,11 @@ export const JSP_BY_ROUTE = {
   '/guides/dwarf-planet-comparison-step-by-step.html': 'guide/dwarf-planet-comparison-step-by-step.jsp',
   '/guides/pt/dwarf-planet-comparison-step-by-step.html': 'guide/pt/dwarf-planet-comparison-step-by-step.jsp',
   '/guides/es/dwarf-planet-comparison-step-by-step.html': 'guide/es/dwarf-planet-comparison-step-by-step.jsp',
-  '/guides/vi/dwarf-planet-comparison-step-by-step.html': 'guide/vi/dwarf-planet-comparison-step-by-step.jsp',
   '/guides/id/dwarf-planet-comparison-step-by-step.html': 'guide/id/dwarf-planet-comparison-step-by-step.jsp',
   '/guides/de/dwarf-planet-comparison-step-by-step.html': 'guide/de/dwarf-planet-comparison-step-by-step.jsp',
   '/guides/dwarf-planet-comparison-when.html': 'guide/dwarf-planet-comparison-when.jsp',
   '/guides/pt/dwarf-planet-comparison-when.html': 'guide/pt/dwarf-planet-comparison-when.jsp',
   '/guides/es/dwarf-planet-comparison-when.html': 'guide/es/dwarf-planet-comparison-when.jsp',
-  '/guides/vi/dwarf-planet-comparison-when.html': 'guide/vi/dwarf-planet-comparison-when.jsp',
   '/guides/id/dwarf-planet-comparison-when.html': 'guide/id/dwarf-planet-comparison-when.jsp',
   '/guides/de/dwarf-planet-comparison-when.html': 'guide/de/dwarf-planet-comparison-when.jsp',
   '/guides/dwarf-planet-comparison-vs-alternatives.html': 'guide/dwarf-planet-comparison-vs-alternatives.jsp',
@@ -25034,7 +25027,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/andromeda-collision-vs-alternatives.html': 'guide/de/andromeda-collision-vs-alternatives.jsp',
   '/guides/pt/dwarf-planet-comparison-vs-alternatives.html': 'guide/pt/dwarf-planet-comparison-vs-alternatives.jsp',
   '/guides/es/dwarf-planet-comparison-vs-alternatives.html': 'guide/es/dwarf-planet-comparison-vs-alternatives.jsp',
-  '/guides/vi/dwarf-planet-comparison-vs-alternatives.html': 'guide/vi/dwarf-planet-comparison-vs-alternatives.jsp',
   '/guides/id/dwarf-planet-comparison-vs-alternatives.html': 'guide/id/dwarf-planet-comparison-vs-alternatives.jsp',
   '/guides/de/dwarf-planet-comparison-vs-alternatives.html': 'guide/de/dwarf-planet-comparison-vs-alternatives.jsp',
   '/guides/impact-crater-formation-step-by-step.html': 'guide/impact-crater-formation-step-by-step.jsp',
@@ -25378,7 +25370,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/earth-3d-globe-live-day-night-map-when.html': 'guide/pt/earth-3d-globe-live-day-night-map-when.jsp',
   '/guides/es/earth-3d-globe-live-day-night-map-when.html': 'guide/es/earth-3d-globe-live-day-night-map-when.jsp',
   '/guides/de/earth-3d-globe-live-day-night-map-when.html': 'guide/de/earth-3d-globe-live-day-night-map-when.jsp',
-  '/guides/vi/earth-3d-globe-live-day-night-map-when.html': 'guide/vi/earth-3d-globe-live-day-night-map-when.jsp',
   '/guides/id/earth-3d-globe-live-day-night-map-when.html': 'guide/id/earth-3d-globe-live-day-night-map-when.jsp',
   '/guides/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/earth-3d-globe-live-day-night-map-step-by-step.jsp',
   '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
@@ -25388,12 +25379,10 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/pt/earth-3d-globe-live-day-night-map-step-by-step.jsp',
   '/guides/es/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/es/earth-3d-globe-live-day-night-map-step-by-step.jsp',
   '/guides/de/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/de/earth-3d-globe-live-day-night-map-step-by-step.jsp',
-  '/guides/vi/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/vi/earth-3d-globe-live-day-night-map-step-by-step.jsp',
   '/guides/id/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/id/earth-3d-globe-live-day-night-map-step-by-step.jsp',
   '/guides/pt/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/pt/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
   '/guides/es/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/es/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
   '/guides/de/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/de/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
-  '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/vi/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
   '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/id/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
   '/utility-tools/linux-online.html': 'utility/linux-online.jsp',
   '/guides/run-linux-in-browser-when.html': 'guide/run-linux-in-browser-when.jsp',
@@ -25706,9 +25695,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/delete-pdf-pages-when.html': 'guide/es/delete-pdf-pages-when.jsp',
   '/guides/es/delete-pdf-pages-step-by-step.html': 'guide/es/delete-pdf-pages-step-by-step.jsp',
   '/guides/es/delete-pdf-pages-vs-alternatives.html': 'guide/es/delete-pdf-pages-vs-alternatives.jsp',
-  '/guides/vi/delete-pdf-pages-when.html': 'guide/vi/delete-pdf-pages-when.jsp',
-  '/guides/vi/delete-pdf-pages-step-by-step.html': 'guide/vi/delete-pdf-pages-step-by-step.jsp',
-  '/guides/vi/delete-pdf-pages-vs-alternatives.html': 'guide/vi/delete-pdf-pages-vs-alternatives.jsp',
   '/guides/id/delete-pdf-pages-when.html': 'guide/id/delete-pdf-pages-when.jsp',
   '/guides/id/delete-pdf-pages-step-by-step.html': 'guide/id/delete-pdf-pages-step-by-step.jsp',
   '/guides/id/delete-pdf-pages-vs-alternatives.html': 'guide/id/delete-pdf-pages-vs-alternatives.jsp',
@@ -25858,9 +25844,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/document-scanner-pdf-step-by-step.html': 'guide/de/document-scanner-pdf-step-by-step.jsp',
   '/guides/de/document-scanner-pdf-when.html': 'guide/de/document-scanner-pdf-when.jsp',
   '/guides/de/document-scanner-pdf-vs-alternatives.html': 'guide/de/document-scanner-pdf-vs-alternatives.jsp',
-  '/guides/vi/document-scanner-pdf-step-by-step.html': 'guide/vi/document-scanner-pdf-step-by-step.jsp',
-  '/guides/vi/document-scanner-pdf-when.html': 'guide/vi/document-scanner-pdf-when.jsp',
-  '/guides/vi/document-scanner-pdf-vs-alternatives.html': 'guide/vi/document-scanner-pdf-vs-alternatives.jsp',
   '/guides/id/document-scanner-pdf-step-by-step.html': 'guide/id/document-scanner-pdf-step-by-step.jsp',
   '/guides/id/document-scanner-pdf-when.html': 'guide/id/document-scanner-pdf-when.jsp',
   '/guides/id/document-scanner-pdf-vs-alternatives.html': 'guide/id/document-scanner-pdf-vs-alternatives.jsp',
@@ -26585,9 +26568,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/earth-perihelion-aphelion-step-by-step.html': 'guide/es/earth-perihelion-aphelion-step-by-step.jsp',
   '/guides/es/earth-perihelion-aphelion-when.html': 'guide/es/earth-perihelion-aphelion-when.jsp',
   '/guides/es/earth-perihelion-aphelion-vs-alternatives.html': 'guide/es/earth-perihelion-aphelion-vs-alternatives.jsp',
-  '/guides/vi/earth-perihelion-aphelion-step-by-step.html': 'guide/vi/earth-perihelion-aphelion-step-by-step.jsp',
-  '/guides/vi/earth-perihelion-aphelion-when.html': 'guide/vi/earth-perihelion-aphelion-when.jsp',
-  '/guides/vi/earth-perihelion-aphelion-vs-alternatives.html': 'guide/vi/earth-perihelion-aphelion-vs-alternatives.jsp',
   '/guides/id/earth-perihelion-aphelion-step-by-step.html': 'guide/id/earth-perihelion-aphelion-step-by-step.jsp',
   '/guides/id/earth-perihelion-aphelion-when.html': 'guide/id/earth-perihelion-aphelion-when.jsp',
   '/guides/id/earth-perihelion-aphelion-vs-alternatives.html': 'guide/id/earth-perihelion-aphelion-vs-alternatives.jsp',
@@ -27818,19 +27798,16 @@ export const JSP_BY_ROUTE = {
   '/guides/duplicate-word-remover-when.html': 'guide/duplicate-word-remover-when.jsp',
   '/guides/de/duplicate-word-remover-when.html': 'guide/de/duplicate-word-remover-when.jsp',
   '/guides/id/duplicate-word-remover-when.html': 'guide/id/duplicate-word-remover-when.jsp',
-  '/guides/vi/duplicate-word-remover-when.html': 'guide/vi/duplicate-word-remover-when.jsp',
   '/guides/es/duplicate-word-remover-when.html': 'guide/es/duplicate-word-remover-when.jsp',
   '/guides/pt/duplicate-word-remover-when.html': 'guide/pt/duplicate-word-remover-when.jsp',
   '/guides/duplicate-word-remover-step-by-step.html': 'guide/duplicate-word-remover-step-by-step.jsp',
   '/guides/de/duplicate-word-remover-step-by-step.html': 'guide/de/duplicate-word-remover-step-by-step.jsp',
   '/guides/id/duplicate-word-remover-step-by-step.html': 'guide/id/duplicate-word-remover-step-by-step.jsp',
-  '/guides/vi/duplicate-word-remover-step-by-step.html': 'guide/vi/duplicate-word-remover-step-by-step.jsp',
   '/guides/es/duplicate-word-remover-step-by-step.html': 'guide/es/duplicate-word-remover-step-by-step.jsp',
   '/guides/pt/duplicate-word-remover-step-by-step.html': 'guide/pt/duplicate-word-remover-step-by-step.jsp',
   '/guides/duplicate-word-remover-vs-alternatives.html': 'guide/duplicate-word-remover-vs-alternatives.jsp',
   '/guides/de/duplicate-word-remover-vs-alternatives.html': 'guide/de/duplicate-word-remover-vs-alternatives.jsp',
   '/guides/id/duplicate-word-remover-vs-alternatives.html': 'guide/id/duplicate-word-remover-vs-alternatives.jsp',
-  '/guides/vi/duplicate-word-remover-vs-alternatives.html': 'guide/vi/duplicate-word-remover-vs-alternatives.jsp',
   '/guides/es/duplicate-word-remover-vs-alternatives.html': 'guide/es/duplicate-word-remover-vs-alternatives.jsp',
   '/guides/pt/duplicate-word-remover-vs-alternatives.html': 'guide/pt/duplicate-word-remover-vs-alternatives.jsp',
   '/utility-tools/reading-list-tracker.html': 'utility/reading-list-tracker.jsp',
@@ -29304,56 +29281,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   // pruned 2026-07-28 zero-evidence vi - batch vi-batch-3 (200 routes)
   // geo-batch-fire161: restored - Bing AI citations found (was pruned zero-evidence on GSC-only signal)
   // geo-batch-fire161: restored - Bing AI citations found (was pruned zero-evidence on GSC-only signal)
-  '/guides/vi/deinonychus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/deinonychus-size-comparison.html',
-  '/guides/vi/delete-pdf-pages-step-by-step.html',
-  '/guides/vi/delete-pdf-pages-vs-alternatives.html',
-  '/guides/vi/delete-pdf-pages-when.html',
-  '/guides/vi/desk-cat-coder-vs-alternatives.html',
-  '/guides/vi/desk-cat-coder-when.html',
-  '/guides/vi/device-test-checklist-for-remote-work.html',
-  '/guides/vi/dice-roller-step-by-step.html',
-  '/guides/vi/digital-clock-step-by-step.html',
-  '/guides/vi/dilophosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/dilophosaurus-size-comparison.html',
-  '/guides/vi/dimetrodon-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/dimetrodon-size-comparison.html',
-  '/guides/vi/diplodocus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/diplodocus-size-comparison.html',
-  '/guides/vi/document-scanner-pdf-step-by-step.html',
-  '/guides/vi/document-scanner-pdf-vs-alternatives.html',
-  '/guides/vi/document-scanner-pdf-when.html',
-  '/guides/vi/doliosauriscus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/doliosauriscus-size-comparison.html',
-  '/guides/vi/doppler-radial-velocity-step-by-step.html',
-  '/guides/vi/doppler-radial-velocity-vs-alternatives.html',
-  '/guides/vi/doppler-radial-velocity-when.html',
-  '/guides/vi/download-link-not-appearing-after-conversion-five-fixes.html',
-  '/guides/vi/dracovenator-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/dracovenator-size-comparison.html',
-  '/guides/vi/duplicate-word-remover-step-by-step.html',
-  '/guides/vi/duplicate-word-remover-vs-alternatives.html',
-  '/guides/vi/duplicate-word-remover-when.html',
-  '/guides/vi/dwarf-planet-comparison-step-by-step.html',
-  '/guides/vi/dwarf-planet-comparison-vs-alternatives.html',
-  '/guides/vi/dwarf-planet-comparison-when.html',
-  '/guides/vi/earth-3d-globe-live-day-night-map-step-by-step.html',
-  '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html',
-  '/guides/vi/earth-3d-globe-live-day-night-map-when.html',
-  '/guides/vi/earth-magnetosphere-when.html',
-  '/guides/vi/earth-moon-barycenter-step-by-step.html',
-  '/guides/vi/earth-moon-barycenter-vs-alternatives.html',
-  '/guides/vi/earth-moon-barycenter-when.html',
-  '/guides/vi/earth-perihelion-aphelion-step-by-step.html',
-  '/guides/vi/earth-perihelion-aphelion-vs-alternatives.html',
-  '/guides/vi/earth-perihelion-aphelion-when.html',
-  '/guides/vi/earthshine-step-by-step.html',
-  '/guides/vi/earthshine-vs-alternatives.html',
-  '/guides/vi/earthshine-when.html',
-  '/guides/vi/ecliptic-zodiac-step-by-step.html',
-  '/guides/vi/ecliptic-zodiac-when.html',
-  '/guides/vi/edmontosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/edmontosaurus-size-comparison.html',
   '/guides/vi/egg-time-rewind-vs-alternatives.html',
   '/guides/vi/egg-time-rewind-when.html',
   '/guides/vi/eight-ball-pool-vs-alternatives.html',
