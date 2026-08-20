@@ -25,6 +25,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html',
   '/guides/es/adobe-pdf-editor-browser-vs-alternatives.html',
   '/guides/vi/adobe-pdf-editor-browser-vs-alternatives.html',
+  '/guides/id/adobe-pdf-editor-browser-vs-alternatives.html',
   '/guides/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/pt/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/es/adobe-pdf-editor-browser-step-by-step.html',
@@ -7318,6 +7319,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/adobe-pdf-editor-browser-vs-alternatives.html',
   // adobe-pdf-editor-browser-vs-alternatives vi locale (create_new_guide_page 20260820-940)
   '/guides/vi/adobe-pdf-editor-browser-vs-alternatives.html',
+  // adobe-pdf-editor-browser-vs-alternatives id locale (create_new_guide_page 20260821)
+  '/guides/id/adobe-pdf-editor-browser-vs-alternatives.html',
   // adobe-pdf-editor-browser-step-by-step pt locale (create_new_guide_page 20260819-5)
   '/guides/pt/adobe-pdf-editor-browser-step-by-step.html',
   // adobe-pdf-editor-browser-step-by-step es locale (create_new_guide_page 20260819-6)
@@ -28827,6 +28830,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/pt/adobe-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/es/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/es/adobe-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/vi/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/vi/adobe-pdf-editor-browser-vs-alternatives.jsp',
+  '/guides/id/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/id/adobe-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/pt/adobe-pdf-editor-browser-step-by-step.html': 'guide/pt/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/es/adobe-pdf-editor-browser-step-by-step.html': 'guide/es/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/vi/adobe-pdf-editor-browser-step-by-step.html': 'guide/vi/adobe-pdf-editor-browser-step-by-step.jsp',
