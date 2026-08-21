@@ -35,6 +35,7 @@ export const INFO_ROUTES = new Set([
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html',
+  '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/client-side-pdf-editor-toolkit-when.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
@@ -7305,6 +7306,8 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // client-side-pdf-editor-toolkit-step-by-step pt locale (create_new_guide_page 20260821-8)
+  '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html',
   // foxit-pdf-editor-browser-step-by-step pt locale (create_new_guide_page 20260819-4)
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   // adobe-pdf-editor-browser-when pt locale (create_new_guide_page 20260821-3)
@@ -28791,6 +28794,7 @@ export const JSP_BY_ROUTE = {
   '/image-converter-tools/client-side-pdf-editor-toolkit.html': 'convert/client-side-pdf-editor-toolkit.jsp',
   '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/client-side-pdf-editor-toolkit-step-by-step.jsp',
+  '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/pt/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html': 'convert/devtools-style-pdf-element-inspector-editor-android.jsp',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
