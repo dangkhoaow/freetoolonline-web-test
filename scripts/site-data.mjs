@@ -16422,6 +16422,7 @@ export const ALIAS_ROUTES = {
   '/guides/vi/how-to-view-titanoboa-in-3d.html': '/guides/how-to-view-titanoboa-in-3d.html',
   '/guides/vi/how-to-view-titanosaurus-in-3d.html': '/guides/how-to-view-titanosaurus-in-3d.html',
   '/guides/vi/how-to-view-torvosaurus-in-3d.html': '/guides/how-to-view-torvosaurus-in-3d.html',
+  '/hilbert-editor.html': '/image-converter-tools/hilbert-editor.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28808,6 +28809,7 @@ export const JSP_BY_ROUTE = {
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html': 'convert/devtools-style-pdf-element-inspector-editor-android.jsp',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
+  '/image-converter-tools/hilbert-editor.html': 'convert/hilbert-editor.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

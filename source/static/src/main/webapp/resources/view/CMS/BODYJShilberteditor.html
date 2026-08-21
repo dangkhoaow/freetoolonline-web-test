@@ -1,0 +1,211 @@
+<script>
+    // Hilbert-curve generator archetype (hilbert-editor) - pure JS + Canvas 2D, no
+    // upload, no backend, no external lib. Registry Gate-H entry:
+    // hilbert_curve_canvas.
+    //
+    // Renders a space-filling Hilbert curve at a chosen order (1..7) onto a
+    // canvas, entirely client-side. The order->coordinate mapping is the
+    // classic iterative d2xy routine (Wikipedia "Hilbert curve"): for an
+    // order-p curve, side n = 2^p and the curve visits every one of n*n cells
+    // exactly once. The tool draws a polyline through all n*n cell centers.
+    //
+    // Optional image mode: when a picture is loaded, each curve segment is
+    // colored by sampling that picture's pixel at the segment's cell. This
+    // "linearizes" the image along the Hilbert path - a real per-segment color
+    // read from the decoded ImageData, never a stylistic fake. The picture is
+    // decoded locally via an object URL; it is never uploaded.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(); no top-level DOM.
+    // In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var HB_IMG = null;          // decoded HTMLImageElement (optional)
+    var HB_IMG_DATA = null;     // { data, w, h } sampled ImageData (optional)
+    var HB_LAST = { order: 5, width: 1.5, color: '#1a73e8' };
+
+    // Iterative d2xy: distance d along an order-p curve (side n = 2^p) -> [x,y].
+    function hbD2xy(n, d) {
+        var rx, ry, t = d, x = 0, y = 0;
+        for (var s = 1; s < n; s *= 2) {
+            rx = 1 & Math.floor(t / 2);
+            ry = 1 & (t ^ rx);
+            if (ry === 0) {
+                if (rx === 1) { x = s - 1 - x; y = s - 1 - y; }
+                var tmp = x; x = y; y = tmp;
+            }
+            x += s * rx;
+            y += s * ry;
+            t = Math.floor(t / 4);
+        }
+        return [x, y];
+    }
+
+    function hbSampleColor(cellX, cellY, n) {
+        // Map a curve cell (0..n-1) into the decoded image and read its pixel.
+        if (!HB_IMG_DATA) return null;
+        var ix = Math.min(HB_IMG_DATA.w - 1, Math.floor((cellX + 0.5) / n * HB_IMG_DATA.w));
+        var iy = Math.min(HB_IMG_DATA.h - 1, Math.floor((cellY + 0.5) / n * HB_IMG_DATA.h));
+        var off = (iy * HB_IMG_DATA.w + ix) * 4;
+        var d = HB_IMG_DATA.data;
+        return 'rgb(' + d[off] + ',' + d[off + 1] + ',' + d[off + 2] + ')';
+    }
+
+    function hbBuildImageData() {
+        // Downsample the loaded image once into an offscreen canvas so per-cell
+        // reads are cheap. Cap at 256px on the long edge.
+        HB_IMG_DATA = null;
+        if (!HB_IMG) return;
+        var maxEdge = 256;
+        var scale = Math.min(1, maxEdge / Math.max(HB_IMG.naturalWidth, HB_IMG.naturalHeight));
+        var w = Math.max(1, Math.round(HB_IMG.naturalWidth * scale));
+        var h = Math.max(1, Math.round(HB_IMG.naturalHeight * scale));
+        var off = document.createElement('canvas');
+        off.width = w; off.height = h;
+        var octx = off.getContext('2d');
+        octx.drawImage(HB_IMG, 0, 0, w, h);
+        try {
+            var id = octx.getImageData(0, 0, w, h);
+            HB_IMG_DATA = { data: id.data, w: w, h: h };
+        } catch (e) {
+            HB_IMG_DATA = null; // cross-origin taint guard (should not happen for local files)
+        }
+    }
+
+    function hbDraw(cv, opts) {
+        HB_LAST = opts;
+        var order = Math.max(1, Math.min(7, opts.order | 0));
+        var n = 1 << order;             // side length in cells
+        var total = n * n;              // number of curve points
+        var ctx = cv.getContext('2d');
+        var pad = 12;
+        var size = Math.min(cv.width, cv.height) - pad * 2;
+        var cell = size / n;
+        var ox = (cv.width - size) / 2;
+        var oy = (cv.height - size) / 2;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = opts.width;
+
+        var prev = null;
+        for (var d = 0; d < total; d++) {
+            var xy = hbD2xy(n, d);
+            var px = ox + (xy[0] + 0.5) * cell;
+            var py = oy + (xy[1] + 0.5) * cell;
+            if (prev) {
+                if (HB_IMG_DATA) {
+                    ctx.strokeStyle = hbSampleColor(xy[0], xy[1], n) || opts.color;
+                } else {
+                    ctx.strokeStyle = opts.color;
+                }
+                ctx.beginPath();
+                ctx.moveTo(prev[0], prev[1]);
+                ctx.lineTo(px, py);
+                ctx.stroke();
+            }
+            prev = [px, py];
+        }
+        return { order: order, points: total };
+    }
+
+    function hbRenderTool(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:10px;text-align:left;max-width:620px;margin-left:auto;margin-right:auto;">' +
+            '<label style="margin-right:14px;">Order ' +
+            '<select id="hbOrder" class="w3-select w3-border" style="width:auto;display:inline-block;margin-left:6px;">' +
+            '<option value="1">1</option><option value="2">2</option><option value="3">3</option>' +
+            '<option value="4">4</option><option value="5" selected>5</option>' +
+            '<option value="6">6</option><option value="7">7</option>' +
+            '</select></label>' +
+            '<label style="margin-right:14px;">Line width ' +
+            '<input id="hbWidth" type="range" min="0.5" max="6" step="0.5" value="1.5" style="vertical-align:middle;margin-left:6px;"></label>' +
+            '<label>Line color ' +
+            '<input id="hbColor" type="color" value="#1a73e8" style="vertical-align:middle;margin-left:6px;"></label>' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:10px;text-align:left;max-width:620px;margin-left:auto;margin-right:auto;">' +
+            '<label>Optional: color the curve from an image ' +
+            '<input id="hbImage" type="file" accept="image/*" class="w3-input w3-border" style="display:inline-block;width:auto;margin-left:6px;"></label> ' +
+            '<button id="hbClearImg" type="button" class="w3-button w3-light-grey w3-small">Remove image</button>' +
+            '</div>' +
+            '<canvas id="hbCanvas" width="600" height="600" style="border:1px solid #ccc;border-radius:6px;background:#fff;max-width:100%;height:auto;"></canvas>' +
+            '<div class="w3-row" style="margin-top:10px;">' +
+            '<button id="hbDraw" type="button" class="w3-button w3-blue">Draw curve</button> ' +
+            '<button id="hbDownload" type="button" class="w3-button w3-green" style="margin-left:8px;">Download PNG</button>' +
+            '</div>' +
+            '<p id="hbHint" class="w3-small" style="color:#888;margin-top:6px;">An order-5 curve fills a 32 by 32 grid; higher orders pack a denser path.</p>';
+
+        var cv = root.querySelector('#hbCanvas');
+        var orderEl = root.querySelector('#hbOrder');
+        var widthEl = root.querySelector('#hbWidth');
+        var colorEl = root.querySelector('#hbColor');
+        var imageEl = root.querySelector('#hbImage');
+        var clearImgEl = root.querySelector('#hbClearImg');
+        var hintEl = root.querySelector('#hbHint');
+
+        function currentOpts() {
+            return {
+                order: parseInt(orderEl.value, 10) || 5,
+                width: parseFloat(widthEl.value) || 1.5,
+                color: colorEl.value || '#1a73e8'
+            };
+        }
+
+        function redraw() {
+            var r = hbDraw(cv, currentOpts());
+            hintEl.textContent = 'Order ' + r.order + ': a ' + (1 << r.order) + ' by ' + (1 << r.order) +
+                ' grid, ' + r.points + ' points on one continuous path.';
+        }
+
+        orderEl.addEventListener('change', redraw);
+        widthEl.addEventListener('input', redraw);
+        colorEl.addEventListener('input', redraw);
+        root.querySelector('#hbDraw').addEventListener('click', redraw);
+
+        imageEl.addEventListener('change', function () {
+            var f = imageEl.files && imageEl.files[0];
+            if (!f) return;
+            var url = URL.createObjectURL(f);
+            var img = new Image();
+            img.onload = function () {
+                HB_IMG = img;
+                hbBuildImageData();
+                URL.revokeObjectURL(url);
+                redraw();
+            };
+            img.onerror = function () {
+                URL.revokeObjectURL(url);
+                hintEl.textContent = 'Could not read that image in this browser.';
+            };
+            img.src = url;
+        });
+
+        clearImgEl.addEventListener('click', function () {
+            HB_IMG = null; HB_IMG_DATA = null;
+            if (imageEl) imageEl.value = '';
+            redraw();
+        });
+
+        root.querySelector('#hbDownload').addEventListener('click', function () {
+            cv.toBlob(function (blob) {
+                if (!blob) { hintEl.textContent = 'Could not export the image in this browser.'; return; }
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url; a.download = 'hilbert-curve.png';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+            }, 'image/png');
+        });
+
+        // Draw immediately so the page shows a real result with no interaction.
+        redraw();
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('hilbertCurveTool');
+        if (!root) return; // not a hilbert-curve page
+        hbRenderTool(root);
+    }
+</script>
