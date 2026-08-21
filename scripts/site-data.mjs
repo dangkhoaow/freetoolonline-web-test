@@ -34,6 +34,7 @@ export const INFO_ROUTES = new Set([
   '/guides/id/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/de/adobe-pdf-editor-browser-step-by-step.html',
   '/guides/adobe-pdf-editor-browser-when.html',
+  '/guides/pt/adobe-pdf-editor-browser-when.html',
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html',
   '/guides/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
@@ -7314,6 +7315,8 @@ export const INFO_ROUTES = new Set([
 export const GUIDE_ROUTES = new Set([
   // foxit-pdf-editor-browser-step-by-step pt locale (create_new_guide_page 20260819-4)
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
+  // adobe-pdf-editor-browser-when pt locale (create_new_guide_page 20260821-3)
+  '/guides/pt/adobe-pdf-editor-browser-when.html',
   // adobe-pdf-editor-browser-vs-alternatives pt locale (create_new_guide_page 20260820-937)
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html',
   // adobe-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260820-939)
@@ -28781,6 +28784,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html': 'guide/pt/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/foxit-pdf-editor-browser-vs-alternatives.jsp',
   '/image-converter-tools/adobe-pdf-editor-browser.html': 'convert/adobe-pdf-editor-browser.jsp',
+  '/guides/pt/adobe-pdf-editor-browser-when.html': 'guide/pt/adobe-pdf-editor-browser-when.jsp',
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/pt/adobe-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/es/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/es/adobe-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/vi/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/vi/adobe-pdf-editor-browser-vs-alternatives.jsp',
