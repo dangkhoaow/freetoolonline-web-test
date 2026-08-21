@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/is-it-down-vs-alternatives.html',
+  '/guides/is-it-down-step-by-step.html',
+  '/guides/is-it-down-when.html',
+  '/guides/pt/is-it-down-step-by-step.html',
+  '/guides/pt/is-it-down-when.html',
+  '/guides/pt/is-it-down-vs-alternatives.html',
+  '/guides/es/is-it-down-step-by-step.html',
+  '/guides/es/is-it-down-when.html',
+  '/guides/es/is-it-down-vs-alternatives.html',
+  '/guides/vi/is-it-down-step-by-step.html',
+  '/guides/vi/is-it-down-when.html',
+  '/guides/vi/is-it-down-vs-alternatives.html',
+  '/guides/id/is-it-down-step-by-step.html',
+  '/guides/id/is-it-down-when.html',
+  '/guides/id/is-it-down-vs-alternatives.html',
+  '/guides/de/is-it-down-step-by-step.html',
+  '/guides/de/is-it-down-when.html',
+  '/guides/de/is-it-down-vs-alternatives.html',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html',
@@ -16426,6 +16444,7 @@ export const ALIAS_ROUTES = {
   '/guides/vi/how-to-view-titanosaurus-in-3d.html': '/guides/how-to-view-titanosaurus-in-3d.html',
   '/guides/vi/how-to-view-torvosaurus-in-3d.html': '/guides/how-to-view-torvosaurus-in-3d.html',
   '/hilbert-editor.html': '/image-converter-tools/hilbert-editor.html',
+  '/is-it-down.html': '/utility-tools/is-it-down.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28814,6 +28833,25 @@ export const JSP_BY_ROUTE = {
   '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html': 'convert/devtools-style-pdf-element-inspector-editor-android.jsp',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
   '/image-converter-tools/hilbert-editor.html': 'convert/hilbert-editor.jsp',
+  '/utility-tools/is-it-down.html': 'utility/is-it-down.jsp',
+  '/guides/is-it-down-when.html': 'guide/is-it-down-when.jsp',
+  '/guides/is-it-down-step-by-step.html': 'guide/is-it-down-step-by-step.jsp',
+  '/guides/is-it-down-vs-alternatives.html': 'guide/is-it-down-vs-alternatives.jsp',
+  '/guides/pt/is-it-down-step-by-step.html': 'guide/pt/is-it-down-step-by-step.jsp',
+  '/guides/pt/is-it-down-when.html': 'guide/pt/is-it-down-when.jsp',
+  '/guides/pt/is-it-down-vs-alternatives.html': 'guide/pt/is-it-down-vs-alternatives.jsp',
+  '/guides/es/is-it-down-step-by-step.html': 'guide/es/is-it-down-step-by-step.jsp',
+  '/guides/es/is-it-down-when.html': 'guide/es/is-it-down-when.jsp',
+  '/guides/es/is-it-down-vs-alternatives.html': 'guide/es/is-it-down-vs-alternatives.jsp',
+  '/guides/vi/is-it-down-step-by-step.html': 'guide/vi/is-it-down-step-by-step.jsp',
+  '/guides/vi/is-it-down-when.html': 'guide/vi/is-it-down-when.jsp',
+  '/guides/vi/is-it-down-vs-alternatives.html': 'guide/vi/is-it-down-vs-alternatives.jsp',
+  '/guides/id/is-it-down-step-by-step.html': 'guide/id/is-it-down-step-by-step.jsp',
+  '/guides/id/is-it-down-when.html': 'guide/id/is-it-down-when.jsp',
+  '/guides/id/is-it-down-vs-alternatives.html': 'guide/id/is-it-down-vs-alternatives.jsp',
+  '/guides/de/is-it-down-step-by-step.html': 'guide/de/is-it-down-step-by-step.jsp',
+  '/guides/de/is-it-down-when.html': 'guide/de/is-it-down-when.jsp',
+  '/guides/de/is-it-down-vs-alternatives.html': 'guide/de/is-it-down-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

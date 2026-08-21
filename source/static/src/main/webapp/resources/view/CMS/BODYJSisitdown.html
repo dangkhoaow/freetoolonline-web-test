@@ -1,0 +1,208 @@
+<script>
+    // Is-it-down archetype skeleton (is-it-down) - live-data class, no upload,
+    // no backend, no vendored lib, NO third-party service. Registry Gate-H
+    // entry: website_reachability_probe_browser.
+    // Mechanism: a direct browser probe of the site the reader types -
+    // fetch(url, {mode:'no-cors', cache:'no-store'}) with an AbortController
+    // timeout. A cross-origin no-cors GET sends no preflight; a resolved
+    // opaque response means the host answered at network level FROM THIS
+    // DEVICE; a rejection/timeout means it is not reachable from this device.
+    // G16 NOTE: the zero-interaction visible output is the SYNCHRONOUS render
+    // (the input panel + preset quick-check cards in their checking state +
+    // the full explainer block) - the page must read as complete BEFORE any
+    // probe resolves, and every card/result must degrade to a visible, honest
+    // error line, never a blank panel.
+    // HONESTY NOTE (the truthfulness boundary this tool lives on): this is a
+    // "down for ME" check, not a global monitor. A failed probe can mean the
+    // site is down, OR the reader's network/DNS/ad-blocker blocks it, OR the
+    // site refuses cross-site probes (Cross-Origin-Resource-Policy). An
+    // opaque response hides the HTTP status, so "reachable" means the server
+    // answered - not that every page on it works. The page states all of this
+    // plainly and never claims "down for everyone".
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top level.
+    // In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var IID_PRESETS = [
+        { id: 'google', host: 'google.com' },
+        { id: 'youtube', host: 'youtube.com' },
+        { id: 'facebook', host: 'facebook.com' },
+        { id: 'instagram', host: 'instagram.com' },
+        { id: 'x', host: 'x.com' },
+        { id: 'reddit', host: 'reddit.com' },
+        { id: 'wikipedia', host: 'wikipedia.org' }
+    ];
+    var IID_TIMEOUT_MS = 8000;
+
+    function iidEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    // Accept a bare domain or an http(s) URL; return {host, url} or null.
+    function iidNormalizeTarget(raw) {
+        var s = String(raw || '').trim();
+        if (!s) return null;
+        if (/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https?:/i.test(s)) return null; // non-http(s) scheme
+        if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+        var host;
+        try {
+            host = new URL(s).hostname;
+        } catch (e) {
+            return null;
+        }
+        if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(host)) return null;
+        return { host: host.toLowerCase(), url: 'https://' + host.toLowerCase() + '/' };
+    }
+
+    // Device-local reachability probe. Resolves {ok:true, ms} when the host
+    // answered at network level; {ok:false, ms, reason} otherwise.
+    function iidProbe(url) {
+        var controller = ('AbortController' in window) ? new AbortController() : null;
+        var timer = controller ? setTimeout(function () { controller.abort(); }, IID_TIMEOUT_MS) : null;
+        var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
+        function elapsed() {
+            var t1 = (window.performance && performance.now) ? performance.now() : Date.now();
+            return Math.max(1, Math.round(t1 - t0));
+        }
+        var opts = { mode: 'no-cors', cache: 'no-store', redirect: 'follow' };
+        if (controller) opts.signal = controller.signal;
+        return fetch(url + (url.indexOf('?') < 0 ? '?_iid=' : '&_iid=') + Date.now(), opts).then(function () {
+            if (timer) clearTimeout(timer);
+            return { ok: true, ms: elapsed() };
+        }).catch(function (e) {
+            if (timer) clearTimeout(timer);
+            var aborted = e && (e.name === 'AbortError' || /abort/i.test(String(e && e.message)));
+            return { ok: false, ms: elapsed(), reason: aborted ? 'timed out after ' + Math.round(IID_TIMEOUT_MS / 1000) + 's' : 'connection failed' };
+        });
+    }
+
+    function iidFailHtml(host, res) {
+        return '<div style="color:#b00020;font-weight:600;">Not reachable from your device' +
+            (res && res.reason ? ' (' + iidEsc(res.reason) + ')' : '') + '</div>' +
+            '<div style="color:#555;margin-top:2px;">This can mean ' + iidEsc(host) + ' is down - or your network, DNS or an ad-blocker blocks it, or the site refuses cross-site checks. Try another network (e.g. phone data) before concluding it is down for everyone.</div>';
+    }
+
+    function iidOkHtml(host, res) {
+        return '<div style="color:#2e7d32;font-weight:600;">Reachable from your device</div>' +
+            '<div style="color:#555;margin-top:2px;">' + iidEsc(host) + ' answered in about ' + res.ms + ' ms. The server responded at network level - if a specific page still errors for you, the problem is past the front door (logins, a feature, or your account).</div>';
+    }
+
+    function iidRenderPresetCards(root) {
+        var box = root.querySelector('#iidPresets');
+        if (!box) return;
+        var html = '';
+        for (var i = 0; i < IID_PRESETS.length; i++) {
+            var p = IID_PRESETS[i];
+            html += '<div id="iidCard-' + p.id + '" style="border:1px solid #e0e0e0;border-radius:4px;padding:8px 12px;margin:6px 12px 6px 0;display:inline-block;vertical-align:top;min-width:200px;">';
+            html += '<div style="font-weight:600;">' + iidEsc(p.host) + '</div>';
+            html += '<div class="iid-card-body" style="margin-top:4px;color:#555;">Checking from your device...</div>';
+            html += '</div>';
+        }
+        box.innerHTML = html;
+    }
+
+    function iidRefreshPreset(root, p) {
+        var card = root.querySelector('#iidCard-' + p.id);
+        if (!card) return;
+        var body = card.querySelector('.iid-card-body');
+        iidProbe('https://' + p.host + '/').then(function (res) {
+            if (!body) return;
+            if (res.ok) {
+                body.innerHTML = '<span style="color:#2e7d32;font-weight:600;">Reachable</span> <span style="color:#777;font-size:0.85em;">(' + res.ms + ' ms from your device)</span>';
+            } else {
+                body.innerHTML = '<span style="color:#b00020;font-weight:600;">Not reachable from your device</span>' +
+                    '<div style="color:#777;font-size:0.85em;margin-top:2px;">Could be down, blocked by your network or ad-blocker, or refusing cross-site checks.</div>';
+            }
+        });
+    }
+
+    function iidStatusLine(root, msg, isError) {
+        var el = root.querySelector('#iidStatus');
+        if (!el) return;
+        el.style.color = isError ? '#b00020' : '#555';
+        el.textContent = msg;
+    }
+
+    function iidCheckTyped(root, raw) {
+        var target = iidNormalizeTarget(raw);
+        var resBox = root.querySelector('#iidResult');
+        if (!target) {
+            iidStatusLine(root, 'Type a website address like example.com or https://example.com, then press Check.', true);
+            if (resBox) resBox.innerHTML = '';
+            return;
+        }
+        iidStatusLine(root, 'Probing ' + target.host + ' directly from your browser...');
+        if (resBox) resBox.innerHTML = '';
+        iidProbe(target.url).then(function (res) {
+            iidStatusLine(root, 'Last checked: ' + new Date().toLocaleString() + ' (probe sent from this device only)');
+            if (!resBox) return;
+            resBox.innerHTML = '<div style="border:1px solid #e0e0e0;border-left:4px solid ' + (res.ok ? '#2e7d32' : '#b00020') + ';border-radius:4px;padding:10px 14px;margin-top:8px;">' +
+                '<div style="font-weight:600;">' + iidEsc(target.host) + '</div>' +
+                (res.ok ? iidOkHtml(target.host, res) : iidFailHtml(target.host, res)) +
+                '</div>';
+        });
+    }
+
+    function iidRenderExplainer() {
+        var rows = [
+            ['Reachable', 'The site\'s server answered your device at network level. If a page still errors, the outage is past the front door - a feature, login or account issue, not the whole site.'],
+            ['Not reachable', 'Your device could not get an answer. The site may be down - or your network, DNS or an ad-blocker blocks it, or the site refuses cross-site checks. A second network (phone data) settles which.'],
+            ['Timed out', 'No answer within 8 seconds. Heavily overloaded sites and aggressive firewalls both look like this - retry once, then try another network.']
+        ];
+        var out = '<table style="border-collapse:collapse;margin-top:8px;font-size:0.92em;"><thead><tr><th style="text-align:left;padding:4px 8px;">Result</th><th style="text-align:left;padding:4px 8px;">What it means for you</th></tr></thead><tbody>';
+        for (var i = 0; i < rows.length; i++) {
+            out += '<tr><td style="padding:4px 8px;font-weight:600;vertical-align:top;white-space:nowrap;">' + rows[i][0] + '</td><td style="padding:4px 8px;">' + rows[i][1] + '</td></tr>';
+        }
+        out += '</tbody></table>';
+        out += '<div style="font-weight:bold;margin-top:12px;">When a site will not load</div>' +
+            '<ol style="margin:6px 0 0 18px;padding:0;">' +
+            '<li>Check it here first - a Reachable result means the problem is likely your session: hard-refresh, clear the site\'s cookies, or try a private window.</li>' +
+            '<li>Not reachable? Switch networks (Wi-Fi to phone data). If it loads there, your network or DNS is the blocker, not the site.</li>' +
+            '<li>Still failing on two networks? The site is probably having a real outage - big outages usually resolve within hours; retry later rather than changing settings.</li>' +
+            '<li>Only one page failing while the homepage is Reachable points at that feature or your account, not the whole site.</li>' +
+            '</ol>' +
+            '<p style="font-size:0.92em;color:#555;margin-top:8px;">Every check on this page runs from your own device and network - a direct browser request to the site you typed, nothing more. No third-party service receives the address, and this page does not store it. Because the probe is opaque, it can confirm the server answered but cannot read HTTP status codes or page content, and a result here reflects your device only - it is an "is it down for me" check, not a global outage monitor.</p>';
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('isItDownTool');
+        if (!root) return; // not an is-it-down page
+        try {
+            // Synchronous render FIRST (G16 anchor): preset cards in their
+            // checking state + the full explainer - visible output that does
+            // not depend on any probe resolving.
+            iidRenderPresetCards(root);
+            var explainBox = root.querySelector('#iidExplainer');
+            if (explainBox) explainBox.innerHTML = iidRenderExplainer();
+
+            var input = root.querySelector('#iidInput');
+            var btn = root.querySelector('#iidBtn');
+            if (btn) {
+                btn.addEventListener('click', function () {
+                    iidCheckTyped(root, input ? input.value : '');
+                });
+            }
+            if (input) {
+                input.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter') {
+                        ev.preventDefault();
+                        iidCheckTyped(root, input.value);
+                    }
+                });
+            }
+
+            // Live refresh AFTER the synchronous frame is in place.
+            for (var i = 0; i < IID_PRESETS.length; i++) {
+                iidRefreshPreset(root, IID_PRESETS[i]);
+            }
+        } catch (e) {
+            root.innerHTML = '<p style="color:#b00020;">Could not start the tool: ' + iidEsc(e && e.message ? e.message : String(e)) + '</p>';
+        }
+    }
+</script>
