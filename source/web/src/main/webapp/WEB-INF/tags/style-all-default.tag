@@ -3240,7 +3240,11 @@ html.main-html.dark .ftol-ct-card-name { color: #9aa4b2; }
     background: transparent !important;
 }
 
-.page-section a[href*=".html"]:not(.fa):not(.w3-button), .page-section a[href*="https://"]:not(.fa):not(.w3-button){
+.page-section a[href*=".html"]:not(.fa):not(.w3-button):not(.bento-cell):not(.home-chip), .page-section a[href*="https://"]:not(.fa):not(.w3-button):not(.bento-cell):not(.home-chip){
     text-decoration: underline !important;
+}
+
+.home-guides-list a[href*=".html"]:not(.fa):not(.w3-button):not(.bento-cell):not(.home-chip) {
+    text-decoration: none !important;
 }
 </style>
