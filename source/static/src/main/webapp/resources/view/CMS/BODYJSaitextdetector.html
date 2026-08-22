@@ -1,0 +1,242 @@
+<script>
+    // AI Text Detector - fully in-browser. Registry: ai_text_signal_scanner_purejs.
+    // Page: /utility-tools/ai-text-detector.html
+    //
+    // Deterministic SIGNALS scan - never a verdict, never a percentage
+    // (registry acceptance criteria forbid both): invisible Unicode format
+    // characters, Cyrillic/Greek homoglyphs inside Latin words, smart-
+    // punctuation profile, curated chatbot stock phrases, sentence-length
+    // uniformity, type-token ratio, repeated 4-grams. HONESTY BOUNDS stated
+    // on-page: SynthID-Text is Google-checkable only; ChatGPT/Claude plain
+    // text carries no readable watermark; humans trip these signals too.
+    // Framework calls doAfterPageRendered() after jQuery loads.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var input = document.getElementById('atdInput');
+        var fileInput = document.getElementById('atdFile');
+        var btnScan = document.getElementById('atdScan');
+        var btnClear = document.getElementById('atdClear');
+        var statusEl = document.getElementById('atdStatus');
+        var verdictEl = document.getElementById('atdVerdict');
+        var evidenceEl = document.getElementById('atdEvidence');
+        var MAX_BYTES = 512000;
+
+        // \u escapes on purpose: literal invisible characters in source are
+        // exactly the fragile artifact this tool scans for.
+        var INVISIBLES = [
+            { ch: '\u200b', name: 'Zero-width space (U+200B)' },
+            { ch: '\u200c', name: 'Zero-width non-joiner (U+200C)' },
+            { ch: '\u200d', name: 'Zero-width joiner (U+200D)' },
+            { ch: '\u2060', name: 'Word joiner (U+2060)' },
+            { ch: '\ufeff', name: 'Inline byte-order mark (U+FEFF)' },
+            { ch: '\u00ad', name: 'Soft hyphen (U+00AD)' },
+            { ch: '\u202f', name: 'Narrow no-break space (U+202F)' },
+            { ch: '\u200e', name: 'Left-to-right mark (U+200E)' },
+            { ch: '\u200f', name: 'Right-to-left mark (U+200F)' }
+        ];
+
+        var STOCK_PHRASES = [
+            'delve into', 'delves into', 'rich tapestry', 'it is important to note',
+            "it's important to note", 'it is worth noting', "it's worth noting",
+            'in today\u2019s fast-paced world', "in today's fast-paced world",
+            'as an ai language model', 'i hope this helps', 'in conclusion,',
+            'furthermore,', 'moreover,', 'navigate the complexities',
+            'unlock the potential', 'unlock the power', 'game-changer',
+            'dive deep into', 'harness the power', 'in the realm of',
+            'a testament to', 'ever-evolving landscape', 'holistic approach'
+        ];
+
+        function setStatus(msg) { if (statusEl) statusEl.textContent = msg; }
+
+        function esc(s) {
+            return String(s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
+        function countChar(text, ch) {
+            var n = 0, first = -1, i = -1;
+            while ((i = text.indexOf(ch, i + 1)) !== -1) { n++; if (first < 0) first = i; }
+            return { n: n, first: first };
+        }
+
+        function analyze(text) {
+            var signals = [];
+            var chars = text.length;
+            if (!chars) return signals;
+            var per1k = function (n) { return Math.round((n / chars) * 100000) / 100; };
+
+            // 1. invisible format characters
+            for (var v = 0; v < INVISIBLES.length; v++) {
+                var c = countChar(text, INVISIBLES[v].ch);
+                if (c.n > 0) {
+                    signals.push({
+                        signal: INVISIBLES[v].name,
+                        count: c.n + ' (first at character ' + c.first + ')',
+                        meaning: 'Invisible character - a paste/pipeline artifact worth investigating; some machine pipelines insert these'
+                    });
+                }
+            }
+
+            // 2. homoglyphs: Cyrillic/Greek letters inside otherwise Latin words
+            var words = text.split(/[^A-Za-zÀ-ɏͰ-ϿЀ-ӿ]+/);
+            var glyphWords = [];
+            for (var w = 0; w < words.length && glyphWords.length < 5; w++) {
+                var word = words[w];
+                if (word.length > 1 && /[A-Za-z]/.test(word) && /[Ͱ-ϿЀ-ӿ]/.test(word)) {
+                    glyphWords.push(word);
+                }
+            }
+            if (glyphWords.length) {
+                signals.push({
+                    signal: 'Lookalike letters (Cyrillic/Greek inside Latin words)',
+                    count: glyphWords.length + ' word(s): ' + glyphWords.join(', '),
+                    meaning: 'Character substitution - a known detector-evasion and spoofing artifact; never produced by normal typing'
+                });
+            }
+
+            // 3. smart-punctuation profile
+            var puncts = [
+                { ch: '\u2014', name: 'Em-dashes' },
+                { ch: '\u2013', name: 'En-dashes' },
+                { ch: '\u201c', name: 'Curly double quotes' },
+                { ch: '\u2019', name: 'Curly apostrophes/quotes' },
+                { ch: '\u2026', name: 'Ellipsis characters' },
+                { ch: '\u00a0', name: 'Non-breaking spaces' }
+            ];
+            for (var p = 0; p < puncts.length; p++) {
+                var pc = countChar(text, puncts[p].ch);
+                if (pc.n >= 3) {
+                    signals.push({
+                        signal: puncts[p].name,
+                        count: pc.n + ' (' + per1k(pc.n) + ' per 1,000 chars)',
+                        meaning: 'Word-processor or LLM-default punctuation; a plain keyboard types the ASCII equivalent - humans using Word/Docs produce these too'
+                    });
+                }
+            }
+
+            // 4. stock phrases
+            var lower = text.toLowerCase();
+            var phraseHits = [];
+            var phraseTotal = 0;
+            for (var s = 0; s < STOCK_PHRASES.length; s++) {
+                var idx = -1, hits = 0;
+                while ((idx = lower.indexOf(STOCK_PHRASES[s], idx + 1)) !== -1) hits++;
+                if (hits > 0) { phraseHits.push('"' + STOCK_PHRASES[s] + '"' + (hits > 1 ? ' x' + hits : '')); phraseTotal += hits; }
+            }
+            if (phraseTotal >= 2) {
+                signals.push({
+                    signal: 'Chatbot stock phrases',
+                    count: phraseTotal + ' (' + phraseHits.slice(0, 6).join(', ') + ')',
+                    meaning: 'Phrasing that chat assistants over-use; humans use these too, so weigh the density, not the presence'
+                });
+            }
+
+            // 5. sentence-length uniformity + type-token ratio + repeated 4-grams
+            var sentences = text.split(/[.!?]+\s/).map(function (t) { return t.trim(); }).filter(function (t) { return t.length > 0; });
+            if (sentences.length >= 8) {
+                var lens = sentences.map(function (t) { return t.split(/\s+/).length; });
+                var mean = lens.reduce(function (a, b) { return a + b; }, 0) / lens.length;
+                var sd = Math.sqrt(lens.reduce(function (a, b) { return a + (b - mean) * (b - mean); }, 0) / lens.length);
+                if (sd < 4.5 && mean > 8) {
+                    signals.push({
+                        signal: 'Sentence-length uniformity',
+                        count: 'mean ' + (Math.round(mean * 10) / 10) + ' words, deviation ' + (Math.round(sd * 10) / 10),
+                        meaning: 'Very even rhythm across ' + sentences.length + ' sentences; human writing usually varies more - fluent human prose can be uniform too'
+                    });
+                }
+                var allWords = lower.match(/[a-zÀ-ɏ']+/g) || [];
+                var sample = allWords.slice(0, 2000);
+                if (sample.length >= 200) {
+                    var uniq = {};
+                    for (var u = 0; u < sample.length; u++) uniq[sample[u]] = 1;
+                    var ttr = Object.keys(uniq).length / sample.length;
+                    if (ttr < 0.32) {
+                        signals.push({
+                            signal: 'Low vocabulary variety',
+                            count: 'type-token ratio ' + (Math.round(ttr * 100) / 100) + ' over ' + sample.length + ' words',
+                            meaning: 'Repetitive word choice; common in generated filler but also in simple or technical human prose'
+                        });
+                    }
+                }
+                var grams = {};
+                for (var g = 0; g + 3 < sample.length; g++) {
+                    var key = sample.slice(g, g + 4).join(' ');
+                    grams[key] = (grams[key] || 0) + 1;
+                }
+                var repeated = Object.keys(grams).filter(function (k) { return grams[k] >= 3; })
+                    .sort(function (a, b) { return grams[b] - grams[a]; }).slice(0, 3);
+                if (repeated.length) {
+                    signals.push({
+                        signal: 'Repeated word sequences',
+                        count: repeated.map(function (k) { return '"' + k + '" x' + grams[k]; }).join('; '),
+                        meaning: 'The same 4-word run recurs; templated or generated text repeats itself more than most human drafts'
+                    });
+                }
+            }
+
+            return signals;
+        }
+
+        function renderResult(signals, sourceName) {
+            var rows = '';
+            for (var i = 0; i < signals.length; i++) {
+                rows += '<tr><td>' + esc(signals[i].signal) + '</td><td>' + esc(signals[i].count) + '</td><td>' + esc(signals[i].meaning) + '</td></tr>';
+            }
+            if (signals.length) {
+                verdictEl.className = 'atd-verdict found show';
+                verdictEl.innerHTML = '<b>' + signals.length + ' machine-writing signal(s) found</b> in ' + esc(sourceName)
+                    + '. Summary: signals, not a verdict - no tool can reliably determine LLM authorship; humans and word processors trip these too.';
+                evidenceEl.innerHTML = '<table class="atd-table"><tr><th>Signal</th><th>Count</th><th>What it usually means</th></tr>' + rows + '</table>';
+            } else {
+                verdictEl.className = 'atd-verdict none show';
+                verdictEl.innerHTML = '<b>No machine-writing signals found</b> in ' + esc(sourceName)
+                    + '. Still signals, not a verdict: clean typography proves nothing about authorship in either direction.';
+                evidenceEl.innerHTML = '';
+            }
+        }
+
+        function showError(msg) {
+            verdictEl.className = 'atd-verdict error show';
+            verdictEl.innerHTML = '<b>Could not read this input.</b> ' + esc(msg);
+            evidenceEl.innerHTML = '';
+        }
+
+        function runScan() {
+            var text = input.value || '';
+            if (!text.trim()) { showError('Paste some text or choose a .txt file first.'); return; }
+            if (text.length > MAX_BYTES) { showError('Text is larger than the 500 KB limit - trim it and scan again.'); return; }
+            setStatus('Scanning ' + text.length + ' characters in your browser...');
+            try {
+                renderResult(analyze(text), 'the pasted text');
+                setStatus('Done. Everything ran locally - nothing was uploaded.');
+            } catch (e) {
+                showError(e && e.message ? e.message : 'Unexpected analysis error.');
+            }
+        }
+
+        fileInput.addEventListener('change', function () {
+            var f = fileInput.files && fileInput.files[0];
+            if (!f) return;
+            if (f.size > MAX_BYTES) { showError('File is larger than the 500 KB limit.'); return; }
+            var reader = new FileReader();
+            reader.onerror = function () { showError('The browser could not read the selected file.'); };
+            reader.onload = function () {
+                input.value = String(reader.result || '');
+                setStatus('Loaded ' + f.name + ' (' + Math.round(f.size / 1024) + ' KB). Click Scan for Signals.');
+            };
+            reader.readAsText(f);
+        });
+        btnScan.addEventListener('click', runScan);
+        btnClear.addEventListener('click', function () {
+            input.value = '';
+            fileInput.value = '';
+            verdictEl.className = 'atd-verdict';
+            verdictEl.innerHTML = '';
+            evidenceEl.innerHTML = '';
+            setStatus('Paste text or pick a file, then click Scan for Signals. Everything runs in your browser - nothing is uploaded.');
+        });
+    }
+</script>
