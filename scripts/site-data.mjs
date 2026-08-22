@@ -39,6 +39,7 @@ export const INFO_ROUTES = new Set([
   '/guides/es/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/vi/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html',
+  '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/client-side-pdf-editor-toolkit-when.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
@@ -7265,6 +7266,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/client-side-pdf-editor-toolkit-step-by-step.html',
   // client-side-pdf-editor-toolkit-step-by-step id locale (create_new_guide_page 20260822-4)
   '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html',
+  // client-side-pdf-editor-toolkit-step-by-step de locale (create_new_guide_page 20260822-5)
+  '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html',
   // foxit-pdf-editor-browser-step-by-step pt locale (create_new_guide_page 20260819-4)
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   // adobe-pdf-editor-browser-when pt locale (create_new_guide_page 20260821-3)
@@ -28735,6 +28738,7 @@ export const JSP_BY_ROUTE = {
   '/guides/es/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/es/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/vi/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/vi/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/id/client-side-pdf-editor-toolkit-step-by-step.jsp',
+  '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/de/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html': 'convert/devtools-style-pdf-element-inspector-editor-android.jsp',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
