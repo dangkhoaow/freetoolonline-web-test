@@ -28773,6 +28773,8 @@ export const JSP_BY_ROUTE = {
   '/image-tools/ai-watermark-detector.html': 'convert/ai-watermark-detector.jsp',
   '/utility-tools/ai-text-detector.html': 'utility/ai-text-detector.jsp',
   '/guides/ai-watermarks-explained.html': 'guide/ai-watermarks-explained.jsp',
+  // ai-watermarks-explained pt locale (create_new_guide_page 20260823)
+  '/guides/pt/ai-watermarks-explained.html': 'guide/pt/ai-watermarks-explained.jsp',
   '/pdf-tools/ocr-pdf.html': 'pdf/ocr-pdf.jsp',
 };
 
