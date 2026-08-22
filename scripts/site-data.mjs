@@ -16268,7 +16268,13 @@ export const ALIAS_ROUTES = {
   '/adobe-pdf-editor-browser.html': '/image-converter-tools/adobe-pdf-editor-browser.html',
   '/pdf-xchange-editor-browser-plugin-edge.html': '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html',
   '/client-side-pdf-editor-toolkit.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
-  '/devtools-style-pdf-element-inspector-editor-android.html': '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html',
+  '/devtools-style-pdf-element-inspector-editor-android.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
+  // Retired 2026-08-23 (Phase 6 cluster-narrative axis_F CRITICAL, granted card
+  // phase6-cluster-imageconversion-structural-20260822-5): devtools-style-...-android
+  // was a byte-identical (paragraph_jaccard 1.0) SEO-spam clone of client-side-pdf-editor-toolkit
+  // (same "add typed text to a PDF" widget, one merely labelled "for Android"). G51 same-processing-model
+  // duplicate -> retire to canonical via ALIAS + CloudFront 301.
+  '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
   // vi-batch-6 Phase-B: 301 alias to EN canonical (guide-farm-prune-runbook fire 339)
   '/guides/vi/how-to-play-star-fuel-battle.html': '/guides/how-to-play-star-fuel-battle.html',
   '/guides/vi/how-to-play-starlight-breaker.html': '/guides/how-to-play-starlight-breaker.html',
@@ -28743,7 +28749,6 @@ export const JSP_BY_ROUTE = {
   '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/id/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/de/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
-  '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html': 'convert/devtools-style-pdf-element-inspector-editor-android.jsp',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
   '/image-converter-tools/hilbert-editor.html': 'convert/hilbert-editor.jsp',
   '/utility-tools/is-it-down.html': 'utility/is-it-down.jsp',
