@@ -6,34 +6,121 @@
     // and stream chat completions on-device. 100% in-browser: no upload, no backend.
     // The ~6.6MB web-llm lib is self-hosted at /vendor/web-llm; model weights are
     // fetched at runtime from huggingface.co/mlc-ai (intrinsic; surfaced as a caveat).
+    //
+    // 2026-08-22 enhance (ai-local-tools fire21): (1) model list refreshed against the
+    // vendored web-llm 0.2.84 prebuiltAppConfig with download sizes MEASURED from the
+    // HF repos (sum of params_shard bytes), (2) Chrome built-in Prompt API as a
+    // zero-download fallback tier for no-WebGPU Chrome - activates ONLY when
+    // availability is 'available' (never triggers Chrome's own model download),
+    // (3) system-prompt presets, (4) transcript export (.txt, built on-device).
     web.localUpload = true;
     function loadUploadHandlersByPage() {}   // no server upload for this tool
 
-    // Curated small models suitable for in-browser load (model_id from web-llm
-    // prebuiltAppConfig). Approx one-time download per model (cached after first load).
+    // Curated small models suitable for in-browser load (model_id from the vendored
+    // web-llm 0.2.84 prebuiltAppConfig). Download sizes measured 2026-08-22 from the
+    // mlc-ai HF repos (weights only; the per-model WASM runtime adds a few MB).
     var FTO_PAC_MODELS = [
-        { id: 'TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC-1k', label: 'TinyLlama 1.1B (smallest, ~0.7 GB)' },
-        { id: 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC', label: 'Qwen2.5 0.5B (tiny, ~0.5 GB)' },
-        { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 1B (~0.9 GB)' },
-        { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 3B (~2.3 GB)' },
-        { id: 'Phi-3-mini-4k-instruct-q4f16_1-MLC', label: 'Phi-3 mini 3.8B (~2.4 GB)' }
+        { id: 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC', label: 'Qwen2.5 0.5B (smallest, about 0.3 GB)' },
+        { id: 'TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC-1k', label: 'TinyLlama 1.1B (about 0.6 GB)' },
+        { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 1B (about 0.7 GB)' },
+        { id: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC', label: 'Qwen2.5 1.5B (about 0.8 GB)' },
+        { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 3B (about 1.7 GB)' },
+        { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', label: 'Phi-3.5 mini 3.8B (about 2 GB)' }
     ];
     var FTO_PAC_DEFAULT_MODEL = FTO_PAC_MODELS[0].id;
-    var FTO_PAC_SYSTEM_PROMPT = 'You are a helpful, concise assistant running privately in the browser, on the user device.';
     var FTO_PAC_LS_MODEL = 'webllm-last-model';
+
+    // System-prompt presets. Changing the preset restarts the conversation so the
+    // new instruction actually applies from the first turn (deterministic behavior).
+    var FTO_PAC_PRESETS = {
+        general: 'You are a helpful, concise assistant running privately in the browser, on the user device.',
+        writing: 'You are a careful writing assistant running privately in the browser. Improve or draft short pieces of text, keep the user meaning and a natural tone, and answer with the text itself plus at most one short note.',
+        explain: 'You are a patient tutor running privately in the browser. Explain the topic step by step in plain language, with a short example where it helps.',
+        brainstorm: 'You are a brainstorming partner running privately in the browser. Reply with a concise numbered list of distinct ideas, no filler.'
+    };
+    var ftoPacSystemPrompt = FTO_PAC_PRESETS.general;
 
     var ftoPacEngine = null;        // web-llm MLCEngine (created once)
     var ftoPacLoadedModel = null;   // model id currently reloaded into the engine
     var ftoPacMessages = [];        // [{role, content}] chat history (system seeded on load)
     var ftoPacGenerating = false;
+    var ftoPacBuiltinOk = false;    // Chrome built-in Prompt API ready (zero download)
+    var ftoPacBuiltinKind = null;   // 'new' | 'legacy'
+    var ftoPacBuiltinSession = null;
 
     // WebGPU support: synchronous capability flag + async adapter preflight (mirrors the
-    // source navigator.gpu + gpu.requestAdapter() check). No WebGPU -> the tool cannot run.
+    // source navigator.gpu + gpu.requestAdapter() check).
     function ftoPacWebGpuSupported() { return typeof navigator !== 'undefined' && 'gpu' in navigator; }
     function ftoPacWebGpuAdapter() {
         if (!ftoPacWebGpuSupported()) { return Promise.resolve(false); }
         try { return navigator.gpu.requestAdapter().then(function (a) { return !!a; }).catch(function () { return false; }); }
         catch (e) { return Promise.resolve(false); }
+    }
+
+    // ---- Chrome built-in Prompt API (zero-download fallback tier) -----------------
+    // Activates ONLY when the built-in model is already 'available' on the device -
+    // this page never triggers Chrome's own built-in-model download.
+    function ftoPacBuiltinApi() {
+        try {
+            if (typeof LanguageModel !== 'undefined' && LanguageModel && typeof LanguageModel.availability === 'function') { return LanguageModel; }
+        } catch (e) { void e; }
+        return null;
+    }
+    function ftoPacProbeBuiltin(cb) {
+        var done = false;
+        function finish(ok, kind) { if (!done) { done = true; cb(!!ok, kind || null); } }
+        function legacyProbe() {
+            try {
+                if (typeof window !== 'undefined' && window.ai && window.ai.languageModel &&
+                    typeof window.ai.languageModel.capabilities === 'function') {
+                    window.ai.languageModel.capabilities()
+                        .then(function (c) { finish(c && c.available === 'readily', 'legacy'); })
+                        .catch(function () { finish(false, null); });
+                    return;
+                }
+            } catch (e) { void e; }
+            finish(false, null);
+        }
+        var api = ftoPacBuiltinApi();
+        if (!api) { legacyProbe(); return; }
+        try {
+            Promise.resolve(api.availability())
+                .then(function (a) { if (a === 'available') { finish(true, 'new'); } else { legacyProbe(); } })
+                .catch(legacyProbe);
+        } catch (e) { legacyProbe(); }
+    }
+    function ftoPacBuiltinCreate() {
+        if (ftoPacBuiltinSession) { return Promise.resolve(ftoPacBuiltinSession); }
+        if (ftoPacBuiltinKind === 'legacy') {
+            return window.ai.languageModel.create({ systemPrompt: ftoPacSystemPrompt })
+                .then(function (s) { ftoPacBuiltinSession = s; return s; });
+        }
+        var api = ftoPacBuiltinApi();
+        if (!api) { return Promise.reject(new Error('Built-in AI unavailable')); }
+        return Promise.resolve(api.create({ initialPrompts: [{ role: 'system', content: ftoPacSystemPrompt }] }))
+            .then(function (s) { ftoPacBuiltinSession = s; return s; });
+    }
+    function ftoPacBuiltinReset() {
+        try { if (ftoPacBuiltinSession && typeof ftoPacBuiltinSession.destroy === 'function') { ftoPacBuiltinSession.destroy(); } } catch (e) { void e; }
+        ftoPacBuiltinSession = null;
+    }
+    // The session keeps its own conversational context; we also record turns in
+    // ftoPacMessages so the transcript export covers this tier too.
+    function ftoPacSendBuiltin(text, onDone, onError) {
+        text = (text || '').trim();
+        if (!text || ftoPacGenerating) { return; }
+        ftoPacGenerating = true;
+        if (!ftoPacMessages.length) { ftoPacMessages.push({ role: 'system', content: ftoPacSystemPrompt }); }
+        ftoPacMessages.push({ role: 'user', content: text });
+        ftoPacBuiltinCreate()
+            .then(function (session) { return session.prompt(text); })
+            .then(function (out) {
+                var full = String(out == null ? '' : out);
+                ftoPacMessages.push({ role: 'assistant', content: full });
+                ftoPacGenerating = false;
+                if (onDone) { onDone(full); }
+            })
+            .catch(function (err) { ftoPacGenerating = false; if (onError) { onError(err); } });
     }
 
     // Idempotent lazy-loader for the self-hosted web-llm standalone ESM (window cached).
@@ -61,7 +148,7 @@
             return Promise.resolve(ftoPacEngine.reload(modelId)).then(function () {
                 ftoPacLoadedModel = modelId;
                 try { localStorage.setItem(FTO_PAC_LS_MODEL, modelId); } catch (e) {}
-                if (!ftoPacMessages.length) { ftoPacMessages.push({ role: 'system', content: FTO_PAC_SYSTEM_PROMPT }); }
+                if (!ftoPacMessages.length) { ftoPacMessages.push({ role: 'system', content: ftoPacSystemPrompt }); }
                 return ftoPacEngine;
             });
         });
@@ -96,20 +183,58 @@
             .catch(function (err) { ftoPacGenerating = false; if (onError) { onError(err); } });
     }
 
+    // Transcript export: build a plain-text file from the in-session history and save
+    // it via a Blob download - entirely on-device, nothing uploaded or synced.
+    function ftoPacTranscriptText() {
+        var lines = [];
+        for (var i = 0; i < ftoPacMessages.length; i++) {
+            var m = ftoPacMessages[i];
+            if (!m || m.role === 'system') { continue; }
+            lines.push((m.role === 'user' ? 'You: ' : 'AI: ') + (m.content || ''));
+            lines.push('');
+        }
+        return lines.join('\n');
+    }
+    function ftoPacExportTranscript() {
+        var txt = ftoPacTranscriptText();
+        if (!txt.trim()) { return; }
+        var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'private-ai-chat-transcript.txt';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    }
+
     // Guarded wiring: the controls come from ui_and_skill (BODYHTML). No-op until then.
     function ftoWirePrivateAiChat() {
         var modelSel = document.getElementById('pacModel');
+        var presetSel = document.getElementById('pacPreset');
         var loadBtn = document.getElementById('pacLoadBtn');
         var sendBtn = document.getElementById('pacSendBtn');
+        var exportBtn = document.getElementById('pacExportBtn');
         var input = document.getElementById('pacInput');
         var messages = document.getElementById('pacMessages');
         var status = document.getElementById('pacStatus');
         var progress = document.getElementById('pacProgress');
         var gpuWarn = document.getElementById('pacGpuWarn');
+        var builtinNote = document.getElementById('pacBuiltinNote');
         if (!loadBtn || !sendBtn || !input || !messages) { return; }
+
+        var usingBuiltin = false;   // true only on the no-WebGPU + built-in-ready path
 
         function setStatus(m) { if (status) { status.textContent = m; } }
         function setProgress(frac) { if (progress) { progress.value = Math.max(0, Math.min(1, frac || 0)); } }
+        function removeExample() {
+            var ex = document.getElementById('pacExample');
+            if (ex && ex.parentNode) { ex.parentNode.removeChild(ex); }
+        }
+        function refreshExportBtn() {
+            if (!exportBtn) { return; }
+            var hasReply = ftoPacMessages.some(function (m) { return m && m.role === 'assistant'; });
+            exportBtn.disabled = !hasReply;
+        }
         function addBubble(role, text) {
             var d = document.createElement('div');
             d.className = 'w3-panel w3-round ' + (role === 'user' ? 'w3-light-grey w3-rightbar w3-border-blue' : 'w3-pale-green w3-leftbar w3-border-green');
@@ -120,17 +245,47 @@
             return body;
         }
 
-        // WebGPU preflight: disable the tool + show the notice if unsupported.
+        // WebGPU preflight. No WebGPU -> probe Chrome's built-in Prompt API as a
+        // zero-download fallback; only when that is also unavailable show the notice.
         ftoPacWebGpuAdapter().then(function (ok) {
-            if (!ok) {
-                if (gpuWarn) { gpuWarn.style.display = 'block'; }
-                loadBtn.disabled = true; sendBtn.disabled = true;
-                setStatus('This tool needs WebGPU. Try the latest Chrome, Edge, or Chrome on Android (desktop recommended).');
-            }
+            if (ok) { return; }
+            loadBtn.disabled = true; if (modelSel) { modelSel.disabled = true; }
+            ftoPacProbeBuiltin(function (biOk, kind) {
+                if (biOk) {
+                    ftoPacBuiltinOk = true; ftoPacBuiltinKind = kind; usingBuiltin = true;
+                    if (builtinNote) { builtinNote.style.display = 'block'; }
+                    sendBtn.disabled = false; input.disabled = false;
+                    setStatus('Using Chrome built-in AI - runs on this device, no download. The model picker above needs WebGPU.');
+                } else {
+                    if (gpuWarn) { gpuWarn.style.display = 'block'; }
+                    sendBtn.disabled = true;
+                    setStatus('This tool needs WebGPU (or Chrome built-in AI). Try the latest Chrome, Edge, or Chrome on Android (desktop recommended).');
+                }
+            });
         });
 
         // Pre-select the last-used model.
         try { var last = localStorage.getItem(FTO_PAC_LS_MODEL); if (last && modelSel) { modelSel.value = last; } } catch (e) {}
+
+        // Preset change: swap the system prompt and restart the conversation so the
+        // instruction applies from the first turn. Existing bubbles are cleared.
+        if (presetSel) {
+            presetSel.addEventListener('change', function () {
+                var key = presetSel.value;
+                ftoPacSystemPrompt = FTO_PAC_PRESETS[key] || FTO_PAC_PRESETS.general;
+                var hadTurns = ftoPacMessages.some(function (m) { return m && m.role !== 'system'; });
+                ftoPacMessages = [];
+                if (ftoPacLoadedModel || usingBuiltin) { ftoPacMessages.push({ role: 'system', content: ftoPacSystemPrompt }); }
+                ftoPacBuiltinReset();
+                if (hadTurns) {
+                    var keep = document.getElementById('pacExample');
+                    messages.innerHTML = '';
+                    if (keep) { messages.appendChild(keep); }
+                }
+                refreshExportBtn();
+                setStatus('Preset applied - the conversation starts fresh with the new instruction.');
+            });
+        }
 
         loadBtn.addEventListener('click', function () {
             var modelId = modelSel ? modelSel.value : FTO_PAC_DEFAULT_MODEL;
@@ -141,8 +296,11 @@
                 setStatus(text || ('Loading ' + modelId + ' ... ' + Math.round((frac || 0) * 100) + '%'));
             }).then(function () {
                 setProgress(1);
+                usingBuiltin = false;
                 setStatus('Model ready - chatting on your device, no upload.');
                 sendBtn.disabled = false; input.disabled = false; input.focus();
+                loadBtn.disabled = false; if (modelSel) { modelSel.disabled = false; }
+                loadBtn.textContent = 'Switch model';
             }).catch(function (err) {
                 loadBtn.disabled = false; if (modelSel) { modelSel.disabled = false; }
                 setStatus('Could not load the model: ' + (err && err.message ? err.message : 'unknown error') + '.');
@@ -152,15 +310,24 @@
         function doSend() {
             var text = input.value;
             if (!text || !text.trim() || ftoPacGenerating) { return; }
+            removeExample();
             addBubble('user', text.trim());
             input.value = '';
             var aiBody = addBubble('assistant', '');
             sendBtn.disabled = true;
+            function done() { refreshExportBtn(); sendBtn.disabled = false; input.focus(); }
+            function fail(err) { aiBody.textContent = 'Error: ' + (err && err.message ? err.message : 'generation failed') + '.'; sendBtn.disabled = false; }
+            if (usingBuiltin) {
+                aiBody.textContent = '...';
+                ftoPacSendBuiltin(text, function (full) { aiBody.textContent = full; messages.scrollTop = messages.scrollHeight; done(); }, fail);
+                return;
+            }
             ftoPacSend(text, function (full) { aiBody.textContent = full; messages.scrollTop = messages.scrollHeight; },
-                function () { sendBtn.disabled = false; input.focus(); },
-                function (err) { aiBody.textContent = 'Error: ' + (err && err.message ? err.message : 'generation failed') + '.'; sendBtn.disabled = false; });
+                done,
+                fail);
         }
         sendBtn.addEventListener('click', doSend);
+        if (exportBtn) { exportBtn.addEventListener('click', ftoPacExportTranscript); }
         input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); doSend(); } });
     }
 
