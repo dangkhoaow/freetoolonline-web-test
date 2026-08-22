@@ -1,0 +1,323 @@
+<script>
+    // AI Watermark Detector - fully in-browser. Registry: ai_provenance_detector_c2pa.
+    // Page: /image-tools/ai-watermark-detector.html
+    //
+    // Deterministic byte-level scan for AI provenance marks - NO model download,
+    // NO upload: (a) C2PA Content Credentials containers (JPEG APP11 JUMBF,
+    // PNG caBX chunk, WebP RIFF C2PA chunk), (b) IPTC digitalsourcetype values
+    // in XMP, (c) generator signature strings in XMP / C2PA bytes / EXIF
+    // (via vendored /vendor/exifr/exifr.umd.js), (d) Stable Diffusion WebUI /
+    // ComfyUI PNG text chunks. HONESTY BOUND (stated on-page): SynthID is a
+    // pixel-domain watermark only Google can read; absence of marks never
+    // proves human-made. Framework calls doAfterPageRendered() after jQuery.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var fileInput = document.getElementById('awdFile');
+        var btnCheck = document.getElementById('awdCheck');
+        var btnClear = document.getElementById('awdClear');
+        var preview = document.getElementById('awdPreview');
+        var statusEl = document.getElementById('awdStatus');
+        var verdictEl = document.getElementById('awdVerdict');
+        var evidenceEl = document.getElementById('awdEvidence');
+        var currentFile = null;
+        var previewUrl = null;
+        var exifrReady = null;
+
+        var GENERATOR_SIGNATURES = [
+            { re: /openai|dall[·•-]?e|chatgpt|gpt-4o|sora/i, label: 'OpenAI / DALL-E / Sora' },
+            { re: /adobe firefly|firefly image/i, label: 'Adobe Firefly' },
+            { re: /midjourney/i, label: 'Midjourney' },
+            { re: /stable ?diffusion|sdxl|stability ?ai/i, label: 'Stable Diffusion / Stability AI' },
+            { re: /comfyui/i, label: 'ComfyUI' },
+            { re: /novelai/i, label: 'NovelAI' },
+            { re: /imagen|google ai|gemini/i, label: 'Google Imagen / Gemini' },
+            { re: /bing image creator|microsoft designer|image creator from microsoft/i, label: 'Microsoft Image Creator / Designer' },
+            { re: /ideogram/i, label: 'Ideogram' },
+            { re: /leonardo\.ai|leonardo ai/i, label: 'Leonardo AI' },
+            { re: /recraft/i, label: 'Recraft' },
+            { re: /grok|xai/i, label: 'Grok / xAI' }
+        ];
+
+        function setStatus(msg) { if (statusEl) statusEl.textContent = msg; }
+
+        function esc(s) {
+            return String(s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
+        function loadExifr() {
+            if (window.exifr && typeof window.exifr.parse === 'function') return Promise.resolve(window.exifr);
+            if (exifrReady) return exifrReady;
+            exifrReady = new Promise(function (resolve, reject) {
+                var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/exifr/exifr.umd.js';
+                var s = document.createElement('script');
+                s.src = base;
+                s.async = true;
+                s.onload = function () {
+                    if (window.exifr && typeof window.exifr.parse === 'function') resolve(window.exifr);
+                    else reject(new Error('exifr loaded but parse() missing'));
+                };
+                s.onerror = function () { reject(new Error('Failed to load /vendor/exifr/exifr.umd.js')); };
+                document.head.appendChild(s);
+            });
+            return exifrReady;
+        }
+
+        function asciiAt(bytes, i, n) {
+            var out = '';
+            for (var k = 0; k < n && i + k < bytes.length; k++) out += String.fromCharCode(bytes[i + k]);
+            return out;
+        }
+
+        function printableStrings(bytes, minLen) {
+            var out = [], cur = '';
+            for (var i = 0; i < bytes.length; i++) {
+                var b = bytes[i];
+                if (b >= 32 && b < 127) { cur += String.fromCharCode(b); }
+                else { if (cur.length >= minLen) out.push(cur); cur = ''; }
+            }
+            if (cur.length >= minLen) out.push(cur);
+            return out.join('\n');
+        }
+
+        function readU32(bytes, i) {
+            return (bytes[i] * 16777216) + (bytes[i + 1] << 16) + (bytes[i + 2] << 8) + bytes[i + 3];
+        }
+
+        // ---- container scans -------------------------------------------------
+
+        function scanJpeg(bytes) {
+            var res = { xmp: '', jumbf: [], isJpeg: false };
+            if (bytes.length < 4 || bytes[0] !== 0xFF || bytes[1] !== 0xD8) return res;
+            res.isJpeg = true;
+            var i = 2;
+            while (i + 4 <= bytes.length) {
+                if (bytes[i] !== 0xFF) { i++; continue; }
+                var marker = bytes[i + 1];
+                if (marker === 0xD8 || (marker >= 0xD0 && marker <= 0xD9)) { i += 2; continue; }
+                if (marker === 0xDA) break; // start of scan - metadata segments are all before this
+                var len = (bytes[i + 2] << 8) + bytes[i + 3];
+                if (len < 2) break;
+                var segStart = i + 4, segEnd = Math.min(i + 2 + len, bytes.length);
+                var head = asciiAt(bytes, segStart, 29);
+                if (marker === 0xE1 && head.indexOf('http://ns.adobe.com/xap/1.0/') === 0) {
+                    res.xmp += asciiAt(bytes, segStart + 29, segEnd - segStart - 29);
+                }
+                if (marker === 0xEB) { // APP11 - JUMBF (C2PA) container segments
+                    res.jumbf.push(bytes.subarray(segStart, segEnd));
+                }
+                i = i + 2 + len;
+            }
+            return res;
+        }
+
+        function scanPng(bytes) {
+            var res = { xmp: '', textChunks: [], hasCaBX: false, isPng: false };
+            var sig = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+            for (var s = 0; s < 8; s++) { if (bytes[s] !== sig[s]) return res; }
+            res.isPng = true;
+            var i = 8;
+            while (i + 12 <= bytes.length) {
+                var len = readU32(bytes, i);
+                var type = asciiAt(bytes, i + 4, 4);
+                var dataStart = i + 8, dataEnd = Math.min(dataStart + len, bytes.length);
+                if (type === 'caBX') res.hasCaBX = true;
+                if (type === 'tEXt' || type === 'iTXt' || type === 'zTXt') {
+                    var raw = bytes.subarray(dataStart, dataEnd);
+                    var z = 0; while (z < raw.length && raw[z] !== 0) z++;
+                    var key = asciiAt(raw, 0, z);
+                    var value = '';
+                    if (type === 'tEXt') value = asciiAt(raw, z + 1, raw.length - z - 1);
+                    if (type === 'iTXt' && raw[z + 1] === 0) {
+                        var p = z + 3; // skip compression flag+method
+                        var skipped = 0;
+                        while (p < raw.length && skipped < 2) { if (raw[p] === 0) skipped++; p++; }
+                        value = asciiAt(raw, p, raw.length - p);
+                    }
+                    res.textChunks.push({ key: key, value: value, compressed: type === 'zTXt' });
+                    if (key === 'XML:com.adobe.xmp') res.xmp += value;
+                }
+                if (type === 'IEND') break;
+                i = dataEnd + 4;
+            }
+            return res;
+        }
+
+        function scanWebp(bytes) {
+            var res = { xmp: '', hasC2pa: false, isWebp: false };
+            if (asciiAt(bytes, 0, 4) !== 'RIFF' || asciiAt(bytes, 8, 4) !== 'WEBP') return res;
+            res.isWebp = true;
+            var i = 12;
+            while (i + 8 <= bytes.length) {
+                var type = asciiAt(bytes, i, 4);
+                var len = bytes[i + 4] + (bytes[i + 5] << 8) + (bytes[i + 6] << 16) + (bytes[i + 7] * 16777216);
+                var dataStart = i + 8, dataEnd = Math.min(dataStart + len, bytes.length);
+                if (type === 'C2PA' || type === 'JUMB') res.hasC2pa = true;
+                if (type === 'XMP ') res.xmp += asciiAt(bytes, dataStart, dataEnd - dataStart);
+                i = dataEnd + (len % 2); // chunks are word-aligned
+            }
+            return res;
+        }
+
+        // ---- evidence assembly ----------------------------------------------
+
+        function matchSignatures(text, where, evidence, seen) {
+            if (!text) return;
+            for (var g = 0; g < GENERATOR_SIGNATURES.length; g++) {
+                var sig = GENERATOR_SIGNATURES[g];
+                var m = text.match(sig.re);
+                if (m && !seen[sig.label + '|' + where]) {
+                    seen[sig.label + '|' + where] = true;
+                    evidence.push({ mark: 'Generator signature', where: where, value: sig.label + ' ("' + m[0] + '")' });
+                }
+            }
+        }
+
+        function analyze(bytes, exifTags) {
+            var evidence = [];
+            var seen = {};
+            var jpeg = scanJpeg(bytes);
+            var png = scanPng(bytes);
+            var webp = scanWebp(bytes);
+            var xmp = (jpeg.xmp || '') + (png.xmp || '') + (webp.xmp || '');
+
+            // (a) C2PA containers - structural presence
+            var jumbfText = '';
+            if (jpeg.jumbf.length) {
+                var total = 0;
+                for (var j = 0; j < jpeg.jumbf.length; j++) { total += jpeg.jumbf[j].length; jumbfText += printableStrings(jpeg.jumbf[j], 4) + '\n'; }
+                if (/jumb|c2pa/i.test(jumbfText)) {
+                    evidence.push({ mark: 'Content Credentials (C2PA)', where: 'JPEG APP11 JUMBF segments', value: jpeg.jumbf.length + ' segment(s), ' + total + ' bytes of manifest data' });
+                }
+            }
+            if (png.hasCaBX) evidence.push({ mark: 'Content Credentials (C2PA)', where: 'PNG caBX chunk', value: 'c2pa manifest container present' });
+            if (webp.hasC2pa) evidence.push({ mark: 'Content Credentials (C2PA)', where: 'WebP RIFF chunk', value: 'c2pa manifest container present' });
+
+            // (b) IPTC digital source type in XMP
+            if (/trainedAlgorithmicMedia/i.test(xmp)) {
+                var composite = /compositeWithTrainedAlgorithmicMedia/i.test(xmp);
+                evidence.push({
+                    mark: 'IPTC digital source type', where: 'XMP metadata',
+                    value: composite ? 'compositeWithTrainedAlgorithmicMedia (AI-edited)' : 'trainedAlgorithmicMedia (AI-generated)'
+                });
+            } else if (/digitalsourcetype[^<"']*algorithmicMedia/i.test(xmp)) {
+                evidence.push({ mark: 'IPTC digital source type', where: 'XMP metadata', value: 'algorithmicMedia (software-generated)' });
+            }
+
+            // (c) generator signatures in XMP, C2PA bytes, EXIF strings
+            matchSignatures(xmp, 'XMP metadata', evidence, seen);
+            matchSignatures(jumbfText, 'C2PA claim data', evidence, seen);
+            if (exifTags) {
+                var exifText = [exifTags.Software, exifTags.CreatorTool, exifTags.Make, exifTags.Model,
+                    exifTags.Artist, exifTags.ImageDescription, exifTags.UserComment].filter(Boolean).join(' | ');
+                matchSignatures(exifText, 'EXIF tags', evidence, seen);
+            }
+
+            // (d) Stable Diffusion / ComfyUI PNG generation chunks
+            for (var t = 0; t < png.textChunks.length; t++) {
+                var ch = png.textChunks[t];
+                if (ch.key === 'parameters') {
+                    evidence.push({ mark: 'Generation parameters', where: 'PNG tEXt "parameters"', value: 'Stable Diffusion WebUI prompt block (' + (ch.value ? ch.value.length : 0) + ' chars)' });
+                } else if (ch.key === 'prompt' || ch.key === 'workflow') {
+                    evidence.push({ mark: 'Generation parameters', where: 'PNG text chunk "' + esc(ch.key) + '"', value: 'ComfyUI workflow data embedded' });
+                } else if (ch.compressed) {
+                    // compressed chunk - key only, value not read (no inflate in this tool)
+                    if (/parameter|prompt|workflow|invokeai|sd-metadata/i.test(ch.key)) {
+                        evidence.push({ mark: 'Generation parameters', where: 'PNG zTXt "' + esc(ch.key) + '"', value: 'compressed generator chunk present (key match)' });
+                    }
+                } else {
+                    matchSignatures(ch.value, 'PNG text chunk "' + esc(ch.key) + '"', evidence, seen);
+                }
+            }
+
+            // fallback for containers this scanner does not walk (HEIC/AVIF/TIFF):
+            // paired ASCII presence of both "jumb" and "c2pa" in the raw bytes
+            if (!evidence.some(function (e) { return e.mark.indexOf('C2PA') >= 0; })
+                && !jpeg.isJpeg && !png.isPng && !webp.isWebp) {
+                var rawText = printableStrings(bytes.subarray(0, Math.min(bytes.length, 2097152)), 4);
+                if (/jumb/i.test(rawText) && /c2pa/i.test(rawText)) {
+                    evidence.push({ mark: 'Content Credentials (C2PA)', where: 'file bytes (unwalked container)', value: 'c2pa + jumb markers present' });
+                }
+                matchSignatures(rawText, 'file bytes', evidence, seen);
+            }
+
+            return evidence;
+        }
+
+        function renderResult(evidence, fileName) {
+            var rows = '';
+            for (var i = 0; i < evidence.length; i++) {
+                rows += '<tr><td>' + esc(evidence[i].mark) + '</td><td>' + esc(evidence[i].where) + '</td><td>' + esc(evidence[i].value) + '</td></tr>';
+            }
+            if (evidence.length) {
+                verdictEl.className = 'awd-verdict found show';
+                verdictEl.innerHTML = '<b>AI provenance marks found</b> in ' + esc(fileName) + ' - ' + evidence.length + ' mark(s). Each row below is a label the generator or an editor wrote into the file.';
+                evidenceEl.innerHTML = '<table class="awd-table"><tr><th>Mark</th><th>Where</th><th>Value</th></tr>' + rows + '</table>';
+            } else {
+                verdictEl.className = 'awd-verdict none show';
+                verdictEl.innerHTML = '<b>No AI provenance marks found</b> in ' + esc(fileName) + '. This does NOT prove the image is human-made: screenshots and re-saves strip these marks, and pixel watermarks like SynthID are invisible to a metadata scan.';
+                evidenceEl.innerHTML = '';
+            }
+        }
+
+        function showError(msg) {
+            verdictEl.className = 'awd-verdict error show';
+            verdictEl.innerHTML = '<b>Could not read this file.</b> ' + esc(msg);
+            evidenceEl.innerHTML = '';
+        }
+
+        function runCheck() {
+            if (!currentFile) return;
+            setStatus('Scanning ' + currentFile.name + ' in your browser...');
+            btnCheck.disabled = true;
+            var reader = new FileReader();
+            reader.onerror = function () { showError('The browser could not read the selected file.'); btnCheck.disabled = false; };
+            reader.onload = function () {
+                var bytes = new Uint8Array(reader.result);
+                var finish = function (exifTags) {
+                    try {
+                        var evidence = analyze(bytes, exifTags);
+                        renderResult(evidence, currentFile.name);
+                        setStatus('Done. Scanned ' + bytes.length + ' bytes locally - nothing was uploaded.');
+                    } catch (e) {
+                        showError(e && e.message ? e.message : 'Unexpected parse error.');
+                    }
+                    btnCheck.disabled = false;
+                };
+                loadExifr().then(function (exifr) {
+                    return exifr.parse(currentFile, { translateKeys: true, reviveValues: true }).catch(function () { return null; });
+                }).then(finish, function () { finish(null); });
+            };
+            reader.readAsArrayBuffer(currentFile);
+        }
+
+        function clearAll() {
+            currentFile = null;
+            fileInput.value = '';
+            btnCheck.disabled = true;
+            verdictEl.className = 'awd-verdict';
+            verdictEl.innerHTML = '';
+            evidenceEl.innerHTML = '';
+            if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+            preview.style.display = 'none';
+            setStatus('Choose an image, then click Check for AI Marks. The scan runs in your browser - the file is never uploaded.');
+        }
+
+        fileInput.addEventListener('change', function () {
+            var f = fileInput.files && fileInput.files[0];
+            if (!f) { clearAll(); return; }
+            currentFile = f;
+            btnCheck.disabled = false;
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrl = URL.createObjectURL(f);
+            preview.src = previewUrl;
+            preview.style.display = 'block';
+            setStatus('Ready: ' + f.name + ' (' + Math.round(f.size / 1024) + ' KB). Click Check for AI Marks.');
+        });
+        btnCheck.addEventListener('click', runCheck);
+        btnClear.addEventListener('click', clearAll);
+    }
+</script>

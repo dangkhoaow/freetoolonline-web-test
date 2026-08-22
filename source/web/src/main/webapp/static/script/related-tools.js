@@ -947,6 +947,8 @@ try {
     { title: "Client Side PDF editor Toolkit", url: "https://freetoolonline.com/image-converter-tools/client-side-pdf-editor-toolkit.html", include: !1, tags: "image-conversion" },
     { title: "Hilbert Curve Generator", url: "https://freetoolonline.com/image-converter-tools/hilbert-editor.html", include: !1, tags: "image-conversion" },
     { title: "Is It Down? Website & Service Status Checker", url: "https://freetoolonline.com/utility-tools/is-it-down.html", include: !1, tags: "utility" },
+    { title: "AI Watermark Detector - Check Content Credentials (C2PA)", url: "https://freetoolonline.com/image-tools/ai-watermark-detector.html", include: !1, tags: "image-editing" },
+    { title: "AI Text Detector - LLM Writing Signals, In Your Browser", url: "https://freetoolonline.com/utility-tools/ai-text-detector.html", include: !1, tags: "utility" },
     { title: "A DevTools-style PDF element inspector and editor for Android", url: "https://freetoolonline.com/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html", include: !1, tags: "image-conversion" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
