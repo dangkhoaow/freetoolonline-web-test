@@ -3240,4 +3240,7 @@ html.main-html.dark .ftol-ct-card-name { color: #9aa4b2; }
     background: transparent !important;
 }
 
+.page-section a[href*=".html"]:not(.fa):not(.w3-button), .page-section a[href*="https://"]:not(.fa):not(.w3-button){
+    text-decoration: underline !important;
+}
 </style>
