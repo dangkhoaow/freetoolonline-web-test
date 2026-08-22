@@ -1,0 +1,268 @@
+<script>
+    // In-browser OCR PDF (ocr-pdf) - turn a SCANNED PDF into a SEARCHABLE PDF.
+    // 100% client-side: the PDF never leaves the browser. pdf.js renders each
+    // page to a canvas, tesseract.js recognizes the words WITH their positions,
+    // and pdf-lib writes each word back over the original page as an invisible
+    // (opacity 0) text layer - the pages look identical, but text can now be
+    // selected, copied and found with Ctrl+F.
+    // Registry Gate-H entry: pdf_ocr_searchable_tesseractjs (verified
+    // 2026-08-22 in a real headless-Chromium probe: a synthetic image-only PDF
+    // proved textless, OCR returned 17/17 words at confidence 95, and the
+    // rebuilt PDF's text layer was extractable - artifact in
+    // seo-reports/20260822-ailocal-fire20/qa/).
+    //
+    // ENGINES (ALL self-hosted at /vendor - zero CDN, zero upload):
+    //   pdf.js 3.11.174   /vendor/pdfjs (render + embedded-text check)
+    //   tesseract.js 7.0.0 + core 7.0.0  /vendor/tesseract (OCR; v7 hides word
+    //     boxes unless {blocks:true} is passed as the OUTPUT arg of recognize)
+    //   pdf-lib           /vendor/pdf-lib (invisible text layer on the ORIGINAL
+    //     bytes - pages are never re-rendered or recompressed)
+    //
+    // LADDER (ai-local class rule 1): (1) no Chrome Built-in tier - no browser
+    // ships a built-in OCR API; (2) on-device OCR (this file) - the ~8 MB of
+    // engine assets load ONLY on an explicit click, with the size stated
+    // beforehand, and the browser HTTP cache keeps them for next time; (3) a
+    // deterministic no-AI tier - when a chosen PDF ALREADY has embedded text,
+    // the page says so before any OCR spend and points to the plain-text
+    // extractor; the G16 zero-interaction demo (a REAL recognized sample baked
+    // into the paired BODYHTML) renders on load without touching this script.
+    //
+    // Framework contract: doAfterPageRendered(); no top-level DOM.
+    web.localUpload = false;
+
+    var OP_SLUG = 'ocr-pdf';
+    var OP_VENDOR = '/vendor';
+    var OP_MAX_RENDER_PX = 2400;   // cap the OCR canvas's longest side (memory)
+    var OP_PAGE_WARN = 100;        // warn above this page count (browser memory)
+
+    var opState = {
+        file: null, bytes: null, pageCount: 0,
+        hasEmbeddedText: null, running: false
+    };
+
+    function opEl(id) { return document.getElementById(id); }
+    function opSetErr(msg) { var e = opEl('ocrPdfError'); if (e) e.textContent = msg || ''; }
+    function opSetStatus(msg) { var s = opEl('ocrPdfStatus'); if (s) s.textContent = msg || ''; }
+
+    var opScriptPromises = {};
+    function opLoadScript(src) {
+        if (opScriptPromises[src]) return opScriptPromises[src];
+        opScriptPromises[src] = new Promise(function (res, rej) {
+            var s = document.createElement('script');
+            s.src = src;
+            s.onload = function () { res(); };
+            s.onerror = function () { rej(new Error('Could not load ' + src)); };
+            document.head.appendChild(s);
+        });
+        return opScriptPromises[src];
+    }
+    function opPdfjs() {
+        return opLoadScript(OP_VENDOR + '/pdfjs/pdf.min.js').then(function () {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = OP_VENDOR + '/pdfjs/pdf.worker.min.js';
+            return window.pdfjsLib;
+        });
+    }
+    function opPdfLib() {
+        return opLoadScript(OP_VENDOR + '/pdf-lib/pdf-lib.min.js').then(function () { return window.PDFLib; });
+    }
+    function opTesseract() {
+        return opLoadScript(OP_VENDOR + '/tesseract/tesseract.min.js').then(function () { return window.Tesseract; });
+    }
+
+    // Tier 3 (deterministic, no OCR): does the PDF already carry a text layer?
+    function opCheckEmbeddedText(doc) {
+        var checks = [];
+        var n = Math.min(doc.numPages, 3);
+        for (var i = 1; i <= n; i++) {
+            checks.push(doc.getPage(i).then(function (pg) {
+                return pg.getTextContent().then(function (tc) {
+                    return tc.items.map(function (it) { return it.str; }).join('').trim().length;
+                });
+            }));
+        }
+        return Promise.all(checks).then(function (lens) {
+            return lens.reduce(function (a, b) { return a + b; }, 0) > 40;
+        });
+    }
+
+    function opOnFileChosen(file) {
+        opSetErr(''); opSetStatus('');
+        opEl('ocrPdfOutput').style.display = 'none';
+        opState.file = file; opState.bytes = null; opState.hasEmbeddedText = null;
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+            opState.bytes = new Uint8Array(reader.result);
+            opSetStatus('Checking the PDF (on your device)...');
+            opPdfjs().then(function (pdfjsLib) {
+                return pdfjsLib.getDocument({ data: opState.bytes.slice() }).promise;
+            }).then(function (doc) {
+                opState.pageCount = doc.numPages;
+                return opCheckEmbeddedText(doc).then(function (has) {
+                    opState.hasEmbeddedText = has;
+                    var msg = file.name + ': ' + doc.numPages + (doc.numPages === 1 ? ' page' : ' pages') + '.';
+                    if (has) {
+                        msg += ' This PDF already has selectable text - you can copy from it directly, or use the PDF to Text tool for a plain-text export. Running OCR is only useful if some pages are pure scans.';
+                    } else {
+                        msg += ' No text layer found on the first pages - this looks like a scan, so OCR will help.';
+                    }
+                    if (doc.numPages > OP_PAGE_WARN) {
+                        msg += ' Note: ' + doc.numPages + ' pages is a lot for in-browser OCR; on low-memory devices it may not finish.';
+                    }
+                    opSetStatus(msg);
+                    doc.destroy();
+                });
+            }).catch(function (err) {
+                opState.bytes = null;
+                if (err && (err.name === 'PasswordException' || /password/i.test(String(err.message)))) {
+                    opSetErr('This PDF is password-protected. Remove the password first (the Remove PDF Password tool does this in the browser), then run OCR.');
+                } else {
+                    opSetErr('Could not read this file as a PDF: ' + (err && err.message ? err.message : String(err)));
+                }
+            });
+        };
+        reader.onerror = function () { opSetErr('Could not read the chosen file.'); };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // WinAnsi-safe subset for pdf-lib's Helvetica standard font: words with
+    // characters outside Latin-1 are trimmed; a word that becomes empty is
+    // skipped rather than crashing the whole layer.
+    function opSanitize(t) { return String(t || '').replace(/[^\x20-\x7E -ÿ]/g, ''); }
+
+    function opRunOcr() {
+        if (opState.running) return;
+        if (!opState.file || !opState.bytes) { opSetErr('Choose a PDF first.'); return; }
+        opSetErr('');
+        opState.running = true;
+        var runBtn = opEl('ocrPdfRunBtn');
+        runBtn.disabled = true;
+        var worker = null;
+        var textPreview = [];
+        var t0 = Date.now();
+        Promise.all([opPdfjs(), opPdfLib(), opTesseract()]).then(function (libs) {
+            var pdfjsLib = libs[0], PDFLib = libs[1], Tesseract = libs[2];
+            opSetStatus('Loading the OCR engine (about 8 MB on the first run, cached after that)...');
+            return Tesseract.createWorker('eng', 1, {
+                workerPath: OP_VENDOR + '/tesseract/worker.min.js',
+                corePath: OP_VENDOR + '/tesseract',
+                langPath: OP_VENDOR + '/tesseract',
+                logger: function (m) {
+                    if (m && m.status && m.status !== 'recognizing text') {
+                        opSetStatus('Engine: ' + m.status + (typeof m.progress === 'number' ? ' ' + Math.round(m.progress * 100) + '%' : ''));
+                    }
+                }
+            }).then(function (w) {
+                worker = w;
+                return pdfjsLib.getDocument({ data: opState.bytes.slice() }).promise;
+            }).then(function (doc) {
+                return PDFLib.PDFDocument.load(opState.bytes.slice(), { ignoreEncryption: false }).then(function (outDoc) {
+                    return outDoc.embedFont(PDFLib.StandardFonts.Helvetica).then(function (font) {
+                        var chain = Promise.resolve(0);
+                        var total = doc.numPages;
+                        var wordsTotal = 0;
+                        for (var p = 1; p <= total; p++) {
+                            (function (pageNo) {
+                                chain = chain.then(function (acc) {
+                                    opSetStatus('OCR page ' + pageNo + ' of ' + total + '...');
+                                    return doc.getPage(pageNo).then(function (pg) {
+                                        var vp1 = pg.getViewport({ scale: 1 });
+                                        var scale = Math.min(2, OP_MAX_RENDER_PX / Math.max(vp1.width, vp1.height));
+                                        if (scale < 0.5) scale = 0.5;
+                                        var vp = pg.getViewport({ scale: scale });
+                                        var cv = document.createElement('canvas');
+                                        cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+                                        return pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise.then(function () {
+                                            // v7: word boxes are opt-in via the OUTPUT options arg.
+                                            return worker.recognize(cv.toDataURL('image/png'), {}, { blocks: true, text: true });
+                                        }).then(function (rec) {
+                                            var words = [];
+                                            var blocks = rec.data && rec.data.blocks ? rec.data.blocks : [];
+                                            for (var b = 0; b < blocks.length; b++) {
+                                                var paras = blocks[b].paragraphs || [];
+                                                for (var q = 0; q < paras.length; q++) {
+                                                    var lines = paras[q].lines || [];
+                                                    for (var l = 0; l < lines.length; l++) {
+                                                        var ws = lines[l].words || [];
+                                                        for (var wI = 0; wI < ws.length; wI++) words.push(ws[wI]);
+                                                    }
+                                                }
+                                            }
+                                            var outPage = outDoc.getPage(pageNo - 1);
+                                            var pw = outPage.getWidth(), ph = outPage.getHeight();
+                                            var sx = pw / cv.width, sy = ph / cv.height;
+                                            var drawn = 0;
+                                            for (var k = 0; k < words.length; k++) {
+                                                var wd = words[k];
+                                                var txt = opSanitize(wd.text);
+                                                if (!txt.trim() || !wd.bbox) continue;
+                                                var hPx = wd.bbox.y1 - wd.bbox.y0;
+                                                try {
+                                                    outPage.drawText(txt, {
+                                                        x: wd.bbox.x0 * sx,
+                                                        y: ph - wd.bbox.y1 * sy,
+                                                        size: Math.max(4, hPx * sy * 0.9),
+                                                        font: font,
+                                                        opacity: 0
+                                                    });
+                                                    drawn++;
+                                                } catch (e) { /* skip un-encodable word, keep the rest */ }
+                                            }
+                                            wordsTotal += drawn;
+                                            var pageText = (rec.data && rec.data.text ? rec.data.text : '').trim();
+                                            textPreview.push('--- Page ' + pageNo + ' ---\n' + (pageText || '(no text recognized on this page)'));
+                                            cv.width = 1; cv.height = 1; // release canvas memory
+                                            return acc + drawn;
+                                        });
+                                    });
+                                });
+                            })(p);
+                        }
+                        return chain.then(function () {
+                            opSetStatus('Building the searchable PDF...');
+                            return outDoc.save().then(function (outBytes) {
+                                var blob = new Blob([outBytes], { type: 'application/pdf' });
+                                var a = opEl('ocrPdfDownload');
+                                if (a.href && a.href.indexOf('blob:') === 0) URL.revokeObjectURL(a.href);
+                                a.href = URL.createObjectURL(blob);
+                                var base = (opState.file.name || 'document.pdf').replace(/\.pdf$/i, '');
+                                a.download = base + '-searchable.pdf';
+                                opEl('ocrPdfText').value = textPreview.join('\n\n');
+                                opEl('ocrPdfOutput').style.display = 'block';
+                                var secs = Math.round((Date.now() - t0) / 1000);
+                                opSetStatus(wordsTotal + ' words recognized across ' + total + (total === 1 ? ' page' : ' pages') + ' in ' + secs + 's - all on your device, nothing uploaded. Check the text below, then download.');
+                                if (wordsTotal === 0) {
+                                    opSetStatus('No words were recognized. The scan may be very low-resolution, handwritten, or not in English - this tool reads printed English text.');
+                                }
+                            });
+                        });
+                    });
+                });
+            });
+        }).catch(function (err) {
+            if (err && (err.name === 'PasswordException' || /encrypt|password/i.test(String(err && err.message)))) {
+                opSetErr('This PDF is password-protected or encrypted. Remove the password first, then run OCR.');
+            } else {
+                opSetErr('OCR failed: ' + (err && err.message ? err.message : String(err)));
+            }
+        }).then(function () {
+            opState.running = false;
+            runBtn.disabled = false;
+            if (worker) { try { worker.terminate(); } catch (e) { } }
+        });
+    }
+
+    function doAfterPageRendered() {
+        var fileEl = opEl('ocrPdfFile');
+        var runBtn = opEl('ocrPdfRunBtn');
+        var copyBtn = opEl('ocrPdfCopyBtn');
+        if (!fileEl || !runBtn) return;
+        fileEl.addEventListener('change', function () { opOnFileChosen(fileEl.files && fileEl.files[0]); });
+        runBtn.addEventListener('click', opRunOcr);
+        if (copyBtn) copyBtn.addEventListener('click', function () {
+            var ta = opEl('ocrPdfText');
+            ta.select();
+            try { navigator.clipboard.writeText(ta.value); } catch (e) { document.execCommand('copy'); }
+        });
+    }
+</script>
