@@ -28766,6 +28766,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/is-it-down-vs-alternatives.html': 'guide/de/is-it-down-vs-alternatives.jsp',
   '/image-tools/ai-watermark-detector.html': 'convert/ai-watermark-detector.jsp',
   '/utility-tools/ai-text-detector.html': 'utility/ai-text-detector.jsp',
+  '/guides/ai-watermarks-explained.html': 'guide/ai-watermarks-explained.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
