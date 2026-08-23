@@ -14,6 +14,8 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // ai-watermarks-explained vi locale (create_new_guide_page 20260823-3)
+  '/guides/vi/ai-watermarks-explained.html',
   '/guides/food-recall-lookup-step-by-step.html',
   '/guides/food-recall-lookup-when.html',
   '/guides/food-recall-lookup-vs-alternatives.html',
@@ -7276,6 +7278,8 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // ai-watermarks-explained vi locale (create_new_guide_page 20260823-3)
+  '/guides/vi/ai-watermarks-explained.html',
   // client-side-pdf-editor-toolkit-step-by-step pt locale (create_new_guide_page 20260821-8)
   '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html',
   // client-side-pdf-editor-toolkit-step-by-step es locale (create_new_guide_page 20260822-2)
@@ -28815,6 +28819,8 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/ai-watermarks-explained.html': 'guide/pt/ai-watermarks-explained.jsp',
   // ai-watermarks-explained es locale (create_new_guide_page 20260823-2)
   '/guides/es/ai-watermarks-explained.html': 'guide/es/ai-watermarks-explained.jsp',
+  // ai-watermarks-explained vi locale (create_new_guide_page 20260823-3)
+  '/guides/vi/ai-watermarks-explained.html': 'guide/vi/ai-watermarks-explained.jsp',
   '/pdf-tools/ocr-pdf.html': 'pdf/ocr-pdf.jsp',
 };
 
