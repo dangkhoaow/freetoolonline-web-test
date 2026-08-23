@@ -58,6 +58,12 @@ export const INFO_ROUTES = new Set([
   '/guides/de/is-it-down-vs-alternatives.html',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
+  // client-side-pdf-editor-toolkit-vs-alternatives locale fanout (create_new_guide_page 20260823-7)
+  '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html',
+  '/guides/es/client-side-pdf-editor-toolkit-vs-alternatives.html',
+  '/guides/vi/client-side-pdf-editor-toolkit-vs-alternatives.html',
+  '/guides/id/client-side-pdf-editor-toolkit-vs-alternatives.html',
+  '/guides/de/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/es/client-side-pdf-editor-toolkit-step-by-step.html',
@@ -7300,6 +7306,13 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // client-side-pdf-editor-toolkit-vs-alternatives EN + locale fanout (create_new_guide_page 20260823-7)
+  '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
+  '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html',
+  '/guides/es/client-side-pdf-editor-toolkit-vs-alternatives.html',
+  '/guides/vi/client-side-pdf-editor-toolkit-vs-alternatives.html',
+  '/guides/id/client-side-pdf-editor-toolkit-vs-alternatives.html',
+  '/guides/de/client-side-pdf-editor-toolkit-vs-alternatives.html',
   // ai-watermarks-explained vi locale (create_new_guide_page 20260823-3)
   '/guides/vi/ai-watermarks-explained.html',
   // ai-watermarks-explained id locale (create_new_guide_page 20260823-4)
@@ -28817,6 +28830,11 @@ export const JSP_BY_ROUTE = {
   '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/id/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/de/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
+  '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/pt/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
+  '/guides/es/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/es/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
+  '/guides/vi/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/vi/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
+  '/guides/id/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/id/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
+  '/guides/de/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/de/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
   '/image-converter-tools/hilbert-editor.html': 'convert/hilbert-editor.jsp',
   '/utility-tools/is-it-down.html': 'utility/is-it-down.jsp',
