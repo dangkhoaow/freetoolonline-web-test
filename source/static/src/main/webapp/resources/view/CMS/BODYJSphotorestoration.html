@@ -17,17 +17,28 @@
     // Xenova/swin2SR-compressed-sr-x4-48 genuinely denoises/deblocks + 4x-upscales a
     // JPEG-compression-degraded synthetic photo (crisp text/edges, no blocking
     // artifacts in the output) - confirms the model is NOT a no-op/garbage output.
-    // TRUTHFULNESS SCOPE (load-bearing - do not widen without re-verifying): this
-    // model is a FIXED 4x super-resolution/deblocking network. It does NOT remove
-    // scratches, tears, stains, or repair physical damage, and it does NOT colorize.
-    // The tool-skill claim catalogue + all reader copy MUST describe it as
-    // "sharpens, denoises, and upscales 4x a blurry or compressed photo" - never
-    // "repairs damage" or "fixes scratches". Inference is SLOW on WASM (measured
-    // ~55-70s for a 256x192 input on a software-rendered CPU path with no WebGPU;
-    // real end-user GPUs with WebGPU should be substantially faster) - the input is
-    // capped to a 512px long edge before inference (AI_RESTORE_MAX_EDGE) specifically
-    // so a full-resolution real photo does not push WASM inference past a couple of
-    // minutes; the status text sets that expectation honestly instead of guessing.
+    // 2X UPSCALE MODE (ai-local fire22, 2026-08-23) - Gate-H probe-verified in
+    // headless Chromium under the EXACT pin @huggingface/transformers@4.2.0
+    // (artifact seo-reports/20260823-ailocal-fire22/qa/): Xenova/swin2SR-lightweight-
+    // x2-64 (8.1 MB fp32) 2x-upscales a 120x90 input in ~4s WASM; the 4x model was
+    // RE-verified under the same pin (~24s WASM on the same input). PROBE FINDING,
+    // both scales: swin2SR pads the input to a multiple of its 8px window and
+    // returns the upscaled PADDED frame - the output MUST be cropped to exactly
+    // scale*input, otherwise non-multiple-of-8 photos show junk padding rows
+    // (live defect on the previous 4x-only build, fixed by aiCropDims below).
+    // TRUTHFULNESS SCOPE (load-bearing - do not widen without re-verifying): these
+    // are FIXED 2x/4x super-resolution networks. They do NOT remove scratches,
+    // tears, stains, or repair physical damage, and they do NOT colorize. The
+    // tool-skill claim catalogue + all reader copy MUST describe the 4x model as
+    // "sharpens, denoises, and upscales 4x a blurry or compressed photo" and the
+    // 2x model as "a quick 2x upscale" - never "repairs damage" or "fixes
+    // scratches". Inference is SLOW on WASM (measured ~55-70s for a 256x192 input
+    // on a software-rendered CPU path with no WebGPU; the 2x model is roughly 6x
+    // faster on the same input; real end-user GPUs with WebGPU should be
+    // substantially faster) - the input is capped to a 512px long edge before
+    // inference (AI_RESTORE_MAX_EDGE) specifically so a full-resolution real photo
+    // does not push WASM inference past a couple of minutes; the status text sets
+    // that expectation honestly instead of guessing.
     //
     // HONEST NOTES (operator, both modes): (1) first run downloads model weights
     // (~40MB background-remover; swin2SR restoration model is a separate download,
@@ -48,21 +59,32 @@
         return 'background-remover';
     }
 
-    // ESM entry for Transformers.js v4 (WebGPU rewrite). Self-host + repoint here to
-    // remove the CDN dependency: '/vendor/transformers/transformers.min.js'.
-    var TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4';
+    // ESM entry for Transformers.js, pinned to the EXACT probed version (HARD
+    // GUARD 5: a floating specifier breaks shipped pages with no commit and no
+    // deploy). Bumping this pin requires re-running the fire22 Gate-H probe for
+    // BOTH swin2SR scales. Self-host + repoint here to remove the CDN dependency:
+    // '/vendor/transformers/transformers.min.js'.
+    var TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
 
-    var aiModelPromise = null;
-    function aiLoadModel(setStatus, mode) {
-        if (aiModelPromise) return aiModelPromise;
-        aiModelPromise = (async function () {
+    // Per-scale swin2SR models, both Gate-H probe-verified (fire22). Sizes are the
+    // real fp32 onnx bytes from the HF hub, stated in the UI BEFORE any download.
+    var AI_SCALE_MODELS = {
+        2: { id: 'Xenova/swin2SR-lightweight-x2-64', mb: 8, label: 'Quick upscale 2x' },
+        4: { id: 'Xenova/swin2SR-compressed-sr-x4-48', mb: 55, label: 'Restore & upscale 4x' }
+    };
+
+    var aiModelPromises = {};
+    function aiLoadModel(setStatus, mode, scale) {
+        var key = mode + ':' + (scale || '');
+        if (aiModelPromises[key]) return aiModelPromises[key];
+        aiModelPromises[key] = (async function () {
             var tf = await import(/* webpackIgnore: true */ TF_CDN);
-            var env = tf.env;
             // Prefer WebGPU; fall back to WASM automatically inside ORT.
             var device = ('gpu' in navigator) ? 'webgpu' : 'wasm';
             if (mode === 'restoration') {
-                setStatus('Loading the restoration model (first run downloads the model once, then cached offline) ...');
-                var restorer = await tf.pipeline('image-to-image', 'Xenova/swin2SR-compressed-sr-x4-48', { device: device, dtype: 'fp32' });
+                var spec = AI_SCALE_MODELS[scale] || AI_SCALE_MODELS[4];
+                setStatus('Downloading the ~' + spec.mb + ' MB ' + spec.label + ' model (first run only, cached offline afterwards) ...');
+                var restorer = await tf.pipeline('image-to-image', spec.id, { device: device, dtype: 'fp32' });
                 return { tf: tf, restorer: restorer, RawImage: tf.RawImage, device: device };
             }
             setStatus('Loading the AI model (first run downloads ~40MB once, then cached offline) ...');
@@ -71,7 +93,7 @@
             var processor = await AutoProcessor.from_pretrained('briaai/RMBG-1.4');
             return { tf: tf, model: model, processor: processor, RawImage: tf.RawImage, device: device };
         })();
-        return aiModelPromise;
+        return aiModelPromises[key];
     }
 
     function doAfterPageRendered() {
@@ -83,8 +105,14 @@
         var introText = isRestore
             ? 'Choose a blurry or compressed photo. Your image never leaves your browser - it is processed locally.'
             : 'Choose an image. Your image never leaves your browser - it is processed locally.';
+        var scalePicker = isRestore
+            ? '<div class="w3-row" style="margin:6px 0;text-align:center;">' +
+              '<label style="margin-right:16px;"><input type="radio" name="aiScale" value="4" checked> Restore &amp; upscale 4x - deblurs and removes JPEG artifacts (~55 MB model, slower)</label>' +
+              '<label><input type="radio" name="aiScale" value="2"> Quick upscale 2x (~8 MB model, much faster)</label></div>'
+            : '';
         root.innerHTML =
             '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="aiFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            scalePicker +
             '<div id="aiStatus" style="min-height:1.2em;margin:6px 0;color:#555;">' + introText + '</div>' +
             '<div class="w3-row"><canvas id="aiCanvas" class="outputImgs" style="visibility:visible !important;max-width:90vw;border:1px solid #ddd;background:repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 50%/20px 20px;"></canvas></div>' +
             '<div style="margin-top:8px;"><button id="aiRun" type="button" class="w3-button w3-green w3-large" disabled>' + runLabel + '</button> ' +
@@ -96,6 +124,17 @@
         var currentURL = null;
         function setStatus(m) { statusEl.textContent = m; }
         function setErr(m) { errEl.textContent = m || ''; }
+        function aiPickedScale() {
+            var el = root.querySelector('input[name=aiScale]:checked');
+            return el ? parseInt(el.value, 10) : 4;
+        }
+        if (isRestore) {
+            root.querySelectorAll('input[name=aiScale]').forEach(function (r) {
+                r.addEventListener('change', function () {
+                    runBtn.textContent = AI_SCALE_MODELS[aiPickedScale()].label;
+                });
+            });
+        }
 
         // Preview on select (immediate visible output; no model needed yet -> G16).
         fileEl.addEventListener('change', function () {
@@ -108,7 +147,7 @@
                 canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
                 ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0);
                 runBtn.disabled = false;
-                setStatus('Preview ready. Click "' + runLabel + '" to process it locally' + (isRestore ? ' (can take up to a minute on the first run while the model warms up).' : '.'));
+                setStatus('Preview ready. Click "' + runBtn.textContent + '" to process it locally' + (isRestore ? ' (can take up to a minute on the first run while the model warms up).' : '.'));
             };
             img.onerror = function () { setErr('Could not read that image.'); };
             img.src = currentURL;
@@ -131,16 +170,24 @@
             if (!currentURL) { setErr('Choose an image first.'); return; }
             setErr(''); runBtn.disabled = true;
             try {
-                var m = await aiLoadModel(setStatus, mode);
+                var scale = isRestore ? aiPickedScale() : 0;
+                var m = await aiLoadModel(setStatus, mode, scale);
                 if (isRestore) {
                     var srcImg = new Image(); srcImg.src = currentURL;
                     await new Promise(function (r) { srcImg.onload = r; });
                     var resizeInfo = aiResizeToDataUrl(srcImg, AI_RESTORE_MAX_EDGE);
-                    setStatus('Restoring and upscaling in your browser' + (m.device === 'wasm' ? ' (WASM - this can take up to a minute)' : '') + ' ...' + (resizeInfo.resized ? ' (large photo resized before processing)' : ''));
+                    setStatus((scale === 2 ? 'Upscaling 2x in your browser' : 'Restoring and upscaling 4x in your browser') + (m.device === 'wasm' ? ' (no WebGPU here, so this can take up to a minute)' : '') + ' ...' + (resizeInfo.resized ? ' (large photo resized before processing)' : ''));
                     var inputImage = await m.RawImage.fromURL(resizeInfo.dataUrl);
                     var output = await m.restorer(inputImage);
                     var resultImg = Array.isArray(output) ? output[0] : output;
-                    canvas.width = resultImg.width; canvas.height = resultImg.height;
+                    // swin2SR pads the input to a multiple of its 8px window and
+                    // returns the upscaled PADDED frame - crop to exactly
+                    // scale*input so no junk padding rows/columns are shown
+                    // (fire22 Gate-H probe finding).
+                    var wantW = Math.min(resultImg.width, inputImage.width * scale);
+                    var wantH = Math.min(resultImg.height, inputImage.height * scale);
+                    var full = document.createElement('canvas');
+                    full.width = resultImg.width; full.height = resultImg.height;
                     var n = resultImg.width * resultImg.height;
                     var rgba = new Uint8ClampedArray(n * 4);
                     for (var i = 0; i < n; i++) {
@@ -148,12 +195,15 @@
                         if (resultImg.channels < 3) { rgba[i * 4 + 1] = rgba[i * 4]; rgba[i * 4 + 2] = rgba[i * 4]; }
                         rgba[i * 4 + 3] = 255;
                     }
-                    ctx.putImageData(new ImageData(rgba, resultImg.width, resultImg.height), 0, 0);
+                    full.getContext('2d').putImageData(new ImageData(rgba, resultImg.width, resultImg.height), 0, 0);
+                    canvas.width = wantW; canvas.height = wantH;
+                    ctx.clearRect(0, 0, wantW, wantH);
+                    ctx.drawImage(full, 0, 0, wantW, wantH, 0, 0, wantW, wantH);
                     canvas.toBlob(function (blob) {
                         var u = URL.createObjectURL(blob);
-                        dl.href = u; dl.download = 'restored-photo.png'; dl.style.display = '';
+                        dl.href = u; dl.download = scale === 2 ? 'upscaled-photo-2x.png' : 'restored-photo.png'; dl.style.display = '';
                     }, 'image/png');
-                    setStatus('Done - sharpened, denoised, and upscaled 4x locally, no upload.');
+                    setStatus(scale === 2 ? 'Done - upscaled 2x locally, no upload.' : 'Done - sharpened, denoised, and upscaled 4x locally, no upload.');
                 } else {
                     setStatus('Removing background in your browser ...');
                     var image = await m.RawImage.fromURL(currentURL);
