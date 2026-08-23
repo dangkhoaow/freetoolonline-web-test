@@ -951,6 +951,7 @@ try {
     { title: "AI Watermark Detector - Check Content Credentials (C2PA)", url: "https://freetoolonline.com/image-tools/ai-watermark-detector.html", include: !1, tags: "image-editing" },
     { title: "AI Text Detector - LLM Writing Signals, In Your Browser", url: "https://freetoolonline.com/utility-tools/ai-text-detector.html", include: !1, tags: "utility" },
     { title: "AI Watermarks: What You Can Check, and What Removal Means", url: "https://freetoolonline.com/guides/ai-watermarks-explained.html", include: !1, tags: "image-editing" },
+    { title: "Remove Background Noise from Audio - AI, In-Browser", url: "https://freetoolonline.com/video-tools/audio-denoiser.html", include: !1, tags: "video" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

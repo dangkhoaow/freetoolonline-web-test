@@ -16503,6 +16503,7 @@ export const ALIAS_ROUTES = {
   '/ai-watermark-detector.html': '/image-tools/ai-watermark-detector.html',
   '/ai-text-detector.html': '/utility-tools/ai-text-detector.html',
   '/ocr-pdf.html': '/pdf-tools/ocr-pdf.html',
+  '/audio-denoiser.html': '/video-tools/audio-denoiser.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28828,6 +28829,7 @@ export const JSP_BY_ROUTE = {
   // ai-watermarks-explained id locale (create_new_guide_page 20260823-4)
   '/guides/id/ai-watermarks-explained.html': 'guide/id/ai-watermarks-explained.jsp',
   '/pdf-tools/ocr-pdf.html': 'pdf/ocr-pdf.jsp',
+  '/video-tools/audio-denoiser.html': 'convert/audio-denoiser.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

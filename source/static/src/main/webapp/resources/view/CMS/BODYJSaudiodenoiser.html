@@ -1,0 +1,318 @@
+<script>
+    // In-browser AUDIO DENOISER (audio-denoiser) - RNNoise noise suppression (WASM)
+    // + deterministic WebAudio fallback. 100% client-side: the RECORDING never
+    // leaves the browser; only the ~0.12 MB engine downloads once, on an
+    // explicit click. Registry Gate-H entry: audio_denoiser_rnnoise_wasm
+    // (verified 2026-08-23 in a node probe - instantiation, 480-sample frame
+    // API, noise-only floor -36.6 dB / speech -0.84 dB / VAD separation all
+    // confirmed before this skeleton was authored; artifact in
+    // seo-reports/20260823-ailocal-fire23/).
+    //
+    // ENGINE: @jitsi/rnnoise-wasm@0.2.1 (EXACT pin per the lane's CDN ENGINE
+    // PIN discipline). dist/rnnoise.js is an Emscripten ES-module factory
+    // loaded via dynamic import(); dist/rnnoise.wasm (112,141 bytes, weights
+    // BAKED IN - no separate model file) is fetched by this script, sha256-
+    // verified against the pinned digest, Cache-API-stored, and passed to the
+    // factory as wasmBinary. API: _rnnoise_create -> _rnnoise_process_frame
+    // (exactly 480 float32 samples @ 48 kHz scaled to int16 range; returns
+    // voice-activity probability) -> _rnnoise_destroy.
+    //
+    // LADDER (ai-local class rule 1): (1) no Chrome Built-in tier - browsers
+    // expose noiseSuppression only as a live-mic getUserMedia constraint,
+    // never as a FILE processor; (2) on-device RNNoise (this); (3) a
+    // deterministic no-download "Basic cleanup" fallback - 80 Hz highpass +
+    // an RMS noise gate whose threshold is derived from the quietest 10% of
+    // frames, zero network, honestly labeled below-AI quality. The G16
+    // zero-interaction/zero-download demo (a REAL before/after waveform pair
+    // produced by this same engine) is baked into the paired BODYHTML and
+    // renders on load without touching this script.
+    //
+    // Framework contract: doAfterPageRendered(); no top-level DOM.
+    // web.localUpload = false (plain <input type=file>, no server upload widget).
+
+    web.localUpload = false;
+
+    var AD_SLUG = 'audio-denoiser';
+    var AD_JS_CDN = 'https://cdn.jsdelivr.net/npm/@jitsi/rnnoise-wasm@0.2.1/dist/rnnoise.js';
+    var AD_WASM_URL = 'https://cdn.jsdelivr.net/npm/@jitsi/rnnoise-wasm@0.2.1/dist/rnnoise.wasm';
+    var AD_WASM_SHA256 = '677147b9248aedc0a00de79dc090d1ecead37c08c8bb773a790da16109d2c487';
+    var AD_CACHE_NAME = 'ftol-ai-models';
+    var AD_SR = 48000;
+    var AD_FRAME = 480;                 // 10 ms @ 48 kHz - fixed RNNoise frame
+    var AD_MAX_SECONDS = 1800;          // 30 min guard - decoded PCM lives in RAM
+    var AD_WARMUP_FRAMES = 30;          // ~0.3 s adaptation pre-feed (probe-measured)
+
+    async function adSha256Hex(bytes) {
+        var digest = await crypto.subtle.digest('SHA-256', bytes);
+        var arr = new Uint8Array(digest); var hex = '';
+        for (var i = 0; i < arr.length; i++) hex += (arr[i] < 16 ? '0' : '') + arr[i].toString(16);
+        return hex;
+    }
+
+    // Fetch the wasm engine bytes with Cache API storage (repeat visits skip
+    // the network) and a MANDATORY sha256 integrity check on every load path.
+    async function adFetchWasmBytes(setStatus) {
+        var resp = null, fromCache = false;
+        try {
+            if (window.caches) {
+                var cache = await caches.open(AD_CACHE_NAME);
+                var hit = await cache.match(AD_WASM_URL);
+                if (hit) { resp = hit; fromCache = true; }
+            }
+        } catch (e) { /* private mode - fall through to network */ }
+        if (!resp) {
+            setStatus('Downloading the noise-removal engine (about 0.1 MB, one time - it is cached for next visit) ...');
+            resp = await fetch(AD_WASM_URL);
+            if (!resp.ok) throw new Error('engine download failed (HTTP ' + resp.status + ')');
+            try {
+                if (window.caches) {
+                    var cache2 = await caches.open(AD_CACHE_NAME);
+                    await cache2.put(AD_WASM_URL, resp.clone());
+                }
+            } catch (e) { /* cache write is best-effort */ }
+        } else {
+            setStatus('Loading the noise-removal engine from your browser cache ...');
+        }
+        var bytes = new Uint8Array(await resp.arrayBuffer());
+        var hex = await adSha256Hex(bytes);
+        if (hex !== AD_WASM_SHA256) {
+            try { if (fromCache && window.caches) { var c3 = await caches.open(AD_CACHE_NAME); await c3.delete(AD_WASM_URL); } } catch (e) { }
+            throw new Error('the downloaded engine failed its integrity check - please try again');
+        }
+        return bytes;
+    }
+
+    var adModulePromise = null;
+    function adLoadEngine(setStatus) {
+        if (adModulePromise) return adModulePromise;
+        adModulePromise = (async function () {
+            var bytes = await adFetchWasmBytes(setStatus);
+            setStatus('Starting the noise-removal engine in your browser ...');
+            var factory = (await import(AD_JS_CDN)).default;
+            var mod = await factory({ wasmBinary: bytes });
+            return mod;
+        })();
+        adModulePromise.catch(function () { adModulePromise = null; }); // allow retry
+        return adModulePromise;
+    }
+
+    // Decode ANY browser-supported audio file to 48 kHz MONO Float32.
+    async function adDecodeTo48kMono(file, setStatus) {
+        setStatus('Reading and decoding your audio in the browser (nothing is uploaded) ...');
+        var raw = await file.arrayBuffer();
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) throw new Error('this browser does not expose Web Audio decoding');
+        var probeCtx = new AC();
+        var decoded;
+        try { decoded = await probeCtx.decodeAudioData(raw); }
+        finally { try { probeCtx.close(); } catch (e) { } }
+        if (decoded.duration > AD_MAX_SECONDS) {
+            throw new Error('recording is longer than 30 minutes - split it first (decoded audio has to fit in this tab\'s memory)');
+        }
+        var frames = Math.ceil(decoded.duration * AD_SR);
+        var off = new OfflineAudioContext(1, frames, AD_SR);
+        var src = off.createBufferSource();
+        src.buffer = decoded;
+        src.connect(off.destination);   // mono destination downmixes stereo
+        src.start(0);
+        var rendered = await off.startRendering();
+        return { pcm: rendered.getChannelData(0), durationSec: decoded.duration };
+    }
+
+    function adRms(arr, s, e) {
+        var acc = 0, n = 0;
+        for (var i = s; i < e; i++) { acc += arr[i] * arr[i]; n++; }
+        return n ? Math.sqrt(acc / n) : 0;
+    }
+
+    // Encode Float32 mono @48k -> 16-bit PCM WAV blob.
+    function adEncodeWav(pcm) {
+        var n = pcm.length;
+        var buf = new ArrayBuffer(44 + n * 2);
+        var v = new DataView(buf);
+        function ws(o, s) { for (var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); }
+        ws(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); ws(8, 'WAVE');
+        ws(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+        v.setUint32(24, AD_SR, true); v.setUint32(28, AD_SR * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+        ws(36, 'data'); v.setUint32(40, n * 2, true);
+        for (var i2 = 0; i2 < n; i2++) {
+            var s2 = Math.max(-1, Math.min(1, pcm[i2]));
+            v.setInt16(44 + i2 * 2, s2 < 0 ? s2 * 0x8000 : s2 * 0x7fff, true);
+        }
+        return new Blob([buf], { type: 'audio/wav' });
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('audioDenoiserTool');
+        if (!root) return; // not an audio-denoiser page
+
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="adFile" accept="audio/*,.mp3,.wav,.m4a,.ogg,.opus,.webm,.flac,.aac" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div id="adStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Choose a recording. It never leaves your browser - everything runs on your device.</div>' +
+            '<div style="margin-top:4px;">' +
+              '<button id="adRunAiBtn" type="button" class="w3-button w3-green w3-large" disabled>Remove noise (AI, ~0.1 MB one-time download)</button> ' +
+              '<button id="adRunBasicBtn" type="button" class="w3-button w3-amber" disabled>Basic cleanup (no download)</button>' +
+            '</div>' +
+            '<div id="adOut" class="outputImgs" style="visibility:visible !important;display:none;margin-top:12px;text-align:left;max-width:560px;margin-left:auto;margin-right:auto;">' +
+              '<div style="font-size:.9em;color:#555;margin:4px 0 2px;">Original</div>' +
+              '<audio id="adPlayerOrig" controls style="width:100%;"></audio>' +
+              '<div style="font-size:.9em;color:#555;margin:8px 0 2px;">Cleaned <span id="adOutNote" style="color:#888;"></span></div>' +
+              '<audio id="adPlayerClean" controls style="width:100%;"></audio>' +
+              '<div style="margin-top:8px;text-align:center;"><a id="adDownload" class="w3-button w3-blue">Download cleaned WAV</a></div>' +
+            '</div>' +
+            '<div id="adErr" style="color:#b00020;margin-top:6px;min-height:1em;"></div>' +
+            '<p style="font-size:.85em;color:#777;margin-top:10px;">Output is a mono 48 kHz WAV file, whatever the input format was. The AI engine is tuned for one speaking voice over steady noise (hiss, hum, fan, street rumble) - it will not fix loud overlapping speech, and it is not a music mastering tool.</p>';
+
+        var fileEl = root.querySelector('#adFile');
+        var aiBtn = root.querySelector('#adRunAiBtn');
+        var basicBtn = root.querySelector('#adRunBasicBtn');
+        var outWrap = root.querySelector('#adOut');
+        var outNote = root.querySelector('#adOutNote');
+        var playerOrig = root.querySelector('#adPlayerOrig');
+        var playerClean = root.querySelector('#adPlayerClean');
+        var dl = root.querySelector('#adDownload');
+        var statusEl = root.querySelector('#adStatus');
+        var errEl = root.querySelector('#adErr');
+
+        function setStatus(m) { statusEl.textContent = m; }
+        function setErr(m) { errEl.textContent = m || ''; }
+
+        var currentFile = null, origURL = null, cleanURL = null;
+
+        fileEl.addEventListener('change', function () {
+            var f = fileEl.files && fileEl.files[0];
+            if (!f) return;
+            currentFile = f;
+            setErr('');
+            outWrap.style.display = 'none';
+            if (origURL) { URL.revokeObjectURL(origURL); origURL = null; }
+            if (cleanURL) { URL.revokeObjectURL(cleanURL); cleanURL = null; }
+            aiBtn.disabled = false; basicBtn.disabled = false;
+            setStatus('Ready. "Remove noise (AI)" does the real cleanup; "Basic cleanup" works with zero download.');
+        });
+
+        function showResult(pcm, noteText, fileName) {
+            var wav = adEncodeWav(pcm);
+            if (origURL) URL.revokeObjectURL(origURL);
+            if (cleanURL) URL.revokeObjectURL(cleanURL);
+            origURL = URL.createObjectURL(currentFile);
+            cleanURL = URL.createObjectURL(wav);
+            playerOrig.src = origURL;
+            playerClean.src = cleanURL;
+            dl.href = cleanURL; dl.download = fileName;
+            outNote.textContent = noteText;
+            outWrap.style.display = 'block';
+        }
+
+        // TIER 2: on-device RNNoise over 480-sample frames @48k.
+        aiBtn.addEventListener('click', async function () {
+            if (!currentFile) { setErr('Choose a recording first.'); return; }
+            setErr(''); aiBtn.disabled = true; basicBtn.disabled = true;
+            try {
+                var mod = await adLoadEngine(setStatus);
+                var dec = await adDecodeTo48kMono(currentFile, setStatus);
+                var pcm = dec.pcm;
+                setStatus('Removing noise on your device (nothing is uploaded) ...');
+                await new Promise(function (r) { setTimeout(r, 30); }); // let the status paint
+                var state = mod._rnnoise_create(0);
+                if (!state) throw new Error('could not initialise the engine');
+                var inPtr = mod._malloc(AD_FRAME * 4);
+                var outPtr = mod._malloc(AD_FRAME * 4);
+                var out = new Float32Array(pcm.length);
+                var frame = new Float32Array(AD_FRAME);
+                var vadIn = [], k;
+                try {
+                    // Warm-up: pre-feed the first ~0.3 s once so the engine's
+                    // noise estimate has adapted before the real pass (the
+                    // probe measured near-zero suppression on cold frames).
+                    var warmN = Math.min(AD_WARMUP_FRAMES * AD_FRAME, pcm.length - (pcm.length % AD_FRAME));
+                    for (var w = 0; w + AD_FRAME <= warmN; w += AD_FRAME) {
+                        for (k = 0; k < AD_FRAME; k++) frame[k] = pcm[w + k] * 32768;
+                        mod.HEAPF32.set(frame, inPtr >> 2);
+                        mod._rnnoise_process_frame(state, outPtr, inPtr);
+                    }
+                    var lastYield = Date.now();
+                    for (var off = 0; off + AD_FRAME <= pcm.length; off += AD_FRAME) {
+                        for (k = 0; k < AD_FRAME; k++) frame[k] = pcm[off + k] * 32768;
+                        mod.HEAPF32.set(frame, inPtr >> 2);
+                        var prob = mod._rnnoise_process_frame(state, outPtr, inPtr);
+                        vadIn.push(prob);
+                        var o = mod.HEAPF32.subarray(outPtr >> 2, (outPtr >> 2) + AD_FRAME);
+                        for (k = 0; k < AD_FRAME; k++) out[off + k] = o[k] / 32768;
+                        if (Date.now() - lastYield > 250) {   // keep the tab responsive
+                            setStatus('Removing noise on your device ... ' + Math.round(100 * off / pcm.length) + '%');
+                            await new Promise(function (r) { setTimeout(r, 0); });
+                            lastYield = Date.now();
+                        }
+                    }
+                    // tail shorter than one frame: keep as-is (10 ms max)
+                    for (var t = pcm.length - (pcm.length % AD_FRAME); t < pcm.length; t++) out[t] = pcm[t];
+                } finally {
+                    mod._free(inPtr); mod._free(outPtr); mod._rnnoise_destroy(state);
+                }
+                // Honest measurement: noise floor in the NON-VOICE frames
+                // (engine VAD < 0.5) before vs after.
+                var accIn = 0, accOut = 0, nq = 0;
+                for (var fIdx = 0; fIdx < vadIn.length; fIdx++) {
+                    if (vadIn[fIdx] < 0.5) {
+                        var s0 = fIdx * AD_FRAME, s1 = s0 + AD_FRAME;
+                        var ri = adRms(pcm, s0, s1), ro = adRms(out, s0, s1);
+                        if (ri > 0) { accIn += ri; accOut += ro; nq++; }
+                    }
+                }
+                var note = '';
+                if (nq > 5 && accOut > 0) {
+                    var dbDrop = 20 * Math.log10((accOut / nq) / (accIn / nq));
+                    if (dbDrop < -1) note = '(noise in the pauses reduced by ' + Math.abs(Math.round(dbDrop)) + ' dB on your device)';
+                }
+                showResult(out, note, 'cleaned-audio.wav');
+                setStatus('Done - compare the two players, then download. Everything ran in your browser; nothing was uploaded.');
+            } catch (err) {
+                setErr('Could not run the AI cleanup: ' + (err && err.message ? err.message : String(err)) + '. The "Basic cleanup (no download)" path still works.');
+                setStatus('');
+            } finally { aiBtn.disabled = false; basicBtn.disabled = false; }
+        });
+
+        // TIER 3 (deterministic, zero network): 80 Hz highpass + RMS noise
+        // gate with the threshold derived from the quietest 10% of frames.
+        basicBtn.addEventListener('click', async function () {
+            if (!currentFile) { setErr('Choose a recording first.'); return; }
+            setErr(''); aiBtn.disabled = true; basicBtn.disabled = true;
+            try {
+                var dec = await adDecodeTo48kMono(currentFile, setStatus);
+                var pcm = dec.pcm;
+                setStatus('Applying the basic cleanup (highpass + noise gate, no download) ...');
+                // 80 Hz highpass via OfflineAudioContext biquad (deterministic)
+                var off = new OfflineAudioContext(1, pcm.length, AD_SR);
+                var buf = off.createBuffer(1, pcm.length, AD_SR);
+                buf.copyToChannel(pcm, 0);
+                var src = off.createBufferSource(); src.buffer = buf;
+                var hp = off.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 80; hp.Q.value = 0.707;
+                src.connect(hp); hp.connect(off.destination); src.start(0);
+                var filtered = (await off.startRendering()).getChannelData(0);
+                // frame RMS ladder -> threshold = 2.5x the quietest-decile level
+                var nFrames = Math.floor(filtered.length / AD_FRAME);
+                var rmsArr = new Float32Array(nFrames);
+                for (var i = 0; i < nFrames; i++) rmsArr[i] = adRms(filtered, i * AD_FRAME, (i + 1) * AD_FRAME);
+                var sorted = Array.prototype.slice.call(rmsArr).sort(function (a, b) { return a - b; });
+                var floorRms = sorted[Math.max(0, Math.floor(sorted.length * 0.1) - 1)] || 0;
+                var thresh = Math.max(floorRms * 2.5, 1e-4);
+                var outPcm = new Float32Array(filtered.length);
+                var gain = 1;
+                for (var f2 = 0; f2 < nFrames; f2++) {
+                    var target = rmsArr[f2] < thresh ? 0.12 : 1;   // duck pauses, never hard-mute
+                    for (var j = 0; j < AD_FRAME; j++) {
+                        gain += (target - gain) * 0.004;            // ~5 ms smoothing, no clicks
+                        outPcm[f2 * AD_FRAME + j] = filtered[f2 * AD_FRAME + j] * gain;
+                    }
+                }
+                for (var t2 = nFrames * AD_FRAME; t2 < filtered.length; t2++) outPcm[t2] = filtered[t2] * gain;
+                showResult(outPcm, '(basic cleanup: rumble filter + pause gate - the AI button does a much better job on hiss and babble)', 'cleaned-audio-basic.wav');
+                setStatus('Basic cleanup done - instant, no download, nothing uploaded. Try the AI button for the real denoise.');
+            } catch (err) {
+                setErr('Could not process that file: ' + (err && err.message ? err.message : String(err)));
+                setStatus('');
+            } finally { aiBtn.disabled = false; basicBtn.disabled = false; }
+        });
+    }
+</script>
