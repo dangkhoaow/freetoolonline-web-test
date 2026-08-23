@@ -131,6 +131,7 @@
     // matching device voice; the downloadable-file engine skips them.
     var SP_MESPEAK_VOICES = { en: 'en/en-us', es: 'es', pt: 'pt', fr: 'fr', de: 'de', it: 'it', nl: 'nl', tr: 'tr', pl: 'pl', cs: 'cs', ro: 'ro', sv: 'sv', fi: 'fi', hu: 'hu', el: 'el', zh: 'zh' };
     var spEngineState = { loading: false, ready: false, voices: {} };
+    function spBase() { return (typeof BASE_PATH === 'string' ? BASE_PATH : ''); }
 
     function spLoadScript(src, cb) {
         var s = document.createElement('script');
@@ -142,9 +143,9 @@
         if (spEngineState.ready) return cb(true);
         if (spEngineState.loading) { setTimeout(function () { spEnsureEngine(cb); }, 300); return; }
         spEngineState.loading = true;
-        spLoadScript('/vendor/mespeak/mespeak.js', function (ok) {
+        spLoadScript(spBase() + '/vendor/mespeak/mespeak.js', function (ok) {
             if (!ok || !window.meSpeak) { spEngineState.loading = false; return cb(false); }
-            window.meSpeak.loadConfig('/vendor/mespeak/mespeak_config.json');
+            window.meSpeak.loadConfig(spBase() + '/vendor/mespeak/mespeak_config.json');
             spEngineState.ready = true; spEngineState.loading = false;
             cb(true);
         });
@@ -365,7 +366,7 @@
                                 btn.disabled = false;
                             }
                             if (fmt === 'wav') { finish(new Blob([stream], { type: 'audio/wav' }), 'wav'); return; }
-                            spLoadScript('/vendor/lamejs/lame.min.js', function (lok) {
+                            spLoadScript(spBase() + '/vendor/lamejs/lame.min.js', function (lok) {
                                 if (!lok || !window.lamejs) { setStatus('MP3 encoder failed to load - use WAV instead.'); btn.disabled = false; return; }
                                 var pcm = spWavToPcm(stream);
                                 if (!pcm) { setStatus('Could not parse generated audio - use WAV instead.'); btn.disabled = false; return; }
