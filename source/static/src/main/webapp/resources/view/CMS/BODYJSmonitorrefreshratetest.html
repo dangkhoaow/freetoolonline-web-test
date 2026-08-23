@@ -145,6 +145,18 @@
                     if (Math.abs(view[b].hz - view[a].hz) / view[a].hz >= SWITCH_SPLIT_PCT) { switching = true; break; }
                 }
             }
+            // Platform-cap note: iPhone Safari holds web animation at ~60 Hz even on
+            // 120 Hz ProMotion panels (Low Power Mode applies the same cap), so a
+            // ~60 Hz ceiling on an iPhone is a platform limit, not a tool error.
+            var noteEl = document.getElementById('rrPlatformNote');
+            if (noteEl) {
+                var isIphone = /iPhone/.test(navigator.userAgent || '');
+                if (isIphone && maxHz != null && maxHz <= 65) {
+                    noteEl.textContent = 'Note: on iPhone, Safari caps web animation at ~60 Hz even when the panel supports 120 Hz (ProMotion), and Low Power Mode applies the same cap. This ceiling comes from the platform, not from your display or this test.';
+                } else {
+                    noteEl.textContent = '';
+                }
+            }
             verdictEl.textContent = switching
                 ? 'Rate switching observed - this display behaves like an adaptive (variable) refresh panel in this browser.'
                 : 'One stable rate observed so far - no adaptive switching detected yet. Scroll this page or leave the tab still for a few seconds, then watch for a second rate.';
