@@ -28775,6 +28775,8 @@ export const JSP_BY_ROUTE = {
   '/guides/ai-watermarks-explained.html': 'guide/ai-watermarks-explained.jsp',
   // ai-watermarks-explained pt locale (create_new_guide_page 20260823)
   '/guides/pt/ai-watermarks-explained.html': 'guide/pt/ai-watermarks-explained.jsp',
+  // ai-watermarks-explained es locale (create_new_guide_page 20260823-2)
+  '/guides/es/ai-watermarks-explained.html': 'guide/es/ai-watermarks-explained.jsp',
   '/pdf-tools/ocr-pdf.html': 'pdf/ocr-pdf.jsp',
 };
 
