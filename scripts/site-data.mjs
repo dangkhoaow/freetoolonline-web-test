@@ -71,8 +71,6 @@ export const INFO_ROUTES = new Set([
   '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html',
   '/guides/client-side-pdf-editor-toolkit-when.html',
-  // client-side-pdf-editor-toolkit-when pt locale (create_new_guide_page 20260824)
-  '/guides/pt/client-side-pdf-editor-toolkit-when.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-when.html',
@@ -7308,8 +7306,6 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
-  // client-side-pdf-editor-toolkit-when pt locale (create_new_guide_page 20260824)
-  '/guides/pt/client-side-pdf-editor-toolkit-when.html',
   // client-side-pdf-editor-toolkit-vs-alternatives EN + locale fanout (create_new_guide_page 20260823-7)
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html',
@@ -28827,7 +28823,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
   '/image-converter-tools/client-side-pdf-editor-toolkit.html': 'convert/client-side-pdf-editor-toolkit.jsp',
   '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
-  '/guides/pt/client-side-pdf-editor-toolkit-when.html': 'guide/pt/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/pt/client-side-pdf-editor-toolkit-step-by-step.jsp',
   '/guides/es/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/es/client-side-pdf-editor-toolkit-step-by-step.jsp',
