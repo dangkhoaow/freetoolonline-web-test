@@ -947,6 +947,7 @@ try {
     { title: "Client Side PDF editor Toolkit", url: "https://freetoolonline.com/image-converter-tools/client-side-pdf-editor-toolkit.html", include: !1, tags: "image-conversion" },
     { title: "Hilbert Curve Generator", url: "https://freetoolonline.com/image-converter-tools/hilbert-editor.html", include: !1, tags: "image-conversion" },
     { title: "Is It Down? Website & Service Status Checker", url: "https://freetoolonline.com/utility-tools/is-it-down.html", include: !1, tags: "utility" },
+    { title: "Food Recall Lookup (FDA)", url: "https://freetoolonline.com/utility-tools/food-recall-lookup.html", include: !1, tags: "utility" },
     { title: "AI Watermark Detector - Check Content Credentials (C2PA)", url: "https://freetoolonline.com/image-tools/ai-watermark-detector.html", include: !1, tags: "image-editing" },
     { title: "AI Text Detector - LLM Writing Signals, In Your Browser", url: "https://freetoolonline.com/utility-tools/ai-text-detector.html", include: !1, tags: "utility" },
     { title: "AI Watermarks: What You Can Check, and What Removal Means", url: "https://freetoolonline.com/guides/ai-watermarks-explained.html", include: !1, tags: "image-editing" },

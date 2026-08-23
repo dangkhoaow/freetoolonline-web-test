@@ -1,0 +1,221 @@
+<script>
+    // Food-recall-lookup - live-data class, no upload, no backend, no vendored
+    // lib. Registry Gate-H entry: food_recall_lookup_openfda. Keyless,
+    // CORS-`*` US-government openFDA food enforcement API only. Reuses the
+    // vehicle-recall-lookup architecture verbatim (fire724): on-load default
+    // example lookup as the zero-interaction G16 path, then reader-driven
+    // lookups by product/brand keyword with an optional recalling-firm-state
+    // filter. HONESTY NOTE: the search query IS sent to the official US
+    // government openFDA API (never to this site's servers) - the page states
+    // that plainly and never claims "never leaves your browser".
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top
+    // level. In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var FR_API_URL = 'https://api.fda.gov/food/enforcement.json';
+    var FR_EXAMPLE_LIMIT = 8;
+    var FR_SEARCH_LIMIT = 25;
+
+    var FR_STATES = [
+        'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA',
+        'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA',
+        'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY',
+        'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD', 'TN',
+        'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+    ];
+
+    // FDA recall classification definitions - wording paraphrase-locked to
+    // fda.gov (never invented; Class I phrase kept verbatim-close).
+    var FR_CLASS_DEFS = {
+        'Class I': 'Most serious: reasonable probability that use of or exposure to the product will cause serious adverse health consequences or death.',
+        'Class II': 'Use of or exposure to the product may cause temporary or medically reversible adverse health consequences; the probability of serious harm is remote.',
+        'Class III': 'Use of or exposure to the product is not likely to cause adverse health consequences.'
+    };
+
+    function frEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function frStatus(root, msg, isError) {
+        var el = root.querySelector('#frStatus');
+        if (!el) return;
+        el.style.color = isError ? '#b00020' : '#555';
+        el.textContent = msg;
+    }
+
+    // openFDA returns HTTP 404 + {error:{code:'NOT_FOUND'}} for an empty
+    // result set - that is "no recalls found", never a failure.
+    function frFetchJson(url) {
+        return fetch(url, { headers: { 'Accept': 'application/json' } }).then(function (r) {
+            return r.json().then(function (data) {
+                if (data && data.error && data.error.code === 'NOT_FOUND') return { results: [] };
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return data;
+            });
+        });
+    }
+
+    function frFmtDate(yyyymmdd) {
+        var m = String(yyyymmdd || '').match(/^(\d{4})(\d{2})(\d{2})$/);
+        return m ? (m[1] + '-' + m[2] + '-' + m[3]) : String(yyyymmdd || '');
+    }
+
+    function frClassBadge(cls) {
+        var c = String(cls || '').trim();
+        var bg = c === 'Class I' ? '#b00020' : (c === 'Class II' ? '#ef6c00' : '#546e7a');
+        return '<span style="display:inline-block;background:' + bg + ';color:#fff;border-radius:3px;padding:1px 8px;margin:2px 6px 2px 0;font-size:0.85em;font-weight:600;">' + frEsc(c || 'Unclassified') + (c === 'Class I' ? ' (health hazard)' : '') + '</span>';
+    }
+
+    function frBuildSearch(kw, state) {
+        var k = String(kw || '').trim().replace(/"/g, '');
+        var clauses = '';
+        if (k) {
+            var q = /\s/.test(k) ? '"' + k + '"' : k;
+            clauses = 'product_description:' + q + ' recalling_firm:' + q;
+        }
+        var st = String(state || '').trim().toUpperCase();
+        if (st) {
+            clauses = clauses ? '(' + clauses + ') AND state:' + st : 'state:' + st;
+        }
+        return clauses;
+    }
+
+    function frRenderResults(root, data, queryLabel, isExample) {
+        var listEl = root.querySelector('#frResults');
+        if (!listEl) return;
+        var recs = (data && data.results) ? data.results : [];
+        var head = '';
+        if (isExample) {
+            head += '<p style="color:#777;font-size:0.9em;margin:8px 0 2px;">Latest US food recall enforcement reports (newest first) so you can see what results look like - run your own search above.</p>';
+        }
+        if (!recs.length) {
+            listEl.innerHTML = head +
+                '<div style="border:1px solid #c8e6c9;background:#f1f8e9;border-radius:4px;padding:10px 14px;margin-top:8px;">' +
+                '<b>No recalls found for ' + frEsc(queryLabel) + '.</b> ' +
+                'The openFDA enforcement database has no report matching that query. Try a shorter keyword (brand only, or the food itself), and remember enforcement reports lag public announcements by days to weeks - for breaking recalls check <a href="https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts" target="_blank" rel="noopener">fda.gov/safety/recalls</a>.' +
+                '</div>';
+            return;
+        }
+        var hasClassI = false;
+        for (var j = 0; j < recs.length; j++) {
+            if (String(recs[j].classification || '').trim() === 'Class I') { hasClassI = true; break; }
+        }
+        var html = head + '<p style="margin:10px 0 4px;"><b>' + recs.length + ' enforcement report' + (recs.length === 1 ? '' : 's') + '</b> for ' + frEsc(queryLabel) + ', newest first:</p>';
+        if (hasClassI) {
+            html += '<div style="border:1px solid #b00020;background:#fdecea;border-radius:4px;padding:8px 14px;margin:8px 0;color:#b00020;font-weight:600;">Class I recalls below - FDA\'s most serious category: reasonable probability that use of or exposure to the product will cause serious adverse health consequences or death. Check your lot codes before eating the product.</div>';
+        }
+        for (var i = 0; i < recs.length; i++) {
+            var r = recs[i];
+            var cls = String(r.classification || '').trim();
+            html += '<div style="border:1px solid #e0e0e0;border-left:4px solid ' + (cls === 'Class I' ? '#b00020' : (cls === 'Class II' ? '#ef6c00' : '#1a73e8')) + ';border-radius:4px;padding:10px 14px;margin-top:10px;">';
+            html += '<div style="font-weight:600;">' + frEsc(r.product_description || 'Product not stated') + '</div>';
+            html += '<div style="color:#777;font-size:0.88em;margin:2px 0 4px;">' + frEsc(r.recalling_firm || 'Firm not stated') + (r.city || r.state ? ' - ' + frEsc([r.city, r.state].filter(Boolean).join(', ')) : '') + (r.recall_initiation_date ? ' - initiated ' + frFmtDate(r.recall_initiation_date) : '') + '</div>';
+            html += '<div>' + frClassBadge(cls) + (r.status ? '<span style="display:inline-block;background:#eceff1;color:#37474f;border-radius:3px;padding:1px 8px;margin:2px 6px 2px 0;font-size:0.85em;">' + frEsc(r.status) + '</span>' : '') + '</div>';
+            if (r.reason_for_recall) html += '<p style="margin:6px 0 0;"><b>Reason:</b> ' + frEsc(r.reason_for_recall) + '</p>';
+            if (r.code_info) html += '<p style="margin:6px 0 0;"><b>Lot codes:</b> ' + frEsc(r.code_info) + '</p>';
+            if (r.distribution_pattern) html += '<p style="margin:6px 0 0;"><b>Distribution:</b> ' + frEsc(r.distribution_pattern) + '</p>';
+            html += '</div>';
+        }
+        html += '<p style="color:#777;font-size:0.9em;margin-top:8px;">Data source: openFDA food enforcement reports (FDA-regulated foods, US market). USDA FSIS meat, poultry, and egg-product recalls are not included.</p>';
+        listEl.innerHTML = html;
+    }
+
+    function frLookup(root, kw, state, isExample) {
+        var search = frBuildSearch(kw, state);
+        var label;
+        if (isExample) {
+            label = 'the latest US food recalls';
+        } else if (kw && state) {
+            label = '"' + kw + '" (firm state ' + state + ')';
+        } else if (kw) {
+            label = '"' + kw + '"';
+        } else if (state) {
+            label = 'recalling firms in ' + state;
+        } else {
+            frStatus(root, 'Type a product or brand keyword (or pick a state), then press Search recalls.', true);
+            return;
+        }
+        frStatus(root, 'Checking openFDA enforcement reports for ' + label + '...');
+        root.querySelector('#frResults').innerHTML = '';
+        var url = FR_API_URL + '?limit=' + (isExample ? FR_EXAMPLE_LIMIT : FR_SEARCH_LIMIT) + '&sort=report_date:desc';
+        if (search) url += '&search=' + encodeURIComponent(search);
+        frFetchJson(url).then(function (data) {
+            frStatus(root, 'Last checked: ' + new Date().toLocaleString() + ' (source: api.fda.gov)');
+            frRenderResults(root, data, label, !!isExample);
+        }).catch(function (e) {
+            frStatus(root, 'Could not reach the openFDA service: ' + (e && e.message ? e.message : String(e)) + '. Try again in a moment.', true);
+        });
+    }
+
+    function frPopulateStates(root) {
+        var sel = root.querySelector('#frStateSelect');
+        if (!sel) return;
+        var html = '<option value="">Any state</option>';
+        for (var i = 0; i < FR_STATES.length; i++) {
+            html += '<option value="' + FR_STATES[i] + '">' + FR_STATES[i] + '</option>';
+        }
+        sel.innerHTML = html;
+    }
+
+    function frRenderExplainer() {
+        var out = '<table style="border-collapse:collapse;margin-top:8px;font-size:0.92em;"><thead><tr><th style="text-align:left;padding:4px 8px;">Classification</th><th style="text-align:left;padding:4px 8px;">What it means for you</th></tr></thead><tbody>';
+        var order = ['Class I', 'Class II', 'Class III'];
+        for (var i = 0; i < order.length; i++) {
+            out += '<tr><td style="padding:4px 8px;font-weight:600;vertical-align:top;white-space:nowrap;">' + order[i] + '</td><td style="padding:4px 8px;">' + FR_CLASS_DEFS[order[i]] + '</td></tr>';
+        }
+        out += '</tbody></table>';
+        out += '<div style="font-weight:bold;margin-top:12px;">If you have a recalled product at home</div>' +
+            '<ol style="margin:6px 0 0 18px;padding:0;">' +
+            '<li>Compare the lot codes and dates on your package against the lot codes in the report - a recall usually covers specific lots, not every package.</li>' +
+            '<li>Do not eat a matching Class I product. Throw it away in a sealed bag, or return it to the store for a refund per the recall notice.</li>' +
+            '<li>Clean and sanitize anything the product touched - shelves, drawers, containers, and your hands.</li>' +
+            '<li>If anyone ate the product and feels unwell, contact a doctor and mention the recall reason (for example the pathogen named in the report).</li>' +
+            '</ol>' +
+            '<p style="font-size:0.92em;color:#555;margin-top:8px;">This page checks FDA-regulated foods in the openFDA enforcement database (US market). USDA FSIS meat, poultry, and egg-product recalls are NOT included - check <a href="https://www.fsis.usda.gov/recalls" target="_blank" rel="noopener">fsis.usda.gov/recalls</a> for those. Enforcement reports lag public announcements by days to weeks, so a recall you just saw in the news may not be listed yet - for breaking recalls check <a href="https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts" target="_blank" rel="noopener">fda.gov/safety/recalls</a>. The state filter matches the recalling firm\'s home state, not where the food was sold - the Distribution line on each report shows where it went. Your search query goes only to the official US-government openFDA API, never to this site\'s servers, and this page does not store it.</p>';
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('foodRecallTool');
+        if (!root) return; // not a food-recall page
+        try {
+            frPopulateStates(root);
+
+            var explainBox = root.querySelector('#frExplainer');
+            if (explainBox) explainBox.innerHTML = frRenderExplainer();
+
+            var kwInput = root.querySelector('#frKeywordInput');
+            var stateSel = root.querySelector('#frStateSelect');
+            var searchBtn = root.querySelector('#frSearchBtn');
+
+            if (searchBtn) {
+                searchBtn.addEventListener('click', function () {
+                    frLookup(root,
+                        kwInput ? kwInput.value : '',
+                        stateSel ? stateSel.value : '',
+                        false);
+                });
+            }
+            if (kwInput) {
+                kwInput.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter') {
+                        ev.preventDefault();
+                        frLookup(root, kwInput.value, stateSel ? stateSel.value : '', false);
+                    }
+                });
+            }
+
+            // Always render SOMETHING visible on load (G16) - the labeled
+            // newest-recalls example lookup, so the page never shows a blank
+            // panel before the reader interacts.
+            frLookup(root, '', '', true);
+        } catch (e) {
+            root.innerHTML = '<p style="color:#b00020;">Could not start the tool: ' + frEsc(e && e.message ? e.message : String(e)) + '</p>';
+        }
+    }
+</script>
