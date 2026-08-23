@@ -18,6 +18,8 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/ai-watermarks-explained.html',
   // ai-watermarks-explained id locale (create_new_guide_page 20260823-4)
   '/guides/id/ai-watermarks-explained.html',
+  // ai-watermarks-explained de locale (create_new_guide_page 20260823-5)
+  '/guides/de/ai-watermarks-explained.html',
   '/guides/food-recall-lookup-step-by-step.html',
   '/guides/food-recall-lookup-when.html',
   '/guides/food-recall-lookup-vs-alternatives.html',
@@ -7284,6 +7286,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/ai-watermarks-explained.html',
   // ai-watermarks-explained id locale (create_new_guide_page 20260823-4)
   '/guides/id/ai-watermarks-explained.html',
+  // ai-watermarks-explained de locale (create_new_guide_page 20260823-5)
+  '/guides/de/ai-watermarks-explained.html',
   // client-side-pdf-editor-toolkit-step-by-step pt locale (create_new_guide_page 20260821-8)
   '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html',
   // client-side-pdf-editor-toolkit-step-by-step es locale (create_new_guide_page 20260822-2)
@@ -28828,6 +28832,8 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/ai-watermarks-explained.html': 'guide/vi/ai-watermarks-explained.jsp',
   // ai-watermarks-explained id locale (create_new_guide_page 20260823-4)
   '/guides/id/ai-watermarks-explained.html': 'guide/id/ai-watermarks-explained.jsp',
+  // ai-watermarks-explained de locale (create_new_guide_page 20260823-5)
+  '/guides/de/ai-watermarks-explained.html': 'guide/de/ai-watermarks-explained.jsp',
   '/pdf-tools/ocr-pdf.html': 'pdf/ocr-pdf.jsp',
   '/video-tools/audio-denoiser.html': 'convert/audio-denoiser.jsp',
 };
