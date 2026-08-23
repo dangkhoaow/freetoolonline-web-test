@@ -3,7 +3,12 @@
     // Page: /monitor-refresh-rate-test.html
     //
     // Samples requestAnimationFrame timestamps after an explicit Start click.
-    // Estimates Hz from median frame delta. No getUserMedia, no upload, no backend.
+    // Estimates Hz from median frame delta. Tracks a short rolling window to
+    // detect rate switching on adaptive displays (ProMotion / LTPO / VRR):
+    // stable plateaus, session min/max, and a frame-delta histogram.
+    // A small motion strip animates during measurement so adaptive panels
+    // ramp up instead of idling at a low rate on static content.
+    // No getUserMedia, no upload, no backend.
 
     web.localUpload = false;
 
@@ -14,6 +19,22 @@
         var deltas = [];
         var frames = 0;
         var MAX_SAMPLES = 180;
+
+        // Adaptive-rate tracking state
+        var WINDOW = 20;                 // rolling window (frames) for instantaneous rate
+        var recent = [];                 // last WINDOW deltas
+        var minHz = null;
+        var maxHz = null;
+        var plateaus = [];               // [{hz, frames}] distinct stable rates observed
+        var curPlateauHz = null;
+        var curPlateauFrames = 0;
+        var PLATEAU_MIN_FRAMES = 30;     // ~0.25-0.5s of stable rate before it counts
+        var PLATEAU_MERGE_PCT = 0.08;    // rates within 8% are the same plateau
+        var SWITCH_SPLIT_PCT = 0.15;     // plateaus >=15% apart count as a switch
+        var HIST_BUCKETS = [24, 30, 48, 60, 75, 90, 120, 144, 165, 240];
+        var hist = {};                   // bucketHz -> frame count
+        var motionX = 0;
+        var motionDir = 1;
 
         function $(sel) { return window.jQuery ? window.jQuery(sel) : null; }
 
@@ -42,6 +63,105 @@
                 ' | samples: ' + deltas.length;
         }
 
+        function setRange() {
+            var el = document.getElementById('rrRange');
+            if (!el) return;
+            if (minHz == null || maxHz == null) {
+                el.textContent = 'min: -- Hz | max: -- Hz';
+            } else {
+                el.textContent = 'min: ' + minHz.toFixed(1) + ' Hz | max: ' + maxHz.toFixed(1) + ' Hz';
+            }
+        }
+
+        function nearestBucket(hz) {
+            var best = HIST_BUCKETS[0];
+            var bestDiff = Math.abs(hz - best);
+            for (var i = 1; i < HIST_BUCKETS.length; i++) {
+                var d = Math.abs(hz - HIST_BUCKETS[i]);
+                if (d < bestDiff) { best = HIST_BUCKETS[i]; bestDiff = d; }
+            }
+            return best;
+        }
+
+        function renderHistogram() {
+            var host = document.getElementById('rrHist');
+            if (!host) return;
+            var total = 0;
+            var k;
+            for (k in hist) { if (hist.hasOwnProperty(k)) total += hist[k]; }
+            if (!total) { host.innerHTML = ''; return; }
+            var html = '';
+            for (var i = 0; i < HIST_BUCKETS.length; i++) {
+                var b = HIST_BUCKETS[i];
+                var n = hist[b] || 0;
+                if (!n) continue;
+                var pct = Math.round((n / total) * 100);
+                html += '<div class="rr-hist-row"><span class="rr-hist-label">~' + b + ' Hz</span>' +
+                    '<span class="rr-hist-track"><span class="rr-hist-fill" style="width:' + pct + '%"></span></span>' +
+                    '<span class="rr-hist-pct">' + pct + '%</span></div>';
+            }
+            host.innerHTML = html;
+        }
+
+        function commitPlateau() {
+            if (curPlateauHz == null || curPlateauFrames < PLATEAU_MIN_FRAMES) return;
+            for (var i = 0; i < plateaus.length; i++) {
+                var rel = Math.abs(plateaus[i].hz - curPlateauHz) / plateaus[i].hz;
+                if (rel <= PLATEAU_MERGE_PCT) {
+                    plateaus[i].frames += curPlateauFrames;
+                    // keep the longer-observed rate as the representative value
+                    if (curPlateauFrames > plateaus[i].frames / 2) plateaus[i].hz = (plateaus[i].hz + curPlateauHz) / 2;
+                    return;
+                }
+            }
+            plateaus.push({ hz: curPlateauHz, frames: curPlateauFrames });
+        }
+
+        function renderAdaptive() {
+            var listEl = document.getElementById('rrPlateaus');
+            var verdictEl = document.getElementById('rrVerdict');
+            if (!listEl || !verdictEl) return;
+            // include the in-progress plateau in the view
+            var view = plateaus.slice();
+            if (curPlateauHz != null && curPlateauFrames >= PLATEAU_MIN_FRAMES) {
+                var merged = false;
+                for (var i = 0; i < view.length; i++) {
+                    if (Math.abs(view[i].hz - curPlateauHz) / view[i].hz <= PLATEAU_MERGE_PCT) { merged = true; break; }
+                }
+                if (!merged) view.push({ hz: curPlateauHz, frames: curPlateauFrames });
+            }
+            view.sort(function (a, b) { return a.hz - b.hz; });
+            if (!view.length) {
+                listEl.textContent = 'stable rates observed: --';
+                verdictEl.textContent = '';
+                return;
+            }
+            var parts = [];
+            for (var j = 0; j < view.length; j++) parts.push('~' + view[j].hz.toFixed(0) + ' Hz');
+            listEl.textContent = 'stable rates observed: ' + parts.join(', ');
+            var switching = false;
+            for (var a = 0; a < view.length && !switching; a++) {
+                for (var b = a + 1; b < view.length; b++) {
+                    if (Math.abs(view[b].hz - view[a].hz) / view[a].hz >= SWITCH_SPLIT_PCT) { switching = true; break; }
+                }
+            }
+            verdictEl.textContent = switching
+                ? 'Rate switching observed - this display behaves like an adaptive (variable) refresh panel in this browser.'
+                : 'One stable rate observed so far - no adaptive switching detected yet. Scroll this page or leave the tab still for a few seconds, then watch for a second rate.';
+        }
+
+        function moveMotionDot(d) {
+            var dot = document.getElementById('rrMotionDot');
+            var strip = document.getElementById('rrMotion');
+            if (!dot || !strip) return;
+            var w = strip.clientWidth - 14;
+            if (w <= 0) return;
+            motionX += motionDir * (w / 900) * d; // full sweep ~0.9s regardless of Hz
+            if (motionX >= w) { motionX = w; motionDir = -1; }
+            if (motionX <= 0) { motionX = 0; motionDir = 1; }
+            dot.style.transform = 'translateX(' + motionX + 'px)';
+        }
+
         function median(arr) {
             if (!arr.length) return null;
             var a = arr.slice().sort(function (x, y) { return x - y; });
@@ -64,11 +184,43 @@
                     deltas.push(d);
                     if (deltas.length > MAX_SAMPLES) deltas.shift();
                     frames += 1;
+                    moveMotionDot(d);
+
+                    // rolling-window instantaneous rate for adaptive tracking
+                    recent.push(d);
+                    if (recent.length > WINDOW) recent.shift();
+                    if (recent.length === WINDOW) {
+                        var wMed = median(recent);
+                        var wHz = wMed ? (1000 / wMed) : null;
+                        if (wHz != null && isFinite(wHz)) {
+                            if (minHz == null || wHz < minHz) minHz = wHz;
+                            if (maxHz == null || wHz > maxHz) maxHz = wHz;
+                            hist[nearestBucket(wHz)] = (hist[nearestBucket(wHz)] || 0) + 1;
+                            if (curPlateauHz == null) {
+                                curPlateauHz = wHz;
+                                curPlateauFrames = 1;
+                            } else if (Math.abs(wHz - curPlateauHz) / curPlateauHz <= PLATEAU_MERGE_PCT) {
+                                // running average keeps the plateau value honest
+                                curPlateauHz = curPlateauHz + (wHz - curPlateauHz) / Math.min(curPlateauFrames + 1, 120);
+                                curPlateauFrames += 1;
+                            } else {
+                                commitPlateau();
+                                curPlateauHz = wHz;
+                                curPlateauFrames = 1;
+                            }
+                        }
+                    }
+
                     var med = median(deltas);
                     var avg = mean(deltas);
                     var hz = med ? (1000 / med) : null;
                     setHz(hz);
                     setStats(avg);
+                    if (frames % 10 === 0) {
+                        setRange();
+                        renderAdaptive();
+                        renderHistogram();
+                    }
                     setCue('Sampling. Median frame delta ' +
                         (med != null ? med.toFixed(2) + ' ms' : '--') +
                         ' -> ~' + (hz != null ? hz.toFixed(1) : '--') + ' Hz. Keep this tab visible.');
@@ -82,8 +234,11 @@
             if (running) return;
             running = true;
             lastTs = 0;
+            recent = [];
             var panel = document.getElementById('rrPanel');
             if (panel) panel.classList.add('rr-running');
+            var strip = document.getElementById('rrMotion');
+            if (strip) strip.style.display = 'block';
             setCue('Measuring. Keep this tab in the foreground - background tabs throttle rAF.');
             setStats(null);
             rafId = window.requestAnimationFrame(tick);
@@ -93,12 +248,20 @@
             running = false;
             if (rafId) window.cancelAnimationFrame(rafId);
             rafId = 0;
+            commitPlateau();
+            curPlateauHz = null;
+            curPlateauFrames = 0;
             var panel = document.getElementById('rrPanel');
             if (panel) panel.classList.remove('rr-running');
+            var strip = document.getElementById('rrMotion');
+            if (strip) strip.style.display = 'none';
             var med = median(deltas);
             var hz = med ? (1000 / med) : null;
             setHz(hz);
             setStats(mean(deltas));
+            setRange();
+            renderAdaptive();
+            renderHistogram();
             setCue(hz != null
                 ? ('Stopped at ~' + hz.toFixed(1) + ' Hz from ' + deltas.length + ' samples. Reset to clear.')
                 : 'Stopped. Not enough samples yet - Start again and keep the tab visible.');
@@ -109,8 +272,20 @@
             deltas = [];
             frames = 0;
             lastTs = 0;
+            recent = [];
+            minHz = null;
+            maxHz = null;
+            plateaus = [];
+            curPlateauHz = null;
+            curPlateauFrames = 0;
+            hist = {};
+            motionX = 0;
+            motionDir = 1;
             setHz(null);
             setStats(null);
+            setRange();
+            renderAdaptive();
+            renderHistogram();
             setCue('Ready. Click Start measuring to sample requestAnimationFrame timing in this tab. Nothing is uploaded.');
         }
 
@@ -122,6 +297,7 @@
         setCue('Ready. Click Start measuring to sample requestAnimationFrame timing in this tab. Nothing is uploaded.');
         setHz(null);
         setStats(null);
-        console.log('[monitor-refresh-rate-test] wired: ftoRefreshRate / rAF Hz sampler');
+        setRange();
+        console.log('[monitor-refresh-rate-test] wired: ftoRefreshRate / rAF Hz sampler + adaptive-rate tracker');
     }
 </script>
