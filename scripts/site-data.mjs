@@ -14,6 +14,7 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/daylight-saving-time-countdown-next-clock-change-when.html',
   // ai-watermarks-explained vi locale (create_new_guide_page 20260823-3)
   '/guides/vi/ai-watermarks-explained.html',
   // ai-watermarks-explained id locale (create_new_guide_page 20260823-4)
@@ -16552,6 +16553,7 @@ export const ALIAS_ROUTES = {
   '/ocr-pdf.html': '/pdf-tools/ocr-pdf.html',
   '/audio-denoiser.html': '/video-tools/audio-denoiser.html',
   '/silence-remover.html': '/video-tools/silence-remover.html',
+  '/dst-countdown.html': '/utility-tools/dst-countdown.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28907,6 +28909,8 @@ export const JSP_BY_ROUTE = {
   '/pdf-tools/ocr-pdf.html': 'pdf/ocr-pdf.jsp',
   '/video-tools/audio-denoiser.html': 'convert/audio-denoiser.jsp',
   '/video-tools/silence-remover.html': 'convert/silence-remover.jsp',
+  '/utility-tools/dst-countdown.html': 'utility/dst-countdown.jsp',
+  '/guides/daylight-saving-time-countdown-next-clock-change-when.html': 'guide/daylight-saving-time-countdown-next-clock-change-when.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

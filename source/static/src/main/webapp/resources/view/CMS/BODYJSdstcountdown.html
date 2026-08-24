@@ -1,0 +1,272 @@
+<script>
+    // DST countdown skeleton (dst-countdown) - pure JS via the built-in Intl
+    // timezone database, no lib, no upload, no backend, zero network.
+    // Registry Gate-H entry: dst_countdown_intl. The page AUTO-COMPUTES the
+    // NEXT daylight-saving clock change for a chosen IANA timezone (default =
+    // the visitor's auto-detected zone): the exact transition instant, the
+    // direction (clocks go forward or back) and the shift size, plus a live
+    // 1-second countdown to that moment and a table of the next change in
+    // the common coordination zones. G51 differentiation vs the live
+    // /utility-tools/countdown-timer.html and event-time-countdown pages:
+    // those count toward a USER-ENTERED target; THIS page needs no date
+    // entry at all - the target is derived from the IANA tz database by
+    // scanning the zone's UTC-offset timeline. Zones with no DST (e.g.
+    // Asia/Ho_Chi_Minh) render an explicit "no clock changes" state.
+    //
+    // Transition finder: coarse day-step scan of etcGetOffsetMinutes-style
+    // offsets over the next 400 days, then a binary search down to the
+    // minute for the first instant the offset differs. All arithmetic is
+    // epoch-millis; Intl resolves the zone's real DST rules - never naive
+    // wall-clock math. Framework contract: doAfterPageRendered(); renders
+    // visible default output for the auto-detected zone with zero
+    // interaction so e2e G16 passes.
+
+    web.localUpload = false;
+
+    var DSTC_FALLBACK_ZONES = [
+        'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+        'America/Sao_Paulo', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Madrid',
+        'Europe/Rome', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Bangkok', 'Asia/Ho_Chi_Minh',
+        'Asia/Shanghai', 'Asia/Tokyo', 'Asia/Seoul', 'Australia/Sydney', 'Pacific/Auckland',
+    ];
+
+    // Coordination zones for the "around the world" table (the selected zone
+    // is prepended at render time; duplicates collapse).
+    var DSTC_TABLE_ZONES = [
+        'America/New_York', 'America/Los_Angeles', 'Europe/London',
+        'Europe/Berlin', 'Australia/Sydney', 'Pacific/Auckland',
+    ];
+
+    var DSTC_SCAN_DAYS = 400; // > 1 year so both hemispheres' next change is found
+    var DSTC_DAY_MS = 86400000;
+
+    function dstcZoneList() {
+        try {
+            if (typeof Intl.supportedValuesOf === 'function') {
+                var all = Intl.supportedValuesOf('timeZone');
+                if (all && all.length) return all;
+            }
+        } catch (e) { void e; }
+        return DSTC_FALLBACK_ZONES;
+    }
+
+    function dstcLocalZone() {
+        try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; }
+        catch (e) { return 'UTC'; }
+    }
+
+    function dstcIsZone(zone) {
+        if (!zone) return false;
+        try { new Intl.DateTimeFormat('en-US', { timeZone: zone }); return true; }
+        catch (e) { return false; }
+    }
+
+    function dstcZoneParts(date, zone) {
+        var dtf = new Intl.DateTimeFormat('en-US', {
+            timeZone: zone, hourCycle: 'h23',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+        });
+        var parts = {};
+        dtf.formatToParts(date).forEach(function (p) { parts[p.type] = p.value; });
+        return parts;
+    }
+
+    // Offset in minutes EAST of UTC that `zone` observes at instant `date` -
+    // the same Intl idiom the event-time-countdown / timezone-converter
+    // skeletons use (DST-aware because Intl resolves from the real instant).
+    function dstcOffsetMinutes(epochMs, zone) {
+        // Truncate to whole seconds and ROUND the result: formatToParts only
+        // carries second precision, so a raw millisecond remainder would make
+        // offsets fractional (-240.00006...) and break === comparisons in the
+        // binary search (found in the 2026-08-24 node isolation probe).
+        var t = epochMs - (epochMs % 1000);
+        var date = new Date(t);
+        var parts = dstcZoneParts(date, zone);
+        var asUTC = Date.UTC(
+            parseInt(parts.year, 10), parseInt(parts.month, 10) - 1, parseInt(parts.day, 10),
+            parseInt(parts.hour, 10), parseInt(parts.minute, 10), parseInt(parts.second, 10)
+        );
+        return Math.round((asUTC - t) / 60000);
+    }
+
+    // First instant within (t0, t1] where the zone's offset differs from its
+    // offset at t0, refined to the minute by binary search. Returns epoch ms.
+    function dstcRefineTransition(t0, t1, zone) {
+        var off0 = dstcOffsetMinutes(t0, zone);
+        while (t1 - t0 > 60000) {
+            var mid = t0 + Math.floor((t1 - t0) / 2);
+            if (dstcOffsetMinutes(mid, zone) === off0) t0 = mid;
+            else t1 = mid;
+        }
+        return t1 - (t1 % 60000);
+    }
+
+    // Next offset transition for `zone` after `fromMs`, or null when the zone
+    // observes no change within DSTC_SCAN_DAYS.
+    function dstcNextTransition(fromMs, zone) {
+        var base = dstcOffsetMinutes(fromMs, zone);
+        var prev = fromMs;
+        for (var d = 1; d <= DSTC_SCAN_DAYS; d++) {
+            var t = fromMs + d * DSTC_DAY_MS;
+            var off = dstcOffsetMinutes(t, zone);
+            if (off !== base) {
+                var at = dstcRefineTransition(prev, t, zone);
+                var offAfter = dstcOffsetMinutes(at + 60000, zone);
+                var offBefore = dstcOffsetMinutes(at - 60000, zone);
+                return {
+                    atMs: at,
+                    deltaMinutes: offAfter - offBefore,
+                    forward: offAfter > offBefore,
+                    offsetBefore: offBefore,
+                    offsetAfter: offAfter,
+                };
+            }
+            prev = t;
+        }
+        return null;
+    }
+
+    function dstcFormatInZone(epochMs, zone) {
+        try {
+            return new Intl.DateTimeFormat('en-US', {
+                timeZone: zone, weekday: 'short', year: 'numeric', month: 'short', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+            }).format(new Date(epochMs));
+        } catch (e) { return 'Error: ' + (e && e.message ? e.message : String(e)); }
+    }
+
+    function dstcOffsetLabel(mins) {
+        var sign = mins < 0 ? '-' : '+';
+        var abs = Math.abs(mins);
+        return 'UTC' + sign + dstcPad2(Math.floor(abs / 60)) + ':' + dstcPad2(abs % 60);
+    }
+
+    function dstcDeltaLabel(deltaMinutes) {
+        var abs = Math.abs(deltaMinutes);
+        if (abs % 60 === 0) {
+            var h = abs / 60;
+            return h + (h === 1 ? ' hour' : ' hours');
+        }
+        return abs + ' minutes';
+    }
+
+    function dstcZoneLabel(zone) { return String(zone || '').replace(/_/g, ' '); }
+
+    function dstcPad2(n) { return (n < 10 ? '0' : '') + n; }
+
+    function dstcDatalistHtml(zones) {
+        var out = '';
+        for (var i = 0; i < zones.length; i++) {
+            out += '<option value="' + zones[i] + '"></option>';
+        }
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('dstCountdownTool');
+        if (!root) return; // not a dst-countdown page
+
+        var zones = dstcZoneList();
+        var localZone = dstcLocalZone();
+        var state = { zone: localZone, transition: null };
+
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<label for="dstcZone">Timezone </label>' +
+            '<input id="dstcZone" list="dstcZoneOptions" class="w3-input w3-border" style="max-width:260px;display:inline-block;" placeholder="Type to search zones">' +
+            '<datalist id="dstcZoneOptions">' + dstcDatalistHtml(zones) + '</datalist>' +
+            '</div>' +
+            '<div id="dstcHint" style="margin-bottom:6px;color:#b00020;font-size:0.9em;"></div>' +
+            '<div id="dstcSummary" class="outputImgs" style="visibility:visible !important;background:#f7f7f7;border:1px solid #ddd;border-radius:4px;padding:14px;min-height:2em;max-width:560px;margin:0 auto;"></div>' +
+            '<div id="dstcCountdown" style="margin-top:10px;"></div>' +
+            '<h3 style="margin-top:18px;">Next clock change around the world</h3>' +
+            '<div id="dstcTable" class="w3-row" style="max-width:640px;margin:0 auto;text-align:left;font-family:monospace;"></div>';
+
+        var q = function (sel) { return root.querySelector(sel); };
+        var zoneEl = q('#dstcZone');
+        var summaryEl = q('#dstcSummary'), countdownEl = q('#dstcCountdown');
+        var tableEl = q('#dstcTable'), hintEl = q('#dstcHint');
+
+        zoneEl.value = state.zone;
+
+        function dstcRenderSummary() {
+            var now = Date.now();
+            var tr = state.transition;
+            if (!tr) {
+                summaryEl.innerHTML =
+                    '<b>' + dstcZoneLabel(state.zone) + '</b> observes <b>no daylight saving clock changes</b> in the next 13 months.' +
+                    '<div style="margin-top:4px;color:#555;">The UTC offset stays at ' + dstcOffsetLabel(dstcOffsetMinutes(now, state.zone)) + ' year-round.</div>';
+                countdownEl.innerHTML = '';
+                return;
+            }
+            summaryEl.innerHTML =
+                '<div>Clocks in <b>' + dstcZoneLabel(state.zone) + '</b> go <b>' + (tr.forward ? 'FORWARD' : 'BACK') + ' ' + dstcDeltaLabel(tr.deltaMinutes) + '</b> on</div>' +
+                '<div style="font-size:1.25em;font-weight:700;margin-top:4px;font-family:monospace;">' + dstcFormatInZone(tr.atMs, state.zone) + '</div>' +
+                '<div style="margin-top:4px;color:#555;">' + dstcOffsetLabel(tr.offsetBefore) + ' &rarr; ' + dstcOffsetLabel(tr.offsetAfter) +
+                (tr.forward ? ' - you lose ' : ' - you gain ') + dstcDeltaLabel(tr.deltaMinutes) + ' of clock time</div>';
+        }
+
+        function dstcRenderCountdown() {
+            var tr = state.transition;
+            if (!tr) return;
+            var diff = tr.atMs - Date.now();
+            if (diff <= 0) { dstcRecompute(); return; }
+            var days = Math.floor(diff / 86400000);
+            var hours = Math.floor(diff / 3600000) % 24;
+            var mins = Math.floor(diff / 60000) % 60;
+            var secs = Math.floor(diff / 1000) % 60;
+            function block(n, unit) {
+                return '<div style="display:inline-block;margin:0 8px;min-width:52px;">' +
+                    '<div style="font-size:1.9em;font-weight:700;font-family:monospace;">' + (unit === 'days' ? n : dstcPad2(n)) + '</div>' +
+                    '<div style="font-size:0.75em;color:#555;">' + unit + '</div></div>';
+            }
+            countdownEl.innerHTML =
+                '<div style="margin-bottom:4px;">Time until the change</div>' +
+                block(days, 'days') + block(hours, 'hours') + block(mins, 'minutes') + block(secs, 'seconds');
+        }
+
+        function dstcRenderTable() {
+            var now = Date.now();
+            var rows = '';
+            var seen = {};
+            var tableZones = [state.zone].concat(DSTC_TABLE_ZONES);
+            for (var i = 0; i < tableZones.length; i++) {
+                var z = tableZones[i];
+                if (seen[z]) continue;
+                seen[z] = true;
+                var tr = dstcNextTransition(now, z);
+                rows += '<div style="padding:2px 0;"><b>' + dstcZoneLabel(z) + (z === state.zone ? ' (selected)' : '') + ':</b> ' +
+                    (tr
+                        ? (tr.forward ? 'forward ' : 'back ') + dstcDeltaLabel(tr.deltaMinutes) + ' on ' + dstcFormatInZone(tr.atMs, z)
+                        : 'no clock changes in the next 13 months') +
+                    '</div>';
+            }
+            tableEl.innerHTML = rows;
+        }
+
+        function dstcRecompute() {
+            state.transition = dstcNextTransition(Date.now(), state.zone);
+            dstcRenderSummary();
+            dstcRenderCountdown();
+        }
+
+        zoneEl.addEventListener('change', function () {
+            var z = (zoneEl.value || '').trim();
+            if (dstcIsZone(z)) {
+                state.zone = z;
+                hintEl.textContent = '';
+                dstcRecompute();
+                dstcRenderTable();
+            } else {
+                hintEl.textContent = 'Pick a timezone from the list to update the result.';
+            }
+        });
+
+        // Visible default output on load (e2e G16, zero interaction): the
+        // auto-detected zone's next change renders immediately, then ticks.
+        dstcRecompute();
+        dstcRenderTable();
+        setInterval(dstcRenderCountdown, 1000);
+    }
+</script>
