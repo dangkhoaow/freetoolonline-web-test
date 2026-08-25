@@ -66,6 +66,8 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/devtools-style-pdf-element-inspector-editor-android-when.html',
   // devtools-style-pdf-element-inspector-editor-android-when id locale (create_new_guide_page 20260825-6)
   '/guides/id/devtools-style-pdf-element-inspector-editor-android-when.html',
+  // devtools-style-pdf-element-inspector-editor-android-when de locale (create_new_guide_page 20260826)
+  '/guides/de/devtools-style-pdf-element-inspector-editor-android-when.html',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   // client-side-pdf-editor-toolkit-vs-alternatives locale fanout (create_new_guide_page 20260823-7)
   '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html',
@@ -7315,6 +7317,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/devtools-style-pdf-element-inspector-editor-android-when.html',
   // devtools-style-pdf-element-inspector-editor-android-when id locale (create_new_guide_page 20260825-6)
   '/guides/id/devtools-style-pdf-element-inspector-editor-android-when.html',
+  // devtools-style-pdf-element-inspector-editor-android-when de locale (create_new_guide_page 20260826)
+  '/guides/de/devtools-style-pdf-element-inspector-editor-android-when.html',
   // client-side-pdf-editor-toolkit-vs-alternatives EN + locale fanout (create_new_guide_page 20260823-7)
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html',
@@ -28864,6 +28868,7 @@ export const JSP_BY_ROUTE = {
   '/guides/es/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/es/devtools-style-pdf-element-inspector-editor-android-when.jsp',
   '/guides/vi/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/vi/devtools-style-pdf-element-inspector-editor-android-when.jsp',
   '/guides/id/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/id/devtools-style-pdf-element-inspector-editor-android-when.jsp',
+  '/guides/de/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/de/devtools-style-pdf-element-inspector-editor-android-when.jsp',
   '/image-converter-tools/hilbert-editor.html': 'convert/hilbert-editor.jsp',
   '/utility-tools/is-it-down.html': 'utility/is-it-down.jsp',
   '/utility-tools/food-recall-lookup.html': 'utility/food-recall-lookup.jsp',
