@@ -16554,6 +16554,7 @@ export const ALIAS_ROUTES = {
   '/audio-denoiser.html': '/video-tools/audio-denoiser.html',
   '/silence-remover.html': '/video-tools/silence-remover.html',
   '/dst-countdown.html': '/utility-tools/dst-countdown.html',
+  '/vocal-remover.html': '/video-tools/vocal-remover.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28911,6 +28912,7 @@ export const JSP_BY_ROUTE = {
   '/video-tools/silence-remover.html': 'convert/silence-remover.jsp',
   '/utility-tools/dst-countdown.html': 'utility/dst-countdown.jsp',
   '/guides/daylight-saving-time-countdown-next-clock-change-when.html': 'guide/daylight-saving-time-countdown-next-clock-change-when.jsp',
+  '/video-tools/vocal-remover.html': 'convert/vocal-remover.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

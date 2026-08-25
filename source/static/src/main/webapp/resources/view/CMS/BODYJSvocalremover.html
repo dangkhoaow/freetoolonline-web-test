@@ -1,0 +1,472 @@
+<script>
+    // In-browser VOCAL REMOVER / instrumental maker (vocal-remover) - MDX-Net
+    // source separation via ONNX Runtime Web (WASM) + a deterministic
+    // center-channel fallback. 100% client-side: the SONG never leaves the
+    // browser; only the ~67 MB separation model downloads once, on an
+    // explicit click. Registry Gate-H entry: vocal_remover_mdxnet_onnx
+    // (verified 2026-08-25 in a headless-Chromium probe BEFORE this skeleton
+    // was authored: full STFT -> model -> iSTFT pipeline on a synthetic
+    // center-vocal + side-instrumental mix; center vocal cut -23.9 dB while
+    // the side instrumental moved -0.3 dB = 23.6 dB separation; artifact in
+    // seo-reports/20260825-ailocal-fire26/qa/).
+    //
+    // ENGINE: UVR-MDX-NET-Inst_HQ_3 (MIT-licensed UVR release, hosted on the
+    // HF CDN, 66,759,214 bytes, sha256-pinned - the fetch is REJECTED on a
+    // digest mismatch). onnxruntime-web@1.20.1 EXACT pin per the lane's CDN
+    // ENGINE PIN discipline. Input [1,4,3072,256] = stereo STFT (L re, L im,
+    // R re, R im), n_fft 6144, hop 1024 @ 44.1 kHz; output is the same shape
+    // and IS the instrumental spectrogram; vocals = mix - instrumental in the
+    // time domain. The 6144-point transform is done with a Bluestein FFT
+    // (6144 is not a power of two).
+    //
+    // LADDER (ai-local class rule 1): (1) no Chrome Built-in tier - no
+    // browser API does music source separation; (2) on-device MDX-Net as
+    // above, click-gated, size + honest runtime estimate stated BEFORE the
+    // download; (3) deterministic no-download "Quick voice-cancel" - classic
+    // center-channel cancellation (keeps the stereo sides, cancels what is
+    // panned dead-center), instant, honestly labeled: it only works when the
+    // voice sits in the center of a STEREO mix, and it also drops centered
+    // bass/kick. The G16 zero-interaction/zero-download demo (a REAL
+    // before/after waveform pair produced by this same model in the Gate-H
+    // probe) is baked into the paired BODYHTML and renders on load without
+    // touching this script.
+    //
+    // Framework contract: doAfterPageRendered(); no top-level DOM.
+    // web.localUpload = false (plain <input type=file>, no server upload widget).
+
+    web.localUpload = false;
+
+    var VR_SLUG = 'vocal-remover';
+    var VR_ORT_CDN = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js';
+    var VR_ORT_WASM_DIR = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
+    var VR_MODEL_URL = 'https://huggingface.co/seanghay/uvr_models/resolve/main/UVR-MDX-NET-Inst_HQ_3.onnx';
+    var VR_MODEL_SHA256 = '317554b07fe1ea5279a77f2b1520a41ea4b93432560c4ffd08792c30fddf9adc';
+    var VR_MODEL_MB = 67;
+    var VR_CACHE_NAME = 'ftol-ai-models';
+    var VR_SR = 44100;
+    var VR_NFFT = 6144, VR_HOP = 1024, VR_DIMF = 3072, VR_DIMT = 256;
+    var VR_SEG = VR_HOP * (VR_DIMT - 1);      // 261120 samples ~ 5.92 s per model pass
+    var VR_OVERLAP = VR_SR;                   // 1 s crossfade between passes
+    var VR_MAX_SECONDS = 600;                 // 10 min guard - decoded stereo PCM lives in RAM
+
+    function vrSha256Hex(bytes) {
+        return crypto.subtle.digest('SHA-256', bytes).then(function (digest) {
+            var arr = new Uint8Array(digest); var hex = '';
+            for (var i = 0; i < arr.length; i++) hex += (arr[i] < 16 ? '0' : '') + arr[i].toString(16);
+            return hex;
+        });
+    }
+
+    // ---- ONNX Runtime Web UMD inject (face-blur fire15 pattern) ----
+    var vrOrtPromise = null;
+    function vrLoadOrt() {
+        if (window.ort) return Promise.resolve(window.ort);
+        if (vrOrtPromise) return vrOrtPromise;
+        vrOrtPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = VR_ORT_CDN;
+            s.onload = function () {
+                if (!window.ort) { reject(new Error('onnxruntime failed to expose ort')); return; }
+                window.ort.env.wasm.wasmPaths = VR_ORT_WASM_DIR;
+                window.ort.env.wasm.numThreads = 1; // no COOP/COEP on Pages - single thread
+                resolve(window.ort);
+            };
+            s.onerror = function () { reject(new Error('could not load the onnxruntime script')); };
+            document.head.appendChild(s);
+        });
+        vrOrtPromise.catch(function () { vrOrtPromise = null; });
+        return vrOrtPromise;
+    }
+
+    // Fetch the model with Cache API storage, a live progress callback and a
+    // MANDATORY sha256 integrity check on every load path.
+    async function vrFetchModelBytes(onProgress) {
+        var resp = null, fromCache = false;
+        try {
+            if (window.caches) {
+                var cache = await caches.open(VR_CACHE_NAME);
+                var hit = await cache.match(VR_MODEL_URL);
+                if (hit) { resp = hit; fromCache = true; }
+            }
+        } catch (e) { /* private mode - fall through to network */ }
+        if (!resp) {
+            resp = await fetch(VR_MODEL_URL);
+            if (!resp.ok) throw new Error('model download failed (HTTP ' + resp.status + ')');
+            var total = Number(resp.headers.get('content-length')) || 0;
+            if (resp.body && total) {
+                var reader = resp.body.getReader();
+                var chunks = [], got = 0;
+                for (;;) {
+                    var r = await reader.read();
+                    if (r.done) break;
+                    chunks.push(r.value); got += r.value.length;
+                    onProgress('Downloading the separation model ... ' + Math.round(100 * got / total) + '% of ' + VR_MODEL_MB + ' MB (one time - it is cached for next visit)');
+                }
+                var bytes0 = new Uint8Array(got), off0 = 0;
+                for (var ci = 0; ci < chunks.length; ci++) { bytes0.set(chunks[ci], off0); off0 += chunks[ci].length; }
+                try {
+                    if (window.caches) {
+                        var cacheW = await caches.open(VR_CACHE_NAME);
+                        await cacheW.put(VR_MODEL_URL, new Response(bytes0.slice().buffer, { headers: { 'content-type': 'application/octet-stream' } }));
+                    }
+                } catch (e) { /* cache write is best-effort */ }
+                var hex0 = await vrSha256Hex(bytes0);
+                if (hex0 !== VR_MODEL_SHA256) throw new Error('the downloaded model failed its integrity check - please try again');
+                return bytes0;
+            }
+        } else {
+            onProgress('Loading the separation model from your browser cache ...');
+        }
+        var bytes = new Uint8Array(await resp.arrayBuffer());
+        var hex = await vrSha256Hex(bytes);
+        if (hex !== VR_MODEL_SHA256) {
+            try { if (fromCache && window.caches) { var c3 = await caches.open(VR_CACHE_NAME); await c3.delete(VR_MODEL_URL); } } catch (e) { }
+            throw new Error('the model failed its integrity check - please try again');
+        }
+        return bytes;
+    }
+
+    var vrSessionPromise = null;
+    function vrLoadSession(onProgress) {
+        if (vrSessionPromise) return vrSessionPromise;
+        vrSessionPromise = (async function () {
+            var ort = await vrLoadOrt();
+            var bytes = await vrFetchModelBytes(onProgress);
+            onProgress('Starting the separation model in your browser ...');
+            return ort.InferenceSession.create(bytes.buffer, { executionProviders: ['wasm'] });
+        })();
+        vrSessionPromise.catch(function () { vrSessionPromise = null; }); // allow retry
+        return vrSessionPromise;
+    }
+
+    // ---- DSP: power-of-2 FFT + Bluestein for the 6144-point transform ----
+    function vrFftP2(re, im, inv) {
+        var n = re.length, i, j, bit, len;
+        for (i = 1, j = 0; i < n; i++) {
+            for (bit = n >> 1; j & bit; bit >>= 1) j ^= bit;
+            j ^= bit;
+            if (i < j) { var t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+        }
+        for (len = 2; len <= n; len <<= 1) {
+            var ang = (inv ? 2 : -2) * Math.PI / len;
+            var wr = Math.cos(ang), wi = Math.sin(ang);
+            for (i = 0; i < n; i += len) {
+                var cr = 1, ci = 0;
+                for (var k = 0; k < len / 2; k++) {
+                    var ur = re[i + k], ui = im[i + k];
+                    var vr2 = re[i + k + len / 2] * cr - im[i + k + len / 2] * ci;
+                    var vi2 = re[i + k + len / 2] * ci + im[i + k + len / 2] * cr;
+                    re[i + k] = ur + vr2; im[i + k] = ui + vi2;
+                    re[i + k + len / 2] = ur - vr2; im[i + k + len / 2] = ui - vi2;
+                    var ncr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = ncr;
+                }
+            }
+        }
+        if (inv) for (i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
+    }
+    function vrMakeBluestein(N) {
+        var M = 1; while (M < 2 * N + 1) M <<= 1;
+        var cosT = new Float64Array(N), sinT = new Float64Array(N), i;
+        for (i = 0; i < N; i++) {
+            var j = (i * i) % (2 * N);
+            cosT[i] = Math.cos(Math.PI * j / N); sinT[i] = Math.sin(Math.PI * j / N);
+        }
+        var bre = new Float64Array(M), bim = new Float64Array(M);
+        bre[0] = cosT[0]; bim[0] = sinT[0];
+        for (i = 1; i < N; i++) { bre[i] = bre[M - i] = cosT[i]; bim[i] = bim[M - i] = sinT[i]; }
+        vrFftP2(bre, bim, false);
+        return { N: N, M: M, cosT: cosT, sinT: sinT, bre: bre, bim: bim };
+    }
+    function vrBluesteinDft(ctx, re, im, inv) {
+        var N = ctx.N, M = ctx.M, cosT = ctx.cosT, sinT = ctx.sinT, bre = ctx.bre, bim = ctx.bim, i;
+        var are = new Float64Array(M), aim = new Float64Array(M);
+        for (i = 0; i < N; i++) {
+            var s = inv ? sinT[i] : -sinT[i];
+            are[i] = re[i] * cosT[i] - im[i] * s;
+            aim[i] = re[i] * s + im[i] * cosT[i];
+        }
+        vrFftP2(are, aim, false);
+        for (i = 0; i < M; i++) {
+            var br = bre[i], bi = inv ? -bim[i] : bim[i];
+            var r = are[i] * br - aim[i] * bi;
+            aim[i] = are[i] * bi + aim[i] * br; are[i] = r;
+        }
+        vrFftP2(are, aim, true);
+        for (i = 0; i < N; i++) {
+            var s2 = inv ? sinT[i] : -sinT[i];
+            var r2 = are[i] * cosT[i] - aim[i] * s2;
+            im[i] = are[i] * s2 + aim[i] * cosT[i]; re[i] = r2;
+            if (inv) { re[i] /= N; im[i] /= N; }
+        }
+    }
+    var vrBlu = null, vrWin = null;
+    function vrEnsureDsp() {
+        if (!vrBlu) vrBlu = vrMakeBluestein(VR_NFFT);
+        if (!vrWin) {
+            vrWin = new Float64Array(VR_NFFT);
+            for (var i = 0; i < VR_NFFT; i++) vrWin[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / VR_NFFT);
+        }
+    }
+
+    // STFT of one channel of one segment (VR_SEG samples, reflect-padded).
+    function vrStft(x, segStart, segLen) {
+        var PAD = VR_NFFT / 2;
+        function sampleAt(idx) {
+            var j = idx - PAD;
+            if (j < 0) j = -j;
+            if (j >= segLen) j = 2 * segLen - 2 - j;
+            return (j >= 0 && j < segLen) ? x[segStart + j] : 0;
+        }
+        var specR = new Float64Array(VR_DIMT * VR_DIMF), specI = new Float64Array(VR_DIMT * VR_DIMF);
+        var re = new Float64Array(VR_NFFT), im = new Float64Array(VR_NFFT);
+        for (var f = 0; f < VR_DIMT; f++) {
+            var off = f * VR_HOP;
+            for (var i = 0; i < VR_NFFT; i++) { re[i] = sampleAt(off + i) * vrWin[i]; im[i] = 0; }
+            vrBluesteinDft(vrBlu, re, im, false);
+            for (var k = 0; k < VR_DIMF; k++) { specR[f * VR_DIMF + k] = re[k]; specI[f * VR_DIMF + k] = im[k]; }
+        }
+        return { r: specR, i: specI };
+    }
+    // iSTFT of one channel from model-layout arrays [k*VR_DIMT+f].
+    function vrIstft(chRe, chIm, segLen) {
+        var PAD = VR_NFFT / 2;
+        var y = new Float64Array(segLen + VR_NFFT), wsum = new Float64Array(segLen + VR_NFFT);
+        var re = new Float64Array(VR_NFFT), im = new Float64Array(VR_NFFT);
+        for (var f = 0; f < VR_DIMT; f++) {
+            re.fill(0); im.fill(0);
+            for (var k = 0; k < VR_DIMF; k++) {
+                re[k] = chRe[k * VR_DIMT + f]; im[k] = chIm[k * VR_DIMT + f];
+                if (k > 0) { re[VR_NFFT - k] = re[k]; im[VR_NFFT - k] = -im[k]; }
+            }
+            vrBluesteinDft(vrBlu, re, im, true);
+            var off = f * VR_HOP;
+            for (var i = 0; i < VR_NFFT; i++) { y[off + i] += re[i] * vrWin[i]; wsum[off + i] += vrWin[i] * vrWin[i]; }
+        }
+        var x = new Float64Array(segLen);
+        for (var i2 = 0; i2 < segLen; i2++) { var j = i2 + PAD; x[i2] = wsum[j] > 1e-8 ? y[j] / wsum[j] : 0; }
+        return x;
+    }
+
+    // Run the model on ONE segment (both channels) -> instrumental PCM pair.
+    async function vrSeparateSegment(session, L, R, segStart, segLen) {
+        vrEnsureDsp();
+        var sl = vrStft(L, segStart, segLen), sr = vrStft(R, segStart, segLen);
+        var base = VR_DIMF * VR_DIMT;
+        var inp = new Float32Array(4 * base);
+        for (var k = 0; k < VR_DIMF; k++) for (var f = 0; f < VR_DIMT; f++) {
+            inp[0 * base + k * VR_DIMT + f] = sl.r[f * VR_DIMF + k];
+            inp[1 * base + k * VR_DIMT + f] = sl.i[f * VR_DIMF + k];
+            inp[2 * base + k * VR_DIMT + f] = sr.r[f * VR_DIMF + k];
+            inp[3 * base + k * VR_DIMT + f] = sr.i[f * VR_DIMF + k];
+        }
+        var feeds = {};
+        feeds[session.inputNames[0]] = new window.ort.Tensor('float32', inp, [1, 4, VR_DIMF, VR_DIMT]);
+        var res = await session.run(feeds);
+        var o = res[session.outputNames[0]].data;
+        return {
+            L: vrIstft(o.subarray(0, base), o.subarray(base, 2 * base), segLen),
+            R: vrIstft(o.subarray(2 * base, 3 * base), o.subarray(3 * base, 4 * base), segLen)
+        };
+    }
+
+    // Decode ANY browser-supported audio file to 44.1 kHz STEREO Float32.
+    async function vrDecodeTo44kStereo(file, setStatus) {
+        setStatus('Reading and decoding your song in the browser (nothing is uploaded) ...');
+        var raw = await file.arrayBuffer();
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) throw new Error('this browser does not expose Web Audio decoding');
+        var probeCtx = new AC();
+        var decoded;
+        try { decoded = await probeCtx.decodeAudioData(raw); }
+        finally { try { probeCtx.close(); } catch (e) { } }
+        if (decoded.duration > VR_MAX_SECONDS) {
+            throw new Error('the file is longer than 10 minutes - split it first (decoded stereo audio has to fit in this tab\'s memory)');
+        }
+        var frames = Math.ceil(decoded.duration * VR_SR);
+        var off = new OfflineAudioContext(2, frames, VR_SR);
+        var src = off.createBufferSource();
+        src.buffer = decoded;
+        src.connect(off.destination);
+        src.start(0);
+        var rendered = await off.startRendering();
+        return {
+            L: rendered.getChannelData(0),
+            R: rendered.numberOfChannels > 1 ? rendered.getChannelData(1) : rendered.getChannelData(0),
+            wasMono: decoded.numberOfChannels < 2,
+            durationSec: decoded.duration
+        };
+    }
+
+    // Encode stereo Float32 @44.1k -> 16-bit PCM WAV blob.
+    function vrEncodeWavStereo(L, R) {
+        var n = L.length;
+        var buf = new ArrayBuffer(44 + n * 4);
+        var v = new DataView(buf);
+        function ws(o, s) { for (var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); }
+        ws(0, 'RIFF'); v.setUint32(4, 36 + n * 4, true); ws(8, 'WAVE');
+        ws(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true);
+        v.setUint32(24, VR_SR, true); v.setUint32(28, VR_SR * 4, true); v.setUint16(32, 4, true); v.setUint16(34, 16, true);
+        ws(36, 'data'); v.setUint32(40, n * 4, true);
+        for (var i2 = 0; i2 < n; i2++) {
+            var a = Math.max(-1, Math.min(1, L[i2])), b = Math.max(-1, Math.min(1, R[i2]));
+            v.setInt16(44 + i2 * 4, a < 0 ? a * 0x8000 : a * 0x7fff, true);
+            v.setInt16(46 + i2 * 4, b < 0 ? b * 0x8000 : b * 0x7fff, true);
+        }
+        return new Blob([buf], { type: 'audio/wav' });
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('vocalRemoverTool');
+        if (!root) return; // not a vocal-remover page
+
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="vrFile" accept="audio/*,.mp3,.wav,.m4a,.ogg,.opus,.webm,.flac,.aac" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div id="vrStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Choose a song. It never leaves your browser - everything runs on your device.</div>' +
+            '<div style="margin-top:4px;">' +
+              '<button id="vrRunAiBtn" type="button" class="w3-button w3-green w3-large" disabled>Separate vocals (AI, ~' + VR_MODEL_MB + ' MB one-time download)</button> ' +
+              '<button id="vrRunBasicBtn" type="button" class="w3-button w3-amber" disabled>Quick voice-cancel (no download)</button>' +
+            '</div>' +
+            '<div id="vrOut" class="outputImgs" style="visibility:visible !important;display:none;margin-top:12px;text-align:left;max-width:560px;margin-left:auto;margin-right:auto;">' +
+              '<div style="font-size:.9em;color:#555;margin:4px 0 2px;">Original</div>' +
+              '<audio id="vrPlayerOrig" controls style="width:100%;"></audio>' +
+              '<div style="font-size:.9em;color:#555;margin:8px 0 2px;">Instrumental <span id="vrOutNote" style="color:#888;"></span></div>' +
+              '<audio id="vrPlayerInst" controls style="width:100%;"></audio>' +
+              '<div id="vrVocalsRow" style="display:none;"><div style="font-size:.9em;color:#555;margin:8px 0 2px;">Vocals only</div>' +
+              '<audio id="vrPlayerVoc" controls style="width:100%;"></audio></div>' +
+              '<div style="margin-top:8px;text-align:center;">' +
+                '<a id="vrDownloadInst" class="w3-button w3-blue">Download instrumental WAV</a> ' +
+                '<a id="vrDownloadVoc" class="w3-button w3-blue" style="display:none;">Download vocals WAV</a>' +
+              '</div>' +
+            '</div>' +
+            '<div id="vrErr" style="color:#b00020;margin-top:6px;min-height:1em;"></div>' +
+            '<p style="font-size:.85em;color:#777;margin-top:10px;">The AI pass runs the whole song through a separation model on your device - expect roughly 3 to 5 times the song length on a typical laptop (a 3-minute song takes about 10 to 15 minutes; the tab must stay open). The quick voice-cancel is instant but only works on stereo files with a center-panned voice, and it also thins out centered bass. Output is a stereo 44.1 kHz WAV file.</p>';
+
+        var fileEl = root.querySelector('#vrFile');
+        var aiBtn = root.querySelector('#vrRunAiBtn');
+        var basicBtn = root.querySelector('#vrRunBasicBtn');
+        var outWrap = root.querySelector('#vrOut');
+        var outNote = root.querySelector('#vrOutNote');
+        var playerOrig = root.querySelector('#vrPlayerOrig');
+        var playerInst = root.querySelector('#vrPlayerInst');
+        var playerVoc = root.querySelector('#vrPlayerVoc');
+        var vocalsRow = root.querySelector('#vrVocalsRow');
+        var dlInst = root.querySelector('#vrDownloadInst');
+        var dlVoc = root.querySelector('#vrDownloadVoc');
+        var statusEl = root.querySelector('#vrStatus');
+        var errEl = root.querySelector('#vrErr');
+
+        function setStatus(m) { statusEl.textContent = m; }
+        function setErr(m) { errEl.textContent = m || ''; }
+
+        var currentFile = null, urls = [];
+        function freeUrls() { for (var i = 0; i < urls.length; i++) URL.revokeObjectURL(urls[i]); urls = []; }
+
+        fileEl.addEventListener('change', function () {
+            var f = fileEl.files && fileEl.files[0];
+            if (!f) return;
+            currentFile = f;
+            setErr('');
+            outWrap.style.display = 'none';
+            freeUrls();
+            aiBtn.disabled = false; basicBtn.disabled = false;
+            setStatus('Ready. "Separate vocals (AI)" is the real separation; "Quick voice-cancel" is instant with zero download.');
+        });
+
+        function showResult(instL, instR, vocL, vocR, noteText) {
+            freeUrls();
+            var origURL = URL.createObjectURL(currentFile); urls.push(origURL);
+            var instURL = URL.createObjectURL(vrEncodeWavStereo(instL, instR)); urls.push(instURL);
+            playerOrig.src = origURL;
+            playerInst.src = instURL;
+            dlInst.href = instURL; dlInst.download = 'instrumental.wav';
+            if (vocL) {
+                var vocURL = URL.createObjectURL(vrEncodeWavStereo(vocL, vocR)); urls.push(vocURL);
+                playerVoc.src = vocURL;
+                dlVoc.href = vocURL; dlVoc.download = 'vocals.wav';
+                vocalsRow.style.display = 'block'; dlVoc.style.display = 'inline-block';
+            } else {
+                vocalsRow.style.display = 'none'; dlVoc.style.display = 'none';
+            }
+            outNote.textContent = noteText;
+            outWrap.style.display = 'block';
+        }
+
+        // TIER 2: on-device MDX-Net separation, chunked with 1 s crossfade.
+        aiBtn.addEventListener('click', async function () {
+            if (!currentFile) { setErr('Choose a song first.'); return; }
+            setErr(''); aiBtn.disabled = true; basicBtn.disabled = true;
+            try {
+                var session = await vrLoadSession(setStatus);
+                var dec = await vrDecodeTo44kStereo(currentFile, setStatus);
+                var L = dec.L, R = dec.R, n = L.length;
+                var estMin = Math.ceil(dec.durationSec * 5 / 60);
+                setStatus('Separating on your device (roughly ' + estMin + ' min for this file; nothing is uploaded) ...');
+                await new Promise(function (r) { setTimeout(r, 30); });
+                var instL = new Float64Array(n), instR = new Float64Array(n), wsum = new Float64Array(n);
+                var step = VR_SEG - VR_OVERLAP;
+                var positions = [];
+                for (var p = 0; p < n; p += step) { positions.push(p); if (p + VR_SEG >= n) break; }
+                var t0 = Date.now();
+                for (var pi = 0; pi < positions.length; pi++) {
+                    var segStart = positions[pi];
+                    var segLen = Math.min(VR_SEG, n - segStart);
+                    var seg = await vrSeparateSegment(session, L, R, segStart, segLen);
+                    for (var i = 0; i < segLen; i++) {
+                        // triangular crossfade weight inside the overlap zones
+                        var w = 1;
+                        if (i < VR_OVERLAP && segStart > 0) w = i / VR_OVERLAP;
+                        if (i > segLen - VR_OVERLAP && segStart + VR_SEG < n) w = Math.min(w, (segLen - i) / VR_OVERLAP);
+                        w = Math.max(w, 1e-4);
+                        instL[segStart + i] += seg.L[i] * w;
+                        instR[segStart + i] += seg.R[i] * w;
+                        wsum[segStart + i] += w;
+                    }
+                    var done = pi + 1, total = positions.length;
+                    var elapsed = (Date.now() - t0) / 1000;
+                    var eta = Math.ceil(elapsed / done * (total - done) / 60);
+                    setStatus('Separating on your device ... pass ' + done + ' of ' + total + (total > done ? ' (about ' + Math.max(1, eta) + ' min left)' : ''));
+                    await new Promise(function (r) { setTimeout(r, 0); });
+                }
+                var outIL = new Float32Array(n), outIR = new Float32Array(n), outVL = new Float32Array(n), outVR = new Float32Array(n);
+                for (var j = 0; j < n; j++) {
+                    var iw = wsum[j] > 1e-8 ? 1 / wsum[j] : 0;
+                    outIL[j] = instL[j] * iw; outIR[j] = instR[j] * iw;
+                    outVL[j] = L[j] - outIL[j]; outVR[j] = R[j] - outIR[j];
+                }
+                showResult(outIL, outIR, outVL, outVR, '(AI separation, done on your device)');
+                setStatus('Done - compare the players, then download. Everything ran in your browser; nothing was uploaded.');
+            } catch (err) {
+                setErr('Could not run the AI separation: ' + (err && err.message ? err.message : String(err)) + '. The "Quick voice-cancel (no download)" path still works on stereo files.');
+                setStatus('');
+            } finally { aiBtn.disabled = false; basicBtn.disabled = false; }
+        });
+
+        // TIER 3 (deterministic, zero network): center-channel cancellation.
+        basicBtn.addEventListener('click', async function () {
+            if (!currentFile) { setErr('Choose a song first.'); return; }
+            setErr(''); aiBtn.disabled = true; basicBtn.disabled = true;
+            try {
+                var dec = await vrDecodeTo44kStereo(currentFile, setStatus);
+                setStatus('Cancelling the center channel (instant, no download) ...');
+                var n = dec.L.length;
+                var sideL = new Float32Array(n), sideR = new Float32Array(n);
+                var sideEnergy = 0, totalEnergy = 0;
+                for (var i = 0; i < n; i++) {
+                    var s = (dec.L[i] - dec.R[i]) / 2;
+                    sideL[i] = s; sideR[i] = -s;
+                    sideEnergy += s * s; totalEnergy += dec.L[i] * dec.L[i];
+                }
+                if (dec.wasMono || (totalEnergy > 0 && sideEnergy / totalEnergy < 0.0005)) {
+                    setErr('This file is mono (or effectively mono), so there is no center channel to cancel - the result would be silence. Use the AI separation instead.');
+                    setStatus('');
+                    return;
+                }
+                showResult(sideL, sideR, null, null, '(quick voice-cancel: keeps the stereo sides, drops whatever is panned dead-center - including centered bass. The AI button does the real separation.)');
+                setStatus('Quick voice-cancel done - instant, no download, nothing uploaded. Try the AI button for the real separation.');
+            } catch (err) {
+                setErr('Could not process that file: ' + (err && err.message ? err.message : String(err)));
+                setStatus('');
+            } finally { aiBtn.disabled = false; basicBtn.disabled = false; }
+        });
+    }
+</script>
