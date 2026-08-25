@@ -58,6 +58,8 @@ export const INFO_ROUTES = new Set([
   '/guides/de/is-it-down-when.html',
   '/guides/de/is-it-down-vs-alternatives.html',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html',
+  // devtools-style-pdf-element-inspector-editor-android-when pt locale (create_new_guide_page 20260825-3)
+  '/guides/pt/devtools-style-pdf-element-inspector-editor-android-when.html',
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   // client-side-pdf-editor-toolkit-vs-alternatives locale fanout (create_new_guide_page 20260823-7)
   '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html',
@@ -7319,6 +7321,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/client-side-pdf-editor-toolkit-when.html',
   // client-side-pdf-editor-toolkit-when vi locale (create_new_guide_page 20260824-3)
   '/guides/vi/client-side-pdf-editor-toolkit-when.html',
+  // devtools-style-pdf-element-inspector-editor-android-when pt locale (create_new_guide_page 20260825-3)
+  '/guides/pt/devtools-style-pdf-element-inspector-editor-android-when.html',
   // client-side-pdf-editor-toolkit-vs-alternatives EN + locale fanout (create_new_guide_page 20260823-7)
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html',
@@ -28855,6 +28859,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/id/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/guides/de/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/de/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
+  '/guides/pt/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/pt/devtools-style-pdf-element-inspector-editor-android-when.jsp',
   '/image-converter-tools/hilbert-editor.html': 'convert/hilbert-editor.jsp',
   '/utility-tools/is-it-down.html': 'utility/is-it-down.jsp',
   '/utility-tools/food-recall-lookup.html': 'utility/food-recall-lookup.jsp',
