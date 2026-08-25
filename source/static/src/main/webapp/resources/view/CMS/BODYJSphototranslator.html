@@ -1,0 +1,342 @@
+<script>
+    // Photo translator (photo-translator) - read the text inside a photo or
+    // screenshot with on-device OCR, then translate it, all in the browser.
+    // Registry Gate-H entry: photo_translator_ocr_marianmt.
+    //
+    // WHY THIS IS NOT /utility-tools/ai-translator.html (G51): that page
+    // translates TYPED text. This page starts from an IMAGE - photo in,
+    // translated text out. WHY THIS IS NOT /image-tools/image-to-text-ocr.html:
+    // that page stops at the recognized text; this one adds the translation
+    // stage. Both siblings are cross-linked in the page copy.
+    //
+    // TWO-STAGE PIPELINE, ENGINE LADDER on the translate stage:
+    //   OCR stage (always local, every tier): tesseract.js v7 self-hosted at
+    //   /vendor/tesseract - the photo NEVER leaves the browser. English
+    //   printed text (the vendored eng traineddata).
+    //   Translate tier 1: Chrome Built-in Translator API (self.Translator,
+    //   Chrome 138+) - feature-detected, never assumed; Chrome manages its
+    //   own language pack and the status line says exactly that.
+    //   Translate tier 2: on-device MarianMT (Transformers.js v3 pin,
+    //   Xenova/opus-mt-en-<tgt> ONNX q8, WASM) - loaded ONLY on an explicit
+    //   click, ~115 MB per pair stated BEFORE the download (hub-verified:
+    //   encoder 53 MB + decoder 60 MB at q8), cached by the browser.
+    //   Portuguese routes through opus-mt-en-ROMANCE with a '>>pt<<' prefix.
+    //   Tier 3 (deterministic, no AI download): OCR-only output - the
+    //   recognized text is real standalone value, copyable in every browser.
+    //
+    // ENGINE PIN (HARD GUARD 5, load-bearing): transformers 3.8.1 EXACT.
+    // The old Xenova opus-mt ONNX exports fail session creation on the v4
+    // line ("Missing required scale ... MatMulNBits"); verified again in the
+    // fire28 Gate-H probe 2026-08-26. Do NOT bump without re-probing every
+    // page that shares this library.
+    //
+    // G16: the sample photo + its REAL probe-produced OCR text + REAL
+    // probe-produced Spanish translation are baked into BODYHTML (#ptDemo)
+    // and render on load with ZERO interaction and ZERO download.
+
+    web.localUpload = false;
+
+    var PT_TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
+    var PT_PAIR_MB = 115;      // honest per-pair size at q8 (encoder+decoder)
+    var PT_OCR_MB = 5;         // tesseract core + eng data, served from this site
+    var PT_MAX_CHARS = 4000;
+    var PT_TGT_LANGS = ['es', 'fr', 'de', 'it', 'pt', 'id', 'vi', 'hi', 'zh', 'ru', 'ar'];
+    var PT_LANG_NAMES = {
+        en: 'English', es: 'Spanish', fr: 'French', de: 'German', it: 'Italian',
+        pt: 'Portuguese', id: 'Indonesian', vi: 'Vietnamese', hi: 'Hindi',
+        zh: 'Chinese', ru: 'Russian', ar: 'Arabic'
+    };
+
+    // --- OCR stage (tesseract.js v7, self-hosted, one reusable worker) ------
+    var ptTesseractLoad = null;
+    function ptLoadTesseract() {
+        if (ptTesseractLoad) return ptTesseractLoad;
+        ptTesseractLoad = new Promise(function (resolve, reject) {
+            if (window.Tesseract) return resolve(window.Tesseract);
+            var s = document.createElement('script');
+            s.src = '/vendor/tesseract/tesseract.min.js';
+            s.onload = function () { window.Tesseract ? resolve(window.Tesseract) : reject(new Error('OCR engine did not initialize')); };
+            s.onerror = function () { reject(new Error('could not fetch the OCR engine script')); };
+            document.head.appendChild(s);
+        });
+        ptTesseractLoad.catch(function () { ptTesseractLoad = null; });
+        return ptTesseractLoad;
+    }
+
+    var ptWorkerPromise = null;
+    function ptGetWorker(onLog) {
+        if (ptWorkerPromise) return ptWorkerPromise;
+        ptWorkerPromise = (async function () {
+            var T = await ptLoadTesseract();
+            return await T.createWorker('eng', 1, {
+                workerPath: '/vendor/tesseract/worker.min.js',
+                corePath: '/vendor/tesseract',
+                langPath: '/vendor/tesseract',
+                logger: onLog || function () {}
+            });
+        })();
+        ptWorkerPromise.catch(function () { ptWorkerPromise = null; });
+        return ptWorkerPromise;
+    }
+
+    // --- translate stage: on-device opus-mt (tier 2) ------------------------
+    function ptModelFor(tgt) {
+        if (PT_TGT_LANGS.indexOf(tgt) < 0) return null;
+        if (tgt === 'pt') return { model: 'Xenova/opus-mt-en-ROMANCE', prefix: '>>pt<< ' };
+        return { model: 'Xenova/opus-mt-en-' + tgt, prefix: '' };
+    }
+
+    var ptPipes = {};
+    function ptLoadPipe(modelId, onProgress) {
+        if (ptPipes[modelId]) return ptPipes[modelId];
+        ptPipes[modelId] = (async function () {
+            var tf = await import(/* webpackIgnore: true */ PT_TF_CDN);
+            return await tf.pipeline('translation', modelId, { dtype: 'q8', device: 'wasm', progress_callback: onProgress });
+        })();
+        ptPipes[modelId].catch(function () { delete ptPipes[modelId]; });
+        return ptPipes[modelId];
+    }
+
+    // Sentence-sized pieces for MarianMT; no lookbehind (older Safari parses this file).
+    function ptSplitText(text) {
+        var clean = String(text || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+        if (!clean) return [];
+        var out = [], buf = '';
+        var words = clean.split(' ');
+        for (var i = 0; i < words.length; i++) {
+            buf = buf ? buf + ' ' + words[i] : words[i];
+            if (/[.!?]$/.test(words[i]) || buf.length > 350) { out.push(buf); buf = ''; }
+        }
+        if (buf) out.push(buf);
+        return out;
+    }
+
+    // --- translate stage: Chrome Built-in Translator API (tier 1) -----------
+    async function ptBuiltinAvailability(tgt) {
+        try {
+            if (!('Translator' in self)) return 'unavailable';
+            var a = await self.Translator.availability({ sourceLanguage: 'en', targetLanguage: tgt });
+            return a || 'unavailable';
+        } catch (e) { return 'unavailable'; }
+    }
+
+    function ptBuild(root) {
+        var tgtOpts = '';
+        for (var i = 0; i < PT_TGT_LANGS.length; i++) {
+            tgtOpts += '<option value="' + PT_TGT_LANGS[i] + '">' + PT_LANG_NAMES[PT_TGT_LANGS[i]] + '</option>';
+        }
+        var wrap = document.createElement('div');
+        wrap.className = 'w3-container';
+        wrap.style.textAlign = 'left';
+        wrap.innerHTML =
+            '<h3 class="w3-text-blue-grey">Step 1 - read the text in your photo</h3>' +
+            '<div style="color:#555;margin-bottom:8px;">Pick a photo or screenshot with clear printed English text. The reading happens on your device with an engine served from this site (about ' + PT_OCR_MB + ' MB on first use) - the photo is never uploaded.</div>' +
+            '<input type="file" id="ptFile" accept=".jpg,.jpeg,.png,.webp,.bmp,.gif" class="w3-input w3-border" style="max-width:440px;" />' +
+            '<div style="margin:8px 0;"><img id="ptPreview" alt="" style="display:none;max-width:100%;max-height:280px;border:1px solid #ddd;" /></div>' +
+            '<div style="margin:8px 0;"><button id="ptRunBtn" type="button" class="w3-button w3-green">Read text from photo</button></div>' +
+            '<progress id="ptOcrProg" max="100" value="0" style="width:100%;max-width:440px;display:none;"></progress>' +
+            '<div id="ptStatus" style="min-height:1.2em;color:#555;margin-top:6px;">The example above was read and translated ahead of time so you can see the output shape.</div>' +
+            '<div id="ptErr" style="color:#b00020;margin-top:4px;min-height:1em;"></div>' +
+            '<div style="color:#555;margin:10px 0 4px;">Recognized text (fix any small reading slips here before translating):</div>' +
+            '<textarea id="ptOcrOut" class="w3-input w3-border" rows="4" style="width:100%;" placeholder="The text read from your photo appears here."></textarea>' +
+            '<div style="margin:8px 0;"><button id="ptCopyOcr" type="button" class="w3-button w3-light-grey">Copy recognized text</button></div>' +
+
+            '<h3 class="w3-text-blue-grey" style="margin-top:22px;">Step 2 - translate it</h3>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            'From English to <select id="ptTgt" class="w3-select w3-border" style="width:auto;display:inline-block;">' + tgtOpts + '</select>' +
+            '</div>' +
+            '<div style="margin:8px 0;">' +
+            '<button id="ptTransBtn" type="button" class="w3-button w3-green">Translate</button> ' +
+            '<button id="ptLoadBtn" type="button" class="w3-button w3-blue">Load on-device model (~' + PT_PAIR_MB + ' MB)</button>' +
+            '</div>' +
+            '<progress id="ptTransProg" max="100" value="0" style="width:100%;max-width:440px;display:none;"></progress>' +
+            '<div style="color:#555;margin:10px 0 4px;">Translation:</div>' +
+            '<div id="ptOut" class="outputImgs" style="visibility:visible !important;background:#f6f6f6;border:1px solid #ddd;padding:10px;white-space:pre-wrap;word-break:break-word;min-height:3em;"></div>' +
+            '<div style="margin:8px 0;"><button id="ptCopyOut" type="button" class="w3-button w3-light-grey">Copy translation</button> <span id="ptEngine" style="color:#555;font-size:0.9em;"></span></div>';
+        root.appendChild(wrap);
+
+        var fileEl = wrap.querySelector('#ptFile'), preview = wrap.querySelector('#ptPreview');
+        var runBtn = wrap.querySelector('#ptRunBtn'), ocrProg = wrap.querySelector('#ptOcrProg');
+        var statusEl = wrap.querySelector('#ptStatus'), errEl = wrap.querySelector('#ptErr');
+        var ocrOut = wrap.querySelector('#ptOcrOut'), copyOcr = wrap.querySelector('#ptCopyOcr');
+        var tgtSel = wrap.querySelector('#ptTgt'), transBtn = wrap.querySelector('#ptTransBtn'), loadBtn = wrap.querySelector('#ptLoadBtn');
+        var transProg = wrap.querySelector('#ptTransProg'), outEl = wrap.querySelector('#ptOut');
+        var copyOut = wrap.querySelector('#ptCopyOut'), engineEl = wrap.querySelector('#ptEngine');
+        var busy = false;
+
+        function setStatus(m) { statusEl.textContent = m; }
+        function setErr(m) { errEl.textContent = m || ''; }
+
+        function syncLoadBtn() {
+            var pick = ptModelFor(tgtSel.value);
+            if (!pick) { loadBtn.style.display = 'none'; return; }
+            loadBtn.style.display = '';
+            if (ptPipes[pick.model]) {
+                loadBtn.textContent = 'On-device model ready (English to ' + PT_LANG_NAMES[tgtSel.value] + ')';
+                loadBtn.disabled = true;
+            } else {
+                loadBtn.textContent = 'Load on-device model for English to ' + PT_LANG_NAMES[tgtSel.value] + ' (~' + PT_PAIR_MB + ' MB)';
+                loadBtn.disabled = false;
+            }
+        }
+
+        fileEl.addEventListener('change', function () {
+            setErr('');
+            var f = fileEl.files && fileEl.files[0];
+            if (!f) { preview.style.display = 'none'; return; }
+            try { preview.src = URL.createObjectURL(f); preview.style.display = ''; } catch (e) { /* preview only */ }
+            setStatus('Photo loaded (kept on your device). Click "Read text from photo".');
+        });
+
+        runBtn.addEventListener('click', async function () {
+            if (busy) return;
+            setErr('');
+            var f = fileEl.files && fileEl.files[0];
+            if (!f) { setStatus('Pick a photo or screenshot first.'); return; }
+            busy = true; runBtn.disabled = true;
+            try {
+                setStatus('Preparing the on-device reader (served from this site, about ' + PT_OCR_MB + ' MB on first use) ...');
+                var worker = await ptGetWorker(function (m) {
+                    if (m && m.status === 'recognizing text' && typeof m.progress === 'number') {
+                        ocrProg.style.display = ''; ocrProg.value = Math.round(m.progress * 100);
+                        setStatus('Reading the photo on your device ... ' + Math.round(m.progress * 100) + '%');
+                    } else if (m && m.status) {
+                        setStatus('Preparing the reader: ' + m.status + ' ...');
+                    }
+                });
+                var rec = await worker.recognize(f);
+                ocrProg.style.display = 'none';
+                var text = String(rec && rec.data && rec.data.text || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+                if (!text) {
+                    setErr('No readable text was found in that photo. It works best on sharp, well-lit printed text - try a closer or straighter shot.');
+                    setStatus('Nothing recognized.');
+                    return;
+                }
+                ocrOut.value = text;
+                setStatus('Done - text read on your device (nothing uploaded). Fix any slips above, then translate it below.');
+            } catch (e) {
+                ocrProg.style.display = 'none';
+                setErr('Could not read the photo: ' + (e && e.message ? e.message : String(e)) + '. The photo stayed on your device either way.');
+                setStatus('Reading failed.');
+            } finally { busy = false; runBtn.disabled = false; }
+        });
+
+        copyOcr.addEventListener('click', function () {
+            var t = ocrOut.value || '';
+            if (!t) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t).then(function () { setStatus('Recognized text copied to the clipboard.'); },
+                    function () { setStatus('Copy failed - select the text and copy manually.'); });
+            } else { setStatus('Select the text and copy it manually.'); }
+        });
+
+        function onDownloadProgress(p) {
+            if (!p || p.status !== 'progress' || !p.total) return;
+            var pct = Math.max(0, Math.min(100, Math.round(p.progress || (p.loaded / p.total * 100))));
+            transProg.style.display = ''; transProg.value = pct;
+            setStatus('Downloading the translation model (one-time, kept by your browser afterwards) ... ' + pct + '%');
+        }
+
+        loadBtn.addEventListener('click', async function () {
+            var pick = ptModelFor(tgtSel.value);
+            if (!pick) return;
+            setErr(''); loadBtn.disabled = true;
+            setStatus('Fetching the on-device translation engine ...');
+            try {
+                await ptLoadPipe(pick.model, onDownloadProgress);
+                transProg.style.display = 'none';
+                setStatus('Model loaded and kept by your browser. Click Translate.');
+            } catch (e) {
+                setErr('Could not load the model: ' + (e && e.message ? e.message : String(e)) + '. Check the connection and try again - your photo and text are never uploaded either way.');
+                setStatus('Model not loaded.');
+            }
+            syncLoadBtn();
+        });
+
+        tgtSel.addEventListener('change', syncLoadBtn);
+
+        transBtn.addEventListener('click', async function () {
+            if (busy) return;
+            setErr('');
+            var text = String(ocrOut.value || '').replace(/^\s+|\s+$/g, '');
+            if (!text) { setStatus('Read a photo first (Step 1), or paste text into the recognized-text box.'); return; }
+            if (text.length > PT_MAX_CHARS) {
+                setErr('That is ' + text.length + ' characters. The on-device path caps input at ' + PT_MAX_CHARS + ' so the browser stays responsive - translate it in parts.');
+                return;
+            }
+            busy = true; transBtn.disabled = true;
+            try {
+                var tgt = tgtSel.value;
+
+                // Tier 1: Chrome Built-in Translator API (en -> tgt).
+                var avail = await ptBuiltinAvailability(tgt);
+                if (avail === 'available' || avail === 'downloadable' || avail === 'downloading') {
+                    try {
+                        if (avail !== 'available') setStatus('Chrome is fetching its built-in language pack for this pair (managed by the browser, still on-device) ...');
+                        else setStatus('Translating with the built-in browser engine ...');
+                        var translator = await self.Translator.create({ sourceLanguage: 'en', targetLanguage: tgt });
+                        var resText = await translator.translate(text);
+                        if (resText && String(resText).replace(/\s+/g, '')) {
+                            outEl.textContent = String(resText);
+                            engineEl.textContent = 'Translated with: the built-in browser engine (on-device)';
+                            setStatus('Done. Read and translated on your device - nothing was uploaded.');
+                            return;
+                        }
+                    } catch (e) { /* fall through to tier 2 honestly */ }
+                }
+
+                // Tier 2: on-device opus-mt pair.
+                var pick = ptModelFor(tgt);
+                if (!ptPipes[pick.model]) {
+                    setStatus('No translation engine is loaded yet. Click "Load on-device model" above (one-time ~' + PT_PAIR_MB + ' MB, kept by your browser). The recognized text in Step 1 is already yours to copy with no download.');
+                    return;
+                }
+                var pipe = await ptPipes[pick.model];
+                var pieces = ptSplitText(text);
+                var results = [];
+                for (var i = 0; i < pieces.length; i++) {
+                    setStatus('Translating on your device ... piece ' + (i + 1) + ' of ' + pieces.length);
+                    await new Promise(function (r) { setTimeout(r, 0); });
+                    var res = await pipe(pick.prefix + pieces[i]);
+                    results.push(res && res[0] && res[0].translation_text ? res[0].translation_text : '');
+                }
+                var joined = results.join(' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+                if (!joined) {
+                    setErr('The model returned no text for that input. Try shorter pieces.');
+                    setStatus('No translation produced.');
+                    return;
+                }
+                outEl.textContent = joined;
+                engineEl.textContent = 'Translated with: the on-device model (English to ' + PT_LANG_NAMES[tgt] + ', ~78M parameters)';
+                setStatus('Done - read and translated on your device. Nothing was uploaded. Small-model output: review names, idioms and anything important.');
+            } catch (e) {
+                setErr('Could not translate: ' + (e && e.message ? e.message : String(e)));
+                setStatus('Translation failed.');
+            } finally { busy = false; transBtn.disabled = false; }
+        });
+
+        copyOut.addEventListener('click', function () {
+            var t = outEl.textContent || '';
+            if (!t) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t).then(function () { setStatus('Translation copied to the clipboard.'); },
+                    function () { setStatus('Copy failed - select the text and copy manually.'); });
+            } else { setStatus('Select the text and copy it manually.'); }
+        });
+
+        syncLoadBtn();
+        (async function () {
+            var builtin = await ptBuiltinAvailability('es');
+            if (builtin === 'available' || builtin === 'downloadable' || builtin === 'downloading') {
+                setStatus('This Chrome has built-in on-device translation - after Step 1 you can translate with no download from this page.');
+            }
+        })();
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('photoTranslatorTool');
+        if (!root) return; // not a photo-translator page
+        root.innerHTML = '';
+        ptBuild(root);
+    }
+</script>
