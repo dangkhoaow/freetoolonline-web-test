@@ -1,0 +1,170 @@
+<script>
+    // Handwriting-to-text OCR - TrOCR (Xenova/trocr-small-handwritten) via
+    // Transformers.js, 100% client-side (ai-local-tools fire27, 2026-08-25).
+    // Registry Gate-H entry: handwriting_trocr_transformersjs. Probe artifact:
+    // seo-reports/20260825-ailocal-fire27/qa/gate-h_probe_handwriting-to-text_trocr.json
+    // (real IAM fixture recall 1.0; OFL webfont line recall 1.0; phone-photo
+    // degradation 0.6x + JPEG q55 recall 1.0 - all under the EXACT pin below).
+    //
+    // ENGINE LADDER (runbook rule 1): (a) Chrome Built-in AI has no handwriting
+    // OCR API (seed chrome_builtin_api: null) so tier (a) is N/A by design;
+    // (b) on-device TrOCR loads ONLY on an explicit click, with the ~65 MB size
+    // stated BEFORE the download and progress surfaced during it; (c) the
+    // deterministic no-AI tier is the baked demo in BODYHTML (#hwDemo, visible
+    // with zero interaction and zero download) plus plain-language guidance
+    // when the model cannot load - the page never dies silently.
+    //
+    // TRUTHFULNESS SCOPE (probe-measured, load-bearing - do not widen):
+    // TrOCR-small-handwritten is trained on IAM handwriting LINES. Print-shaped
+    // glyphs are OUT-OF-DISTRIBUTION (the fire27 probe measured garbage
+    // transcripts, word recall 0-0.17, on print-style fonts under BOTH q8 and
+    // fp32) - typed or printed text belongs in the printed-text OCR tool at
+    // /image-tools/image-to-text-ocr.html (cross-linked in the page copy).
+    // The model reads ONE LINE per inference: multi-line photos are auto-sliced
+    // into horizontal line bands below and each band is transcribed in turn;
+    // dense, overlapping, or heavily slanted script degrades quality. English
+    // handwriting only - no language auto-detection.
+    //
+    // CDN ENGINE PIN (HARD GUARD 5): EXACT version, never a bare major. Bumping
+    // this pin requires re-running the fire27 Gate-H probe. Same pin family as
+    // photo-restoration + ai-translator (transformers@4.2.0).
+    web.localUpload = false;
+
+    var HW_TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
+    var HW_MODEL_ID = 'Xenova/trocr-small-handwritten';
+    var HW_MODEL_MB = 65; // q8 encoder+decoder total, stated in UI BEFORE download
+    var HW_MAX_EDGE = 1600; // cap the working canvas; keeps slicing + inference bounded
+
+    var hwModelPromise = null;
+    function hwLoadModel(setStatus) {
+        if (hwModelPromise) return hwModelPromise;
+        hwModelPromise = (async function () {
+            setStatus('Downloading the ~' + HW_MODEL_MB + ' MB handwriting model (first run only - it is cached in your browser afterwards) ...');
+            var tf = await import(/* webpackIgnore: true */ HW_TF_CDN);
+            var device = ('gpu' in navigator) ? 'webgpu' : 'wasm';
+            var ocr = await tf.pipeline('image-to-text', HW_MODEL_ID, { device: device, dtype: 'q8' });
+            return { ocr: ocr, device: device };
+        })();
+        hwModelPromise.catch(function () { hwModelPromise = null; }); // allow retry after a failed load
+        return hwModelPromise;
+    }
+
+    // Horizontal-projection line slicing. TrOCR is a LINE-level model, so a
+    // multi-line note must be cut into bands first. Returns an array of
+    // {y0, y1} bands (source-canvas coordinates); [whole image] when the
+    // profile finds no clear gaps (single line, or slicing not confident).
+    function hwSliceLines(canvas) {
+        var ctx = canvas.getContext('2d');
+        var w = canvas.width, h = canvas.height;
+        var data = ctx.getImageData(0, 0, w, h).data;
+        // per-row ink density against a mean-based threshold
+        var lum = new Float32Array(h);
+        for (var y = 0; y < h; y++) {
+            var ink = 0;
+            for (var x = 0; x < w; x++) {
+                var i = (y * w + x) * 4;
+                var v = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                if (v < 160) ink++;
+            }
+            lum[y] = ink / w;
+        }
+        var minInk = 0.008; // a row is "part of a line" above ~0.8% dark pixels
+        var bands = [], y0 = -1;
+        for (var r = 0; r < h; r++) {
+            if (lum[r] >= minInk) { if (y0 < 0) y0 = r; }
+            else if (y0 >= 0) {
+                if (r - y0 >= 10) bands.push({ y0: Math.max(0, y0 - 6), y1: Math.min(h, r + 6) });
+                y0 = -1;
+            }
+        }
+        if (y0 >= 0 && h - y0 >= 10) bands.push({ y0: Math.max(0, y0 - 6), y1: h });
+        if (bands.length === 0) return [{ y0: 0, y1: h }];
+        return bands;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('hwTool');
+        if (!root) return;
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="hwFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div id="hwStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Choose a photo of handwriting. It is processed on your device - the photo never leaves your browser. The first run downloads a ~' + HW_MODEL_MB + ' MB model.</div>' +
+            '<div class="w3-row"><canvas id="hwCanvas" style="max-width:90vw;border:1px solid #ddd;display:none;background:#fff;"></canvas></div>' +
+            '<div style="margin-top:8px;"><button id="hwRunBtn" type="button" class="w3-button w3-green w3-large" disabled>Convert handwriting to text</button></div>' +
+            '<div class="w3-row outputImgs" style="visibility:visible !important;margin-top:10px;">' +
+            '<textarea readonly id="hwOutput" class="w3-input w3-border" spellcheck="false" style="min-height:120px;max-width:640px;margin:0 auto;" placeholder="The transcript appears here - review it before you use it."></textarea>' +
+            '<div style="margin-top:8px;"><button id="hwCopyBtn" type="button" class="w3-button w3-red">Copy text</button> ' +
+            '<a id="hwDownload" class="w3-button w3-blue" style="display:none;">Download .txt</a></div></div>' +
+            '<div id="hwErr" style="color:#b00020;margin-top:6px;min-height:1em;"></div>';
+
+        var fileEl = root.querySelector('#hwFile'), canvas = root.querySelector('#hwCanvas'), ctx = canvas.getContext('2d');
+        var runBtn = root.querySelector('#hwRunBtn'), outEl = root.querySelector('#hwOutput');
+        var copyBtn = root.querySelector('#hwCopyBtn'), dl = root.querySelector('#hwDownload');
+        var statusEl = root.querySelector('#hwStatus'), errEl = root.querySelector('#hwErr');
+        var currentURL = null;
+        function setStatus(m) { statusEl.textContent = m; }
+        function setErr(m) { errEl.textContent = m || ''; }
+
+        // Preview on select (visible output before any model work - G16 tier).
+        fileEl.addEventListener('change', function () {
+            setErr(''); dl.style.display = 'none'; outEl.value = '';
+            var f = fileEl.files && fileEl.files[0]; if (!f) return;
+            if (currentURL) URL.revokeObjectURL(currentURL);
+            currentURL = URL.createObjectURL(f);
+            var img = new Image();
+            img.onload = function () {
+                var scale = Math.min(1, HW_MAX_EDGE / Math.max(img.naturalWidth, img.naturalHeight));
+                canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+                canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+                ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.style.display = '';
+                runBtn.disabled = false;
+                setStatus('Preview ready. Click "Convert handwriting to text" to transcribe it on your device.');
+            };
+            img.onerror = function () { setErr('Could not read that image file.'); };
+            img.src = currentURL;
+        });
+
+        runBtn.addEventListener('click', async function () {
+            if (!currentURL) { setErr('Choose a photo first.'); return; }
+            if (typeof WebAssembly === 'undefined') {
+                setErr('This browser cannot run the on-device model (no WebAssembly). The example above shows what a result looks like; try a current Chrome, Edge, Firefox, or Safari.');
+                return;
+            }
+            setErr(''); runBtn.disabled = true;
+            try {
+                var m = await hwLoadModel(setStatus);
+                var bands = hwSliceLines(canvas);
+                var lines = [];
+                for (var b = 0; b < bands.length; b++) {
+                    setStatus('Reading line ' + (b + 1) + ' of ' + bands.length + ' on your device' + (m.device === 'wasm' ? ' (a second or two per line)' : '') + ' ...');
+                    var band = bands[b];
+                    var crop = document.createElement('canvas');
+                    crop.width = canvas.width; crop.height = band.y1 - band.y0;
+                    crop.getContext('2d').drawImage(canvas, 0, band.y0, canvas.width, crop.height, 0, 0, canvas.width, crop.height);
+                    var r = await m.ocr(crop.toDataURL('image/png'));
+                    var text = (Array.isArray(r) ? (r[0] && r[0].generated_text) : (r && r.generated_text)) || '';
+                    if (text.trim()) lines.push(text.trim());
+                }
+                var joined = lines.join('\n');
+                if (!joined.trim()) {
+                    outEl.value = '';
+                    setStatus('No handwriting recognized. This model reads real handwriting, one line at a time - for typed or printed text use the printed-text OCR tool linked below the transcript box.');
+                } else {
+                    outEl.value = joined;
+                    var blob = new Blob([joined], { type: 'text/plain' });
+                    dl.href = URL.createObjectURL(blob); dl.download = 'handwriting-transcript.txt'; dl.style.display = '';
+                    setStatus('Done - ' + lines.length + ' line' + (lines.length === 1 ? '' : 's') + ' transcribed on your device, no upload. Review the draft before you use it.');
+                }
+            } catch (e) {
+                setErr('Could not run the handwriting model: ' + (e && e.message ? e.message : String(e)) + '. The example above still shows what a result looks like; check your connection (the first run downloads the model) and try again.');
+            } finally { runBtn.disabled = false; }
+        });
+
+        copyBtn.addEventListener('click', function () {
+            var v = outEl.value || '';
+            if (!v) return;
+            try { navigator.clipboard.writeText(v); } catch (e) { outEl.select(); document.execCommand('copy'); }
+        });
+    }
+</script>

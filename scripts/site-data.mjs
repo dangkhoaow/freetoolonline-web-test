@@ -1895,24 +1895,14 @@ export const INFO_ROUTES = new Set([
   '/guides/de/jwt-decoder-when.html',
   '/guides/de/jwt-decoder-step-by-step.html',
   '/guides/de/jwt-decoder-vs-alternatives.html',
-  '/guides/document-scanner-pdf-vs-alternatives.html',
-  '/guides/document-scanner-pdf-step-by-step.html',
   '/guides/document-scanner-pdf-when.html',
-  '/guides/pt/document-scanner-pdf-step-by-step.html',
   '/guides/pt/document-scanner-pdf-when.html',
-  '/guides/pt/document-scanner-pdf-vs-alternatives.html',
-  '/guides/es/document-scanner-pdf-step-by-step.html',
   '/guides/es/document-scanner-pdf-when.html',
-  '/guides/es/document-scanner-pdf-vs-alternatives.html',
-  '/guides/de/document-scanner-pdf-step-by-step.html',
   '/guides/de/document-scanner-pdf-when.html',
-  '/guides/de/document-scanner-pdf-vs-alternatives.html',
   '/guides/vi/document-scanner-pdf-step-by-step.html',
   '/guides/vi/document-scanner-pdf-when.html',
   '/guides/vi/document-scanner-pdf-vs-alternatives.html',
-  '/guides/id/document-scanner-pdf-step-by-step.html',
   '/guides/id/document-scanner-pdf-when.html',
-  '/guides/id/document-scanner-pdf-vs-alternatives.html',
   '/guides/flashcards-spaced-repetition-vs-alternatives.html',
   '/guides/flashcards-spaced-repetition-step-by-step.html',
   '/guides/flashcards-spaced-repetition-when.html',
@@ -1983,21 +1973,11 @@ export const INFO_ROUTES = new Set([
   '/guides/de/video-compressor-when.html',
   '/guides/de/video-compressor-step-by-step.html',
   '/guides/de/video-compressor-vs-alternatives.html',
-  '/guides/date-difference-calculator-vs-alternatives.html',
-  '/guides/date-difference-calculator-step-by-step.html',
   '/guides/date-difference-calculator-when.html',
   '/guides/pt/date-difference-calculator-when.html',
-  '/guides/pt/date-difference-calculator-step-by-step.html',
-  '/guides/pt/date-difference-calculator-vs-alternatives.html',
   '/guides/es/date-difference-calculator-when.html',
-  '/guides/es/date-difference-calculator-step-by-step.html',
-  '/guides/es/date-difference-calculator-vs-alternatives.html',
   '/guides/id/date-difference-calculator-when.html',
-  '/guides/id/date-difference-calculator-step-by-step.html',
-  '/guides/id/date-difference-calculator-vs-alternatives.html',
   '/guides/de/date-difference-calculator-when.html',
-  '/guides/de/date-difference-calculator-step-by-step.html',
-  '/guides/de/date-difference-calculator-vs-alternatives.html',
   '/guides/loan-calculator-vs-alternatives.html',
   '/guides/loan-calculator-step-by-step.html',
   '/guides/loan-calculator-when.html',
@@ -9537,20 +9517,10 @@ export const GUIDE_ROUTES = new Set([
   // JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
   // fires 32/56/57/62/66/84/113/115).
   '/guides/date-difference-calculator-when.html',
-  '/guides/date-difference-calculator-step-by-step.html',
-  '/guides/date-difference-calculator-vs-alternatives.html',
   '/guides/pt/date-difference-calculator-when.html',
-  '/guides/pt/date-difference-calculator-step-by-step.html',
-  '/guides/pt/date-difference-calculator-vs-alternatives.html',
   '/guides/es/date-difference-calculator-when.html',
-  '/guides/es/date-difference-calculator-step-by-step.html',
-  '/guides/es/date-difference-calculator-vs-alternatives.html',
   '/guides/id/date-difference-calculator-when.html',
-  '/guides/id/date-difference-calculator-step-by-step.html',
-  '/guides/id/date-difference-calculator-vs-alternatives.html',
   '/guides/de/date-difference-calculator-when.html',
-  '/guides/de/date-difference-calculator-step-by-step.html',
-  '/guides/de/date-difference-calculator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire115 (LEAN one-off, 2026-07-12):
   // GUIDE_ROUTES backfill for add-watermark-to-pdf's 3 EN companion guide
   // angles plus their full pt/es/vi/id/de locale fanout (builder wires
@@ -14108,6 +14078,39 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // consolidation fire65 (2026-08-25) step-1a: retire the -step-by-step and
+  // -vs-alternatives doorway guide families for two intent nodes -
+  // utility.date-difference-calculator and image-editing.document-scanner - into
+  // their locale-matched -when family, which is now the sole guide family for each
+  // node. Backlog items topical-map-utility.date-difference-calculator and
+  // topical-map-image-editing.document-scanner (0 clicks, 0 AI citations, 79 + 41
+  // impressions 28d across all 20 retired routes; each node's tool page is the
+  // evidence-ranked canonical and now carries the merged unique content). Unique
+  // facts were folded into the tool pages BEFORE the 301: the four-row calendar vs
+  // spreadsheet DATEDIF table and the both-fields-default-to-today behaviour on
+  // date-difference-calculator; the five-row browser vs app vs upload-service table
+  // and the Enhance-for-text / one-page-per-photo specifics on document-scanner.
+  // The edge layer is patched in the same push.
+  '/guides/date-difference-calculator-step-by-step.html': '/guides/date-difference-calculator-when.html',
+  '/guides/date-difference-calculator-vs-alternatives.html': '/guides/date-difference-calculator-when.html',
+  '/guides/pt/date-difference-calculator-step-by-step.html': '/guides/pt/date-difference-calculator-when.html',
+  '/guides/pt/date-difference-calculator-vs-alternatives.html': '/guides/pt/date-difference-calculator-when.html',
+  '/guides/es/date-difference-calculator-step-by-step.html': '/guides/es/date-difference-calculator-when.html',
+  '/guides/es/date-difference-calculator-vs-alternatives.html': '/guides/es/date-difference-calculator-when.html',
+  '/guides/id/date-difference-calculator-step-by-step.html': '/guides/id/date-difference-calculator-when.html',
+  '/guides/id/date-difference-calculator-vs-alternatives.html': '/guides/id/date-difference-calculator-when.html',
+  '/guides/de/date-difference-calculator-step-by-step.html': '/guides/de/date-difference-calculator-when.html',
+  '/guides/de/date-difference-calculator-vs-alternatives.html': '/guides/de/date-difference-calculator-when.html',
+  '/guides/document-scanner-pdf-step-by-step.html': '/guides/document-scanner-pdf-when.html',
+  '/guides/document-scanner-pdf-vs-alternatives.html': '/guides/document-scanner-pdf-when.html',
+  '/guides/pt/document-scanner-pdf-step-by-step.html': '/guides/pt/document-scanner-pdf-when.html',
+  '/guides/pt/document-scanner-pdf-vs-alternatives.html': '/guides/pt/document-scanner-pdf-when.html',
+  '/guides/es/document-scanner-pdf-step-by-step.html': '/guides/es/document-scanner-pdf-when.html',
+  '/guides/es/document-scanner-pdf-vs-alternatives.html': '/guides/es/document-scanner-pdf-when.html',
+  '/guides/de/document-scanner-pdf-step-by-step.html': '/guides/de/document-scanner-pdf-when.html',
+  '/guides/de/document-scanner-pdf-vs-alternatives.html': '/guides/de/document-scanner-pdf-when.html',
+  '/guides/id/document-scanner-pdf-step-by-step.html': '/guides/id/document-scanner-pdf-when.html',
+  '/guides/id/document-scanner-pdf-vs-alternatives.html': '/guides/id/document-scanner-pdf-when.html',
   '/guides/vi/karman-line-atmosphere-layers-step-by-step.html': '/guides/karman-line-atmosphere-layers-step-by-step.html',
   '/guides/vi/karman-line-atmosphere-layers-vs-alternatives.html': '/guides/karman-line-atmosphere-layers-vs-alternatives.html',
   '/guides/vi/karman-line-atmosphere-layers-when.html': '/guides/karman-line-atmosphere-layers-when.html',
@@ -14315,8 +14318,8 @@ export const ALIAS_ROUTES = {
   '/guides/vi/dimetrodon-size-comparison.html': '/guides/dimetrodon-size-comparison.html', // Phase-B 301 vi-batch-3-cont fire334
   '/guides/vi/diplodocus-3d-viewer-vs-ar-apps.html': '/guides/diplodocus-3d-viewer-vs-ar-apps.html', // Phase-B 301 vi-batch-3-cont fire334
   '/guides/vi/diplodocus-size-comparison.html': '/guides/diplodocus-size-comparison.html', // Phase-B 301 vi-batch-3-cont fire334
-  '/guides/vi/document-scanner-pdf-step-by-step.html': '/guides/document-scanner-pdf-step-by-step.html', // Phase-B 301 vi-batch-3-cont fire334
-  '/guides/vi/document-scanner-pdf-vs-alternatives.html': '/guides/document-scanner-pdf-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont fire334
+  '/guides/vi/document-scanner-pdf-step-by-step.html': '/guides/document-scanner-pdf-when.html', // Phase-B 301 vi-batch-3-cont fire334 [consolidation fire65 2026-08-25: repointed off the retired EN route to the surviving -when family]
+  '/guides/vi/document-scanner-pdf-vs-alternatives.html': '/guides/document-scanner-pdf-when.html', // Phase-B 301 vi-batch-3-cont fire334 [consolidation fire65 2026-08-25: repointed off the retired EN route to the surviving -when family]
   '/guides/vi/document-scanner-pdf-when.html': '/guides/document-scanner-pdf-when.html', // Phase-B 301 vi-batch-3-cont fire334
   '/guides/vi/doliosauriscus-3d-viewer-vs-ar-apps.html': '/guides/doliosauriscus-3d-viewer-vs-ar-apps.html', // Phase-B 301 vi-batch-3-cont fire334
   '/guides/vi/doliosauriscus-size-comparison.html': '/guides/doliosauriscus-size-comparison.html', // Phase-B 301 vi-batch-3-cont fire334
@@ -14390,8 +14393,8 @@ export const ALIAS_ROUTES = {
   '/guides/vi/dart-asteroid-deflection-step-by-step.html': '/guides/dart-asteroid-deflection-step-by-step.html', // Phase-B 301 vi-batch-3 fire333
   '/guides/vi/dart-asteroid-deflection-vs-alternatives.html': '/guides/dart-asteroid-deflection-vs-alternatives.html', // Phase-B 301 vi-batch-3 fire333
   '/guides/vi/dart-asteroid-deflection-when.html': '/guides/dart-asteroid-deflection-when.html', // Phase-B 301 vi-batch-3 fire333
-  '/guides/vi/date-difference-calculator-step-by-step.html': '/guides/date-difference-calculator-step-by-step.html', // Phase-B 301 vi-batch-3 fire333
-  '/guides/vi/date-difference-calculator-vs-alternatives.html': '/guides/date-difference-calculator-vs-alternatives.html', // Phase-B 301 vi-batch-3 fire333
+  '/guides/vi/date-difference-calculator-step-by-step.html': '/guides/date-difference-calculator-when.html', // Phase-B 301 vi-batch-3 fire333 [consolidation fire65 2026-08-25: repointed off the retired EN route to the surviving -when family]
+  '/guides/vi/date-difference-calculator-vs-alternatives.html': '/guides/date-difference-calculator-when.html', // Phase-B 301 vi-batch-3 fire333 [consolidation fire65 2026-08-25: repointed off the retired EN route to the surviving -when family]
   '/guides/vi/date-difference-calculator-when.html': '/guides/date-difference-calculator-when.html', // Phase-B 301 vi-batch-3 fire333
   '/guides/vi/dead-pixel-testing-guide.html': '/guides/en/dead-pixel-testing-guide.html', // Phase-B 301 vi-batch-3 fire333
   '/guides/vi/debris-disk-step-by-step.html': '/guides/debris-disk-step-by-step.html', // Phase-B 301 vi-batch-3 fire333
@@ -16563,6 +16566,7 @@ export const ALIAS_ROUTES = {
   '/silence-remover.html': '/video-tools/silence-remover.html',
   '/dst-countdown.html': '/utility-tools/dst-countdown.html',
   '/vocal-remover.html': '/video-tools/vocal-remover.html',
+  '/handwriting-to-text.html': '/image-converter-tools/handwriting-to-text.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25692,20 +25696,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/loan-calculator-vs-alternatives.html': 'guide/de/loan-calculator-vs-alternatives.jsp',
   '/utility-tools/date-difference-calculator.html': 'utility/date-difference-calculator.jsp',
   '/guides/date-difference-calculator-when.html': 'guide/date-difference-calculator-when.jsp',
-  '/guides/date-difference-calculator-step-by-step.html': 'guide/date-difference-calculator-step-by-step.jsp',
-  '/guides/date-difference-calculator-vs-alternatives.html': 'guide/date-difference-calculator-vs-alternatives.jsp',
   '/guides/pt/date-difference-calculator-when.html': 'guide/pt/date-difference-calculator-when.jsp',
-  '/guides/pt/date-difference-calculator-step-by-step.html': 'guide/pt/date-difference-calculator-step-by-step.jsp',
-  '/guides/pt/date-difference-calculator-vs-alternatives.html': 'guide/pt/date-difference-calculator-vs-alternatives.jsp',
   '/guides/es/date-difference-calculator-when.html': 'guide/es/date-difference-calculator-when.jsp',
-  '/guides/es/date-difference-calculator-step-by-step.html': 'guide/es/date-difference-calculator-step-by-step.jsp',
-  '/guides/es/date-difference-calculator-vs-alternatives.html': 'guide/es/date-difference-calculator-vs-alternatives.jsp',
   '/guides/id/date-difference-calculator-when.html': 'guide/id/date-difference-calculator-when.jsp',
-  '/guides/id/date-difference-calculator-step-by-step.html': 'guide/id/date-difference-calculator-step-by-step.jsp',
-  '/guides/id/date-difference-calculator-vs-alternatives.html': 'guide/id/date-difference-calculator-vs-alternatives.jsp',
   '/guides/de/date-difference-calculator-when.html': 'guide/de/date-difference-calculator-when.jsp',
-  '/guides/de/date-difference-calculator-step-by-step.html': 'guide/de/date-difference-calculator-step-by-step.jsp',
-  '/guides/de/date-difference-calculator-vs-alternatives.html': 'guide/de/date-difference-calculator-vs-alternatives.jsp',
   '/video-tools/video-compressor.html': 'convert/video-compressor.jsp',
   '/guides/video-compressor-when.html': 'guide/video-compressor-when.jsp',
   '/guides/video-compressor-step-by-step.html': 'guide/video-compressor-step-by-step.jsp',
@@ -25776,20 +25770,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/flashcards-spaced-repetition-vs-alternatives.html': 'guide/de/flashcards-spaced-repetition-vs-alternatives.jsp',
   '/image-tools/document-scanner.html': 'convert/document-scanner.jsp',
   '/guides/document-scanner-pdf-when.html': 'guide/document-scanner-pdf-when.jsp',
-  '/guides/document-scanner-pdf-step-by-step.html': 'guide/document-scanner-pdf-step-by-step.jsp',
-  '/guides/document-scanner-pdf-vs-alternatives.html': 'guide/document-scanner-pdf-vs-alternatives.jsp',
-  '/guides/pt/document-scanner-pdf-step-by-step.html': 'guide/pt/document-scanner-pdf-step-by-step.jsp',
   '/guides/pt/document-scanner-pdf-when.html': 'guide/pt/document-scanner-pdf-when.jsp',
-  '/guides/pt/document-scanner-pdf-vs-alternatives.html': 'guide/pt/document-scanner-pdf-vs-alternatives.jsp',
-  '/guides/es/document-scanner-pdf-step-by-step.html': 'guide/es/document-scanner-pdf-step-by-step.jsp',
   '/guides/es/document-scanner-pdf-when.html': 'guide/es/document-scanner-pdf-when.jsp',
-  '/guides/es/document-scanner-pdf-vs-alternatives.html': 'guide/es/document-scanner-pdf-vs-alternatives.jsp',
-  '/guides/de/document-scanner-pdf-step-by-step.html': 'guide/de/document-scanner-pdf-step-by-step.jsp',
   '/guides/de/document-scanner-pdf-when.html': 'guide/de/document-scanner-pdf-when.jsp',
-  '/guides/de/document-scanner-pdf-vs-alternatives.html': 'guide/de/document-scanner-pdf-vs-alternatives.jsp',
-  '/guides/id/document-scanner-pdf-step-by-step.html': 'guide/id/document-scanner-pdf-step-by-step.jsp',
   '/guides/id/document-scanner-pdf-when.html': 'guide/id/document-scanner-pdf-when.jsp',
-  '/guides/id/document-scanner-pdf-vs-alternatives.html': 'guide/id/document-scanner-pdf-vs-alternatives.jsp',
   '/developer-tools/jwt-decoder.html': 'utility/jwt-decoder.jsp',
   '/guides/jwt-decoder-when.html': 'guide/jwt-decoder-when.jsp',
   '/guides/json-typescript-interface-generator-when.html': 'guide/json-typescript-interface-generator-when.jsp',
@@ -28923,6 +28907,7 @@ export const JSP_BY_ROUTE = {
   '/utility-tools/dst-countdown.html': 'utility/dst-countdown.jsp',
   '/guides/daylight-saving-time-countdown-next-clock-change-when.html': 'guide/daylight-saving-time-countdown-next-clock-change-when.jsp',
   '/video-tools/vocal-remover.html': 'convert/vocal-remover.jsp',
+  '/image-converter-tools/handwriting-to-text.html': 'convert/handwriting-to-text.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
@@ -30485,8 +30470,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/dart-asteroid-deflection-step-by-step.html",
   "/guides/de/dart-asteroid-deflection-vs-alternatives.html",
   "/guides/de/dart-asteroid-deflection-when.html",
-  "/guides/de/date-difference-calculator-step-by-step.html",
-  "/guides/de/date-difference-calculator-vs-alternatives.html",
   "/guides/de/date-difference-calculator-when.html",
   "/guides/de/deinocheirus-3d-viewer-vs-ar-apps.html",
   "/guides/de/deinocheirus-size-comparison.html",
@@ -30853,8 +30836,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/debris-disk-vs-alternatives.html",
   "/guides/de/debris-disk-when.html",
   "/guides/de/device-test-checklist-for-remote-work.html",
-  "/guides/de/document-scanner-pdf-step-by-step.html",
-  "/guides/de/document-scanner-pdf-vs-alternatives.html",
   "/guides/de/document-scanner-pdf-when.html",
   "/guides/de/doppler-radial-velocity-step-by-step.html",
   "/guides/de/doppler-radial-velocity-vs-alternatives.html",
@@ -31892,8 +31873,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/dart-asteroid-deflection-step-by-step.html',
   '/guides/pt/dart-asteroid-deflection-vs-alternatives.html',
   '/guides/pt/dart-asteroid-deflection-when.html',
-  '/guides/pt/date-difference-calculator-step-by-step.html',
-  '/guides/pt/date-difference-calculator-vs-alternatives.html',
   '/guides/pt/date-difference-calculator-when.html',
   '/guides/pt/deinocheirus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/deinocheirus-size-comparison.html',
@@ -32679,8 +32658,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/device-test-checklist-for-remote-work.html',
   '/guides/pt/dice-roller-step-by-step.html',
   '/guides/pt/digital-clock-step-by-step.html',
-  '/guides/pt/document-scanner-pdf-step-by-step.html',
-  '/guides/pt/document-scanner-pdf-vs-alternatives.html',
   '/guides/pt/document-scanner-pdf-when.html',
   '/guides/pt/doppler-radial-velocity-step-by-step.html',
   '/guides/pt/doppler-radial-velocity-vs-alternatives.html',
@@ -33039,8 +33016,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/dart-asteroid-deflection-step-by-step.html',
   '/guides/es/dart-asteroid-deflection-vs-alternatives.html',
   '/guides/es/dart-asteroid-deflection-when.html',
-  '/guides/es/date-difference-calculator-step-by-step.html',
-  '/guides/es/date-difference-calculator-vs-alternatives.html',
   '/guides/es/date-difference-calculator-when.html',
   '/guides/es/deinocheirus-3d-viewer-vs-ar-apps.html',
   '/guides/es/deinocheirus-size-comparison.html',
@@ -33220,8 +33195,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/debris-disk-vs-alternatives.html',
   '/guides/es/debris-disk-when.html',
   '/guides/es/device-test-checklist-for-remote-work.html',
-  '/guides/es/document-scanner-pdf-step-by-step.html',
-  '/guides/es/document-scanner-pdf-vs-alternatives.html',
   '/guides/es/document-scanner-pdf-when.html',
   '/guides/es/doppler-radial-velocity-step-by-step.html',
   '/guides/es/doppler-radial-velocity-vs-alternatives.html',
@@ -34600,8 +34573,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/dart-asteroid-deflection-step-by-step.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/dart-asteroid-deflection-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/dart-asteroid-deflection-when.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/date-difference-calculator-step-by-step.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/date-difference-calculator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/date-difference-calculator-when.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/deinocheirus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/deinocheirus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
@@ -35115,8 +35086,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/device-test-checklist-for-remote-work.html',
   '/guides/id/dice-roller-step-by-step.html',
   '/guides/id/digital-clock-step-by-step.html',
-  '/guides/id/document-scanner-pdf-step-by-step.html',
-  '/guides/id/document-scanner-pdf-vs-alternatives.html',
   '/guides/id/document-scanner-pdf-when.html',
   '/guides/id/download-link-not-appearing-after-conversion-five-fixes.html',
   '/guides/id/duplicate-word-remover-step-by-step.html',
