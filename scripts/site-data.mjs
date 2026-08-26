@@ -20,6 +20,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/file-viewer-step-by-step.html',
   // file-viewer-step-by-step es locale (create_new_guide_page 20260826-7)
   '/guides/es/file-viewer-step-by-step.html',
+  // file-viewer-step-by-step vi locale (create_new_guide_page 20260826-8)
+  '/guides/vi/file-viewer-step-by-step.html',
   '/guides/file-viewer-when.html',
   '/guides/daylight-saving-time-countdown-next-clock-change-when.html',
   // ai-watermarks-explained vi locale (create_new_guide_page 20260823-3)
@@ -7254,6 +7256,8 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // file-viewer-step-by-step vi locale (create_new_guide_page 20260826-8)
+  '/guides/vi/file-viewer-step-by-step.html',
   // client-side-pdf-editor-toolkit-when pt locale (create_new_guide_page 20260824)
   '/guides/pt/client-side-pdf-editor-toolkit-when.html',
   // client-side-pdf-editor-toolkit-when es locale (create_new_guide_page 20260824)
@@ -28895,6 +28899,7 @@ export const JSP_BY_ROUTE = {
   '/guides/file-viewer-step-by-step.html': 'guide/file-viewer-step-by-step.jsp',
   '/guides/pt/file-viewer-step-by-step.html': 'guide/pt/file-viewer-step-by-step.jsp',
   '/guides/es/file-viewer-step-by-step.html': 'guide/es/file-viewer-step-by-step.jsp',
+  '/guides/vi/file-viewer-step-by-step.html': 'guide/vi/file-viewer-step-by-step.jsp',
   '/guides/file-viewer-vs-alternatives.html': 'guide/file-viewer-vs-alternatives.jsp',
   '/image-tools/alt-text-generator.html': 'convert/alt-text-generator.jsp',
 };
