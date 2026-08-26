@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/file-viewer-vs-alternatives.html',
+  '/guides/file-viewer-step-by-step.html',
+  '/guides/file-viewer-when.html',
   '/guides/daylight-saving-time-countdown-next-clock-change-when.html',
   // ai-watermarks-explained vi locale (create_new_guide_page 20260823-3)
   '/guides/vi/ai-watermarks-explained.html',
@@ -16615,6 +16618,7 @@ export const ALIAS_ROUTES = {
   '/vocal-remover.html': '/video-tools/vocal-remover.html',
   '/handwriting-to-text.html': '/image-converter-tools/handwriting-to-text.html',
   '/photo-translator.html': '/image-tools/photo-translator.html',
+  '/file-viewer.html': '/pdf-tools/file-viewer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28929,6 +28933,10 @@ export const JSP_BY_ROUTE = {
   '/video-tools/vocal-remover.html': 'convert/vocal-remover.jsp',
   '/image-converter-tools/handwriting-to-text.html': 'convert/handwriting-to-text.jsp',
   '/image-tools/photo-translator.html': 'convert/photo-translator.jsp',
+  '/pdf-tools/file-viewer.html': 'pdf/file-viewer.jsp',
+  '/guides/file-viewer-when.html': 'guide/file-viewer-when.jsp',
+  '/guides/file-viewer-step-by-step.html': 'guide/file-viewer-step-by-step.jsp',
+  '/guides/file-viewer-vs-alternatives.html': 'guide/file-viewer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

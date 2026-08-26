@@ -1,0 +1,258 @@
+<script>
+    // Universal File Viewer - fully in-browser. Registry: file_viewer_purejs.
+    // Page: /file-viewer.html
+    //
+    // Open a local file and preview it WITHOUT uploading: images render in an
+    // <img>, PDFs render page-by-page on canvases via the self-hosted pdf.js
+    // (/vendor/pdfjs/), text/code/JSON/CSV/Markdown render as escaped text
+    // (JSON pretty-printed), audio/video use the native players, and any other
+    // binary gets a hex + ASCII dump of the first 4 KB plus file metadata.
+    // No upload, no backend. Framework calls doAfterPageRendered() after jQuery loads.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var fileInput = document.getElementById('fvFile');
+        var btnClear = document.getElementById('fvClear');
+        var statusEl = document.getElementById('fvStatus');
+        var metaEl = document.getElementById('fvMeta');
+        var out = document.getElementById('fvOutput');
+        var objectUrls = [];
+        var pdfjsReady = null;
+
+        var MAX_TEXT_BYTES = 2 * 1024 * 1024;  // render at most 2 MB of text
+        var MAX_PDF_PAGES = 25;                // render at most 25 PDF pages
+        var HEX_DUMP_BYTES = 4096;             // hex preview size for unknown binaries
+
+        function setStatus(msg) {
+            if (statusEl) statusEl.textContent = msg;
+        }
+
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function trackUrl(u) { objectUrls.push(u); return u; }
+
+        function revokeAll() {
+            for (var i = 0; i < objectUrls.length; i++) {
+                try { URL.revokeObjectURL(objectUrls[i]); } catch (e) {}
+            }
+            objectUrls = [];
+        }
+
+        function fmtSize(n) {
+            if (n < 1024) return n + ' B';
+            if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+            return (n / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function extOf(name) {
+            var m = /\.([a-z0-9]+)$/i.exec(String(name || ''));
+            return m ? m[1].toLowerCase() : '';
+        }
+
+        function loadPdfjs() {
+            if (window.pdfjsLib && window.pdfjsLib.getDocument) return Promise.resolve();
+            if (pdfjsReady) return pdfjsReady;
+            pdfjsReady = new Promise(function (resolve, reject) {
+                var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/pdfjs';
+                var s = document.createElement('script');
+                s.src = base + '/pdf.min.js';
+                s.async = true;
+                s.onload = function () {
+                    if (window.pdfjsLib && window.pdfjsLib.getDocument) {
+                        try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = base + '/pdf.worker.min.js'; } catch (e) {}
+                        resolve();
+                    } else { reject(new Error('pdf.js loaded but pdfjsLib global is missing')); }
+                };
+                s.onerror = function () { reject(new Error('Failed to load /vendor/pdfjs/pdf.min.js')); };
+                document.head.appendChild(s);
+            });
+            return pdfjsReady;
+        }
+
+        function clearUi() {
+            revokeAll();
+            if (fileInput) fileInput.value = '';
+            if (out) out.innerHTML = '';
+            if (metaEl) metaEl.innerHTML = '';
+            setStatus('Choose a file to preview it right here. Nothing is uploaded.');
+        }
+
+        function renderMeta(f, kind) {
+            if (!metaEl) return;
+            metaEl.innerHTML =
+                '<table class="fv-table w3-table">' +
+                '<tr><th>Name</th><td>' + esc(f.name) + '</td></tr>' +
+                '<tr><th>Size</th><td>' + esc(fmtSize(f.size)) + ' (' + f.size + ' bytes)</td></tr>' +
+                '<tr><th>Type</th><td>' + esc(f.type || '(none reported)') + '</td></tr>' +
+                '<tr><th>Detected as</th><td>' + esc(kind) + '</td></tr>' +
+                '<tr><th>Last modified</th><td>' + esc(f.lastModified ? new Date(f.lastModified).toISOString() : 'unknown') + '</td></tr>' +
+                '</table>';
+        }
+
+        function renderImage(f) {
+            renderMeta(f, 'image');
+            var url = trackUrl(URL.createObjectURL(f));
+            var img = new Image();
+            img.className = 'fv-image';
+            img.alt = 'Preview of ' + f.name;
+            img.onload = function () {
+                setStatus('Rendered ' + f.name + ' (' + img.naturalWidth + ' x ' + img.naturalHeight + ' px). Nothing was uploaded.');
+            };
+            img.onerror = function () {
+                setStatus('This browser could not decode ' + f.name + ' as an image. Showing raw bytes instead.');
+                renderHexDump(f, true);
+            };
+            img.src = url;
+            out.innerHTML = '';
+            out.appendChild(img);
+        }
+
+        function renderPdf(f) {
+            renderMeta(f, 'PDF document');
+            setStatus('Loading the PDF engine...');
+            loadPdfjs().then(function () {
+                return f.arrayBuffer();
+            }).then(function (buf) {
+                setStatus('Parsing PDF in the browser...');
+                return window.pdfjsLib.getDocument({ data: buf }).promise;
+            }).then(function (pdf) {
+                out.innerHTML = '';
+                var total = pdf.numPages;
+                var toRender = Math.min(total, MAX_PDF_PAGES);
+                var chain = Promise.resolve();
+                for (var p = 1; p <= toRender; p++) {
+                    (function (pageNo) {
+                        chain = chain.then(function () {
+                            return pdf.getPage(pageNo).then(function (page) {
+                                var viewport = page.getViewport({ scale: 1.25 });
+                                var canvas = document.createElement('canvas');
+                                canvas.className = 'fv-pdf-page';
+                                canvas.width = viewport.width;
+                                canvas.height = viewport.height;
+                                canvas.setAttribute('aria-label', 'PDF page ' + pageNo);
+                                out.appendChild(canvas);
+                                return page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+                            });
+                        });
+                    })(p);
+                }
+                return chain.then(function () {
+                    var note = total > toRender ? ' (showing the first ' + toRender + ' of ' + total + ' pages)' : '';
+                    setStatus('Rendered ' + Math.min(total, toRender) + ' PDF page(s) from ' + f.name + note + '. Nothing was uploaded.');
+                });
+            }).catch(function (err) {
+                setStatus('Could not render this PDF: ' + (err && err.message ? err.message : String(err)));
+            });
+        }
+
+        function renderText(f, pretty) {
+            renderMeta(f, pretty ? 'JSON text' : 'text');
+            var slice = f.size > MAX_TEXT_BYTES ? f.slice(0, MAX_TEXT_BYTES) : f;
+            slice.text().then(function (txt) {
+                var truncated = f.size > MAX_TEXT_BYTES;
+                if (pretty) {
+                    try { txt = JSON.stringify(JSON.parse(txt), null, 2); }
+                    catch (e) { /* invalid JSON - show as-is */ }
+                }
+                var pre = document.createElement('pre');
+                pre.className = 'fv-text';
+                pre.textContent = txt;
+                out.innerHTML = '';
+                out.appendChild(pre);
+                var lines = txt.split('\n').length;
+                setStatus('Showing ' + (truncated ? 'the first ' + fmtSize(MAX_TEXT_BYTES) + ' of ' : '') + f.name +
+                    ' (' + lines + ' line(s)). Nothing was uploaded.');
+            }).catch(function (err) {
+                setStatus('Could not read this file as text: ' + (err && err.message ? err.message : String(err)));
+            });
+        }
+
+        function renderMedia(f, tag) {
+            renderMeta(f, tag === 'audio' ? 'audio' : 'video');
+            var url = trackUrl(URL.createObjectURL(f));
+            var el = document.createElement(tag);
+            el.controls = true;
+            el.className = 'fv-media';
+            el.src = url;
+            el.onerror = function () {
+                setStatus('This browser could not play ' + f.name + '. Showing raw bytes instead.');
+                renderHexDump(f, true);
+            };
+            out.innerHTML = '';
+            out.appendChild(el);
+            setStatus('Loaded ' + f.name + ' into the native ' + tag + ' player. Nothing was uploaded.');
+        }
+
+        function renderHexDump(f, keepStatus) {
+            renderMeta(f, 'binary (hex preview)');
+            var slice = f.slice(0, HEX_DUMP_BYTES);
+            slice.arrayBuffer().then(function (buf) {
+                var bytes = new Uint8Array(buf);
+                var rows = [];
+                for (var off = 0; off < bytes.length; off += 16) {
+                    var hex = [];
+                    var ascii = '';
+                    for (var i = 0; i < 16; i++) {
+                        if (off + i < bytes.length) {
+                            var b = bytes[off + i];
+                            hex.push((b < 16 ? '0' : '') + b.toString(16));
+                            ascii += (b >= 32 && b < 127) ? String.fromCharCode(b) : '.';
+                        } else {
+                            hex.push('  ');
+                            ascii += ' ';
+                        }
+                    }
+                    rows.push(
+                        ('00000000' + off.toString(16)).slice(-8) + '  ' +
+                        hex.slice(0, 8).join(' ') + '  ' + hex.slice(8).join(' ') + '  |' + ascii + '|'
+                    );
+                }
+                var pre = document.createElement('pre');
+                pre.className = 'fv-text fv-hex';
+                pre.textContent = rows.join('\n') || '(empty file)';
+                out.innerHTML = '';
+                out.appendChild(pre);
+                if (!keepStatus) {
+                    var note = f.size > HEX_DUMP_BYTES ? ' (first ' + fmtSize(HEX_DUMP_BYTES) + ' of ' + fmtSize(f.size) + ')' : '';
+                    setStatus('No native preview for this format - showing a hex dump' + note + '. Nothing was uploaded.');
+                }
+            }).catch(function (err) {
+                setStatus('Could not read this file: ' + (err && err.message ? err.message : String(err)));
+            });
+        }
+
+        var TEXT_EXTS = /^(txt|md|markdown|csv|tsv|log|xml|html|htm|css|js|mjs|ts|jsx|tsx|json|yml|yaml|ini|conf|toml|sh|bat|ps1|py|rb|go|rs|java|c|h|cpp|hpp|cs|php|sql|svg)$/;
+
+        function onFilePicked() {
+            var f = fileInput && fileInput.files && fileInput.files[0];
+            if (!f) { clearUi(); return; }
+            revokeAll();
+            if (out) out.innerHTML = '';
+            setStatus('Reading ' + f.name + ' locally...');
+            var type = String(f.type || '').toLowerCase();
+            var ext = extOf(f.name);
+            if (type === 'application/pdf' || ext === 'pdf') return renderPdf(f);
+            if (type.indexOf('image/') === 0 && ext !== 'svg') return renderImage(f);
+            if (ext === 'svg') return renderText(f, false);
+            if (type === 'application/json' || ext === 'json') return renderText(f, true);
+            if (type.indexOf('text/') === 0 || TEXT_EXTS.test(ext)) return renderText(f, false);
+            if (type.indexOf('audio/') === 0) return renderMedia(f, 'audio');
+            if (type.indexOf('video/') === 0) return renderMedia(f, 'video');
+            return renderHexDump(f, false);
+        }
+
+        if (window.jQuery) {
+            $('#fvFile').off('change.fv').on('change.fv', onFilePicked);
+            $('#fvClear').off('click.fv').on('click.fv', clearUi);
+        } else {
+            fileInput && fileInput.addEventListener('change', onFilePicked);
+            btnClear && btnClear.addEventListener('click', clearUi);
+        }
+        console.log('[file-viewer] wired: image/pdf/text/media/hex preview, all local');
+    }
+</script>
