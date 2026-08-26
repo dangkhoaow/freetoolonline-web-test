@@ -1,0 +1,294 @@
+<script>
+    // Alt text generator (alt-text-generator) - describe one or more images
+    // on-device and turn each description into a copyable alt attribute.
+    // Registry Gate-H entry: image_caption_alt_text_transformersjs.
+    //
+    // WHY THIS IS NOT /image-tools/image-to-text-ocr.html (G51): OCR reads
+    // the PRINTED TEXT inside an image; this page DESCRIBES THE SCENE for
+    // accessibility. Both siblings are cross-linked in the page copy.
+    //
+    // ENGINE LADDER:
+    //   Tier 1: Chrome Built-in Prompt API multimodal (LanguageModel with
+    //   image input) - feature-detected, never assumed; zero download from
+    //   this page when Chrome already has its own on-device model.
+    //   Tier 2: on-device captioner (Transformers.js v3 pin,
+    //   Xenova/vit-gpt2-image-captioning ONNX q8, WASM) - loaded ONLY on an
+    //   explicit click, ~250 MB stated BEFORE the download (HF-verified:
+    //   encoder 87.5 MB + decoder 158.6 MB at q8), cached by the browser.
+    //   Tier 3 (deterministic, no AI download): a writing workbench - each
+    //   image gets a thumbnail, its dimensions, a WCAG-style decision hint
+    //   and an editable alt field with the same copyable output. Real
+    //   standalone value in every browser, zero model.
+    //
+    // ENGINE PIN (HARD GUARD 5, load-bearing): transformers 3.8.1 EXACT.
+    // The Xenova vit-gpt2 q8 export fails ONNX session creation on the v4
+    // line ("Missing required scale ... MatMulNBits" - the opus-mt defect
+    // class); verified both directions in the fire29 Gate-H probe
+    // 2026-08-26. Do NOT bump without re-probing every page that shares
+    // this library.
+    //
+    // HONESTY (load-bearing): captions are literal machine guesses. The
+    // fire29 probe misgendered a real person and hallucinated colors. The
+    // page says plainly that every caption needs human review and is not
+    // WCAG-compliant alt text by itself.
+    //
+    // G16: a sample image + its REAL probe-produced caption are baked into
+    // BODYHTML (#atgDemo) and render on load with ZERO interaction and ZERO
+    // download.
+
+    web.localUpload = false;
+
+    var ATG_TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
+    var ATG_MODEL_ID = 'Xenova/vit-gpt2-image-captioning';
+    var ATG_MODEL_MB = 250;   // honest one-time size at q8 (HF HEAD-verified)
+    var ATG_MAX_FILES = 20;
+    var ATG_MAX_EDGE = 1024;  // captioner input cap; keeps memory flat on big photos
+
+    // --- tier 2: on-device captioner (one shared pipeline promise) ----------
+    var atgPipePromise = null;
+    function atgLoadPipe(onProgress) {
+        if (atgPipePromise) return atgPipePromise;
+        atgPipePromise = (async function () {
+            var tf = await import(/* webpackIgnore: true */ ATG_TF_CDN);
+            return await tf.pipeline('image-to-text', ATG_MODEL_ID, { dtype: 'q8', device: 'wasm', progress_callback: onProgress });
+        })();
+        atgPipePromise.catch(function () { atgPipePromise = null; });
+        return atgPipePromise;
+    }
+
+    // --- tier 1: Chrome Built-in Prompt API (multimodal) --------------------
+    var atgBuiltinSession = null;
+    async function atgBuiltinAvailability() {
+        try {
+            if (!('LanguageModel' in self)) return 'unavailable';
+            var a = await self.LanguageModel.availability({ expectedInputs: [{ type: 'image' }] });
+            return a || 'unavailable';
+        } catch (e) { return 'unavailable'; }
+    }
+    async function atgBuiltinCaption(blobOrCanvas) {
+        if (!atgBuiltinSession) {
+            atgBuiltinSession = await self.LanguageModel.create({ expectedInputs: [{ type: 'image' }] });
+        }
+        var text = await atgBuiltinSession.prompt([{
+            role: 'user',
+            content: [
+                { type: 'text', value: 'Describe this image in one short factual sentence for use as alt text. No preamble, no quotes.' },
+                { type: 'image', value: blobOrCanvas }
+            ]
+        }]);
+        return String(text || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+    }
+
+    function atgEsc(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function atgDrawToCanvas(img) {
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        var scale = Math.min(1, ATG_MAX_EDGE / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(w * scale));
+        c.height = Math.max(1, Math.round(h * scale));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        return c;
+    }
+
+    function atgWorkbenchHint(name, w, h) {
+        var hint = 'Say what a sighted reader learns from this image, in one sentence.';
+        var n = String(name || '').toLowerCase();
+        if (/(chart|graph|diagram|plot)/.test(n)) hint = 'For a chart or diagram, state the takeaway (the trend or comparison), not the visual layout.';
+        else if (/(logo|icon|badge)/.test(n)) hint = 'For a logo or icon, name the brand or meaning; if it is purely decorative, an empty alt="" is the right call.';
+        else if (/(screenshot|screen)/.test(n)) hint = 'For a screenshot, describe the state or step it shows, not every pixel.';
+        else if (w && h && w > 3 * h) hint = 'A wide banner is often decorative - if it adds no information, an empty alt="" is the right call.';
+        return hint;
+    }
+
+    function atgBuild(root) {
+        var wrap = document.createElement('div');
+        wrap.className = 'w3-container';
+        wrap.style.textAlign = 'left';
+        wrap.innerHTML =
+            '<h3 class="w3-text-blue-grey">Describe your images</h3>' +
+            '<div style="color:#555;margin-bottom:8px;">Pick up to ' + ATG_MAX_FILES + ' images. Each gets a draft description and a copyable alt attribute. The images stay on your device on every path below - nothing is uploaded.</div>' +
+            '<input type="file" id="atgFile" accept="image/*" multiple class="w3-input w3-border" style="max-width:440px;" />' +
+            '<div style="margin:10px 0 4px;">' +
+            '<button id="atgRunBtn" type="button" class="w3-button w3-green">Describe images</button> ' +
+            '<button id="atgLoadBtn" type="button" class="w3-button w3-blue-grey">Load caption model (~' + ATG_MODEL_MB + ' MB, one time)</button>' +
+            '</div>' +
+            '<progress id="atgProg" max="100" value="0" style="width:100%;max-width:440px;display:none;"></progress>' +
+            '<div id="atgEngine" style="color:#555;margin-top:6px;">Describing engine: none loaded yet - without one you still get the writing workbench below for each image.</div>' +
+            '<div id="atgStatus" style="min-height:1.2em;color:#555;margin-top:4px;">The example above was captioned ahead of time so you can see the output shape.</div>' +
+            '<div id="atgErr" style="color:#b00020;margin-top:4px;min-height:1em;"></div>' +
+            '<div id="atgOutput" style="margin-top:10px;"></div>' +
+            '<div style="margin:8px 0;"><button id="atgCopyAll" type="button" class="w3-button w3-light-grey" style="display:none;">Copy all alt attributes</button></div>' +
+            '<div style="color:#555;font-size:0.92em;margin-top:10px;">Every caption is a literal machine guess from a small on-device model - it can misidentify people, colors and context. Review and edit each one before publishing; a caption is a first draft, not finished alt text. If the image contains text you need extracted, use the <a href="/image-tools/image-to-text-ocr.html">image to text (OCR) tool</a> instead - this page describes the scene, it does not read the words in it.</div>';
+        root.appendChild(wrap);
+
+        var fileEl = wrap.querySelector('#atgFile');
+        var runBtn = wrap.querySelector('#atgRunBtn');
+        var loadBtn = wrap.querySelector('#atgLoadBtn');
+        var progEl = wrap.querySelector('#atgProg');
+        var engineEl = wrap.querySelector('#atgEngine');
+        var statusEl = wrap.querySelector('#atgStatus');
+        var errEl = wrap.querySelector('#atgErr');
+        var outEl = wrap.querySelector('#atgOutput');
+        var copyAll = wrap.querySelector('#atgCopyAll');
+        var busy = false;
+        var builtinState = 'unavailable';
+
+        function setStatus(t) { statusEl.textContent = t; }
+        function setErr(t) { errEl.textContent = t || ''; }
+
+        function copyText(t, okMsg) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t).then(function () { setStatus(okMsg); },
+                    function () { setStatus('Copy failed - select the text and copy manually.'); });
+            } else { setStatus('Select the text and copy it manually.'); }
+        }
+
+        function rowFor(file, url, w, h) {
+            var row = document.createElement('div');
+            row.className = 'w3-card w3-padding-small';
+            row.style.margin = '8px 0';
+            row.innerHTML =
+                '<div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;">' +
+                '<img src="' + url + '" alt="" style="max-width:120px;max-height:120px;border:1px solid #ddd;" />' +
+                '<div style="flex:1;min-width:220px;">' +
+                '<div style="color:#555;font-size:0.9em;">' + atgEsc(file.name) + ' (' + w + 'x' + h + ')</div>' +
+                '<div class="atg-hint" style="color:#777;font-size:0.9em;margin:2px 0;">' + atgEsc(atgWorkbenchHint(file.name, w, h)) + '</div>' +
+                '<textarea class="atg-cap w3-input w3-border" rows="2" placeholder="Write or generate a one-sentence description"></textarea>' +
+                '<div style="margin-top:4px;"><code class="atg-attr" style="word-break:break-all;"></code></div>' +
+                '<div style="margin-top:4px;"><button type="button" class="atg-copy w3-button w3-light-grey w3-small">Copy alt attribute</button> <span class="atg-src" style="color:#777;font-size:0.85em;"></span></div>' +
+                '</div></div>';
+            var cap = row.querySelector('.atg-cap');
+            var attr = row.querySelector('.atg-attr');
+            function sync() { attr.textContent = 'alt="' + String(cap.value || '').replace(/"/g, "'") + '"'; }
+            cap.addEventListener('input', sync); sync();
+            row.querySelector('.atg-copy').addEventListener('click', function () {
+                copyText(attr.textContent, 'Alt attribute copied to the clipboard.');
+            });
+            return row;
+        }
+
+        function syncLoadBtn() {
+            if (atgPipePromise) { loadBtn.disabled = true; loadBtn.textContent = 'Caption model ready'; }
+        }
+
+        loadBtn.addEventListener('click', async function () {
+            if (atgPipePromise) return;
+            setErr('');
+            progEl.style.display = 'block';
+            setStatus('Downloading the caption model (~' + ATG_MODEL_MB + ' MB, kept by your browser for next time) ...');
+            loadBtn.disabled = true;
+            try {
+                var seen = {};
+                await atgLoadPipe(function (p) {
+                    if (p && p.status === 'progress' && p.file) {
+                        seen[p.file] = p.progress || 0;
+                        var files = Object.keys(seen); var sum = 0;
+                        for (var i = 0; i < files.length; i++) sum += seen[files[i]];
+                        progEl.value = Math.min(100, Math.round(sum / files.length));
+                    }
+                });
+                progEl.style.display = 'none';
+                engineEl.textContent = 'Describing engine: the on-device caption model (ready).';
+                setStatus('Model ready. Pick images and click "Describe images" - everything runs on your device.');
+            } catch (e) {
+                progEl.style.display = 'none';
+                loadBtn.disabled = false;
+                setErr('Could not load the caption model: ' + (e && e.message ? e.message : String(e)));
+                setStatus('You can still use the writing workbench below with no download.');
+            }
+            syncLoadBtn();
+        });
+
+        runBtn.addEventListener('click', async function () {
+            if (busy) return;
+            setErr('');
+            var files = Array.prototype.slice.call(fileEl.files || []);
+            if (!files.length) { setErr('Pick at least one image first.'); return; }
+            if (files.length > ATG_MAX_FILES) { files = files.slice(0, ATG_MAX_FILES); setStatus('Using the first ' + ATG_MAX_FILES + ' images.'); }
+            busy = true; runBtn.disabled = true;
+            outEl.innerHTML = '';
+            copyAll.style.display = 'none';
+            var rows = [];
+            try {
+                for (var i = 0; i < files.length; i++) {
+                    var f = files[i];
+                    setStatus('Image ' + (i + 1) + ' of ' + files.length + ' ...');
+                    await new Promise(function (r) { setTimeout(r, 0); });
+                    var url;
+                    try { url = URL.createObjectURL(f); } catch (e) { continue; }
+                    var img = new Image();
+                    img.src = url;
+                    try { await img.decode(); } catch (e) {
+                        setErr('Could not decode "' + f.name + '" - is it an image this browser can open?');
+                        continue;
+                    }
+                    var w = img.naturalWidth, h = img.naturalHeight;
+                    var row = rowFor(f, url, w, h);
+                    outEl.appendChild(row);
+                    rows.push(row);
+                    var capEl = row.querySelector('.atg-cap');
+                    var srcEl = row.querySelector('.atg-src');
+                    var caption = '';
+                    // Tier 1: built-in browser AI (feature-detected earlier).
+                    if (builtinState === 'available' || builtinState === 'downloadable' || builtinState === 'downloading') {
+                        try {
+                            caption = await atgBuiltinCaption(atgDrawToCanvas(img));
+                            if (caption) srcEl.textContent = 'described by: the built-in browser AI (on-device)';
+                        } catch (e) { caption = ''; }
+                    }
+                    // Tier 2: the loaded captioner.
+                    if (!caption && atgPipePromise) {
+                        try {
+                            var pipe = await atgPipePromise;
+                            var res = await pipe(atgDrawToCanvas(img).toDataURL('image/jpeg', 0.9));
+                            caption = (res && res[0] && res[0].generated_text) ? String(res[0].generated_text).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '') : '';
+                            if (caption) srcEl.textContent = 'described by: the on-device caption model';
+                        } catch (e) {
+                            setErr('The caption model failed on "' + f.name + '": ' + (e && e.message ? e.message : String(e)));
+                        }
+                    }
+                    if (caption) {
+                        capEl.value = caption;
+                        capEl.dispatchEvent(new Event('input'));
+                    } else if (!srcEl.textContent) {
+                        srcEl.textContent = 'no engine loaded - write the sentence yourself using the hint above';
+                    }
+                }
+                if (rows.length) copyAll.style.display = 'inline-block';
+                var anyModel = atgPipePromise || builtinState !== 'unavailable';
+                setStatus(anyModel
+                    ? 'Done - described on your device. Nothing was uploaded. Review and edit every caption before publishing.'
+                    : 'Workbench ready for ' + rows.length + ' image(s) - write each sentence using the hints, or load the caption model above for a machine draft.');
+            } catch (e) {
+                setErr('Could not process the images: ' + (e && e.message ? e.message : String(e)));
+            } finally { busy = false; runBtn.disabled = false; }
+        });
+
+        copyAll.addEventListener('click', function () {
+            var parts = [];
+            var attrs = outEl.querySelectorAll('.atg-attr');
+            for (var i = 0; i < attrs.length; i++) { if (attrs[i].textContent) parts.push(attrs[i].textContent); }
+            if (parts.length) copyText(parts.join('\n'), 'All ' + parts.length + ' alt attributes copied.');
+        });
+
+        syncLoadBtn();
+        (async function () {
+            builtinState = await atgBuiltinAvailability();
+            if (builtinState === 'available') {
+                engineEl.textContent = 'Describing engine: this Chrome has built-in on-device AI - captions need no download from this page.';
+            } else if (builtinState === 'downloadable' || builtinState === 'downloading') {
+                engineEl.textContent = 'Describing engine: this Chrome can use its built-in on-device AI (Chrome downloads its own model on first use).';
+            }
+        })();
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('altTextGeneratorTool');
+        if (!root) return; // not an alt-text-generator page
+        root.innerHTML = '';
+        atgBuild(root);
+    }
+</script>
