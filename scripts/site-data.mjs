@@ -3859,18 +3859,6 @@ export const INFO_ROUTES = new Set([
   '/guides/de/sidereal-vs-solar-day-when.html',
   '/guides/vi/sidereal-vs-solar-day-when.html',
   '/guides/id/sidereal-vs-solar-day-when.html',
-  '/guides/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/pt/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/es/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/de/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/vi/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/id/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/pt/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/es/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/de/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/vi/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/id/sidereal-vs-solar-day-vs-alternatives.html',
   '/guides/aurora-when.html',
   '/guides/pt/aurora-when.html',
   '/guides/es/aurora-when.html',
@@ -4450,7 +4438,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/kuiper-belt-oort-cloud-vs-alternatives.html',
   '/guides/kuiper-belt-oort-cloud-vs-alternatives.html',
   '/guides/de/light-cone-vs-alternatives.html',
-  '/guides/de/spacetime-curvature-vs-alternatives.html',
   '/guides/de/gravitational-waves-vs-alternatives.html',
   '/guides/de/hill-sphere-vs-alternatives.html',
   '/guides/de/cepheid-variable-vs-alternatives.html',
@@ -4519,7 +4506,6 @@ export const INFO_ROUTES = new Set([
   '/guides/de/triton-cantaloupe-vs-alternatives.html',
   '/guides/de/haumea-elongated-vs-alternatives.html',
   '/guides/id/light-cone-vs-alternatives.html',
-  '/guides/id/spacetime-curvature-vs-alternatives.html',
   '/guides/id/gravitational-waves-vs-alternatives.html',
   '/guides/id/hill-sphere-vs-alternatives.html',
   '/guides/id/cepheid-variable-vs-alternatives.html',
@@ -4803,7 +4789,6 @@ export const INFO_ROUTES = new Set([
   '/guides/de/io-plasma-torus-step-by-step.html',
   '/guides/de/io-plasma-torus-when.html',
   '/guides/de/io-plasma-torus-vs-alternatives.html',
-  '/guides/vi/spacetime-curvature-vs-alternatives.html',
   '/guides/vi/hill-sphere-vs-alternatives.html',
   '/guides/vi/cepheid-variable-vs-alternatives.html',
   '/guides/vi/doppler-radial-velocity-vs-alternatives.html',
@@ -4859,7 +4844,6 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/triton-cantaloupe-vs-alternatives.html',
   '/guides/vi/haumea-elongated-vs-alternatives.html',
   '/guides/es/light-cone-vs-alternatives.html',
-  '/guides/es/spacetime-curvature-vs-alternatives.html',
   '/guides/es/gravitational-waves-vs-alternatives.html',
   '/guides/es/hill-sphere-vs-alternatives.html',
   '/guides/es/cepheid-variable-vs-alternatives.html',
@@ -4928,7 +4912,6 @@ export const INFO_ROUTES = new Set([
   '/guides/es/triton-cantaloupe-vs-alternatives.html',
   '/guides/es/haumea-elongated-vs-alternatives.html',
   '/guides/pt/light-cone-vs-alternatives.html',
-  '/guides/pt/spacetime-curvature-vs-alternatives.html',
   '/guides/pt/gravitational-waves-vs-alternatives.html',
   '/guides/pt/hill-sphere-vs-alternatives.html',
   '/guides/pt/cepheid-variable-vs-alternatives.html',
@@ -4997,7 +4980,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/triton-cantaloupe-vs-alternatives.html',
   '/guides/pt/haumea-elongated-vs-alternatives.html',
   '/guides/light-cone-vs-alternatives.html',
-  '/guides/spacetime-curvature-vs-alternatives.html',
   '/guides/gravitational-waves-vs-alternatives.html',
   '/guides/hill-sphere-vs-alternatives.html',
   '/guides/cepheid-variable-vs-alternatives.html',
@@ -5486,7 +5468,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/kuiper-belt-oort-cloud-step-by-step.html',
   '/guides/kuiper-belt-oort-cloud-step-by-step.html',
   '/guides/de/light-cone-step-by-step.html',
-  '/guides/de/spacetime-curvature-step-by-step.html',
   '/guides/de/gravitational-waves-step-by-step.html',
   '/guides/de/hill-sphere-step-by-step.html',
   '/guides/de/cepheid-variable-step-by-step.html',
@@ -5555,7 +5536,6 @@ export const INFO_ROUTES = new Set([
   '/guides/de/triton-cantaloupe-step-by-step.html',
   '/guides/de/haumea-elongated-step-by-step.html',
   '/guides/id/light-cone-step-by-step.html',
-  '/guides/id/spacetime-curvature-step-by-step.html',
   '/guides/id/gravitational-waves-step-by-step.html',
   '/guides/id/hill-sphere-step-by-step.html',
   '/guides/id/cepheid-variable-step-by-step.html',
@@ -5623,7 +5603,6 @@ export const INFO_ROUTES = new Set([
   '/guides/id/hyperion-sponge-step-by-step.html',
   '/guides/id/triton-cantaloupe-step-by-step.html',
   '/guides/id/haumea-elongated-step-by-step.html',
-  '/guides/vi/spacetime-curvature-step-by-step.html',
   '/guides/vi/hill-sphere-step-by-step.html',
   '/guides/vi/cepheid-variable-step-by-step.html',
   '/guides/vi/doppler-radial-velocity-step-by-step.html',
@@ -5678,7 +5657,6 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/triton-cantaloupe-step-by-step.html',
   '/guides/vi/haumea-elongated-step-by-step.html',
   '/guides/es/light-cone-step-by-step.html',
-  '/guides/es/spacetime-curvature-step-by-step.html',
   '/guides/es/gravitational-waves-step-by-step.html',
   '/guides/es/hill-sphere-step-by-step.html',
   '/guides/es/cepheid-variable-step-by-step.html',
@@ -5747,7 +5725,6 @@ export const INFO_ROUTES = new Set([
   '/guides/es/triton-cantaloupe-step-by-step.html',
   '/guides/es/haumea-elongated-step-by-step.html',
   '/guides/pt/light-cone-step-by-step.html',
-  '/guides/pt/spacetime-curvature-step-by-step.html',
   '/guides/pt/gravitational-waves-step-by-step.html',
   '/guides/pt/hill-sphere-step-by-step.html',
   '/guides/pt/cepheid-variable-step-by-step.html',
@@ -5816,7 +5793,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/triton-cantaloupe-step-by-step.html',
   '/guides/pt/haumea-elongated-step-by-step.html',
   '/guides/light-cone-step-by-step.html',
-  '/guides/spacetime-curvature-step-by-step.html',
   '/guides/gravitational-waves-step-by-step.html',
   '/guides/hill-sphere-step-by-step.html',
   '/guides/cepheid-variable-step-by-step.html',
@@ -14083,6 +14059,30 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  '/guides/sidereal-vs-solar-day-step-by-step.html': '/guides/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/sidereal-vs-solar-day-vs-alternatives.html': '/guides/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/pt/sidereal-vs-solar-day-step-by-step.html': '/guides/pt/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/pt/sidereal-vs-solar-day-vs-alternatives.html': '/guides/pt/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/es/sidereal-vs-solar-day-step-by-step.html': '/guides/es/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/es/sidereal-vs-solar-day-vs-alternatives.html': '/guides/es/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/de/sidereal-vs-solar-day-step-by-step.html': '/guides/de/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/de/sidereal-vs-solar-day-vs-alternatives.html': '/guides/de/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/vi/sidereal-vs-solar-day-step-by-step.html': '/guides/vi/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/vi/sidereal-vs-solar-day-vs-alternatives.html': '/guides/vi/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/id/sidereal-vs-solar-day-step-by-step.html': '/guides/id/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/id/sidereal-vs-solar-day-vs-alternatives.html': '/guides/id/sidereal-vs-solar-day-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/spacetime-curvature-step-by-step.html': '/guides/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/spacetime-curvature-vs-alternatives.html': '/guides/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/pt/spacetime-curvature-step-by-step.html': '/guides/pt/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/pt/spacetime-curvature-vs-alternatives.html': '/guides/pt/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/es/spacetime-curvature-step-by-step.html': '/guides/es/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/es/spacetime-curvature-vs-alternatives.html': '/guides/es/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/de/spacetime-curvature-step-by-step.html': '/guides/de/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/de/spacetime-curvature-vs-alternatives.html': '/guides/de/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/vi/spacetime-curvature-step-by-step.html': '/guides/vi/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/vi/spacetime-curvature-vs-alternatives.html': '/guides/vi/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/id/spacetime-curvature-step-by-step.html': '/guides/id/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
+  '/guides/id/spacetime-curvature-vs-alternatives.html': '/guides/id/spacetime-curvature-when.html', // consolidation fire70: doorway family retired into the -when keeper
   '/guides/video-compressor-step-by-step.html': '/guides/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
   '/guides/video-compressor-vs-alternatives.html': '/guides/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
   '/guides/pt/video-compressor-step-by-step.html': '/guides/pt/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
@@ -23020,7 +23020,6 @@ export const JSP_BY_ROUTE = {
   '/guides/meteor-shower-radiant-vs-alternatives.html': 'guide/meteor-shower-radiant-vs-alternatives.jsp',
   '/guides/kuiper-belt-oort-cloud-vs-alternatives.html': 'guide/kuiper-belt-oort-cloud-vs-alternatives.jsp',
   '/guides/light-cone-vs-alternatives.html': 'guide/light-cone-vs-alternatives.jsp',
-  '/guides/spacetime-curvature-vs-alternatives.html': 'guide/spacetime-curvature-vs-alternatives.jsp',
   '/guides/gravitational-waves-vs-alternatives.html': 'guide/gravitational-waves-vs-alternatives.jsp',
   '/guides/hill-sphere-vs-alternatives.html': 'guide/hill-sphere-vs-alternatives.jsp',
   '/guides/cepheid-variable-vs-alternatives.html': 'guide/cepheid-variable-vs-alternatives.jsp',
@@ -23224,7 +23223,6 @@ export const JSP_BY_ROUTE = {
   '/guides/gravitational-waves-when.html': 'guide/gravitational-waves-when.jsp',
   '/guides/gravitational-waves-step-by-step.html': 'guide/gravitational-waves-step-by-step.jsp',
   '/guides/spacetime-curvature-when.html': 'guide/spacetime-curvature-when.jsp',
-  '/guides/spacetime-curvature-step-by-step.html': 'guide/spacetime-curvature-step-by-step.jsp',
   '/guides/light-cone-when.html': 'guide/light-cone-when.jsp',
   '/guides/light-cone-step-by-step.html': 'guide/light-cone-step-by-step.jsp',
   '/guides/jupiter-magnetosphere-when.html': 'guide/jupiter-magnetosphere-when.jsp',
@@ -23265,7 +23263,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/meteor-shower-radiant-vs-alternatives.html': 'guide/pt/meteor-shower-radiant-vs-alternatives.jsp',
   '/guides/pt/kuiper-belt-oort-cloud-vs-alternatives.html': 'guide/pt/kuiper-belt-oort-cloud-vs-alternatives.jsp',
   '/guides/pt/light-cone-vs-alternatives.html': 'guide/pt/light-cone-vs-alternatives.jsp',
-  '/guides/pt/spacetime-curvature-vs-alternatives.html': 'guide/pt/spacetime-curvature-vs-alternatives.jsp',
   '/guides/pt/gravitational-waves-vs-alternatives.html': 'guide/pt/gravitational-waves-vs-alternatives.jsp',
   '/guides/pt/hill-sphere-vs-alternatives.html': 'guide/pt/hill-sphere-vs-alternatives.jsp',
   '/guides/pt/cepheid-variable-vs-alternatives.html': 'guide/pt/cepheid-variable-vs-alternatives.jsp',
@@ -23407,7 +23404,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/haumea-elongated-when.html': 'guide/pt/haumea-elongated-when.jsp',
   '/guides/pt/kuiper-belt-oort-cloud-step-by-step.html': 'guide/pt/kuiper-belt-oort-cloud-step-by-step.jsp',
   '/guides/pt/light-cone-step-by-step.html': 'guide/pt/light-cone-step-by-step.jsp',
-  '/guides/pt/spacetime-curvature-step-by-step.html': 'guide/pt/spacetime-curvature-step-by-step.jsp',
   '/guides/pt/gravitational-waves-step-by-step.html': 'guide/pt/gravitational-waves-step-by-step.jsp',
   '/guides/pt/hill-sphere-step-by-step.html': 'guide/pt/hill-sphere-step-by-step.jsp',
   '/guides/pt/cepheid-variable-step-by-step.html': 'guide/pt/cepheid-variable-step-by-step.jsp',
@@ -23510,7 +23506,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/meteor-shower-radiant-vs-alternatives.html': 'guide/es/meteor-shower-radiant-vs-alternatives.jsp',
   '/guides/es/kuiper-belt-oort-cloud-vs-alternatives.html': 'guide/es/kuiper-belt-oort-cloud-vs-alternatives.jsp',
   '/guides/es/light-cone-vs-alternatives.html': 'guide/es/light-cone-vs-alternatives.jsp',
-  '/guides/es/spacetime-curvature-vs-alternatives.html': 'guide/es/spacetime-curvature-vs-alternatives.jsp',
   '/guides/es/gravitational-waves-vs-alternatives.html': 'guide/es/gravitational-waves-vs-alternatives.jsp',
   '/guides/es/hill-sphere-vs-alternatives.html': 'guide/es/hill-sphere-vs-alternatives.jsp',
   '/guides/es/cepheid-variable-vs-alternatives.html': 'guide/es/cepheid-variable-vs-alternatives.jsp',
@@ -23652,7 +23647,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/haumea-elongated-when.html': 'guide/es/haumea-elongated-when.jsp',
   '/guides/es/kuiper-belt-oort-cloud-step-by-step.html': 'guide/es/kuiper-belt-oort-cloud-step-by-step.jsp',
   '/guides/es/light-cone-step-by-step.html': 'guide/es/light-cone-step-by-step.jsp',
-  '/guides/es/spacetime-curvature-step-by-step.html': 'guide/es/spacetime-curvature-step-by-step.jsp',
   '/guides/es/gravitational-waves-step-by-step.html': 'guide/es/gravitational-waves-step-by-step.jsp',
   '/guides/es/hill-sphere-step-by-step.html': 'guide/es/hill-sphere-step-by-step.jsp',
   '/guides/es/cepheid-variable-step-by-step.html': 'guide/es/cepheid-variable-step-by-step.jsp',
@@ -23755,7 +23749,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/meteor-shower-radiant-vs-alternatives.html': 'guide/de/meteor-shower-radiant-vs-alternatives.jsp',
   '/guides/de/kuiper-belt-oort-cloud-vs-alternatives.html': 'guide/de/kuiper-belt-oort-cloud-vs-alternatives.jsp',
   '/guides/de/light-cone-vs-alternatives.html': 'guide/de/light-cone-vs-alternatives.jsp',
-  '/guides/de/spacetime-curvature-vs-alternatives.html': 'guide/de/spacetime-curvature-vs-alternatives.jsp',
   '/guides/de/gravitational-waves-vs-alternatives.html': 'guide/de/gravitational-waves-vs-alternatives.jsp',
   '/guides/de/hill-sphere-vs-alternatives.html': 'guide/de/hill-sphere-vs-alternatives.jsp',
   '/guides/de/cepheid-variable-vs-alternatives.html': 'guide/de/cepheid-variable-vs-alternatives.jsp',
@@ -23897,7 +23890,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/haumea-elongated-when.html': 'guide/de/haumea-elongated-when.jsp',
   '/guides/de/kuiper-belt-oort-cloud-step-by-step.html': 'guide/de/kuiper-belt-oort-cloud-step-by-step.jsp',
   '/guides/de/light-cone-step-by-step.html': 'guide/de/light-cone-step-by-step.jsp',
-  '/guides/de/spacetime-curvature-step-by-step.html': 'guide/de/spacetime-curvature-step-by-step.jsp',
   '/guides/de/gravitational-waves-step-by-step.html': 'guide/de/gravitational-waves-step-by-step.jsp',
   '/guides/de/hill-sphere-step-by-step.html': 'guide/de/hill-sphere-step-by-step.jsp',
   '/guides/de/cepheid-variable-step-by-step.html': 'guide/de/cepheid-variable-step-by-step.jsp',
@@ -23997,7 +23989,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/venus-retrograde-rotation-vs-alternatives.html': 'guide/vi/venus-retrograde-rotation-vs-alternatives.jsp',
   '/guides/vi/three-body-problem-vs-alternatives.html': 'guide/vi/three-body-problem-vs-alternatives.jsp',
   '/guides/vi/meteor-shower-radiant-vs-alternatives.html': 'guide/vi/meteor-shower-radiant-vs-alternatives.jsp',
-  '/guides/vi/spacetime-curvature-vs-alternatives.html': 'guide/vi/spacetime-curvature-vs-alternatives.jsp',
   '/guides/vi/hill-sphere-vs-alternatives.html': 'guide/vi/hill-sphere-vs-alternatives.jsp',
   '/guides/vi/cepheid-variable-vs-alternatives.html': 'guide/vi/cepheid-variable-vs-alternatives.jsp',
   '/guides/vi/star-trails-vs-alternatives.html': 'guide/vi/star-trails-vs-alternatives.jsp',
@@ -24099,7 +24090,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/mimas-herschel-when.html': 'guide/vi/mimas-herschel-when.jsp',
   '/guides/vi/triton-cantaloupe-when.html': 'guide/vi/triton-cantaloupe-when.jsp',
   '/guides/vi/haumea-elongated-when.html': 'guide/vi/haumea-elongated-when.jsp',
-  '/guides/vi/spacetime-curvature-step-by-step.html': 'guide/vi/spacetime-curvature-step-by-step.jsp',
   '/guides/vi/hill-sphere-step-by-step.html': 'guide/vi/hill-sphere-step-by-step.jsp',
   '/guides/vi/cepheid-variable-step-by-step.html': 'guide/vi/cepheid-variable-step-by-step.jsp',
   '/guides/vi/star-trails-step-by-step.html': 'guide/vi/star-trails-step-by-step.jsp',
@@ -24181,7 +24171,6 @@ export const JSP_BY_ROUTE = {
   '/guides/id/meteor-shower-radiant-vs-alternatives.html': 'guide/id/meteor-shower-radiant-vs-alternatives.jsp',
   '/guides/id/kuiper-belt-oort-cloud-vs-alternatives.html': 'guide/id/kuiper-belt-oort-cloud-vs-alternatives.jsp',
   '/guides/id/light-cone-vs-alternatives.html': 'guide/id/light-cone-vs-alternatives.jsp',
-  '/guides/id/spacetime-curvature-vs-alternatives.html': 'guide/id/spacetime-curvature-vs-alternatives.jsp',
   '/guides/id/gravitational-waves-vs-alternatives.html': 'guide/id/gravitational-waves-vs-alternatives.jsp',
   '/guides/id/hill-sphere-vs-alternatives.html': 'guide/id/hill-sphere-vs-alternatives.jsp',
   '/guides/id/cepheid-variable-vs-alternatives.html': 'guide/id/cepheid-variable-vs-alternatives.jsp',
@@ -24374,7 +24363,6 @@ export const JSP_BY_ROUTE = {
   '/guides/id/haumea-elongated-when.html': 'guide/id/haumea-elongated-when.jsp',
   '/guides/id/kuiper-belt-oort-cloud-step-by-step.html': 'guide/id/kuiper-belt-oort-cloud-step-by-step.jsp',
   '/guides/id/light-cone-step-by-step.html': 'guide/id/light-cone-step-by-step.jsp',
-  '/guides/id/spacetime-curvature-step-by-step.html': 'guide/id/spacetime-curvature-step-by-step.jsp',
   '/guides/id/gravitational-waves-step-by-step.html': 'guide/id/gravitational-waves-step-by-step.jsp',
   '/guides/id/hill-sphere-step-by-step.html': 'guide/id/hill-sphere-step-by-step.jsp',
   '/guides/id/cepheid-variable-step-by-step.html': 'guide/id/cepheid-variable-step-by-step.jsp',
@@ -24817,18 +24805,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/sidereal-vs-solar-day-when.html': 'guide/de/sidereal-vs-solar-day-when.jsp',
   '/guides/vi/sidereal-vs-solar-day-when.html': 'guide/vi/sidereal-vs-solar-day-when.jsp',
   '/guides/id/sidereal-vs-solar-day-when.html': 'guide/id/sidereal-vs-solar-day-when.jsp',
-  '/guides/sidereal-vs-solar-day-step-by-step.html': 'guide/sidereal-vs-solar-day-step-by-step.jsp',
-  '/guides/pt/sidereal-vs-solar-day-step-by-step.html': 'guide/pt/sidereal-vs-solar-day-step-by-step.jsp',
-  '/guides/es/sidereal-vs-solar-day-step-by-step.html': 'guide/es/sidereal-vs-solar-day-step-by-step.jsp',
-  '/guides/de/sidereal-vs-solar-day-step-by-step.html': 'guide/de/sidereal-vs-solar-day-step-by-step.jsp',
-  '/guides/vi/sidereal-vs-solar-day-step-by-step.html': 'guide/vi/sidereal-vs-solar-day-step-by-step.jsp',
-  '/guides/id/sidereal-vs-solar-day-step-by-step.html': 'guide/id/sidereal-vs-solar-day-step-by-step.jsp',
-  '/guides/sidereal-vs-solar-day-vs-alternatives.html': 'guide/sidereal-vs-solar-day-vs-alternatives.jsp',
-  '/guides/pt/sidereal-vs-solar-day-vs-alternatives.html': 'guide/pt/sidereal-vs-solar-day-vs-alternatives.jsp',
-  '/guides/es/sidereal-vs-solar-day-vs-alternatives.html': 'guide/es/sidereal-vs-solar-day-vs-alternatives.jsp',
-  '/guides/de/sidereal-vs-solar-day-vs-alternatives.html': 'guide/de/sidereal-vs-solar-day-vs-alternatives.jsp',
-  '/guides/vi/sidereal-vs-solar-day-vs-alternatives.html': 'guide/vi/sidereal-vs-solar-day-vs-alternatives.jsp',
-  '/guides/id/sidereal-vs-solar-day-vs-alternatives.html': 'guide/id/sidereal-vs-solar-day-vs-alternatives.jsp',
   '/guides/aurora-when.html': 'guide/aurora-when.jsp',
   '/guides/pt/aurora-when.html': 'guide/pt/aurora-when.jsp',
   '/guides/es/aurora-when.html': 'guide/es/aurora-when.jsp',
@@ -30069,8 +30045,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/shepherd-moons-when.html',
   '/guides/vi/shuangmiaosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/vi/shuangmiaosaurus-size-comparison.html',
-  '/guides/vi/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/vi/sidereal-vs-solar-day-vs-alternatives.html',
   '/guides/vi/sidereal-vs-solar-day-when.html',
   '/guides/vi/sign-pdf-add-signature-vs-alternatives.html',
   '/guides/vi/sign-pdf-add-signature-when.html',
@@ -30111,8 +30085,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/space-grid-puzzle-when.html',
   '/guides/vi/space-pi-defense-vs-alternatives.html',
   '/guides/vi/space-pi-defense-when.html',
-  '/guides/vi/spacetime-curvature-step-by-step.html',
-  '/guides/vi/spacetime-curvature-vs-alternatives.html',
   '/guides/vi/spacetime-curvature-when.html',
   '/guides/vi/speaker-audio-channel-test-step-by-step.html',
   '/guides/vi/speaker-audio-channel-test-vs-alternatives.html',
@@ -32575,8 +32547,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/shepherd-moons-when.html',
   '/guides/pt/shuangmiaosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/shuangmiaosaurus-size-comparison.html',
-  '/guides/pt/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/pt/sidereal-vs-solar-day-vs-alternatives.html',
   '/guides/pt/sidereal-vs-solar-day-when.html',
   '/guides/pt/sign-pdf-add-signature-step-by-step.html',
   '/guides/pt/sign-pdf-add-signature-vs-alternatives.html',
@@ -32619,8 +32589,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/space-grid-puzzle-when.html',
   '/guides/pt/space-pi-defense-vs-alternatives.html',
   '/guides/pt/space-pi-defense-when.html',
-  '/guides/pt/spacetime-curvature-step-by-step.html',
-  '/guides/pt/spacetime-curvature-vs-alternatives.html',
   '/guides/pt/spacetime-curvature-when.html',
   '/guides/pt/speaker-audio-channel-test-step-by-step.html',
   '/guides/pt/speaker-audio-channel-test-vs-alternatives.html',
@@ -34006,8 +33974,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/es/shepherd-moons-when.html",
   "/guides/es/shuangmiaosaurus-3d-viewer-vs-ar-apps.html",
   "/guides/es/shuangmiaosaurus-size-comparison.html",
-  "/guides/es/sidereal-vs-solar-day-step-by-step.html",
-  "/guides/es/sidereal-vs-solar-day-vs-alternatives.html",
   "/guides/es/sidereal-vs-solar-day-when.html",
   "/guides/es/sign-pdf-add-signature-step-by-step.html",
   "/guides/es/sign-pdf-add-signature-vs-alternatives.html",
@@ -34051,8 +34017,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/es/space-grid-puzzle-when.html",
   "/guides/es/space-pi-defense-vs-alternatives.html",
   "/guides/es/space-pi-defense-when.html",
-  "/guides/es/spacetime-curvature-step-by-step.html",
-  "/guides/es/spacetime-curvature-vs-alternatives.html",
   "/guides/es/spacetime-curvature-when.html",
   "/guides/es/speaker-audio-channel-test-step-by-step.html",
   "/guides/es/speaker-audio-channel-test-vs-alternatives.html",
@@ -34876,7 +34840,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/kuiper-belt-oort-cloud-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/jupiter-magnetosphere-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/light-cone-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/spacetime-curvature-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/cepheid-variable-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/expanding-universe-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/doppler-radial-velocity-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
@@ -35018,7 +34981,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/kuiper-belt-oort-cloud-step-by-step.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/jupiter-magnetosphere-step-by-step.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/light-cone-step-by-step.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/spacetime-curvature-step-by-step.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/cepheid-variable-step-by-step.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/expanding-universe-step-by-step.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/doppler-radial-velocity-step-by-step.html', // pruned 2026-07-29 zero-evidence id
