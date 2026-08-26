@@ -115,6 +115,7 @@ export const INFO_ROUTES = new Set([
   '/guides/es/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/vi/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/id/foxit-pdf-editor-browser-step-by-step.html',
+  '/guides/de/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/foxit-pdf-editor-browser-when.html',
   // game-server-status companion guides (new-tool-discovery-loop fire728)
   '/guides/game-server-status-step-by-step.html',
@@ -7341,6 +7342,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/foxit-pdf-editor-browser-step-by-step.html',
   // foxit-pdf-editor-browser-step-by-step id locale (create_new_guide_page 20260826-4)
   '/guides/id/foxit-pdf-editor-browser-step-by-step.html',
+  // foxit-pdf-editor-browser-step-by-step de locale (create_new_guide_page 20260826-5)
+  '/guides/de/foxit-pdf-editor-browser-step-by-step.html',
   // adobe-pdf-editor-browser-when pt locale (create_new_guide_page 20260821-3)
   '/guides/pt/adobe-pdf-editor-browser-when.html',
   // adobe-pdf-editor-browser-when es locale (create_new_guide_page 20260821-4)
@@ -28818,6 +28821,7 @@ export const JSP_BY_ROUTE = {
   '/guides/es/foxit-pdf-editor-browser-step-by-step.html': 'guide/es/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/vi/foxit-pdf-editor-browser-step-by-step.html': 'guide/vi/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/id/foxit-pdf-editor-browser-step-by-step.html': 'guide/id/foxit-pdf-editor-browser-step-by-step.jsp',
+  '/guides/de/foxit-pdf-editor-browser-step-by-step.html': 'guide/de/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/foxit-pdf-editor-browser-vs-alternatives.jsp',
   '/image-converter-tools/adobe-pdf-editor-browser.html': 'convert/adobe-pdf-editor-browser.jsp',
   '/guides/pt/adobe-pdf-editor-browser-when.html': 'guide/pt/adobe-pdf-editor-browser-when.jsp',
