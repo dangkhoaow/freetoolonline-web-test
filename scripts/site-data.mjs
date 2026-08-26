@@ -3778,18 +3778,6 @@ export const INFO_ROUTES = new Set([
   '/guides/de/parallax-distance-when.html',
   '/guides/vi/parallax-distance-when.html',
   '/guides/id/parallax-distance-when.html',
-  '/guides/parallax-distance-step-by-step.html',
-  '/guides/pt/parallax-distance-step-by-step.html',
-  '/guides/es/parallax-distance-step-by-step.html',
-  '/guides/de/parallax-distance-step-by-step.html',
-  '/guides/vi/parallax-distance-step-by-step.html',
-  '/guides/id/parallax-distance-step-by-step.html',
-  '/guides/parallax-distance-vs-alternatives.html',
-  '/guides/pt/parallax-distance-vs-alternatives.html',
-  '/guides/es/parallax-distance-vs-alternatives.html',
-  '/guides/de/parallax-distance-vs-alternatives.html',
-  '/guides/vi/parallax-distance-vs-alternatives.html',
-  '/guides/id/parallax-distance-vs-alternatives.html',
   '/guides/ecliptic-zodiac-when.html',
   '/guides/pt/ecliptic-zodiac-when.html',
   '/guides/es/ecliptic-zodiac-when.html',
@@ -15992,6 +15980,18 @@ export const ALIAS_ROUTES = {
   '/orbital-resonance.html': '/space-3d/orbital-resonance.html',
   '/stellar-magnitude.html': '/space-3d/stellar-magnitude.html',
   '/parallax-distance.html': '/space-3d/parallax-distance.html',
+  '/guides/parallax-distance-step-by-step.html': '/guides/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/parallax-distance-vs-alternatives.html': '/guides/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/pt/parallax-distance-step-by-step.html': '/guides/pt/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/pt/parallax-distance-vs-alternatives.html': '/guides/pt/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/es/parallax-distance-step-by-step.html': '/guides/es/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/es/parallax-distance-vs-alternatives.html': '/guides/es/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/de/parallax-distance-step-by-step.html': '/guides/de/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/de/parallax-distance-vs-alternatives.html': '/guides/de/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/vi/parallax-distance-step-by-step.html': '/guides/vi/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/vi/parallax-distance-vs-alternatives.html': '/guides/vi/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/id/parallax-distance-step-by-step.html': '/guides/id/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
+  '/guides/id/parallax-distance-vs-alternatives.html': '/guides/id/parallax-distance-when.html', // consolidation fire72: doorway family retired into the -when keeper
   '/ecliptic-zodiac.html': '/space-3d/ecliptic-zodiac.html',
   '/gravity-well.html': '/space-3d/gravity-well.html',
   '/constellation-sphere.html': '/space-3d/constellation-sphere.html',
@@ -24707,18 +24707,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/parallax-distance-when.html': 'guide/de/parallax-distance-when.jsp',
   '/guides/vi/parallax-distance-when.html': 'guide/vi/parallax-distance-when.jsp',
   '/guides/id/parallax-distance-when.html': 'guide/id/parallax-distance-when.jsp',
-  '/guides/parallax-distance-step-by-step.html': 'guide/parallax-distance-step-by-step.jsp',
-  '/guides/pt/parallax-distance-step-by-step.html': 'guide/pt/parallax-distance-step-by-step.jsp',
-  '/guides/es/parallax-distance-step-by-step.html': 'guide/es/parallax-distance-step-by-step.jsp',
-  '/guides/de/parallax-distance-step-by-step.html': 'guide/de/parallax-distance-step-by-step.jsp',
-  '/guides/vi/parallax-distance-step-by-step.html': 'guide/vi/parallax-distance-step-by-step.jsp',
-  '/guides/id/parallax-distance-step-by-step.html': 'guide/id/parallax-distance-step-by-step.jsp',
-  '/guides/parallax-distance-vs-alternatives.html': 'guide/parallax-distance-vs-alternatives.jsp',
-  '/guides/pt/parallax-distance-vs-alternatives.html': 'guide/pt/parallax-distance-vs-alternatives.jsp',
-  '/guides/es/parallax-distance-vs-alternatives.html': 'guide/es/parallax-distance-vs-alternatives.jsp',
-  '/guides/de/parallax-distance-vs-alternatives.html': 'guide/de/parallax-distance-vs-alternatives.jsp',
-  '/guides/vi/parallax-distance-vs-alternatives.html': 'guide/vi/parallax-distance-vs-alternatives.jsp',
-  '/guides/id/parallax-distance-vs-alternatives.html': 'guide/id/parallax-distance-vs-alternatives.jsp',
   '/guides/ecliptic-zodiac-when.html': 'guide/ecliptic-zodiac-when.jsp',
   '/guides/pt/ecliptic-zodiac-when.html': 'guide/pt/ecliptic-zodiac-when.jsp',
   '/guides/es/ecliptic-zodiac-when.html': 'guide/es/ecliptic-zodiac-when.jsp',
@@ -29789,8 +29777,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/pale-blue-dot-step-by-step.html',
   '/guides/vi/pale-blue-dot-vs-alternatives.html',
   '/guides/vi/pale-blue-dot-when.html',
-  '/guides/vi/parallax-distance-step-by-step.html',
-  '/guides/vi/parallax-distance-vs-alternatives.html',
   '/guides/vi/parallax-distance-when.html',
   '/guides/vi/parasaurolophus-3d-viewer-vs-ar-apps.html',
   '/guides/vi/parasaurolophus-size-comparison.html',
@@ -31334,8 +31320,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/pale-blue-dot-step-by-step.html",
   "/guides/de/pale-blue-dot-vs-alternatives.html",
   "/guides/de/pale-blue-dot-when.html",
-  "/guides/de/parallax-distance-step-by-step.html",
-  "/guides/de/parallax-distance-vs-alternatives.html",
   "/guides/de/parallax-distance-when.html",
   "/guides/de/parasaurolophus-3d-viewer-vs-ar-apps.html",
   "/guides/de/particle-clicker-vs-alternatives.html",
@@ -33724,8 +33708,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/pale-blue-dot-step-by-step.html',
   '/guides/es/pale-blue-dot-vs-alternatives.html',
   '/guides/es/pale-blue-dot-when.html',
-  '/guides/es/parallax-distance-step-by-step.html',
-  '/guides/es/parallax-distance-vs-alternatives.html',
   '/guides/es/parallax-distance-when.html',
   '/guides/es/parasaurolophus-3d-viewer-vs-ar-apps.html',
   '/guides/es/parasaurolophus-size-comparison.html',
