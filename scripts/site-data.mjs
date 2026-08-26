@@ -1964,24 +1964,12 @@ export const INFO_ROUTES = new Set([
   '/guides/de/notepad-notes-when.html',
   '/guides/de/notepad-notes-step-by-step.html',
   '/guides/de/notepad-notes-vs-alternatives.html',
-  '/guides/video-compressor-vs-alternatives.html',
-  '/guides/video-compressor-step-by-step.html',
   '/guides/video-compressor-when.html',
   '/guides/pt/video-compressor-when.html',
-  '/guides/pt/video-compressor-step-by-step.html',
-  '/guides/pt/video-compressor-vs-alternatives.html',
   '/guides/es/video-compressor-when.html',
-  '/guides/es/video-compressor-step-by-step.html',
-  '/guides/es/video-compressor-vs-alternatives.html',
   '/guides/vi/video-compressor-when.html',
-  '/guides/vi/video-compressor-step-by-step.html',
-  '/guides/vi/video-compressor-vs-alternatives.html',
   '/guides/id/video-compressor-when.html',
-  '/guides/id/video-compressor-step-by-step.html',
-  '/guides/id/video-compressor-vs-alternatives.html',
   '/guides/de/video-compressor-when.html',
-  '/guides/de/video-compressor-step-by-step.html',
-  '/guides/de/video-compressor-vs-alternatives.html',
   '/guides/date-difference-calculator-when.html',
   '/guides/pt/date-difference-calculator-when.html',
   '/guides/es/date-difference-calculator-when.html',
@@ -9493,23 +9481,11 @@ export const GUIDE_ROUTES = new Set([
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
   // only, same recurring gap class as fires 32/56/57/62/66/84/113/115/120).
   '/guides/video-compressor-when.html',
-  '/guides/video-compressor-step-by-step.html',
-  '/guides/video-compressor-vs-alternatives.html',
   '/guides/pt/video-compressor-when.html',
-  '/guides/pt/video-compressor-step-by-step.html',
-  '/guides/pt/video-compressor-vs-alternatives.html',
   '/guides/es/video-compressor-when.html',
-  '/guides/es/video-compressor-step-by-step.html',
-  '/guides/es/video-compressor-vs-alternatives.html',
   '/guides/vi/video-compressor-when.html',
-  '/guides/vi/video-compressor-step-by-step.html',
-  '/guides/vi/video-compressor-vs-alternatives.html',
   '/guides/id/video-compressor-when.html',
-  '/guides/id/video-compressor-step-by-step.html',
-  '/guides/id/video-compressor-vs-alternatives.html',
   '/guides/de/video-compressor-when.html',
-  '/guides/de/video-compressor-step-by-step.html',
-  '/guides/de/video-compressor-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire123 (LEAN one-off, 2026-07-13):
   // GUIDE_ROUTES backfill for note-taking-app's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
@@ -14099,6 +14075,18 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  '/guides/video-compressor-step-by-step.html': '/guides/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/video-compressor-vs-alternatives.html': '/guides/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/pt/video-compressor-step-by-step.html': '/guides/pt/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/pt/video-compressor-vs-alternatives.html': '/guides/pt/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/es/video-compressor-step-by-step.html': '/guides/es/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/es/video-compressor-vs-alternatives.html': '/guides/es/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/vi/video-compressor-step-by-step.html': '/guides/vi/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/vi/video-compressor-vs-alternatives.html': '/guides/vi/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/id/video-compressor-step-by-step.html': '/guides/id/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/id/video-compressor-vs-alternatives.html': '/guides/id/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/de/video-compressor-step-by-step.html': '/guides/de/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
+  '/guides/de/video-compressor-vs-alternatives.html': '/guides/de/video-compressor-when.html', // consolidation fire69 2026-08-26: doorway family retired into the -when keeper (backlog topical-map-video.video-compressor)
   // consolidation fire65 (2026-08-25) step-1a: retire the -step-by-step and
   // -vs-alternatives doorway guide families for two intent nodes -
   // utility.date-difference-calculator and image-editing.document-scanner - into
@@ -25736,23 +25724,11 @@ export const JSP_BY_ROUTE = {
   '/guides/de/date-difference-calculator-when.html': 'guide/de/date-difference-calculator-when.jsp',
   '/video-tools/video-compressor.html': 'convert/video-compressor.jsp',
   '/guides/video-compressor-when.html': 'guide/video-compressor-when.jsp',
-  '/guides/video-compressor-step-by-step.html': 'guide/video-compressor-step-by-step.jsp',
-  '/guides/video-compressor-vs-alternatives.html': 'guide/video-compressor-vs-alternatives.jsp',
   '/guides/pt/video-compressor-when.html': 'guide/pt/video-compressor-when.jsp',
-  '/guides/pt/video-compressor-step-by-step.html': 'guide/pt/video-compressor-step-by-step.jsp',
-  '/guides/pt/video-compressor-vs-alternatives.html': 'guide/pt/video-compressor-vs-alternatives.jsp',
   '/guides/es/video-compressor-when.html': 'guide/es/video-compressor-when.jsp',
-  '/guides/es/video-compressor-step-by-step.html': 'guide/es/video-compressor-step-by-step.jsp',
-  '/guides/es/video-compressor-vs-alternatives.html': 'guide/es/video-compressor-vs-alternatives.jsp',
   '/guides/vi/video-compressor-when.html': 'guide/vi/video-compressor-when.jsp',
-  '/guides/vi/video-compressor-step-by-step.html': 'guide/vi/video-compressor-step-by-step.jsp',
-  '/guides/vi/video-compressor-vs-alternatives.html': 'guide/vi/video-compressor-vs-alternatives.jsp',
   '/guides/id/video-compressor-when.html': 'guide/id/video-compressor-when.jsp',
-  '/guides/id/video-compressor-step-by-step.html': 'guide/id/video-compressor-step-by-step.jsp',
-  '/guides/id/video-compressor-vs-alternatives.html': 'guide/id/video-compressor-vs-alternatives.jsp',
   '/guides/de/video-compressor-when.html': 'guide/de/video-compressor-when.jsp',
-  '/guides/de/video-compressor-step-by-step.html': 'guide/de/video-compressor-step-by-step.jsp',
-  '/guides/de/video-compressor-vs-alternatives.html': 'guide/de/video-compressor-vs-alternatives.jsp',
   '/utility-tools/note-taking-app.html': 'utility/note-taking-app.jsp',
   '/guides/notepad-notes-when.html': 'guide/notepad-notes-when.jsp',
   '/guides/notepad-notes-step-by-step.html': 'guide/notepad-notes-step-by-step.jsp',
@@ -30317,7 +30293,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/vi/vesta-rheasilvia-step-by-step.html",
   "/guides/vi/vesta-rheasilvia-vs-alternatives.html",
   "/guides/vi/vesta-rheasilvia-when.html",
-  "/guides/vi/video-compressor-vs-alternatives.html",
   "/guides/vi/video-compressor-when.html",
   "/guides/vi/video-converter-online-free.html",
   "/guides/vi/video-gif-converter-step-by-step.html",
@@ -31556,8 +31531,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/sarcosuchus-size-comparison.html",
   "/guides/de/sarcosuchus-3d-viewer-vs-ar-apps.html",
   "/guides/de/video-compressor-when.html",
-  "/guides/de/video-compressor-step-by-step.html",
-  "/guides/de/video-compressor-vs-alternatives.html",
   "/guides/de/rotate-pdf-when.html",
   "/guides/de/rotate-pdf-step-by-step.html",
   "/guides/de/rotate-pdf-vs-alternatives.html",
@@ -32884,8 +32857,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/venus-runaway-greenhouse-step-by-step.html',
   '/guides/pt/venus-runaway-greenhouse-vs-alternatives.html',
   '/guides/pt/venus-runaway-greenhouse-when.html',
-  '/guides/pt/video-compressor-step-by-step.html',
-  '/guides/pt/video-compressor-vs-alternatives.html',
   '/guides/pt/video-compressor-when.html',
   '/guides/pt/vim-master-vs-alternatives.html',
   '/guides/pt/vim-master-when.html',
@@ -34112,8 +34083,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/torvosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/torvosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/video-compressor-when.html', // pruned 2026-07-29 zero-evidence es
-  '/guides/es/video-compressor-step-by-step.html', // pruned 2026-07-29 zero-evidence es
-  '/guides/es/video-compressor-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/webp-png-converter-step-by-step.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/webp-png-converter-when.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/webp-png-converter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
@@ -35521,8 +35490,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/pinacosaurus-size-comparison.html',
   '/guides/id/pinacosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/video-compressor-when.html',
-  '/guides/id/video-compressor-step-by-step.html',
-  '/guides/id/video-compressor-vs-alternatives.html',
   '/guides/id/notepad-notes-when.html',
   '/guides/id/notepad-notes-step-by-step.html',
   '/guides/id/notepad-notes-vs-alternatives.html',
