@@ -16,6 +16,8 @@ export const DEFAULT_IO_INFOS = '[]';
 export const INFO_ROUTES = new Set([
   '/guides/file-viewer-vs-alternatives.html',
   '/guides/file-viewer-step-by-step.html',
+  // file-viewer-step-by-step pt locale (create_new_guide_page 20260826-6)
+  '/guides/pt/file-viewer-step-by-step.html',
   '/guides/file-viewer-when.html',
   '/guides/daylight-saving-time-countdown-next-clock-change-when.html',
   // ai-watermarks-explained vi locale (create_new_guide_page 20260823-3)
@@ -28936,6 +28938,7 @@ export const JSP_BY_ROUTE = {
   '/pdf-tools/file-viewer.html': 'pdf/file-viewer.jsp',
   '/guides/file-viewer-when.html': 'guide/file-viewer-when.jsp',
   '/guides/file-viewer-step-by-step.html': 'guide/file-viewer-step-by-step.jsp',
+  '/guides/pt/file-viewer-step-by-step.html': 'guide/pt/file-viewer-step-by-step.jsp',
   '/guides/file-viewer-vs-alternatives.html': 'guide/file-viewer-vs-alternatives.jsp',
 };
 
