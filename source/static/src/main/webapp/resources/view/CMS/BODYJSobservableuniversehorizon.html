@@ -1,0 +1,378 @@
+<script>
+    // 3D scene archetype skeleton (observable-universe-horizon) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural (SphereGeometry wireframe shells) - no model
+    // files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this teaches the cosmic horizon: the
+    // observable universe's comoving particle-horizon radius (about 46.5
+    // billion light-years) is far larger than the naive "light traveled for
+    // 13.8 billion years" distance, because space itself has been expanding
+    // the whole time light was in transit. It is NOT a numerical solver of
+    // the Friedmann equations - the comoving-horizon growth curve is a
+    // stylized, monotonic curve tuned to reach the real 46.5 Gly figure at
+    // the real 13.787 Gyr age, not a integrated cosmological calculation.
+    // The six labeled reference shells (Milky Way, Local Group, Virgo
+    // Cluster, Laniakea Supercluster, Hubble radius, particle horizon) use
+    // their real published characteristic distances, placed on a compressed
+    // LOG radius scale (disclosed) so all six fit on one screen.
+    //
+    // Published figures / facts (WebSearch 2026-08-27 against Planck
+    // Collaboration 2020 "Planck 2018 results VI. Cosmological parameters"
+    // A&A 641, A6 (age of universe, H0); en.wikipedia.org/wiki/
+    // Observable_universe (comoving particle-horizon radius ~46.5 Gly,
+    // diameter ~93 Gly); NED/IPAC Caltech CMB distance figures; Conselice
+    // et al. 2016 ApJ 830, 83 (~2 trillion galaxies estimate); Lauer,
+    // Postman, Weaver et al. 2021 ApJ 906, "New Horizons Observations of the
+    // Cosmic Optical Background" (~200 billion galaxies, competing lower
+    // estimate from New Horizons LORRI cosmic-optical-background data)):
+    //   - Age of the universe: 13.787 +/- 0.020 billion years (Planck 2018).
+    //   - Comoving particle-horizon radius: about 46.5 billion light-years
+    //     (diameter about 93 billion light-years) - a standard LambdaCDM
+    //     calculation, not a single NASA/ESA press figure, but widely
+    //     reproduced.
+    //   - This 46.5 Gly is bigger than the 13.8 Gly a naive "light traveled
+    //     at speed c for the age of the universe" estimate would give -
+    //     NOT because light broke the speed limit, but because space itself
+    //     expanded while the light was in transit, carrying the source
+    //     galaxy's present-day position further away (the "raisin bread" /
+    //     inflating-balloon analogy).
+    //   - Hubble radius (c / H0): about 14.4 billion light-years, using
+    //     H0 = 67.4 km/s/Mpc (Planck 2018).
+    //   - Cosmic Microwave Background (CMB) "surface of last scattering":
+    //     its light has been traveling for almost the entire age of the
+    //     universe (about 13.8 billion years, light-travel-time distance),
+    //     but the matter that emitted it is now, in comoving terms, about
+    //     46 billion light-years away (redshift z is about 1090).
+    //   - Galaxy count in the observable universe: two competing published
+    //     estimates, not a settled number - about 2 trillion (Conselice
+    //     et al. 2016, extrapolated from the galaxy stellar mass function)
+    //     versus a lower revision of about 200 billion (Lauer, Postman,
+    //     Weaver et al. 2021, from New Horizons' cosmic-optical-background
+    //     brightness measurement, which found less background light than
+    //     2 trillion faint galaxies would produce).
+    //   - Reference shells (real, characteristic distances, used only for
+    //     scale context - see the compressed-log-scale disclosure): Milky
+    //     Way about 100,000 light-years across; Local Group about 10
+    //     million light-years across; Virgo galaxy cluster about 54 million
+    //     light-years away; Laniakea Supercluster about 520 million
+    //     light-years across.
+    //
+    // Distinct from Expanding Universe 3D Explorer (Hubble Law recession
+    // speed of a stretching galaxy-marker grid, v = H0 d) and Cosmic
+    // Distance Ladder 3D Explorer (HOW distances are measured rung by
+    // rung - parallax, Cepheids, standard candles) - this page is the one
+    // page on the site visualizing the RESULTING horizon geometry: why the
+    // observable universe's radius (46.5 Gly) is more than three times the
+    // naive light-travel distance (13.8 Gly) implied by its age.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'observable-universe-horizon';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'observableuniversehorizon'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { try { new ResizeObserver(resize).observe(host); } catch (e) {} }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // ---- Real published constants (see header comment for sources) ----
+    var T3D_AGE_GYR = 13.787;
+    var T3D_HORIZON_GLY = 46.5;
+    var T3D_HUBBLE_RADIUS_GLY = 14.4;
+
+    // ---- Reference shells: real characteristic distances, log-scale compressed ----
+    var T3D_HORIZON_SHELLS = [
+        { id: 'milkyway', label: 'Milky Way', distance_ly: 50000,
+          fact: 'Our home galaxy is about 100,000 light-years across. On this compressed log scale it is the innermost shell around Earth.' },
+        { id: 'localgroup', label: 'Local Group', distance_ly: 5000000,
+          fact: 'The Local Group - our galaxy, Andromeda, Triangulum, and dozens of dwarf satellites - spans about 10 million light-years, roughly 100x the Milky Way\'s own width.' },
+        { id: 'virgocluster', label: 'Virgo galaxy cluster', distance_ly: 27000000,
+          fact: 'The Virgo galaxy cluster, the nearest large galaxy cluster, is about 54 million light-years away - the Local Group is gravitationally falling toward it.' },
+        { id: 'laniakea', label: 'Laniakea Supercluster', distance_ly: 260000000,
+          fact: 'Laniakea, the supercluster that contains the Local Group and Virgo galaxy cluster, spans about 520 million light-years - our home on the largest gravitationally-organized scale.' },
+        { id: 'hubbleradius', label: 'Hubble radius', distance_ly: T3D_HUBBLE_RADIUS_GLY * 1e9,
+          fact: 'The Hubble radius (c / H0) is about 14.4 billion light-years, using H0 = 67.4 km/s/Mpc from Planck 2018 data. It is a characteristic cosmological distance, not a hard edge - the observable universe reaches further than this.' },
+        { id: 'particlehorizon', label: 'Particle horizon (edge of observable universe)', distance_ly: T3D_HORIZON_GLY * 1e9,
+          fact: 'The particle horizon - the comoving distance to the farthest light that could have reached us since the Big Bang - is about 46.5 billion light-years, over three times the 13.8 billion light-years a naive "light traveled at speed c for the age of the universe" estimate would give. Space itself expanded during the trip.' }
+    ];
+
+    function t3dVisRadius(distance_ly) {
+        var d = Math.max(distance_ly, 1000);
+        var log10d = Math.log(d) / Math.LN10;
+        var r = 3 + (log10d - 4.7) / 5.97 * 25;
+        return Math.max(0.15, r);
+    }
+
+    function t3dComovingGly(tGyr) {
+        var frac = Math.max(0, Math.min(1, tGyr / T3D_AGE_GYR));
+        return T3D_HORIZON_GLY * Math.pow(frac, 0.6);
+    }
+    function t3dLightTravelGly(tGyr) {
+        return Math.max(0, Math.min(T3D_AGE_GYR, tGyr));
+    }
+
+    function t3dObservableHorizon(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02030a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+        var earth = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 14), new THREE.MeshBasicMaterial({ color: 0x4fc3f7 }));
+        scene.add(earth);
+
+        var shellMeshes = {};
+        for (var i = 0; i < T3D_HORIZON_SHELLS.length; i++) {
+            var s = T3D_HORIZON_SHELLS[i];
+            var r = t3dVisRadius(s.distance_ly);
+            var geo = new THREE.SphereGeometry(r, 28, 20);
+            var mat = new THREE.MeshBasicMaterial({ color: 0x4a6a8a, wireframe: true, transparent: true, opacity: 0.35 });
+            var mesh = new THREE.Mesh(geo, mat);
+            scene.add(mesh);
+            shellMeshes[s.id] = { mesh: mesh, visR: r, def: s };
+        }
+
+        // The two growing "cosmic time" spheres - the page's core teaching device.
+        var comovingGeo = new THREE.SphereGeometry(0.2, 28, 20);
+        var comovingMat = new THREE.MeshBasicMaterial({ color: 0xffab40, transparent: true, opacity: 0.16, depthWrite: false });
+        var comovingSphere = new THREE.Mesh(comovingGeo, comovingMat);
+        scene.add(comovingSphere);
+
+        var lightTravelGeo = new THREE.SphereGeometry(0.2, 24, 16);
+        var lightTravelMat = new THREE.MeshBasicMaterial({ color: 0x69f0ae, wireframe: true, transparent: true, opacity: 0.7 });
+        var lightTravelSphere = new THREE.Mesh(lightTravelGeo, lightTravelMat);
+        scene.add(lightTravelSphere);
+
+        var state = { tGyr: T3D_AGE_GYR, playing: false, mode: 'comoving', highlightId: 'particlehorizon' };
+
+        function scaleSphereTo(mesh, visR) {
+            var base = 0.2;
+            var s = Math.max(0.02, visR / base);
+            mesh.scale.set(s, s, s);
+        }
+
+        function highlightShells() {
+            for (var id in shellMeshes) {
+                var opac = (id === state.highlightId) ? 0.85 : 0.28;
+                var col = (id === state.highlightId) ? 0x82b1ff : 0x4a6a8a;
+                shellMeshes[id].mesh.material.opacity = opac;
+                shellMeshes[id].mesh.material.color.setHex(col);
+            }
+        }
+
+        function panelHtml() {
+            var comovingGly = t3dComovingGly(state.tGyr);
+            var lightGly = t3dLightTravelGly(state.tGyr);
+            var atToday = state.tGyr >= T3D_AGE_GYR - 0.02;
+            var hi = shellMeshes[state.highlightId] ? shellMeshes[state.highlightId].def : null;
+            var headline = state.mode === 'comoving'
+                ? '<h3>Comoving distance: ' + comovingGly.toFixed(1) + ' billion light-years</h3>'
+                : '<h3>Light-travel-time distance: ' + lightGly.toFixed(1) + ' billion light-years</h3>';
+            var html = headline;
+            html += '<p>Cosmic time: <b>' + state.tGyr.toFixed(2) + ' billion years</b> after the Big Bang' + (atToday ? ' (today)' : '') + '.</p>';
+            if (hi) { html += '<p><b>' + hi.label + ':</b> ' + hi.fact + '</p>'; }
+            html += '<table class="w3-table w3-bordered">' +
+                '<tr><td>Age of the universe today</td><td>13.787 billion years (Planck 2018)</td></tr>' +
+                '<tr><td>Comoving particle-horizon radius (today)</td><td>about 46.5 billion light-years</td></tr>' +
+                '<tr><td>Naive light-travel distance (today)</td><td>about 13.8 billion light-years</td></tr>' +
+                '<tr><td>Hubble radius (c / H0)</td><td>about 14.4 billion light-years</td></tr>' +
+                '<tr><td>Galaxy count estimate (Conselice et al. 2016)</td><td>about 2 trillion</td></tr>' +
+                '<tr><td>Galaxy count estimate (New Horizons, 2021)</td><td>about 200 billion (competing, lower)</td></tr>' +
+                '</table>';
+            html += '<p class="t3d-note">The comoving-horizon growth curve is a stylized, monotonic curve tuned to the real 46.5 Gly figure at the real 13.787 Gyr age - it is not a numerical integration of the Friedmann equations. The six reference shells use real characteristic distances on a compressed log scale.</p>';
+            return html;
+        }
+
+        function apply() {
+            var comovingGly = t3dComovingGly(state.tGyr);
+            var lightGly = t3dLightTravelGly(state.tGyr);
+            scaleSphereTo(comovingSphere, t3dVisRadius(Math.max(comovingGly, 0.00001) * 1e9));
+            scaleSphereTo(lightTravelSphere, t3dVisRadius(Math.max(lightGly, 0.00001) * 1e9));
+            comovingSphere.visible = (state.mode === 'comoving') || true;
+            lightTravelSphere.visible = true;
+            comovingMat.opacity = (state.mode === 'comoving') ? 0.22 : 0.08;
+            lightTravelMat.opacity = (state.mode === 'light-travel') ? 0.9 : 0.4;
+            highlightShells();
+            var slider = document.getElementById('t3dHorizonSlider');
+            var label = document.getElementById('t3dHorizonSliderLabel');
+            if (slider) slider.value = String(Math.round((state.tGyr / T3D_AGE_GYR) * 100));
+            if (label) label.textContent = state.tGyr.toFixed(2) + ' Gyr';
+            var modeBtn = document.getElementById('t3dHorizonModeBtn');
+            if (modeBtn) modeBtn.textContent = (state.mode === 'comoving') ? 'Showing: comoving distance (switch to light-travel)' : 'Showing: light-travel distance (switch to comoving)';
+            for (var i = 0; i < T3D_HORIZON_SHELLS.length; i++) {
+                var s = T3D_HORIZON_SHELLS[i];
+                var btn = document.getElementById('t3dHorizonBtn-' + s.id);
+                if (btn) btn.className = 'w3-button w3-small ' + (s.id === state.highlightId ? 'w3-amber' : 'w3-light-grey');
+            }
+            t3dInfo(panelHtml());
+            t3dStatus('Cosmic time ' + state.tGyr.toFixed(2) + ' Gyr - drag to orbit, scroll to zoom.');
+            try { t3dSaveStore({ mode: state.mode, highlightId: state.highlightId }); } catch (e) {}
+        }
+
+        function setTime(t) { state.tGyr = Math.max(0, Math.min(T3D_AGE_GYR, t)); apply(); }
+        function setHighlight(id) { state.highlightId = id; apply(); }
+        function toggleMode() { state.mode = (state.mode === 'comoving') ? 'light-travel' : 'comoving'; apply(); }
+
+        for (var bi = 0; bi < T3D_HORIZON_SHELLS.length; bi++) {
+            (function (id) {
+                var btn = document.getElementById('t3dHorizonBtn-' + id);
+                if (btn) btn.addEventListener('click', function () { setHighlight(id); });
+            })(T3D_HORIZON_SHELLS[bi].id);
+        }
+        var playBtn = document.getElementById('t3dHorizonPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            state.playing = !state.playing;
+            playBtn.textContent = state.playing ? 'Pause cosmic time' : 'Play cosmic time';
+        });
+        var slider = document.getElementById('t3dHorizonSlider');
+        if (slider) slider.addEventListener('input', function () {
+            state.playing = false;
+            if (playBtn) playBtn.textContent = 'Play cosmic time';
+            setTime((parseFloat(slider.value || '100') / 100) * T3D_AGE_GYR);
+        });
+        var modeBtn = document.getElementById('t3dHorizonModeBtn');
+        if (modeBtn) modeBtn.addEventListener('click', toggleMode);
+
+        var stored = t3dLoadStore();
+        if (stored.mode === 'comoving' || stored.mode === 'light-travel') state.mode = stored.mode;
+        if (typeof stored.highlightId === 'string' && shellMeshes[stored.highlightId]) state.highlightId = stored.highlightId;
+        apply();
+
+        return function animate(dt) {
+            if (state.playing) {
+                var next = state.tGyr + (dt / 1000) * (T3D_AGE_GYR / 22);
+                if (next > T3D_AGE_GYR) next = 0;
+                setTime(next);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { observableuniversehorizon: 't3dHorizonControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { observableuniversehorizon: { radius: 34, maxR: 120, minR: 4, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dObservableHorizon(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
