@@ -1,0 +1,341 @@
+<script>
+    // 3D scene archetype skeleton (crater-lake) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (crater-lake).
+    // All geometry is procedural. places-3d discovery loop, 2026-08-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic / NPS consensus, cross-checked 2026-08-27):
+    //   - Maximum depth about 594 m (1,949 ft) - the deepest lake in the USA
+    //   - Average depth about 350 m (1,148 ft)
+    //   - Surface elevation about 1,883 m (6,178 ft)
+    //   - Caldera diameter about 8 km (5 miles), roughly circular
+    //   - Water clarity (secchi-disk) about 44 m (143 ft) - among the clearest on Earth
+    //   - No inflowing or outflowing rivers - fed only by rain and snowmelt
+    //   - Wizard Island cinder cone rises about 230 m (760 ft) above the surface
+    //   - Formed about 7,700 years ago by the collapse of Mount Mazama
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'crater-lake';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placescraterlake'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a1220, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
+        key.position.set(-10, 16, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 }));
+        }
+
+        // Caldera relief, 1 unit = 100 m vertical (ties directly to the published
+        // 594 m max-depth figure: FLOOR sits at -5.94). Nearly circular basin:
+        // r = radial distance from center. Outer forested rim crest, steep inner
+        // wall, then a deep bowl mostly filled by the lake disc below.
+        var OUTER_R = 7.4, WALL_R = 5.6, BOWL_R = 5.0;
+        var LAKE_Y = 0, FLOOR = -5.94;
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+        // Wizard Island offset (west-southwest of the caldera center) and
+        // Phantom Ship offset (southeast shore) - both sampled from the same
+        // radial bowl so they sit correctly relative to the water surface.
+        var WIZ = { x: -1.9, z: 1.1, r: 1.15 };
+        var SHIP = { x: 2.6, z: 2.9, r: 0.35 };
+
+        function bowlDepth(r) {
+            // 0 at the wall base (r=WALL_R), FLOOR at the center (r=0), with the
+            // deepest point placed slightly south of center like the real lake.
+            var t = smooth(0, WALL_R, r);
+            return FLOOR + (LAKE_Y - 1.0 - FLOOR) * Math.pow(t, 1.4);
+        }
+        function height(x, z) {
+            var r = Math.sqrt(x * x + z * z);
+            var rimNoise = 0.7 * fbm(x * 0.4 + 3, z * 0.4 + 5, 4);
+            var rimH = 2.4 + 1.0 * rimNoise;
+            var outerHighland = rimH + 0.4 * fbm(x * 0.3 + 20, z * 0.3 + 11, 3);
+            var h;
+            if (r >= OUTER_R) {
+                h = outerHighland - 0.6 * smooth(OUTER_R, OUTER_R + 3, r);
+            } else if (r >= WALL_R) {
+                // steep inner cliff wall from rim crest down to the shoreline
+                h = rimH + (LAKE_Y - 0.3 - rimH) * smooth(WALL_R, OUTER_R, r);
+            } else {
+                h = bowlDepth(r);
+            }
+            // Wizard Island cinder cone rising above the bowl floor / lake.
+            var dw = Math.sqrt((x - WIZ.x) * (x - WIZ.x) + (z - WIZ.z) * (z - WIZ.z));
+            if (dw < WIZ.r) {
+                var cone = (LAKE_Y + 2.3) * (1 - smooth(0, WIZ.r, dw));
+                h = Math.max(h, cone);
+            }
+            // Phantom Ship: a small jagged spire cluster near the southeast shore.
+            var ds = Math.sqrt((x - SHIP.x) * (x - SHIP.x) + (z - SHIP.z) * (z - SHIP.z));
+            if (ds < SHIP.r) {
+                var spike = (LAKE_Y + 0.5 + 0.4 * fbm(x * 3 + 9, z * 3 + 4, 2)) * (1 - smooth(0, SHIP.r, ds));
+                h = Math.max(h, spike);
+            }
+            return h;
+        }
+        var col = {
+            forest: new THREE.Color(0x4c5a3d), rock: new THREE.Color(0x8d8272),
+            rim: new THREE.Color(0xb7a888), wall: new THREE.Color(0x6f6455),
+            basin: new THREE.Color(0x123a52), cone: new THREE.Color(0x7a5a44),
+        };
+        function color(c, h, x, z) {
+            var n = 0.9 + 0.2 * fbm(x * 1.3 + 11, z * 1.3 + 7, 3);
+            var r = Math.sqrt(x * x + z * z);
+            var dw = Math.sqrt((x - WIZ.x) * (x - WIZ.x) + (z - WIZ.z) * (z - WIZ.z));
+            var ds = Math.sqrt((x - SHIP.x) * (x - SHIP.x) + (z - SHIP.z) * (z - SHIP.z));
+            if (h > LAKE_Y + 0.05 && (dw < WIZ.r + 0.2 || ds < SHIP.r + 0.25)) { c.copy(col.cone).multiplyScalar(n); return; }
+            if (r >= OUTER_R) { c.copy(col.forest).multiplyScalar(n); return; }
+            if (h < LAKE_Y - 0.3) { c.copy(col.basin).multiplyScalar(0.85 + 0.15 * n); return; }
+            if (r >= WALL_R) { c.copy(col.rim).lerp(col.wall, smooth(WALL_R, OUTER_R, r)).multiplyScalar(n); return; }
+            c.copy(col.wall).multiplyScalar(n);
+        }
+        var terrain = makeTerrain(18, 18, shell.low ? 110 : 170, shell.low ? 110 : 170, height, color);
+        scene.add(terrain);
+
+        // Flat lake disc at the surface - deep blue, slightly translucent so the
+        // submerged bowl below is faintly visible through it.
+        var lakeGeo = new THREE.CircleGeometry(WALL_R - 0.08, 64);
+        var lake = new THREE.Mesh(lakeGeo, new THREE.MeshStandardMaterial({
+            color: 0x1c5f86, roughness: 0.12, metalness: 0.1, transparent: true, opacity: 0.88,
+        }));
+        lake.rotation.x = -Math.PI / 2;
+        lake.position.y = LAKE_Y;
+        scene.add(lake);
+
+        // Depth marker: a thin rod from the lake surface to the caldera floor,
+        // placed south of center (near the real deepest sounding).
+        var depthGroup = new THREE.Group();
+        (function () {
+            var rod = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, LAKE_Y - FLOOR, 10),
+                new THREE.MeshBasicMaterial({ color: 0xffd166 })
+            );
+            rod.position.set(0.4, (LAKE_Y + FLOOR) / 2, 0.6);
+            depthGroup.add(rod);
+            var cap = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffd166 }));
+            cap.position.set(0.4, FLOOR, 0.6);
+            depthGroup.add(cap);
+        })();
+        scene.add(depthGroup);
+
+        // Clarity marker: a shorter, semi-transparent rod showing the roughly
+        // 44 m (0.44 units) secchi-disk visibility depth, next to the depth rod.
+        var clarityGroup = new THREE.Group();
+        (function () {
+            var rod = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.09, 0.09, 0.44, 10),
+                new THREE.MeshBasicMaterial({ color: 0x9be8ff, transparent: true, opacity: 0.75 })
+            );
+            rod.position.set(-0.4, LAKE_Y - 0.22, 0.6);
+            clarityGroup.add(rod);
+        })();
+        scene.add(clarityGroup);
+
+        var depthOn = true, clarityOn = true;
+
+        function panelHtml() {
+            return '<h3>Crater Lake: the deepest lake in the USA</h3>' +
+                '<p>A nearly circular caldera basin: a steep rim wall, a small cinder-cone island breaking the surface, and two markers comparing how far you can see against how deep the floor really is.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Maximum depth</td><td>about 594 m (1,949 ft) - the deepest lake in the USA</td></tr>' +
+                '<tr><td>Average depth</td><td>about 350 m (1,148 ft)</td></tr>' +
+                '<tr><td>Surface elevation</td><td>about 1,883 m (6,178 ft) above sea level</td></tr>' +
+                '<tr><td>Caldera diameter</td><td>about 8 km (5 miles), roughly circular</td></tr>' +
+                '<tr><td>Water clarity</td><td>secchi-disk readings around 44 m (143 ft) - among the clearest on Earth</td></tr>' +
+                '<tr><td>Water source</td><td>no rivers in or out - fed only by rain and snowmelt</td></tr>' +
+                '<tr><td>Wizard Island</td><td>a cinder cone rising about 230 m (760 ft) above the surface</td></tr>' +
+                '<tr><td>Formed</td><td>about 7,700 years ago by the collapse of Mount Mazama</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the caldera profile, island shape, and vertical scale are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            depthGroup.visible = depthOn;
+            var db = document.getElementById('t3dPclDepthBtn');
+            if (db) db.textContent = 'Max depth marker: ' + (depthOn ? 'On' : 'Off');
+            clarityGroup.visible = clarityOn;
+            var cb = document.getElementById('t3dPclClarityBtn');
+            if (cb) cb.textContent = 'Water-clarity marker: ' + (clarityOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ depthOn: depthOn, clarityOn: clarityOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.depthOn === 'boolean') depthOn = store.depthOn;
+        if (typeof store.clarityOn === 'boolean') clarityOn = store.clarityOn;
+        apply();
+
+        var depthBtn = document.getElementById('t3dPclDepthBtn');
+        if (depthBtn) depthBtn.addEventListener('click', function () { depthOn = !depthOn; apply(); });
+        var clarityBtn = document.getElementById('t3dPclClarityBtn');
+        if (clarityBtn) clarityBtn.addEventListener('click', function () { clarityOn = !clarityOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the depth marker or the water-clarity marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placescraterlake: 't3dPclControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placescraterlake: { radius: 24, maxR: 60, minR: 8, phi: 0.9, theta: 0.6, targetY: -1 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
