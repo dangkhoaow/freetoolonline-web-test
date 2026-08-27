@@ -1,0 +1,348 @@
+<script>
+    // 3D scene archetype skeleton (postojna-cave) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (postojna-cave).
+    // All geometry is procedural. places-3d cluster member, 2026-08-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey cave geology.
+    // Published figures (commonly cited park/tourism-board + karst-geology
+    // consensus, cross-checked 2026-08-27):
+    //   - Postojna Cave, near Postojna, Karst (Kras) region, southwestern
+    //     Slovenia, carved by the Pivka River through Cretaceous-age limestone
+    //   - Postojna-Planina cave system: more than 24 km of explored passages
+    //   - Guided visitor route: about 5 km round trip - roughly 1.7 km on
+    //     foot, the rest aboard the underground cave train
+    //   - Regular guided tours since 1818 - one of Europe's oldest show caves
+    //   - Underground railway first laid in 1872 (among the earliest cave
+    //     railways anywhere), later electrified
+    //   - Electric lighting installed in 1884 - among the first public
+    //     spaces in Europe lit by electricity
+    //   - Concert Hall: the cave's largest chamber, floor area about
+    //     3,000 sq m, occasionally used for concerts
+    //   - Home to Proteus anguinus, the olm - a blind, pale cave salamander
+    //     endemic to the Dinaric karst - on view in an underground vivarium
+    //   - Fairly constant year-round temperature of about 8-10 degrees C
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'postojna-cave';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placespostojnacave'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a0b0d, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        var key = new THREE.DirectionalLight(0xffe6c2, 0.95);
+        key.position.set(-10, 15, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 61.3 + z * 197.9) * 31743.9821; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.07; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.93, metalness: 0, side: THREE.DoubleSide }));
+        }
+
+        // Signature figure: a chain of wide limestone HALLS linked by a
+        // narrower winding passage carved by the Pivka River - the archetype
+        // that distinguishes this cave from the single glowworm-lit corridor
+        // already shipped for Waitomo. Three named halls (Great Hall,
+        // Concert Hall - the widest, and a small far Spaghetti Hall) sit
+        // along the passage centerline, each a Gaussian widening of the
+        // corridor half-width. 1 unit = about 1.1 m of the real passage.
+        var RIM = 0, DEPTH = 3.0;
+        function chan(z) { return 1.0 * Math.sin(z * 0.26 + 0.4) + 0.5 * Math.sin(z * 0.12 - 0.9); }
+        var HALLS = [
+            { z: -8.5, amp: 2.4, sigma: 2.6 },  // Great Hall
+            { z: 3.0,  amp: 3.6, sigma: 2.9 },  // Concert Hall (widest)
+            { z: 10.5, amp: 1.1, sigma: 1.8 }   // Spaghetti Hall (small, far)
+        ];
+        function hallWeight(hallIdx, z) {
+            var h = HALLS[hallIdx], d = z - h.z;
+            return Math.exp(-(d * d) / (2 * h.sigma * h.sigma));
+        }
+        function concertWeight(z) { return hallWeight(1, z); }
+        function halfWidth(z) {
+            var w = 1.35;
+            for (var i = 0; i < HALLS.length; i++) { w += HALLS[i].amp * hallWeight(i, z); }
+            return w;
+        }
+        function carveWave(d, w, depth) {
+            if (d >= w) return 0;
+            var t = 1 - d / w;
+            var s = t * t * (3 - 2 * t);
+            return depth * Math.pow(s, 0.85);
+        }
+        function floorHeight(x, z) {
+            var h = RIM + 0.08 * (fbm(x * 0.55 + 3, z * 0.55 + 8, 3) - 0.5);
+            var cx = chan(z), w = halfWidth(z), d = Math.abs(x - cx);
+            var hallBoost = 0;
+            for (var i = 0; i < HALLS.length; i++) { hallBoost = Math.max(hallBoost, HALLS[i].amp * hallWeight(i, z)); }
+            h -= carveWave(d, w, DEPTH + 0.55 * hallBoost + 0.25 * fbm(z * 0.6 + 2, x * 0.6 + 5, 3));
+            if (d < w * 1.25) {
+                var wallFrac = 1 - Math.min(1, d / w);
+                h -= 0.09 * wallFrac * fbm(x * 2.4 + 3, z * 1.1 + 7, 3);
+            }
+            return Math.max(h, RIM - DEPTH - 1.4);
+        }
+
+        var spotlightOn = false;
+        function floorColor(c, h, x, z, spotlight) {
+            var localDepth = DEPTH + 1.4;
+            var u = smooth(RIM - localDepth, RIM, h);
+            var shadow = new THREE.Color(0x0b0c10), rock = new THREE.Color(0x4e4b46), rim = new THREE.Color(0x746c5c);
+            if (u < 0.6) { c.copy(shadow).lerp(rock, smooth(0, 0.6, u)); }
+            else { c.copy(rock).lerp(rim, smooth(0.6, 1.0, u)); }
+            var n = 0.88 + 0.18 * fbm(x * 1.3 + 2, z * 1.3 + 5, 3);
+            c.multiplyScalar(n);
+            if (spotlight) {
+                var cw = concertWeight(z);
+                if (cw > 0.08) {
+                    c.lerp(new THREE.Color(0xffcf80), Math.min(0.55, cw * 0.7));
+                }
+            }
+        }
+
+        var normColors = null, spotColors = null, terrain;
+        function build(spotlight) {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                floorColor(col, pos.getY(i), pos.getX(i), pos.getZ(i), spotlight);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        }
+
+        terrain = makeTerrain(10, 22, shell.low ? 120 : 180, shell.low ? 150 : 230, floorHeight, function (c, h, x, z) { floorColor(c, h, x, z, false); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        spotColors = build(true);
+
+        // Dripstone columns - fixed stalagmite (cone up, from the floor) and
+        // stalactite (cone down, from a fixed ceiling height) pairs, placed
+        // only inside the two big halls where there is room. One pale
+        // "Diamond" stalagmite stands out among the group, standing in for
+        // Postojna's best-known icon (the real Brilliant is a small pure
+        // white calcite formation, exaggerated in scale here for legibility).
+        var dripMat = new THREE.MeshStandardMaterial({ color: 0xcfc6ae, roughness: 0.88 });
+        var diamondMat = new THREE.MeshStandardMaterial({ color: 0xf6f3e9, roughness: 0.4, emissive: 0x2a271c, emissiveIntensity: 0.15 });
+        var COLUMNS = [
+            [-1.6, -9.4, 1.0], [ 1.9, -8.0, 0.85], [-0.4, -7.2, 0.7],
+            [ 2.4,  1.6, 1.15], [-2.1,  2.6, 0.95], [ 0.6,  3.9, 1.3],
+            [-2.6,  4.6, 0.8], [ 2.0,  4.9, 1.05]
+        ];
+        var dripstoneGroup = new THREE.Group();
+        for (var di = 0; di < COLUMNS.length; di++) {
+            var cxp = COLUMNS[di][0], czp = COLUMNS[di][1], scale = COLUMNS[di][2];
+            var isDiamond = (di === 5);
+            var mat = isDiamond ? diamondMat : dripMat;
+            var floorY = floorHeight(cxp, czp);
+            var ceilY = Math.min(RIM + 0.35, floorY + 2.3 + 1.1 * scale);
+            var stalag = new THREE.Mesh(new THREE.ConeGeometry(0.14 * scale, 0.55 * scale, 7), mat);
+            stalag.position.set(cxp, floorY + 0.28 * scale, czp);
+            var stalac = new THREE.Mesh(new THREE.ConeGeometry(0.11 * scale, 0.5 * scale, 7), mat);
+            stalac.rotation.x = Math.PI;
+            stalac.position.set(cxp + 0.04, ceilY - 0.25 * scale, czp + 0.03);
+            dripstoneGroup.add(stalag, stalac);
+        }
+        scene.add(dripstoneGroup);
+
+        var dripstoneOn = true;
+
+        function panelHtml() {
+            return '<h3>Postojna Cave: halls, dripstone, and the Concert Hall</h3>' +
+                '<p>A relief of the cave passage: a chain of wide limestone halls linked by a narrower carved corridor, with dripstone columns built up inside the halls over thousands of years.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Explored length</td><td>more than 24 km (Postojna-Planina system)</td></tr>' +
+                '<tr><td>Visitor route</td><td>about 5 km round trip - roughly 1.7 km on foot</td></tr>' +
+                '<tr><td>Concert Hall floor</td><td>about 3,000 sq m, the cave\'s largest chamber</td></tr>' +
+                '<tr><td>Opened to visitors</td><td>1818</td></tr>' +
+                '<tr><td>Cave railway</td><td>first laid 1872, later electrified</td></tr>' +
+                '<tr><td>Year-round temperature</td><td>about 8-10 degrees C</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the hall shapes, dripstone columns, and route line are procedural teaching cues, not survey cave geology.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(spotlightOn ? spotColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            dripstoneGroup.visible = dripstoneOn;
+            var db = document.getElementById('t3dPocDripstoneBtn');
+            if (db) db.textContent = 'Dripstone columns: ' + (dripstoneOn ? 'On' : 'Off');
+            var sb = document.getElementById('t3dPocSpotlightBtn');
+            if (sb) sb.textContent = 'Concert Hall spotlight: ' + (spotlightOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ dripstoneOn: dripstoneOn, spotlightOn: spotlightOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.dripstoneOn === 'boolean') dripstoneOn = store.dripstoneOn;
+        if (typeof store.spotlightOn === 'boolean') spotlightOn = store.spotlightOn;
+        apply();
+
+        var dripstoneBtn = document.getElementById('t3dPocDripstoneBtn');
+        if (dripstoneBtn) dripstoneBtn.addEventListener('click', function () { dripstoneOn = !dripstoneOn; apply(); });
+        var spotlightBtn = document.getElementById('t3dPocSpotlightBtn');
+        if (spotlightBtn) spotlightBtn.addEventListener('click', function () { spotlightOn = !spotlightOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle dripstone columns or the Concert Hall spotlight.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placespostojnacave: 't3dPocControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placespostojnacave: { radius: 13, maxR: 32, minR: 3.5, phi: 0.98, theta: 0.55, targetY: -0.6 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
