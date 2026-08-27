@@ -1,0 +1,361 @@
+<script>
+    // 3D scene archetype skeleton (pamukkale) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (pamukkale). All geometry is procedural. places-3d cluster.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-08-28):
+    //   - Pamukkale, Denizli Province, southwestern Turkey (Anatolia)
+    //   - Name means "cotton castle" in Turkish
+    //   - Calcium-carbonate-rich thermal spring water has deposited white
+    //     travertine terraces down the hillside over thousands of years
+    //   - The terrace field spans roughly 2.7 km along the slope, with an
+    //     overall elevation change on the order of 100-160 m from the
+    //     plateau at the top to the valley floor below
+    //   - Spring water reaching the terraces is commonly cited at roughly
+    //     35 C at the surface pools, cooling further as it cascades down
+    //   - Hierapolis-Pamukkale is a combined UNESCO World Heritage Site
+    //     (inscribed 1988) pairing the travertine terraces with the ruins of
+    //     the ancient Greco-Roman city of Hierapolis on the plateau above
+    //   - Many terraces have been closed to bathing since the 1990s to curb
+    //     erosion from foot traffic; boardwalks route visitors, and bare
+    //     feet are required in the open zones
+    //   - Cleopatra's Antique Pool, a thermal pool near the Hierapolis
+    //     ruins, contains submerged ancient Roman columns
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'pamukkale';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placespamukkale'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract: window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x8fc2e8, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        var key = new THREE.DirectionalLight(0xfff6de, 1.05);
+        key.position.set(-10, 18, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+        // Vertical scale: 1 unit is about 100 m, same convention as the
+        // Dead Sea / Krakatoa pages. x runs downhill (uphill plateau near
+        // Hierapolis at x=X0, valley floor at x=X0+SPAN_X); z runs across
+        // the width of the terrace field. The real terrace field is a
+        // cascading STAIRCASE of flat, scalloped-edge basins descending the
+        // hillside - a distinct archetype from the smooth rift-lake / gorge
+        // / plateau terrains used elsewhere on this site.
+        // Vertical exaggeration for teaching legibility (educational
+        // approximation, per the page's own caveat): the published drop is
+        // roughly 100-160 m, but a to-scale 1-unit=100m relief is far too
+        // subtle to read as a staircase from a 3/4 camera angle, so the
+        // step height is exaggerated here the same way the Everest/Table
+        // Mountain pages exaggerate their cliffs for readability.
+        var N_TERR = 7;                 // number of stepped terraces (chunky, legible)
+        var TOTAL_H = 4.6;               // exaggerated relief - see note above
+        var X0 = -10, SPAN_X = 20;       // downhill span
+        var HALF_Z = 8;                  // half-width of the terrace field
+        var RISER_FRAC = 0.34;           // fraction of each tread given to the riser drop
+        var BASIN_FRAC = 0.16;           // fraction of each tread that pools water (front lip)
+
+        function slopeT(x) {
+            return Math.max(0, Math.min(1, (x - X0) / SPAN_X));
+        }
+
+        function terraceShape(x, z) {
+            // Gentle wavy edge offset so risers scallop instead of running
+            // dead straight - real terrace lips curve and interlock. Kept
+            // small relative to tread width so the staircase silhouette
+            // itself always reads clearly.
+            var treadW = SPAN_X / N_TERR;
+            var wobble = 0.22 * treadW * (fbm(z * 0.4 + 4, x * 0.12 + 1, 3) - 0.5);
+            var t = slopeT(x + wobble);
+            var raw = t * N_TERR;
+            var idx = Math.min(N_TERR - 1, Math.floor(raw));
+            var local = raw - idx; // 0 (uphill edge of tread) .. 1 (riser edge)
+            var topA = TOTAL_H * (1 - idx / N_TERR);
+            var topB = TOTAL_H * (1 - (idx + 1) / N_TERR);
+            var flatEnd = 1 - RISER_FRAC;
+            var riserT = smooth(flatEnd, 1, local);
+            var treadH = topA + (topB - topA) * riserT;
+            // Shallow basin dip near the front lip of the flat portion -
+            // this is where the pooled water sits before the next riser.
+            var basinDip = 0.16 * smooth(flatEnd - BASIN_FRAC, flatEnd, local) * (1 - riserT);
+            return { h: treadH - basinDip, local: local, flatEnd: flatEnd, idx: idx };
+        }
+
+        function height(x, z) {
+            var edge = smooth(HALF_Z * 1.02, HALF_Z * 0.55, Math.abs(z));
+            var shape = terraceShape(x, z);
+            var base = shape.h;
+            // Roughen the plateau top and valley floor slightly so they
+            // don't read as perfectly flat CAD slabs.
+            var rough = 0.02 * (fbm(x * 0.4 + 9, z * 0.4 + 2, 3) - 0.5);
+            return base + rough * (1 - edge * 0.4) - edge * 0.15;
+        }
+
+        function isBasin(x, z) {
+            var shape = terraceShape(x, z);
+            return shape.local > shape.flatEnd - BASIN_FRAC && shape.local <= shape.flatEnd;
+        }
+
+        var col = {
+            travertine: new THREE.Color(0xf3ecdf), travertineShadow: new THREE.Color(0xd9cdb4),
+            pool: new THREE.Color(0x39b7c4), poolDeep: new THREE.Color(0x1f7f92),
+            plateau: new THREE.Color(0xcdbd8f), valley: new THREE.Color(0x9db56a)
+        };
+        var poolOn = true;
+
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.3 + 5, z * 1.3 + 3, 3);
+            var t = slopeT(x);
+            if (t <= 0.02) {
+                c.copy(col.plateau);
+            } else if (t >= 0.995) {
+                c.copy(col.valley);
+            } else if (poolOn && isBasin(x, z)) {
+                c.copy(col.pool).lerp(col.poolDeep, 0.3 + 0.3 * fbm(x * 2 + 1, z * 2 + 6, 2));
+            } else {
+                c.copy(col.travertine).lerp(col.travertineShadow, 0.25 * (1 - fbm(x * 0.9, z * 0.9 + 8, 2)));
+            }
+            c.multiplyScalar(n);
+        }
+
+        var segs = shell.low ? 130 : 170;
+        var geo = new THREE.PlaneGeometry(SPAN_X * 1.05, HALF_Z * 2.1, segs, Math.round(segs * (HALF_Z * 2.1) / (SPAN_X * 1.05)));
+        geo.rotateX(-Math.PI / 2);
+        geo.translate(X0 + SPAN_X / 2, 0, 0);
+        var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), cTmp = new THREE.Color();
+        for (var i = 0; i < pos.count; i++) {
+            var x = pos.getX(i), z = pos.getZ(i);
+            var h = height(x, z);
+            pos.setY(i, h);
+            color(cTmp, h, x, z);
+            colors[i * 3] = cTmp.r; colors[i * 3 + 1] = cTmp.g; colors[i * 3 + 2] = cTmp.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geo.computeVertexNormals();
+        var terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 }));
+        scene.add(terrain);
+
+        function recolor() {
+            var cols = geo.attributes.color, c2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h2 = pos.getY(i);
+                color(c2, h2, x, z);
+                cols.setXYZ(i, c2.r, c2.g, c2.b);
+            }
+            cols.needsUpdate = true;
+        }
+
+        // Hierapolis ruins - a schematic cluster of broken column stumps on
+        // the plateau above the terraces, near where the ancient Greco-Roman
+        // city stood.
+        var ruinsGroup = new THREE.Group();
+        var colMat = new THREE.MeshStandardMaterial({ color: 0xe7e0d2, roughness: 0.9 });
+        var ruinSeeds = [
+            { dx: -1.6, dz: -2.4, h: 0.62 }, { dx: -0.9, dz: -3.1, h: 0.38 },
+            { dx: -2.4, dz: -1.6, h: 0.5 }, { dx: -0.3, dz: -2.0, h: 0.55 },
+            { dx: -1.9, dz: -3.4, h: 0.3 }, { dx: -0.9, dz: -1.2, h: 0.44 }
+        ];
+        for (var r = 0; r < ruinSeeds.length; r++) {
+            var s = ruinSeeds[r];
+            var px = X0 - 1.4 + s.dx, pz = s.dz;
+            var colGeo = new THREE.CylinderGeometry(0.09, 0.11, s.h, 8);
+            var col2 = new THREE.Mesh(colGeo, colMat);
+            var py = height(px, pz);
+            col2.position.set(px, py + s.h / 2, pz);
+            ruinsGroup.add(col2);
+        }
+        scene.add(ruinsGroup);
+
+        var ruinsOn = true;
+
+        function panelHtml() {
+            return '<h3>Pamukkale: white terraces cascading down the hillside</h3>' +
+                '<p>Calcium-carbonate-rich thermal spring water has deposited these travertine terraces over thousands of years, stepping down the slope in a staircase of scalloped basins.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Location</td><td>Denizli Province, southwestern Turkey (Anatolia)</td></tr>' +
+                '<tr><td>Name</td><td>"Pamukkale" means "cotton castle" in Turkish</td></tr>' +
+                '<tr><td>Terrace field</td><td>spans roughly 2.7 km along the slope, dropping on the order of 100-160 m overall</td></tr>' +
+                '<tr><td>Spring water</td><td>reaches the surface pools at roughly 35 C, cooling further as it cascades</td></tr>' +
+                '<tr><td>World Heritage</td><td>Hierapolis-Pamukkale, UNESCO site since 1988 - terraces plus the ancient Greco-Roman city ruins above</td></tr>' +
+                '<tr><td>Protection</td><td>many terraces closed to bathing since the 1990s to curb erosion; boardwalks route visitors, bare feet required in open zones</td></tr>' +
+                '<tr><td>Cleopatra\'s Pool</td><td>a nearby thermal pool with submerged ancient Roman columns</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the stepped terraces, basin pools, and ruin markers are schematic teaching cues, not survey terrain.</p>';
+        }
+
+        function apply() {
+            recolor();
+            var pb = document.getElementById('t3dPamPoolBtn');
+            if (pb) pb.textContent = 'Pool water: ' + (poolOn ? 'On' : 'Off');
+            ruinsGroup.visible = ruinsOn;
+            var rb = document.getElementById('t3dPamRuinsBtn');
+            if (rb) rb.textContent = 'Hierapolis ruins: ' + (ruinsOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ poolOn: poolOn, ruinsOn: ruinsOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.poolOn === 'boolean') poolOn = store.poolOn;
+        if (typeof store.ruinsOn === 'boolean') ruinsOn = store.ruinsOn;
+        apply();
+
+        var poolBtn = document.getElementById('t3dPamPoolBtn');
+        if (poolBtn) poolBtn.addEventListener('click', function () { poolOn = !poolOn; apply(); });
+        var ruinsBtn = document.getElementById('t3dPamRuinsBtn');
+        if (ruinsBtn) ruinsBtn.addEventListener('click', function () { ruinsOn = !ruinsOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the pool water or the Hierapolis ruins marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placespamukkale: 't3dPamControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placespamukkale: { radius: 22, maxR: 80, minR: 5, phi: 1.1, theta: 1.4, targetY: 2.0, fov: 50 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
