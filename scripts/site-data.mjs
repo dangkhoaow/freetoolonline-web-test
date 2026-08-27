@@ -19,6 +19,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/file-viewer-vs-alternatives.html',
   // file-viewer-vs-alternatives es locale (create_new_guide_page 20260827-4)
   '/guides/es/file-viewer-vs-alternatives.html',
+  // file-viewer-vs-alternatives vi locale (create_new_guide_page 20260827-5)
+  '/guides/vi/file-viewer-vs-alternatives.html',
   '/guides/file-viewer-step-by-step.html',
   // file-viewer-step-by-step pt locale (create_new_guide_page 20260826-6)
   '/guides/pt/file-viewer-step-by-step.html',
@@ -7230,6 +7232,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/file-viewer-vs-alternatives.html',
   // file-viewer-vs-alternatives es locale (create_new_guide_page 20260827-4)
   '/guides/es/file-viewer-vs-alternatives.html',
+  // file-viewer-vs-alternatives vi locale (create_new_guide_page 20260827-5)
+  '/guides/vi/file-viewer-vs-alternatives.html',
   // file-viewer-step-by-step vi locale (create_new_guide_page 20260826-8)
   '/guides/vi/file-viewer-step-by-step.html',
   // file-viewer-step-by-step id locale (create_new_guide_page 20260827)
@@ -28946,6 +28950,7 @@ export const JSP_BY_ROUTE = {
   '/guides/file-viewer-vs-alternatives.html': 'guide/file-viewer-vs-alternatives.jsp',
   '/guides/pt/file-viewer-vs-alternatives.html': 'guide/pt/file-viewer-vs-alternatives.jsp',
   '/guides/es/file-viewer-vs-alternatives.html': 'guide/es/file-viewer-vs-alternatives.jsp',
+  '/guides/vi/file-viewer-vs-alternatives.html': 'guide/vi/file-viewer-vs-alternatives.jsp',
   '/image-tools/alt-text-generator.html': 'convert/alt-text-generator.jsp',
   '/image-tools/image-colorizer.html': 'convert/image-colorizer.jsp',
   '/image-tools/duplicate-photo-finder.html': 'convert/duplicate-photo-finder.jsp',
