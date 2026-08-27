@@ -1,0 +1,343 @@
+<script>
+    // 3D scene archetype (bora-bora-lagoon) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN engine), fully client-side.
+    // places-3d cluster, places-3d-discovery-loop-runbook, 2026-08-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not a survey-grade bathymetric model.
+    // Published figures (encyclopedic consensus):
+    //   - Mount Otemanu about 727 m (2,385 ft), the highest point
+    //   - Mount Pahia about 661 m (2,169 ft), the second peak
+    //   - Both are the eroded core of an extinct shield volcano
+    //   - Turquoise lagoon area about 40 sq km, land area about 30 sq km
+    //   - Encircling barrier reef with scattered motu (small coral islets)
+    //   - Society Islands (Leeward group), French Polynesia
+    //   - Main settlement Vaitape; long-cited example of an "almost atoll"
+    //     (a sinking volcanic island ringed by a barrier reef)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'bora-bora-lagoon';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesboraboralagoon'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x1c6fa8, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+        var key = new THREE.DirectionalLight(0xffffff, 1.0);
+        key.position.set(-8, 18, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, x) { var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, metalness: 0 }));
+        }
+
+        // Twin volcanic-remnant peaks (Mount Otemanu tallest, Mount Pahia
+        // second) rising from a shallow turquoise lagoon floor, ringed by a
+        // raised barrier-reef rim carrying scattered motu (small islet) bumps,
+        // with open darker-blue ocean beyond the reef.
+        var P1 = { x: -1.35, z: 0.55, h: 4.9, r: 2.5, exp: 1.35 }; // Otemanu
+        var P2 = { x: 1.25, z: -0.75, h: 3.95, r: 2.15, exp: 1.4 }; // Pahia
+        var LAGOON_Y = -0.55;
+        var R_REEF = 9.6, REEF_BAND = 0.55, REEF_Y = 0.22;
+        var R_OUTER_DROP = 12.4, OCEAN_Y = -2.6;
+
+        function peakBump(p, x, z) {
+            var dx = x - p.x, dz = z - p.z;
+            var d = Math.sqrt(dx * dx + dz * dz) / p.r;
+            if (d > 1.6) return 0;
+            var t = Math.max(0, 1 - d);
+            return p.h * Math.pow(t, p.exp);
+        }
+        function reefR(x, z) {
+            var r = Math.sqrt(x * x + z * z);
+            var ang = Math.atan2(z, x);
+            r *= 1 + 0.05 * Math.sin(ang * 4.0 + 0.6) + 0.03 * (fbm(x * 0.22 + 20, z * 0.22 + 20, 2) - 0.5);
+            return r;
+        }
+        function height(x, z) {
+            // Piecewise radial profile: lagoon floor (with twin peaks rising
+            // out of it) out to R_REEF-REEF_BAND, a raised reef crest right
+            // at R_REEF, then a drop to open-ocean depth by R_REEF+REEF_BAND.
+            var peak = Math.max(peakBump(P1, x, z), peakBump(P2, x, z));
+            peak += 0.12 * (fbm(x * 1.4 + 5, z * 1.4 + 5, 3) - 0.5) * Math.min(1, peak);
+            var lagoonFloor = LAGOON_Y + 0.1 * (fbm(x * 0.7 + 33, z * 0.7 + 33, 3) - 0.5);
+            var oceanFloor = OCEAN_Y + 0.25 * (fbm(x * 0.5 + 90, z * 0.5 + 90, 3) - 0.5);
+            var reefCrest = REEF_Y + 0.05 * fbm(x * 2.0 + 71, z * 2.0 + 71, 2);
+            var r = reefR(x, z);
+            var innerRise = smooth(R_REEF - REEF_BAND, R_REEF, r); // 0 at inner edge, 1 at crest
+            var outerFall = smooth(R_REEF, R_REEF + REEF_BAND, r); // 0 at crest, 1 at outer edge
+            var h;
+            if (r <= R_REEF - REEF_BAND) {
+                h = lagoonFloor + peak;
+            } else if (r <= R_REEF) {
+                h = lagoonFloor + (reefCrest - lagoonFloor) * innerRise;
+            } else if (r <= R_REEF + REEF_BAND) {
+                h = reefCrest + (oceanFloor - reefCrest) * outerFall;
+            } else {
+                h = oceanFloor;
+            }
+            return h;
+        }
+
+        var normColors = null, bandedColors = null, terrain;
+        function lagoonColor(c, h, banded) {
+            var frac = Math.max(0, Math.min(1, (REEF_Y - h) / (REEF_Y - LAGOON_Y + 0.6)));
+            if (banded) { frac = Math.floor(frac * 5) / 5; }
+            var shallow = new THREE.Color(0x4de3d6);
+            var mid = new THREE.Color(0x1aa3c9);
+            var deep = new THREE.Color(0x0f4a86);
+            var col2 = frac < 0.5 ? shallow.clone().lerp(mid, frac / 0.5) : mid.clone().lerp(deep, (frac - 0.5) / 0.5);
+            c.copy(col2);
+            if (banded) { c.multiplyScalar(0.95 + 0.05 * Math.sin(frac * 24)); }
+        }
+        function bandColor(c, h, x, z, banded) {
+            var peak = Math.max(peakBump(P1, x, z), peakBump(P2, x, z));
+            var r = reefR(x, z);
+            var reefT = smooth(R_REEF - REEF_BAND, R_REEF + REEF_BAND, r);
+            var oceanT = smooth(R_REEF + REEF_BAND, R_OUTER_DROP, r);
+            if (oceanT > 0.08) {
+                c.setHex(0x0a2f66);
+                c.multiplyScalar(0.85 + 0.25 * oceanT);
+                return;
+            }
+            if (reefT > 0.12 && reefT < 0.9) {
+                var g = fbm(x * 1.6 + 12, z * 1.6 + 8, 3);
+                c.setHex(g > 0.5 ? 0xd9c27a : 0xf2e6b8); // sun-bleached coral / sand motu
+                c.multiplyScalar(0.85 + 0.25 * g);
+                return;
+            }
+            if (peak > 0.25) {
+                var greenT = Math.min(1, peak / 3.2);
+                var rock = new THREE.Color(0x6b7a5a);
+                var forest = new THREE.Color(0x2f7a3f);
+                c.copy(rock.clone().lerp(forest, greenT));
+                return;
+            }
+            lagoonColor(c, h, banded);
+        }
+        terrain = makeTerrain(24, 24, shell.low ? 130 : 190, shell.low ? 130 : 190, height, function (c, h, x, z) { bandColor(c, h, x, z, false); });
+        scene.add(terrain);
+        var normArr = terrain.geometry.attributes.color.array.slice();
+        var pos2 = terrain.geometry.attributes.position, col2 = new THREE.Color();
+        var bandedArr = new Float32Array(pos2.count * 3);
+        for (var bi = 0; bi < pos2.count; bi++) {
+            bandColor(col2, pos2.getY(bi), pos2.getX(bi), pos2.getZ(bi), true);
+            bandedArr[bi * 3] = col2.r; bandedArr[bi * 3 + 1] = col2.g; bandedArr[bi * 3 + 2] = col2.b;
+        }
+        normColors = normArr;
+        bandedColors = bandedArr;
+
+        // Motu markers: scattered coral-sand islet cones along the reef ring.
+        var motuGroup = new THREE.Group();
+        var NMOTU = 9;
+        for (var mi = 0; mi < NMOTU; mi++) {
+            var a = (mi / NMOTU) * Math.PI * 2 + 0.3;
+            var mr = R_REEF * (0.98 + 0.03 * hash2(mi, 7));
+            var mx = Math.cos(a) * mr, mz = Math.sin(a) * mr;
+            var motu = new THREE.Mesh(new THREE.ConeGeometry(0.32 + 0.12 * hash2(mi, 3), 0.5, 6), new THREE.MeshStandardMaterial({ color: 0x3fae5c }));
+            motu.position.set(mx, REEF_Y + 0.2, mz);
+            motuGroup.add(motu);
+        }
+        scene.add(motuGroup);
+
+        var bandsOn = true, motuOn = true;
+
+        function panelHtml() {
+            return '<h3>Bora Bora: twin peaks in a ring of reef</h3>' +
+                '<p>A sunken volcanos eroded core (Mount Otemanu and Mount Pahia) rises from a shallow turquoise lagoon, ringed by a barrier reef carrying small sand-and-coral motu.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Mount Otemanu</td><td>about 727 m (2,385 ft), highest point</td></tr>' +
+                '<tr><td>Mount Pahia</td><td>about 661 m (2,169 ft)</td></tr>' +
+                '<tr><td>Lagoon area</td><td>about 40 sq km</td></tr>' +
+                '<tr><td>Land area</td><td>about 30 sq km</td></tr>' +
+                '<tr><td>Formation</td><td>eroded remnant of an extinct shield volcano ringed by a barrier reef</td></tr>' +
+                '<tr><td>Location</td><td>Society Islands (Leeward group), French Polynesia</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - peak proportions, reef shape, and motu placement are procedural teaching cues, not a survey-grade model.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(bandsOn ? bandedColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            motuGroup.visible = motuOn;
+            var bb = document.getElementById('t3dBblBandsBtn');
+            if (bb) bb.textContent = 'Lagoon depth bands: ' + (bandsOn ? 'On' : 'Off');
+            var mb = document.getElementById('t3dBblMotuBtn');
+            if (mb) mb.textContent = 'Motu markers: ' + (motuOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ bandsOn: bandsOn, motuOn: motuOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.bandsOn === 'boolean') bandsOn = store.bandsOn;
+        if (typeof store.motuOn === 'boolean') motuOn = store.motuOn;
+        apply();
+
+        var bandsBtn = document.getElementById('t3dBblBandsBtn');
+        if (bandsBtn) bandsBtn.addEventListener('click', function () { bandsOn = !bandsOn; apply(); });
+        var motuBtn = document.getElementById('t3dBblMotuBtn');
+        if (motuBtn) motuBtn.addEventListener('click', function () { motuOn = !motuOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle lagoon depth bands or the motu markers.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesboraboralagoon: 't3dBblControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesboraboralagoon: { radius: 20, maxR: 46, minR: 6, phi: 0.86, theta: 0.5, targetY: 0.4 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
