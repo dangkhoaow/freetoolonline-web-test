@@ -1,0 +1,377 @@
+<script>
+    // 3D scene archetype skeleton (krakatoa) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (krakatoa). All geometry is procedural. places-3d cluster.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-08-28):
+    //   - Krakatoa, Sunda Strait, Indonesia - between Java and Sumatra
+    //   - The catastrophic 1883 eruption destroyed roughly two-thirds of the
+    //     original island, collapsing it below sea level and leaving a
+    //     submerged caldera; the blast is commonly cited as one of the
+    //     loudest sounds in recorded history, reportedly heard about 4,800 km
+    //     away, and the resulting tsunamis killed on the order of 36,000
+    //     people
+    //   - Three remnant islands survive from the original landmass: Rakata
+    //     (the largest, with a dramatic sheer cliff, roughly 700-800 m high),
+    //     Sertung (Verlaten), and Panjang (Lang)
+    //   - Anak Krakatau ("Child of Krakatoa") emerged from the sea inside the
+    //     caldera in 1927 and has grown intermittently since through
+    //     repeated small eruptions; most of its bulk lies hidden below the
+    //     waterline within the flooded caldera
+    //   - December 2018: a large flank collapse of Anak Krakatau triggered a
+    //     deadly tsunami (commonly cited as more than 400 deaths) and removed
+    //     a large share of the cone's height and volume; it has continued
+    //     rebuilding since
+    //   - Sits within the Sunda Strait, part of the highly active Sunda Arc
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'krakatoa';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeskrakatoa'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract: window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x7fb9d6, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xfff3d6, 1.0);
+        key.position.set(-10, 18, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function bumpAmt(r, R, power) { var t = Math.max(0, 1 - r / R); return Math.pow(t, power); }
+
+        // Vertical scale: 1 unit is about 100 m, same convention as the
+        // Dead Sea page. x = east-west, z = north-south (arbitrary local
+        // frame, not a real compass bearing). The 1883 eruption collapsed
+        // roughly two-thirds of the original island below sea level, leaving
+        // a submerged caldera ringed by three surviving remnants (Rakata,
+        // Sertung, Panjang) with Anak Krakatau growing back from the sea
+        // near the middle of the flooded caldera.
+        var SEA_Y = 0;
+        var BASE_R = 17;                       // caldera field radius, schematic
+        var STRAIT_FLOOR = -0.6, CALDERA_FLOOR = -3.2;
+
+        var RAKATA = { ang: -2.05, dist: 13.8, r: 6.2, h: 8.4, power: 0.55 };
+        var SERTUNG = { ang: 2.35, dist: 12.6, r: 4.6, h: 3.4, power: 0.6 };
+        var PANJANG = { ang: 0.55, dist: 12.0, r: 4.0, h: 3.0, power: 0.6 };
+        var ANAK = { x: 2.6, z: -1.8, r: 6.5, h: 4.9, power: 0.6, craterR: 1.1, craterDepth: 0.6 };
+
+        function islandCenter(isl) { return { x: isl.dist * Math.sin(isl.ang), z: isl.dist * Math.cos(isl.ang) }; }
+
+        function baseFloor(x, z) {
+            var r = Math.sqrt(x * x + z * z);
+            var t = smooth(BASE_R * 1.2, BASE_R * 0.25, r);
+            var floor = STRAIT_FLOOR + (CALDERA_FLOOR - STRAIT_FLOOR) * t;
+            return floor + 0.25 * (fbm(x * 0.22 + 3, z * 0.22 + 7, 4) - 0.5);
+        }
+
+        function islandAmt(x, z, isl) {
+            var c = islandCenter(isl);
+            var dx = x - c.x, dz = z - c.z;
+            var r = Math.sqrt(dx * dx + dz * dz);
+            // Ragged fragment edge - the remnant islands are irregular shards
+            // of the original landmass, not smooth domes, so the effective
+            // radius wobbles with position-based noise rather than staying
+            // perfectly circular.
+            var ragged = isl.r * (1 - 0.22 * (fbm(x * 0.5 + isl.dist, z * 0.5 + isl.ang * 10, 3) - 0.5));
+            return bumpAmt(r, ragged, isl.power);
+        }
+
+        function anakAmt(x, z) {
+            var dx = x - ANAK.x, dz = z - ANAK.z;
+            var r = Math.sqrt(dx * dx + dz * dz);
+            return bumpAmt(r, ANAK.r, ANAK.power);
+        }
+
+        function anakCraterDip(x, z) {
+            var dx = x - ANAK.x, dz = z - ANAK.z;
+            var r = Math.sqrt(dx * dx + dz * dz);
+            return ANAK.craterDepth * smooth(ANAK.craterR, 0, r);
+        }
+
+        function height(x, z) {
+            var floor = baseFloor(x, z);
+            var h = floor;
+            h = Math.max(h, floor + islandAmt(x, z, RAKATA) * RAKATA.h);
+            h = Math.max(h, floor + islandAmt(x, z, SERTUNG) * SERTUNG.h);
+            h = Math.max(h, floor + islandAmt(x, z, PANJANG) * PANJANG.h);
+            var aAmt = anakAmt(x, z);
+            if (aAmt > 0.002) {
+                var anakH = floor + aAmt * ANAK.h - anakCraterDip(x, z) * Math.min(1, aAmt * 1.6);
+                h = Math.max(h, anakH);
+            }
+            return h;
+        }
+
+        var col = {
+            deepOcean: new THREE.Color(0x0c2a3e), shallow: new THREE.Color(0x2aa6a0),
+            forest: new THREE.Color(0x3f7a3a), scrub: new THREE.Color(0x8a8a4a),
+            anakRock: new THREE.Color(0x4a4038), ember: new THREE.Color(0x8a3a22)
+        };
+        var emberOn = true;
+
+        function color(c, h, x, z, aAmt) {
+            var n = 0.9 + 0.18 * fbm(x * 1.1 + 6, z * 1.1 + 2, 3);
+            if (aAmt > 0.06) {
+                c.copy(col.anakRock);
+                if (emberOn && aAmt > 0.82) {
+                    c.lerp(col.ember, Math.min(1, (aAmt - 0.82) / 0.18) * 0.35);
+                }
+            } else if (h < CALDERA_FLOOR * 0.55) {
+                c.copy(col.deepOcean);
+            } else if (h < SEA_Y - 0.04) {
+                c.copy(col.deepOcean).lerp(col.shallow, smooth(CALDERA_FLOOR * 0.55, SEA_Y - 0.04, h));
+            } else if (h < 1.4) {
+                c.copy(col.scrub).lerp(col.shallow, smooth(SEA_Y - 0.04, SEA_Y + 0.08, h));
+            } else {
+                c.copy(col.forest).lerp(col.scrub, smooth(6.5, 1.4, h));
+            }
+            c.multiplyScalar(n);
+        }
+
+        var segs = shell.low ? 130 : 170;
+        var SPAN = BASE_R * 2.6;
+        var geo = new THREE.PlaneGeometry(SPAN, SPAN, segs, segs);
+        geo.rotateX(-Math.PI / 2);
+        var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), cTmp = new THREE.Color();
+        for (var i = 0; i < pos.count; i++) {
+            var x = pos.getX(i), z = pos.getZ(i);
+            var h = height(x, z);
+            pos.setY(i, h);
+            color(cTmp, h, x, z, anakAmt(x, z));
+            colors[i * 3] = cTmp.r; colors[i * 3 + 1] = cTmp.g; colors[i * 3 + 2] = cTmp.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geo.computeVertexNormals();
+        var terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 }));
+        scene.add(terrain);
+
+        function recolor() {
+            var cols = geo.attributes.color, c2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h2 = pos.getY(i);
+                color(c2, h2, x, z, anakAmt(x, z));
+                cols.setXYZ(i, c2.r, c2.g, c2.b);
+            }
+            cols.needsUpdate = true;
+        }
+
+        // Sea-level datum plane at y=0, matching the Dead Sea archetype -
+        // shows how much of the collapsed caldera lies underwater.
+        var datum = new THREE.Mesh(
+            new THREE.PlaneGeometry(SPAN * 1.02, SPAN * 1.02),
+            new THREE.MeshBasicMaterial({ color: 0x59c2ff, transparent: true, opacity: 0.16, depthWrite: false, side: THREE.DoubleSide })
+        );
+        datum.rotation.x = -Math.PI / 2;
+        datum.position.y = SEA_Y;
+        scene.add(datum);
+        var datumEdge = new THREE.Mesh(
+            new THREE.TorusGeometry(BASE_R * 1.28, 0.05, 8, 56),
+            new THREE.MeshBasicMaterial({ color: 0x8fd6ff })
+        );
+        datumEdge.rotation.x = Math.PI / 2;
+        datumEdge.position.y = SEA_Y;
+        scene.add(datumEdge);
+
+        // 1883 pre-collapse island outline - a schematic ring, larger than
+        // the surviving rim, marking roughly where the combined island stood
+        // before the eruption tore it apart. Group visibility toggle only.
+        var outline1883 = new THREE.Mesh(
+            new THREE.TorusGeometry(BASE_R * 1.55, 0.09, 8, 64),
+            new THREE.MeshBasicMaterial({ color: 0xffcf6b, transparent: true, opacity: 0.85 })
+        );
+        outline1883.rotation.x = Math.PI / 2;
+        outline1883.position.y = SEA_Y + 0.05;
+        scene.add(outline1883);
+
+        var datumOn = true, outlineOn = true;
+
+        function panelHtml() {
+            return '<h3>Krakatoa: a collapsed caldera, regrowing from the sea</h3>' +
+                '<p>Three surviving fragments ring a submerged caldera left by the 1883 eruption. Anak Krakatau (\'Child of Krakatoa\') has been rebuilding near the middle of the flooded basin since 1927.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Location</td><td>Sunda Strait, Indonesia - between Java and Sumatra</td></tr>' +
+                '<tr><td>1883 eruption</td><td>destroyed roughly two-thirds of the original island; tsunamis killed on the order of 36,000 people</td></tr>' +
+                '<tr><td>Blast noise</td><td>commonly cited as one of the loudest sounds ever recorded, reportedly heard about 4,800 km away</td></tr>' +
+                '<tr><td>Surviving remnants</td><td>Rakata (tallest, about 700-800 m), Sertung, and Panjang</td></tr>' +
+                '<tr><td>Anak Krakatau</td><td>emerged 1927; most of its bulk is hidden below the waterline in the flooded caldera</td></tr>' +
+                '<tr><td>December 2018</td><td>a flank collapse triggered a deadly tsunami and removed much of the cone; it has kept rebuilding since</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the caldera shape, remnant islands, cone, and 1883 outline are schematic teaching cues, not survey terrain.</p>';
+        }
+
+        function apply() {
+            datum.visible = datumOn; datumEdge.visible = datumOn;
+            var db = document.getElementById('t3dKrkDatumBtn');
+            if (db) db.textContent = 'Sea-level plane: ' + (datumOn ? 'On' : 'Off');
+            outline1883.visible = outlineOn;
+            var ob = document.getElementById('t3dKrk1883Btn');
+            if (ob) ob.textContent = '1883 island outline: ' + (outlineOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ datumOn: datumOn, outlineOn: outlineOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.datumOn === 'boolean') datumOn = store.datumOn;
+        if (typeof store.outlineOn === 'boolean') outlineOn = store.outlineOn;
+        recolor();
+        apply();
+
+        var datumBtn = document.getElementById('t3dKrkDatumBtn');
+        if (datumBtn) datumBtn.addEventListener('click', function () { datumOn = !datumOn; apply(); });
+        var outlineBtn = document.getElementById('t3dKrk1883Btn');
+        if (outlineBtn) outlineBtn.addEventListener('click', function () { outlineOn = !outlineOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the sea-level plane or the 1883 island outline.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeskrakatoa: 't3dKrkControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeskrakatoa: { radius: 40, maxR: 110, minR: 8, phi: 0.68, theta: 0.7, targetY: -1.0, fov: 50 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
