@@ -1,0 +1,344 @@
+<script>
+    // 3D scene archetype skeleton (aletsch-glacier) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (aletsch-glacier).
+    // All geometry is procedural. places-3d-discovery-loop-runbook, 2026-08-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey glaciology. The valley curve, ice
+    // surface, moraine stripes, and historic-edge marker are exaggerated
+    // schematic teaching cues. Published figures (encyclopedic / UNESCO
+    // consensus, cross-checked 2026-08-28):
+    //   - Length about 23 km - the longest glacier in the Alps
+    //   - Area about 80 sq km, ice volume about 15 cubic km
+    //   - Formed where three tributary glaciers (Grosser Aletschfirn,
+    //     Jungfraufirn, and Ewigschneefeld) meet at Concordia Place
+    //   - Ice was historically up to about 800-900 m thick near Concordia
+    //     Place, thinning as the glacier retreats
+    //   - Overlooked by the Jungfrau (about 4,158 m) in the Bernese Alps
+    //   - Part of the Swiss Alps Jungfrau-Aletsch UNESCO World Heritage Site
+    //     (natural), listed since 2001
+    //   - Has retreated roughly 3 km since the mid-1800s, photographically
+    //     documented since 1856, with the pace accelerating in recent decades
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'aletsch-glacier';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesaletschglacier'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a1220, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xeaf2ff, 1.0);
+        key.position.set(-10, 16, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 }));
+        }
+
+        // A curving valley trough (unlike a radial dome or a bowl): the ice
+        // river runs along z, from the wide Concordia Place confluence at the
+        // back (z<0) to the current terminus partway down (z=TERM_Z), then
+        // bare proglacial rock/moraine debris continues to the historic
+        // 1860s ice edge (z=OLD_TERM_Z) at the far front. Flanking rock walls
+        // rise on both sides, taller and closer near the head (Jungfrau
+        // massif). 1 unit ~= 950 m; x = across-valley, z = down-glacier.
+        var D = 24, HALF_D = D / 2;
+        var WMAX = 3.1, BEND = 1.35;
+        var TERM_Z = 4.5, OLD_TERM_Z = 10.6;
+        function centerX(z) { return BEND * Math.sin(((z + HALF_D) / D) * Math.PI * 1.15); }
+        function valleyHalfWidth(z) {
+            var t = smooth(-HALF_D, HALF_D, z);
+            return WMAX * (0.62 + 0.38 * (1 - t));
+        }
+        function floorAt(t) { return 0.55 - 1.25 * t; }
+        function height(x, z) {
+            var cx = centerX(z);
+            var dx = x - cx;
+            var w = valleyHalfWidth(z);
+            var t = smooth(-HALF_D, HALF_D, z);
+            var floor = floorAt(t);
+            var inValley = smooth(w + 0.6, w - 0.5, Math.abs(dx));
+            var crevasse = 0.05 * (fbm(x * 1.1 + 4, z * 0.7 + 2, 4) - 0.5);
+            var crossBulge = 0.10 * (1 - Math.min(1, (dx / Math.max(0.3, w)) * (dx / Math.max(0.3, w))));
+            var iceSurface = floor + crossBulge + crevasse;
+            // Flanking rock walls: two Jungfrau-massif peak bumps positioned
+            // near the head (z<0), plus a general ridge rising away from the
+            // valley on both sides, with light noise texture.
+            var wallBase = 1.05 + 1.55 * smooth(w, w + 3.6, Math.abs(dx)) + 0.25 * (fbm(x * 0.5 + 20, z * 0.5 + 9, 3) - 0.5);
+            var peak1 = 2.35 * Math.exp(-((x - 2.6) * (x - 2.6) + (z + 8.5) * (z + 8.5)) / 6.5);
+            var peak2 = 1.5 * Math.exp(-((x + 3.0) * (x + 3.0) + (z + 5.0) * (z + 5.0)) / 7.5);
+            var wallHeight = wallBase + peak1 + peak2;
+            return iceSurface * inValley + wallHeight * (1 - inValley);
+        }
+        var col = {
+            ice: new THREE.Color(0xe7edf2), iceShadow: new THREE.Color(0xb9c9d4),
+            rock: new THREE.Color(0x8b8579), rockDark: new THREE.Color(0x5f5a50),
+            moraineBed: new THREE.Color(0x6e6656), snow: new THREE.Color(0xf5f8fb)
+        };
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.4 + 11, z * 1.4 + 7, 3);
+            var cx = centerX(z);
+            var dx = x - cx;
+            var w = valleyHalfWidth(z);
+            var inValley = smooth(w + 0.6, w - 0.5, Math.abs(dx));
+            if (inValley > 0.5) {
+                if (z <= TERM_Z) {
+                    var shade = smooth(w * 0.5, w, Math.abs(dx));
+                    c.copy(col.ice).lerp(col.iceShadow, shade).multiplyScalar(n);
+                } else {
+                    c.copy(col.moraineBed).multiplyScalar(n);
+                }
+                return;
+            }
+            if (h > 2.0) { c.copy(col.snow).multiplyScalar(n); return; }
+            var rockShade = smooth(1.0, 3.4, h);
+            c.copy(col.rock).lerp(col.rockDark, rockShade).multiplyScalar(n);
+        }
+        var terrain = makeTerrain(16, D, shell.low ? 90 : 130, shell.low ? 140 : 210, height, color);
+        scene.add(terrain);
+
+        // Medial moraines: 3 dark longitudinal ribbons tracing the ice
+        // surface from the Concordia Place confluence down to the terminus,
+        // at fixed relative offsets across the valley width - the real
+        // dark stripes left where the three tributary glaciers merge.
+        var MORAINE_OFFSETS = [-0.42, -0.05, 0.38];
+        var moraineGroup = new THREE.Group();
+        var moraineMat = new THREE.MeshStandardMaterial({ color: 0x4a4438, roughness: 0.95 });
+        for (var m = 0; m < MORAINE_OFFSETS.length; m++) {
+            var pts = [];
+            for (var s = 0; s <= 40; s++) {
+                var zz = -HALF_D + 0.5 + (s / 40) * (TERM_Z - (-HALF_D + 0.5));
+                var w2 = valleyHalfWidth(zz);
+                var xx = centerX(zz) + MORAINE_OFFSETS[m] * w2;
+                pts.push(new THREE.Vector3(xx, height(xx, zz) + 0.025, zz));
+            }
+            var curve = new THREE.CatmullRomCurve3(pts);
+            var tubeGeo = new THREE.TubeGeometry(curve, 60, 0.065, 6, false);
+            moraineGroup.add(new THREE.Mesh(tubeGeo, moraineMat));
+        }
+        scene.add(moraineGroup);
+
+        // Historic 1860s ice-edge marker: a thin bright ribbon spanning the
+        // valley at OLD_TERM_Z, well downstream of the current ice edge,
+        // showing how far the terminus has retreated.
+        var oldEdgeGroup = new THREE.Group();
+        var oldEdgeMat = new THREE.MeshBasicMaterial({ color: 0xffcf6b, transparent: true, opacity: 0.85 });
+        var oldW = valleyHalfWidth(OLD_TERM_Z);
+        var oldPts = [];
+        for (var e = 0; e <= 20; e++) {
+            var ex = centerX(OLD_TERM_Z) - oldW * 0.95 + (e / 20) * (oldW * 1.9);
+            oldPts.push(new THREE.Vector3(ex, height(ex, OLD_TERM_Z) + 0.05, OLD_TERM_Z));
+        }
+        var oldCurve = new THREE.CatmullRomCurve3(oldPts);
+        var oldEdgeMesh = new THREE.Mesh(new THREE.TubeGeometry(oldCurve, 24, 0.09, 6, false), oldEdgeMat);
+        oldEdgeGroup.add(oldEdgeMesh);
+        scene.add(oldEdgeGroup);
+
+        var moraineOn = true, oldEdgeOn = true;
+
+        function panelHtml() {
+            return '<h3>Aletsch Glacier: a river of ice</h3>' +
+                '<p>The longest glacier in the Alps, formed where three tributary glaciers meet at Concordia Place and flow together below the Jungfrau - toggle the dark medial moraines and the marker showing how far the ice has retreated since the 1860s.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Length</td><td>about 23 km - the longest glacier in the Alps</td></tr>' +
+                '<tr><td>Area / volume</td><td>about 80 sq km of ice, roughly 15 cubic km in volume</td></tr>' +
+                '<tr><td>Confluence</td><td>Grosser Aletschfirn, Jungfraufirn, and Ewigschneefeld meet at Concordia Place</td></tr>' +
+                '<tr><td>Ice thickness</td><td>historically up to about 800-900 m near Concordia Place, thinning as the glacier retreats</td></tr>' +
+                '<tr><td>Nearby peak</td><td>overlooked by the Jungfrau, about 4,158 m, in the Bernese Alps</td></tr>' +
+                '<tr><td>Heritage status</td><td>part of the Swiss Alps Jungfrau-Aletsch UNESCO World Heritage Site since 2001</td></tr>' +
+                '<tr><td>Retreat</td><td>roughly 3 km shorter since the mid-1800s, documented in photographs since 1856</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the valley curve, ice surface, moraine stripes, and historic-edge marker are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            moraineGroup.visible = moraineOn;
+            var mb = document.getElementById('t3dAlgMoraineBtn');
+            if (mb) mb.textContent = 'Medial moraines: ' + (moraineOn ? 'On' : 'Off');
+            oldEdgeGroup.visible = oldEdgeOn;
+            var ob = document.getElementById('t3dAlgOldEdgeBtn');
+            if (ob) ob.textContent = '1860s ice edge marker: ' + (oldEdgeOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ moraineOn: moraineOn, oldEdgeOn: oldEdgeOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.moraineOn === 'boolean') moraineOn = store.moraineOn;
+        if (typeof store.oldEdgeOn === 'boolean') oldEdgeOn = store.oldEdgeOn;
+        apply();
+
+        var moraineBtn = document.getElementById('t3dAlgMoraineBtn');
+        if (moraineBtn) moraineBtn.addEventListener('click', function () { moraineOn = !moraineOn; apply(); });
+        var oldEdgeBtn = document.getElementById('t3dAlgOldEdgeBtn');
+        if (oldEdgeBtn) oldEdgeBtn.addEventListener('click', function () { oldEdgeOn = !oldEdgeOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the medial moraines or the 1860s ice-edge marker.');
+        var t = 0;
+        return function animate(dt) {
+            t += dt * 0.001;
+            scene.rotation.y += dt * 0.00003;
+            if (oldEdgeGroup.visible) {
+                oldEdgeMat.opacity = 0.65 + 0.2 * Math.sin(t * 2.4);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesaletschglacier: 't3dAlgControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesaletschglacier: { radius: 26, maxR: 70, minR: 6, phi: 0.78, theta: 0.55, targetY: 0.2 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

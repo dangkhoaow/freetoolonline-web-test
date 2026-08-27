@@ -769,6 +769,7 @@ try {
     { title: "Okavango Delta 3D Explorer", url: "https://freetoolonline.com/places-3d/okavango-delta.html", include: !1, tags: "places-3d" },
     { title: "Krakatoa 3D Explorer", url: "https://freetoolonline.com/places-3d/krakatoa.html", include: !1, tags: "places-3d" },
     { title: "Pamukkale 3D Explorer", url: "https://freetoolonline.com/places-3d/pamukkale.html", include: !1, tags: "places-3d" },
+    { title: "Aletsch Glacier 3D Explorer", url: "https://freetoolonline.com/places-3d/aletsch-glacier.html", include: !1, tags: "places-3d" },
     { title: "Fish River Canyon 3D Explorer", url: "https://freetoolonline.com/places-3d/fish-river-canyon.html", include: !1, tags: "places-3d" },
     { title: "Maldives Atolls 3D Explorer", url: "https://freetoolonline.com/places-3d/maldives-atolls.html", include: !1, tags: "places-3d" },
     { title: "Caspian Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caspian-sea.html", include: !1, tags: "places-3d" },
