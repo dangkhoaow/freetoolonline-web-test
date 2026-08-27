@@ -14038,6 +14038,7 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  '/angel-falls.html': '/places-3d/angel-falls.html',
   '/guides/gravitational-slingshot-step-by-step.html': '/guides/gravitational-slingshot-when.html',
   '/guides/retrograde-motion-step-by-step.html': '/guides/retrograde-motion-when.html',
   '/guides/pt/gravitational-slingshot-step-by-step.html': '/guides/pt/gravitational-slingshot-when.html',
@@ -14893,6 +14894,7 @@ export const ALIAS_ROUTES = {
   '/vatnajokull.html': '/places-3d/vatnajokull.html',
   '/old-faithful.html': '/places-3d/old-faithful.html',
   '/giants-causeway.html': '/places-3d/giants-causeway.html',
+  '/wadi-rum.html': '/places-3d/wadi-rum.html',
   '/perito-moreno-glacier.html': '/places-3d/perito-moreno-glacier.html',
   '/great-blue-hole.html': '/places-3d/great-blue-hole.html',
   '/niagara-falls.html': '/places-3d/niagara-falls.html',
@@ -16713,6 +16715,7 @@ export const ALIAS_ROUTES = {
 // non-kebab entries to this map.
 // ─────────────────────────────────────────────────────────────────────────
 export const JSP_BY_ROUTE = {
+  '/places-3d/angel-falls.html': 'place/angel-falls.jsp',
   // game-server-status companion guides (new-tool-discovery-loop fire728)
   '/guides/game-server-status-step-by-step.html': 'guide/game-server-status-step-by-step.jsp',
   '/guides/game-server-status-when.html': 'guide/game-server-status-when.jsp',
@@ -17130,6 +17133,7 @@ export const JSP_BY_ROUTE = {
   '/places-3d/vatnajokull.html': 'place/vatnajokull.jsp',
   '/places-3d/old-faithful.html': 'place/old-faithful.jsp',
   '/places-3d/giants-causeway.html': 'place/giants-causeway.jsp',
+  '/places-3d/wadi-rum.html': 'place/wadirum.jsp',
   '/places-3d/perito-moreno-glacier.html': 'place/perito-moreno-glacier.jsp',
   '/places-3d/great-blue-hole.html': 'place/great-blue-hole.jsp',
   '/places-3d/niagara-falls.html': 'place/niagara-falls.jsp',

@@ -1,0 +1,346 @@
+<script>
+    // 3D scene archetype skeleton (wadirum) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (wadirum).
+    // All geometry is procedural. places-3d cluster member, 2026-08-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology.
+    // Published figures (cross-checked 2026-08-27):
+    //   - Wadi Rum ("Valley of the Moon"), Wadi Rum Protected Area, southern Jordan
+    //   - Jebel Rum: about 1,734 m above sea level, Jordan's second-highest peak,
+    //     rising roughly 800 m of sheer sandstone/granite cliff above the valley floor
+    //   - Valley floor: about 950 m above sea level
+    //   - Um Fruth Rock Bridge: a natural rock arch about 15 m above the ground,
+    //     one of several rock bridges in the valley
+    //   - Rum sandstone formation laid down more than 500 million years ago over
+    //     an older Precambrian granite basement
+    //   - Wadi Rum Protected Area: about 720 sq km (74,000 ha), UNESCO World
+    //     Heritage Site since 2011 (mixed cultural and natural)
+    //   - Hyper-arid desert climate - average rainfall well under 50 mm per year
+    //   - Desert varnish: a thin dark coating of manganese and iron oxides that
+    //     builds up on exposed rock surfaces over long, undisturbed time spans
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'wadirum';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeswadirum'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x140b08, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xffd9ae, 1.1);
+        key.position.set(-10, 16, 9);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 91.7 + z * 173.3) * 24634.1219; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.11; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0 }));
+        }
+
+        // Sheer-sided flat-topped mesa field (jebels), 1 unit = ~130 m vertical.
+        // Each mesa's footprint is angularly perturbed so it reads as a rugged
+        // eroded massif rather than a clean cylinder, and the height profile is
+        // near-flat across most of the top with a steep cliff drop-off near the
+        // rim - the opposite curve shape of a dune (which peaks at the center
+        // and tapers smoothly) or a bowl (which is concave).
+        var MAXH = 6.15; // Jebel Rum's ~800 m of cliff above the valley floor
+        var MESAS = [
+            [-3.2, -0.6, 5.0, 6.15, 11.0, 0.4],  // Jebel Rum massif, tallest
+            [ 5.2,  1.6, 4.2, 4.55,  9.0, 2.1],  // second jebel across the corridor
+            [ 0.4,  6.4, 2.6, 3.05,  8.0, 4.6]   // smaller outlying butte
+        ];
+        function footprintR(baseR, ang, seed) {
+            var ridge = 0.78 + 0.30 * (0.5 + 0.5 * Math.sin(3.0 * ang + seed)) * (0.6 + 0.4 * fbm(ang * 1.7 + seed, seed * 0.7, 3));
+            return baseR * ridge;
+        }
+        function mesaBump(x, z, cx, cz, r, h, seed, rotPhase) {
+            var dx = x - cx, dz = z - cz;
+            var dist = Math.hypot(dx, dz);
+            var ang = Math.atan2(dz, dx) + rotPhase;
+            var rr = footprintR(r, ang, seed);
+            if (dist >= rr) return 0;
+            var t = dist / rr;
+            // Flat plateau (t < 0.72), steep cliff face (0.72 <= t < 1).
+            var plateauNoise = 0.05 * fbm(x * 0.7 + seed, z * 0.7 + seed * 1.3, 3);
+            if (t < 0.72) { return h * (1 + plateauNoise * (1 - t / 0.72)); }
+            var cliffT = (t - 0.72) / 0.28;
+            var drop = Math.pow(1 - cliffT, 3.2);
+            return h * drop * (1 + plateauNoise * 0.3);
+        }
+        function height(x, z) {
+            var floor = 0.10 * (fbm(x * 0.22 + 4, z * 0.22 + 1, 4) - 0.5);
+            var h = floor;
+            for (var i = 0; i < MESAS.length; i++) {
+                var m = MESAS[i];
+                h = Math.max(h, mesaBump(x, z, m[0], m[1], m[2], m[3], m[4], m[5]));
+            }
+            return Math.max(h, 0);
+        }
+        var SANDSTONE_BANDS = [
+            [0.00, 0xc97a4e],
+            [0.15, 0xb85f3a],
+            [0.45, 0xa14a30],
+            [0.75, 0x8a3924],
+            [0.94, 0x6e2a1c]
+        ];
+        function bandColor(c, h, x, z, varnish) {
+            var u = Math.max(0, Math.min(1, h / MAXH));
+            var n = 0.9 + 0.18 * fbm(x * 1.6 + 20, z * 1.6 + 6, 3);
+            var hex = SANDSTONE_BANDS[SANDSTONE_BANDS.length - 1][1];
+            for (var i = SANDSTONE_BANDS.length - 1; i >= 0; i--) { if (u >= SANDSTONE_BANDS[i][0]) { hex = SANDSTONE_BANDS[i][1]; break; } }
+            c.setHex(hex);
+            c.multiplyScalar(n);
+            if (varnish) {
+                // Desert varnish - a dark manganese/iron streak concentrated near
+                // clifftops and rims, strongest where local height fraction is
+                // high (long exposure at the top of the cliff face).
+                var streak = Math.max(0, u - 0.55) / 0.45;
+                streak = Math.pow(Math.max(0, Math.min(1, streak)), 1.6);
+                var vertical = 0.55 + 0.45 * fbm(x * 3.4 + 50, z * 0.4 + 8, 2);
+                var mix = Math.max(0, Math.min(1, streak * vertical));
+                c.lerp(new THREE.Color(0x201812), mix * 0.85);
+            }
+        }
+        var normColors, varnishColors, terrain;
+        function build(varnish) {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                bandColor(col, pos.getY(i), pos.getX(i), pos.getZ(i), varnish);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(26, 26, shell.low ? 130 : 190, shell.low ? 130 : 190, height, function (c, h, x, z) { bandColor(c, h, x, z, false); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        varnishColors = build(true);
+
+        // Um Fruth-style rock bridge - a slim arch standing in the corridor
+        // between the two main jebels, exaggerated for legibility (a real ~15 m
+        // arch would be a sliver at this scale, same teaching-cue convention
+        // used for tree/marker props on sibling pages).
+        var bridgeMat = new THREE.MeshStandardMaterial({ color: 0x9a5a38, roughness: 0.9 });
+        var bridge = new THREE.Group();
+        var legL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 1.1, 0.5), bridgeMat);
+        legL.position.set(0.55, 0.55, 3.4);
+        var legR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.85, 0.5), bridgeMat);
+        legR.position.set(1.75, 0.42, 3.6);
+        var span = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.14, 8, 16, Math.PI * 0.62), bridgeMat);
+        span.position.set(1.15, 0.98, 3.5);
+        span.rotation.z = Math.PI * 0.19;
+        span.rotation.x = Math.PI / 2;
+        bridge.add(legL, legR, span);
+        scene.add(bridge);
+
+        // Landmark markers - small beacons at Jebel Rum's summit and the rock
+        // bridge, toggled together as one group.
+        var markers = new THREE.Group();
+        var beaconMat = new THREE.MeshStandardMaterial({ color: 0xffe08a, emissive: 0x593c00, emissiveIntensity: 0.5 });
+        var summitBeacon = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 8), beaconMat);
+        summitBeacon.position.set(-3.2, MAXH + 0.25, -0.6);
+        var bridgeBeacon = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.36, 8), beaconMat);
+        bridgeBeacon.position.set(1.15, 1.55, 3.5);
+        markers.add(summitBeacon, bridgeBeacon);
+        scene.add(markers);
+
+        var varnishOn = false, markersOn = true;
+
+        function panelHtml() {
+            return '<h3>Wadi Rum: sheer sandstone mesas and a rock bridge</h3>' +
+                '<p>A relief of Wadi Rum: rugged flat-topped jebels rising straight off the desert floor, with a slim natural rock bridge standing in the corridor between the two largest massifs.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Jebel Rum elevation</td><td>about 1,734 m above sea level - Jordan\'s second-highest peak</td></tr>' +
+                '<tr><td>Cliff height above valley</td><td>roughly 800 m of sheer sandstone and granite</td></tr>' +
+                '<tr><td>Valley floor elevation</td><td>about 950 m above sea level</td></tr>' +
+                '<tr><td>Um Fruth Rock Bridge</td><td>a natural rock arch about 15 m above the ground</td></tr>' +
+                '<tr><td>Rock formation age</td><td>Rum sandstone laid down more than 500 million years ago over an older granite basement</td></tr>' +
+                '<tr><td>Protected area</td><td>about 720 sq km - UNESCO World Heritage Site since 2011</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the mesa field, rock bridge, and color bands are procedural teaching cues, not survey geology.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(varnishOn ? varnishColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            markers.visible = markersOn;
+            var vb = document.getElementById('t3dWruVarnishBtn');
+            if (vb) vb.textContent = 'Desert-varnish color bands: ' + (varnishOn ? 'On' : 'Off');
+            var mb = document.getElementById('t3dWruMarkersBtn');
+            if (mb) mb.textContent = 'Landmark markers: ' + (markersOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ varnishOn: varnishOn, markersOn: markersOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.varnishOn === 'boolean') varnishOn = store.varnishOn;
+        if (typeof store.markersOn === 'boolean') markersOn = store.markersOn;
+        apply();
+
+        var varnishBtn = document.getElementById('t3dWruVarnishBtn');
+        if (varnishBtn) varnishBtn.addEventListener('click', function () { varnishOn = !varnishOn; apply(); });
+        var markersBtn = document.getElementById('t3dWruMarkersBtn');
+        if (markersBtn) markersBtn.addEventListener('click', function () { markersOn = !markersOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle desert-varnish color bands or the landmark markers.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeswadirum: 't3dWruControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeswadirum: { radius: 22, maxR: 58, minR: 8, phi: 0.95, theta: 0.55, targetY: 2.2 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
