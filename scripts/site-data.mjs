@@ -141,6 +141,8 @@ export const INFO_ROUTES = new Set([
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html',
   // foxit-pdf-editor-browser-vs-alternatives pt locale (create_new_guide_page 20260828)
   '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html',
+  // foxit-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260828-2)
+  '/guides/es/foxit-pdf-editor-browser-vs-alternatives.html',
   '/guides/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/es/foxit-pdf-editor-browser-step-by-step.html',
@@ -7303,6 +7305,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html',
   // foxit-pdf-editor-browser-vs-alternatives pt locale (create_new_guide_page 20260828)
   '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html',
+  // foxit-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260828-2)
+  '/guides/es/foxit-pdf-editor-browser-vs-alternatives.html',
   // foxit-pdf-editor-browser-step-by-step pt locale (create_new_guide_page 20260819-4)
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   // foxit-pdf-editor-browser-step-by-step es locale (create_new_guide_page 20260826-2)
@@ -14936,6 +14940,7 @@ export const ALIAS_ROUTES = {
   '/aletsch-glacier.html': '/places-3d/aletsch-glacier.html',
   '/zhangye-danxia.html': '/places-3d/zhangye-danxia.html',
   '/namib-desert.html': '/places-3d/namib-desert.html',
+  '/mount-st-helens.html': '/places-3d/mount-st-helens.html',
   '/perito-moreno-glacier.html': '/places-3d/perito-moreno-glacier.html',
   '/great-blue-hole.html': '/places-3d/great-blue-hole.html',
   '/niagara-falls.html': '/places-3d/niagara-falls.html',
@@ -17190,6 +17195,7 @@ export const JSP_BY_ROUTE = {
   '/places-3d/aletsch-glacier.html': 'place/aletsch-glacier.jsp',
   '/places-3d/zhangye-danxia.html': 'place/zhangye-danxia.jsp',
   '/places-3d/namib-desert.html': 'place/namib-desert.jsp',
+  '/places-3d/mount-st-helens.html': 'place/mount-st-helens.jsp',
   '/places-3d/perito-moreno-glacier.html': 'place/perito-moreno-glacier.jsp',
   '/places-3d/great-blue-hole.html': 'place/great-blue-hole.jsp',
   '/places-3d/niagara-falls.html': 'place/niagara-falls.jsp',
@@ -28876,6 +28882,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/foxit-pdf-editor-browser-step-by-step.html': 'guide/de/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/foxit-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/pt/foxit-pdf-editor-browser-vs-alternatives.jsp',
+  '/guides/es/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/es/foxit-pdf-editor-browser-vs-alternatives.jsp',
   '/image-converter-tools/adobe-pdf-editor-browser.html': 'convert/adobe-pdf-editor-browser.jsp',
   '/guides/pt/adobe-pdf-editor-browser-when.html': 'guide/pt/adobe-pdf-editor-browser-when.jsp',
   '/guides/es/adobe-pdf-editor-browser-when.html': 'guide/es/adobe-pdf-editor-browser-when.jsp',

@@ -1,0 +1,345 @@
+<script>
+    // 3D scene archetype skeleton (mount-st-helens) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (mount-st-helens). All geometry is procedural. places-3d cluster.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-08-28):
+    //   - Mount St. Helens, Cascade Range, Skamania County, Washington, USA -
+    //     part of the Pacific Ring of Fire
+    //   - Current summit elevation about 2,549 m (8,363 ft)
+    //   - Pre-1980 summit elevation about 2,950 m (9,677 ft) - the May 18,
+    //     1980 eruption removed roughly 400 m of the peak
+    //   - The eruption began with a massive debris avalanche (commonly cited
+    //     as the largest landslide in recorded history) that stripped the
+    //     north flank away, followed by a lateral blast that flattened
+    //     forest for kilometers around; one of the deadliest and most
+    //     economically destructive volcanic events in US history
+    //   - The resulting crater is horseshoe-shaped, open to the north,
+    //     roughly 2 km wide and 3.5 km long
+    //   - A lava dome has grown episodically inside the crater since 1980,
+    //     most recently during a 2004-2008 eruptive phase, partially
+    //     rebuilding the missing volume
+    //   - An active stratovolcano, intensively monitored by the USGS
+    //     Cascades Volcano Observatory
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'mount-st-helens';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesmountsthelens'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract: window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x93b3c6, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff3d6, 1.0);
+        key.position.set(-10, 18, 6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function bumpAmt(r, R, power) { var t = Math.max(0, 1 - r / R); return Math.pow(t, power); }
+
+        // Vertical scale: 1 unit is about 100 m, same convention as the
+        // Dead Sea / Krakatoa pages. x = east-west, z = north-south (local
+        // frame, north = +z - the direction the crater is breached toward).
+        // A conical stratovolcano with a horseshoe-shaped amphitheater
+        // carved out of its north side: the crater bowl widens and deepens
+        // as z increases (moving north), so the rim never closes on the
+        // north edge - the defining shape of the 1980 blast crater.
+        var CONE_R = 15.5, SUMMIT_H = 6.0, BASE_FLOOR = -0.4;
+        var CRATER = { x: 0, z: 1.6, r: 4.6, depth: 3.6, breach: 1.85 };
+        var DOME = { x: 0.1, z: 0.6, r: 1.9, h: 1.55, power: 0.65 };
+
+        function baseCone(x, z) {
+            var r = Math.sqrt(x * x + z * z);
+            var t = bumpAmt(r, CONE_R, 1.35);
+            return BASE_FLOOR + SUMMIT_H * t + 0.35 * (fbm(x * 0.35 + 4, z * 0.35 + 9, 4) - 0.5) * (1 - t * 0.4);
+        }
+        function craterMask(x, z) {
+            var dx = x - CRATER.x, dz = z - CRATER.z;
+            var r = Math.sqrt(dx * dx + dz * dz);
+            // Breach widening: the further north (larger dz) a point sits
+            // relative to the crater center, the wider the effective radius -
+            // this is what keeps the amphitheater open on the north rim
+            // instead of forming a closed ring like an intact caldera.
+            var openT = smooth(-2.6, 5.2, dz);
+            var effR = CRATER.r * (1 + openT * CRATER.breach);
+            return smooth(effR, effR * 0.15, r);
+        }
+        function height(x, z) {
+            var h = baseCone(x, z);
+            var mask = craterMask(x, z);
+            if (mask > 0.001) {
+                h -= mask * CRATER.depth;
+            }
+            return h;
+        }
+
+        var col = {
+            forest: new THREE.Color(0x3f6b3a), scrub: new THREE.Color(0x8c8a63),
+            ash: new THREE.Color(0xa9a49b), rock: new THREE.Color(0x6b625a),
+            floor: new THREE.Color(0x5a544d)
+        };
+        function color(c, h, x, z, mask) {
+            var n = 0.9 + 0.18 * fbm(x * 1.2 + 5, z * 1.2 + 2, 3);
+            if (mask > 0.35) {
+                c.copy(col.floor).lerp(col.rock, smooth(0.35, 0.9, mask));
+            } else if (h > 4.0) {
+                c.copy(col.rock).lerp(col.ash, smooth(6.0, 4.0, h));
+            } else if (h > 1.6) {
+                c.copy(col.ash).lerp(col.scrub, smooth(4.0, 1.6, h));
+            } else {
+                c.copy(col.forest).lerp(col.scrub, smooth(-0.2, 1.6, h));
+            }
+            c.multiplyScalar(n);
+        }
+
+        var segs = shell.low ? 130 : 175;
+        var SPAN = CONE_R * 2.1;
+        var geo = new THREE.PlaneGeometry(SPAN, SPAN, segs, segs);
+        geo.rotateX(-Math.PI / 2);
+        var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), cTmp = new THREE.Color();
+        for (var i = 0; i < pos.count; i++) {
+            var x = pos.getX(i), z = pos.getZ(i);
+            var mask = craterMask(x, z);
+            var h = height(x, z);
+            pos.setY(i, h);
+            color(cTmp, h, x, z, mask);
+            colors[i * 3] = cTmp.r; colors[i * 3 + 1] = cTmp.g; colors[i * 3 + 2] = cTmp.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geo.computeVertexNormals();
+        var terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0 }));
+        scene.add(terrain);
+
+        // Lava dome: a separate rounded mesh sitting on the sampled crater
+        // floor, near the middle of the breached amphitheater - toggled by
+        // mesh visibility only, never a geometry rebuild.
+        var domeBaseY = height(DOME.x, DOME.z);
+        var domeGroup = new THREE.Group();
+        var domeMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(DOME.r, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.52),
+            new THREE.MeshStandardMaterial({ color: 0x453f3b, roughness: 0.98, metalness: 0 })
+        );
+        domeMesh.position.set(DOME.x, domeBaseY + 0.05, DOME.z);
+        domeMesh.scale.set(1, DOME.h / DOME.r, 1);
+        domeGroup.add(domeMesh);
+        for (var k = 0; k < 5; k++) {
+            var ang = k * 1.31, rr = DOME.r * (0.35 + 0.4 * hash2(k, 3));
+            var vent = new THREE.Mesh(
+                new THREE.ConeGeometry(0.16, 0.3, 6),
+                new THREE.MeshStandardMaterial({ color: 0x2e2926, roughness: 1 })
+            );
+            vent.position.set(DOME.x + rr * Math.cos(ang), domeBaseY + DOME.h * 0.55, DOME.z + rr * Math.sin(ang));
+            domeGroup.add(vent);
+        }
+        scene.add(domeGroup);
+
+        // Pre-1980 summit outline: a translucent ghost cone marking the
+        // taller, symmetrical peak that stood here before the eruption -
+        // toggled by mesh visibility only.
+        var GHOST_H = SUMMIT_H + 4.0;
+        var ghostGeo = new THREE.ConeGeometry(CONE_R * 0.62, GHOST_H, 40, 1, true);
+        var ghostMesh = new THREE.Mesh(
+            ghostGeo,
+            new THREE.MeshBasicMaterial({ color: 0xfff3d0, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })
+        );
+        ghostMesh.position.set(0, BASE_FLOOR + GHOST_H / 2 - 0.4, 0);
+        var ghostWire = new THREE.LineSegments(
+            new THREE.EdgesGeometry(ghostGeo),
+            new THREE.LineBasicMaterial({ color: 0xfff3d0, transparent: true, opacity: 0.5 })
+        );
+        ghostWire.position.copy(ghostMesh.position);
+        var ghostGroup = new THREE.Group();
+        ghostGroup.add(ghostMesh);
+        ghostGroup.add(ghostWire);
+        scene.add(ghostGroup);
+
+        var summitOn = true, domeOn = true;
+
+        function panelHtml() {
+            return '<h3>Mount St. Helens: a horseshoe crater open to the north</h3>' +
+                '<p>The translucent cone marks the taller, symmetrical summit that stood here before May 18, 1980. The dark rounded mass inside the crater is the lava dome that has been rebuilding ever since.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Current elevation</td><td>about 2,549 m (8,363 ft)</td></tr>' +
+                '<tr><td>Pre-1980 summit</td><td>about 2,950 m (9,677 ft) - roughly 400 m was lost in the eruption</td></tr>' +
+                '<tr><td>May 18, 1980</td><td>a massive debris avalanche and lateral blast - one of the deadliest and most destructive volcanic events in US history</td></tr>' +
+                '<tr><td>Crater</td><td>horseshoe-shaped, open to the north, roughly 2 km wide and 3.5 km long</td></tr>' +
+                '<tr><td>Lava dome</td><td>rebuilding episodically inside the crater since 1980, most recently 2004-2008</td></tr>' +
+                '<tr><td>Location</td><td>Cascade Range, Washington State, USA - part of the Pacific Ring of Fire</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the crater shape, lava dome, and pre-1980 outline are schematic teaching cues, not survey terrain.</p>';
+        }
+
+        function apply() {
+            ghostGroup.visible = summitOn;
+            var sb = document.getElementById('t3dMshSummitBtn');
+            if (sb) sb.textContent = 'Pre-1980 summit outline: ' + (summitOn ? 'On' : 'Off');
+            domeGroup.visible = domeOn;
+            var db = document.getElementById('t3dMshDomeBtn');
+            if (db) db.textContent = 'Lava dome: ' + (domeOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ summitOn: summitOn, domeOn: domeOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.summitOn === 'boolean') summitOn = store.summitOn;
+        if (typeof store.domeOn === 'boolean') domeOn = store.domeOn;
+        apply();
+
+        var summitBtn = document.getElementById('t3dMshSummitBtn');
+        if (summitBtn) summitBtn.addEventListener('click', function () { summitOn = !summitOn; apply(); });
+        var domeBtn = document.getElementById('t3dMshDomeBtn');
+        if (domeBtn) domeBtn.addEventListener('click', function () { domeOn = !domeOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the pre-1980 summit outline or the lava dome.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmountsthelens: 't3dMshControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesmountsthelens: { radius: 30, maxR: 80, minR: 8, phi: 0.78, theta: 0.55, targetY: 1.0, fov: 52 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
