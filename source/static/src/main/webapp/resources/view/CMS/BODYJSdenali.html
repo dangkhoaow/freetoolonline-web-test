@@ -1,0 +1,325 @@
+<script>
+    // 3D scene archetype skeleton (denali) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (denali).
+    // All geometry is procedural. places-3d discovery loop, 2026-08-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-08-27):
+    //   - Summit 6,190 m / 20,310 ft (2015 USGS survey)
+    //   - Alaska Range, Denali National Park and Preserve, Alaska, USA
+    //   - Base-to-peak rise about 5,500 m / 18,000 ft (near-sea-level base)
+    //   - Name: Denali (Koyukon Athabascan); renamed from Mount McKinley 2015
+    //   - First ascent (true summit): Walter Harper, 1913-06-07
+    //   - Largest glacier: Kahiltna Glacier, about 70 km long
+    //   - Granite pluton uplifted along the Denali Fault
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'denali';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesdenali'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0b1526, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        var key = new THREE.DirectionalLight(0xfff6e0, 1.05);
+        key.position.set(14, 20, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
+        }
+        function smoothv(v, a, b) { var t = Math.max(0, Math.min(1, (v - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+        // Alaska Range massif relief, 1 unit = 1000 m vertical, x/z ~ km/2.5.
+        // ONE anchored summit (Denali 6.19) rising from a near-sea-level base
+        // (0.6) over ridged-noise aretes, plus a glacier tongue (Kahiltna)
+        // carved as a widening, gently descending channel running southwest
+        // away from the summit - the "single record-rise peak feeding a long
+        // glacier" archetype, distinct from the multi-peak Everest massif.
+        var PEAK = { x: 0.0, z: -0.4, h: 6.19, s: 2.3 };
+        var BASE_H = 0.6;
+        var GLACIER_DIR = { x: -0.82, z: 0.57 }; // roughly southwest, normalized-ish
+        function ridged(x, z) { var n = fbm(x, z, 5); return 1 - Math.abs(2 * n - 1); }
+        function glacierT(x, z) {
+            // distance-along and distance-across the glacier's center-line
+            var dx = x - PEAK.x, dz = z - PEAK.z;
+            var along = dx * GLACIER_DIR.x + dz * GLACIER_DIR.z;
+            var across = dx * (-GLACIER_DIR.z) + dz * GLACIER_DIR.x;
+            if (along < 0.3) return { in: 0, along: along, across: across };
+            var width = 0.9 + along * 0.14; // widens downstream
+            var t = Math.max(0, 1 - Math.abs(across) / width);
+            return { in: t * t * smoothv(along, 0.3, 1.2), along: along, across: across };
+        }
+        function height(x, z) {
+            var r = ridged(x * 0.42 + 3, z * 0.42 + 8);
+            var base = BASE_H + 0.7 * (fbm(x * 0.16 + 5, z * 0.16 + 9, 4) - 0.5);
+            var d = Math.hypot(x - PEAK.x, z - PEAK.z);
+            var mass = (PEAK.h - BASE_H) * Math.exp(-(d * d) / (2 * PEAK.s * PEAK.s));
+            var h = base + mass * (0.52 + 0.48 * r);
+            // ridged aretes carve minor relief off the main mass
+            h -= (1 - r) * 0.45 * smoothv(h, base + 1.0, base + 3.0);
+            // Kahiltna Glacier: carve a smooth descending channel southwest of the summit
+            var g = glacierT(x, z);
+            if (g.in > 0) {
+                var floor = base + 0.35 - g.along * 0.55;
+                h = h * (1 - g.in) + Math.max(floor, base - 0.1) * g.in;
+            }
+            return h;
+        }
+        var SNOWLINE = 2.6; // ~2,600 m, well below the summit; Denali is heavily glaciated
+        var cRock = new THREE.Color(0x6b6259), cRockLight = new THREE.Color(0x877c72),
+            cSnow = new THREE.Color(0xf2f6fa), cIce = new THREE.Color(0xc7dbe6);
+        var glacierOnColors = null, glacierOffColors = null, terrain;
+        function colorGlacierOn(c, h, x, z) {
+            var n = 0.9 + 0.2 * fbm(x * 1.1 + 4, z * 1.1 + 6, 3);
+            var r = ridged(x * 0.42 + 3, z * 0.42 + 8);
+            var g = glacierT(x, z);
+            if (g.in > 0.15) { c.copy(cIce).multiplyScalar(0.92 + 0.14 * r); return; }
+            if (h > SNOWLINE) c.copy(cSnow).multiplyScalar(0.92 + 0.12 * r);
+            else c.copy(cRock).lerp(cRockLight, r).multiplyScalar(n);
+        }
+        function colorGlacierOff(c, h, x, z) {
+            var n = 0.9 + 0.2 * fbm(x * 1.1 + 4, z * 1.1 + 6, 3);
+            var r = ridged(x * 0.42 + 3, z * 0.42 + 8);
+            if (h > SNOWLINE) c.copy(cSnow).multiplyScalar(0.92 + 0.12 * r);
+            else c.copy(cRock).lerp(cRockLight, r).multiplyScalar(n);
+        }
+        terrain = makeTerrain(20, 20, shell.low ? 110 : 170, shell.low ? 110 : 170, height, colorGlacierOn);
+        scene.add(terrain);
+        glacierOnColors = terrain.geometry.attributes.color.array.slice();
+        (function () {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                colorGlacierOff(col, pos.getY(i), pos.getX(i), pos.getZ(i));
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            glacierOffColors = arr;
+        })();
+
+        // Base-to-peak rise band: translucent amber column spanning the record
+        // ~5,500 m vertical relief from the near-sea-level base up to the summit.
+        var riseH = PEAK.h - BASE_H;
+        var rise = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.55, 1.6, riseH, 28, 1, true),
+            new THREE.MeshBasicMaterial({ color: 0xffb84d, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })
+        );
+        rise.position.set(PEAK.x, BASE_H + riseH / 2, PEAK.z);
+        scene.add(rise);
+        var riseTop = new THREE.Mesh(
+            new THREE.TorusGeometry(0.55, 0.045, 8, 40),
+            new THREE.MeshBasicMaterial({ color: 0xffe0a0 })
+        );
+        riseTop.rotation.x = Math.PI / 2;
+        riseTop.position.set(PEAK.x, PEAK.h - 0.05, PEAK.z);
+        scene.add(riseTop);
+        var riseBase = new THREE.Mesh(
+            new THREE.TorusGeometry(1.6, 0.045, 8, 40),
+            new THREE.MeshBasicMaterial({ color: 0xffe0a0 })
+        );
+        riseBase.rotation.x = Math.PI / 2;
+        riseBase.position.set(PEAK.x, BASE_H + 0.05, PEAK.z);
+        scene.add(riseBase);
+
+        var riseOn = true, glacierOn = true;
+
+        function panelHtml() {
+            return '<h3>Denali: North America\'s highest peak</h3>' +
+                '<p>A relief of the Alaska Range massif: the summit rising from a near-sea-level base, the amber band marking the record base-to-peak rise, and the Kahiltna Glacier tongue running southwest.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Summit elevation</td><td>6,190 m / 20,310 ft (2015 USGS survey)</td></tr>' +
+                '<tr><td>Location</td><td>Alaska Range, Denali National Park and Preserve, Alaska, USA</td></tr>' +
+                '<tr><td>Base-to-peak rise</td><td>about 5,500 m / 18,000 ft - among the greatest of any mountain on Earth</td></tr>' +
+                '<tr><td>Name</td><td>Denali (Koyukon Athabascan); renamed from Mount McKinley in 2015</td></tr>' +
+                '<tr><td>First ascent</td><td>Walter Harper, 1913-06-07 (Stuck-Karstens-Tatum expedition)</td></tr>' +
+                '<tr><td>Major glacier</td><td>Kahiltna Glacier - about 70 km long</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - ridge shape, the glacier tongue, and the rise band are procedural teaching cues, not survey terrain.</p>';
+        }
+
+        function apply() {
+            rise.visible = riseOn; riseTop.visible = riseOn; riseBase.visible = riseOn;
+            terrain.geometry.attributes.color.array.set(glacierOn ? glacierOnColors : glacierOffColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            var rb = document.getElementById('t3dPdnRiseBtn');
+            if (rb) rb.textContent = 'Base-to-peak rise band: ' + (riseOn ? 'On' : 'Off');
+            var gb = document.getElementById('t3dPdnGlacierBtn');
+            if (gb) gb.textContent = 'Glacier: ' + (glacierOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ riseOn: riseOn, glacierOn: glacierOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.riseOn === 'boolean') riseOn = store.riseOn;
+        if (typeof store.glacierOn === 'boolean') glacierOn = store.glacierOn;
+        apply();
+
+        var riseBtn = document.getElementById('t3dPdnRiseBtn');
+        if (riseBtn) riseBtn.addEventListener('click', function () { riseOn = !riseOn; apply(); });
+        var glacierBtn = document.getElementById('t3dPdnGlacierBtn');
+        if (glacierBtn) glacierBtn.addEventListener('click', function () { glacierOn = !glacierOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the rise band or the glacier.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00005;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesdenali: 't3dPdnControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesdenali: { radius: 24, maxR: 56, minR: 8, phi: 1.02, theta: 0.85, targetY: 3.2 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
