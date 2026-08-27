@@ -1,0 +1,361 @@
+<script>
+    // 3D scene archetype skeleton (kilauea) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (kilauea). All geometry is procedural. places-3d cluster.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic / USGS consensus):
+    //   - Kilauea, Hawaii Island (Big Island), USA - one of the world's
+    //     most active volcanoes
+    //   - Summit elevation about 1,247 m - a very low, broad shield profile
+    //     (much lower and gentler than a steep cone like Vesuvius or Fuji)
+    //   - Summit caldera about 4 km by 3.2 km across
+    //   - Halema'uma'u crater sits within the caldera, traditionally
+    //     regarded as the home of the volcano goddess Pele; has hosted an
+    //     active lava lake during multiple eruptive episodes since 2008
+    //   - East Rift Zone and Southwest Rift Zone extend from the summit,
+    //     the East Rift Zone feeding decades of flank eruptions (including
+    //     Pu'u 'O'o, 1983-2018, and the 2018 lower Puna eruption)
+    //   - Sits on the southeast flank of the much larger Mauna Loa
+    //   - Inside Hawaii Volcanoes National Park, a UNESCO World Heritage
+    //     Site since 1987
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'kilauea';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeskilauea'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract: window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x8fc6e0, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xfff3d6, 1.05);
+        key.position.set(-12, 20, 12);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+        // Vertical scale: 1 unit is about 300 m, same convention as the
+        // Etna/Vesuvius pages so the family reads on a consistent scale.
+        // Kilauea's real summit is only about 1,247 m - dramatically lower
+        // than Etna (3,357 m) or Vesuvius - so the shield here is deliberately
+        // LOW and VERY BROAD (power 0.32 falloff vs Etna's 0.6) to read as a
+        // gentle shield, not a cone. At the summit sits a large collapsed
+        // caldera depression (about 4 km by 3.2 km), and inside that caldera
+        // a smaller, deeper pit - Halema'uma'u - which holds an active lava
+        // lake in the current toggle state. Two rift-zone ridges run outward
+        // from the caldera rim at different lengths and angles: a long one
+        // toward the southeast (the East Rift Zone, the source of decades of
+        // flank eruptions including Pu'u 'O'o and the 2018 lower Puna
+        // eruption) and a shorter one toward the southwest (the Southwest
+        // Rift Zone).
+        var BASE_R = 19.5, SUMMIT_H = 5.4;
+        var CALDERA = { x: 0.6, z: 0.3, r: 4.6, depth: 3.4 };
+        var HALEMAUMAU = { x: 1.1, z: 1.4, r: 2.4, depth: 4.3 };
+        var EAST_RIFT_ANGLE = 0.95, EAST_RIFT_LEN = 0.98, EAST_RIFT_WIDTH = 0.22;
+        var SW_RIFT_ANGLE = -1.85, SW_RIFT_LEN = 0.55, SW_RIFT_WIDTH = 0.19;
+
+        var lavaLakeOn = true, riftsOn = false;
+
+        function riftAmt(x, z, r) {
+            var angle = Math.atan2(x, -z);
+            var eastDa = Math.atan2(Math.sin(angle - EAST_RIFT_ANGLE), Math.cos(angle - EAST_RIFT_ANGLE));
+            var eastAmt = Math.max(0, 1 - Math.abs(eastDa) / EAST_RIFT_WIDTH) * smooth(BASE_R * EAST_RIFT_LEN, BASE_R * 0.18, r);
+            var swDa = Math.atan2(Math.sin(angle - SW_RIFT_ANGLE), Math.cos(angle - SW_RIFT_ANGLE));
+            var swAmt = Math.max(0, 1 - Math.abs(swDa) / SW_RIFT_WIDTH) * smooth(BASE_R * SW_RIFT_LEN, BASE_R * 0.18, r);
+            return Math.max(eastAmt, swAmt);
+        }
+
+        function height(x, z) {
+            var r = Math.sqrt(x * x + z * z);
+            var t = Math.max(0, 1 - r / BASE_R);
+            var shield = SUMMIT_H * Math.pow(t, 0.32);
+
+            var dcx = x - CALDERA.x, dcz = z - CALDERA.z;
+            var rc = Math.sqrt(dcx * dcx + dcz * dcz);
+            var calderaDrop = CALDERA.depth * smooth(CALDERA.r, CALDERA.r * 0.2, rc);
+
+            var dhx = x - HALEMAUMAU.x, dhz = z - HALEMAUMAU.z;
+            var rh = Math.sqrt(dhx * dhx + dhz * dhz);
+            var pitDrop = HALEMAUMAU.depth * smooth(HALEMAUMAU.r, 0, rh);
+
+            var riftBump = riftsOn ? 0.32 * riftAmt(x, z, r) : 0;
+
+            var relief = (fbm(x * 0.16 + 4, z * 0.16 + 9, 4) - 0.5) * 0.5;
+            var base = shield - calderaDrop - pitDrop + riftBump;
+            return Math.max(-3.4, base + relief * smooth(0.3, 1.8, Math.max(0, base)));
+        }
+
+        // Colour bands: lush tropical green low on the broad flanks, drier
+        // brownish scrub climbing toward the caldera rim, dark basaltic rock
+        // inside the caldera, and near-black rock inside Halema'uma'u -
+        // with a glowing orange-red lava-lake tint at the very bottom of the
+        // pit when the lava lake toggle is on, and a dark reddish-brown tint
+        // tracing the two rift-zone ridges when that toggle is on.
+        var col = {
+            forest: new THREE.Color(0x3f7a3a), scrub: new THREE.Color(0x8a8a4a),
+            calderaWall: new THREE.Color(0x6b5f52), calderaFloor: new THREE.Color(0x39322c),
+            pitRock: new THREE.Color(0x241f1c), lavaLake: new THREE.Color(0xff6a1f),
+            rift: new THREE.Color(0x5a2a1e)
+        };
+        function color(c, h, x, z, rAmt, pitDepthFrac, lavaGlow) {
+            var n = 0.9 + 0.16 * fbm(x * 1.05 + 5, z * 1.05 + 2, 3);
+            if (pitDepthFrac > 0.02) {
+                c.copy(col.pitRock);
+                if (lavaGlow && pitDepthFrac > 0.55) {
+                    c.lerp(col.lavaLake, Math.min(1, (pitDepthFrac - 0.55) / 0.45));
+                }
+            } else if (h < -0.15) {
+                c.copy(col.calderaFloor);
+            } else if (h < 0.55) {
+                c.copy(col.calderaWall).lerp(col.calderaFloor, smooth(0.55, -0.15, h));
+            } else if (h < 2.0) {
+                c.copy(col.scrub).lerp(col.calderaWall, smooth(2.0, 0.55, h));
+            } else {
+                c.copy(col.forest).lerp(col.scrub, smooth(4.6, 2.0, h));
+            }
+            if (riftsOn && rAmt > 0.05) {
+                c.lerp(col.rift, Math.max(0, Math.min(0.7, rAmt)));
+            }
+            c.multiplyScalar(n);
+        }
+
+        var segs = shell.low ? 130 : 170;
+        var SPAN = BASE_R * 2.3;
+        var geo = new THREE.PlaneGeometry(SPAN, SPAN, segs, segs);
+        geo.rotateX(-Math.PI / 2);
+        var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), cTmp = new THREE.Color();
+        function pitFrac(x, z) {
+            var dhx = x - HALEMAUMAU.x, dhz = z - HALEMAUMAU.z;
+            var rh = Math.sqrt(dhx * dhx + dhz * dhz);
+            return smooth(HALEMAUMAU.r, 0, rh);
+        }
+        for (var i = 0; i < pos.count; i++) {
+            var x = pos.getX(i), z = pos.getZ(i);
+            var h = height(x, z);
+            pos.setY(i, h);
+            var r0 = Math.sqrt(x * x + z * z);
+            color(cTmp, h, x, z, riftAmt(x, z, r0), pitFrac(x, z), lavaLakeOn);
+            colors[i * 3] = cTmp.r; colors[i * 3 + 1] = cTmp.g; colors[i * 3 + 2] = cTmp.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geo.computeVertexNormals();
+        var terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 }));
+        scene.add(terrain);
+
+        var lavaGlowMesh = (function buildLavaGlow() {
+            var mat = new THREE.MeshStandardMaterial({ color: 0xff6a1f, emissive: 0xff5a10, emissiveIntensity: 1.6, roughness: 0.45 });
+            var disc = new THREE.Mesh(new THREE.CircleGeometry(HALEMAUMAU.r * 0.4, 28), mat);
+            disc.rotation.x = -Math.PI / 2;
+            disc.position.set(HALEMAUMAU.x, height(HALEMAUMAU.x, HALEMAUMAU.z) + 0.18, HALEMAUMAU.z);
+            disc.visible = lavaLakeOn;
+            scene.add(disc);
+            return disc;
+        })();
+        var lavaGlowLight = new THREE.PointLight(0xff6a1f, lavaLakeOn ? 2.6 : 0, 16, 2);
+        lavaGlowLight.position.set(HALEMAUMAU.x, height(HALEMAUMAU.x, HALEMAUMAU.z) + 0.9, HALEMAUMAU.z);
+        scene.add(lavaGlowLight);
+
+        function recolor() {
+            var cols = geo.attributes.color, c2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h2 = height(x, z);
+                pos.setY(i, h2);
+                var r0 = Math.sqrt(x * x + z * z);
+                color(c2, h2, x, z, riftAmt(x, z, r0), pitFrac(x, z), lavaLakeOn);
+                cols.setXYZ(i, c2.r, c2.g, c2.b);
+            }
+            cols.needsUpdate = true;
+            pos.needsUpdate = true;
+            geo.computeVertexNormals();
+            lavaGlowMesh.visible = lavaLakeOn;
+            lavaGlowMesh.position.y = height(HALEMAUMAU.x, HALEMAUMAU.z) + 0.18;
+            lavaGlowLight.intensity = lavaLakeOn ? 2.6 : 0;
+            lavaGlowLight.position.y = height(HALEMAUMAU.x, HALEMAUMAU.z) + 0.9;
+        }
+
+        function panelHtml() {
+            return '<h3>Kilauea: a low, broad shield with an active lava lake</h3>' +
+                '<p>One of the world\'s most active volcanoes, on Hawaii Island - a gentle shield profile with a large summit caldera and the Halema\'uma\'u crater\'s lava lake at its center.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Summit elevation</td><td>about 1,247 m</td></tr>' +
+                '<tr><td>Summit caldera</td><td>about 4 km by 3.2 km</td></tr>' +
+                '<tr><td>Rift zones</td><td>East Rift Zone and Southwest Rift Zone</td></tr>' +
+                '<tr><td>Location</td><td>Hawaii Volcanoes National Park, Hawaii Island, USA</td></tr>' +
+                '<tr><td>Heritage status</td><td>UNESCO World Heritage Site since 1987</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the terrain, caldera, lava-lake glow, and rift-zone ridges are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            var lb = document.getElementById('t3dKilLavaBtn');
+            if (lb) lb.textContent = 'Lava lake glow: ' + (lavaLakeOn ? 'On' : 'Off');
+            var rb = document.getElementById('t3dKilRiftsBtn');
+            if (rb) rb.textContent = 'Rift-zone ridges: ' + (riftsOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ lavaLakeOn: lavaLakeOn, riftsOn: riftsOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.lavaLakeOn === 'boolean') lavaLakeOn = store.lavaLakeOn;
+        if (typeof store.riftsOn === 'boolean') riftsOn = store.riftsOn;
+        recolor();
+        apply();
+
+        var lavaBtn = document.getElementById('t3dKilLavaBtn');
+        if (lavaBtn) lavaBtn.addEventListener('click', function () { lavaLakeOn = !lavaLakeOn; recolor(); apply(); });
+        var riftsBtn = document.getElementById('t3dKilRiftsBtn');
+        if (riftsBtn) riftsBtn.addEventListener('click', function () { riftsOn = !riftsOn; recolor(); apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the lava lake glow or the rift-zone ridges.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeskilauea: 't3dKilControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeskilauea: { radius: 34, maxR: 100, minR: 8, phi: 0.62, theta: 0.9, targetY: 0.4, fov: 50 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
