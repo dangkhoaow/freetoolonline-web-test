@@ -151,9 +151,9 @@
         // carved out of its north side: the crater bowl widens and deepens
         // as z increases (moving north), so the rim never closes on the
         // north edge - the defining shape of the 1980 blast crater.
-        var CONE_R = 15.5, SUMMIT_H = 6.0, BASE_FLOOR = -0.4;
-        var CRATER = { x: 0, z: 1.6, r: 4.6, depth: 3.6, breach: 1.85 };
-        var DOME = { x: 0.1, z: 0.6, r: 1.9, h: 1.55, power: 0.65 };
+        var CONE_R = 15.5, SUMMIT_H = 5.2, BASE_FLOOR = -0.4;
+        var CRATER = { x: 0, z: 1.6, r: 3.6, depth: 4.0, breachExtra: 8.5 };
+        var DOME = { x: 0.1, z: 2.2, r: 1.7, h: 1.3, power: 0.65 };
 
         function baseCone(x, z) {
             var r = Math.sqrt(x * x + z * z);
@@ -161,15 +161,19 @@
             return BASE_FLOOR + SUMMIT_H * t + 0.35 * (fbm(x * 0.35 + 4, z * 0.35 + 9, 4) - 0.5) * (1 - t * 0.4);
         }
         function craterMask(x, z) {
+            // Breach shape: a bounded bowl (radius CRATER.r) all the way
+            // around, except toward the north (+z) where the effective
+            // radius stretches much further out - a tongue-shaped channel
+            // running down the flank. This is what keeps the amphitheater
+            // rim intact on the south/east/west sides while leaving the
+            // north side open, the defining horseshoe shape of the actual
+            // 1980 blast crater.
             var dx = x - CRATER.x, dz = z - CRATER.z;
             var r = Math.sqrt(dx * dx + dz * dz);
-            // Breach widening: the further north (larger dz) a point sits
-            // relative to the crater center, the wider the effective radius -
-            // this is what keeps the amphitheater open on the north rim
-            // instead of forming a closed ring like an intact caldera.
-            var openT = smooth(-2.6, 5.2, dz);
-            var effR = CRATER.r * (1 + openT * CRATER.breach);
-            return smooth(effR, effR * 0.15, r);
+            if (r < 0.0001) return 1;
+            var northness = Math.max(0, dz / r);
+            var effR = CRATER.r + CRATER.breachExtra * Math.pow(northness, 1.6);
+            return smooth(effR, effR * 0.2, r);
         }
         function height(x, z) {
             var h = baseCone(x, z);
@@ -247,7 +251,7 @@
         var ghostGeo = new THREE.ConeGeometry(CONE_R * 0.62, GHOST_H, 40, 1, true);
         var ghostMesh = new THREE.Mesh(
             ghostGeo,
-            new THREE.MeshBasicMaterial({ color: 0xfff3d0, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })
+            new THREE.MeshBasicMaterial({ color: 0xfff3d0, transparent: true, opacity: 0.05, side: THREE.DoubleSide, depthWrite: false })
         );
         ghostMesh.position.set(0, BASE_FLOOR + GHOST_H / 2 - 0.4, 0);
         var ghostWire = new THREE.LineSegments(
@@ -320,7 +324,7 @@
         function boot() {
             ftoLoadThree().then(function (THREE) {
                 try {
-                    var presets = { placesmountsthelens: { radius: 30, maxR: 80, minR: 8, phi: 0.78, theta: 0.55, targetY: 1.0, fov: 52 } };
+                    var presets = { placesmountsthelens: { radius: 30, maxR: 80, minR: 8, phi: 1.02, theta: 2.7, targetY: 1.0, fov: 52 } };
                     var shell = t3dShell(THREE, host, presets[kind]);
                     var animate = t3dScene(shell);
                     var last = performance.now();
