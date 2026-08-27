@@ -17,6 +17,8 @@ export const INFO_ROUTES = new Set([
   '/guides/file-viewer-vs-alternatives.html',
   // file-viewer-vs-alternatives pt locale (create_new_guide_page 20260827-3)
   '/guides/pt/file-viewer-vs-alternatives.html',
+  // file-viewer-vs-alternatives es locale (create_new_guide_page 20260827-4)
+  '/guides/es/file-viewer-vs-alternatives.html',
   '/guides/file-viewer-step-by-step.html',
   // file-viewer-step-by-step pt locale (create_new_guide_page 20260826-6)
   '/guides/pt/file-viewer-step-by-step.html',
@@ -7231,6 +7233,8 @@ export const INFO_ROUTES = new Set([
 export const GUIDE_ROUTES = new Set([
   // file-viewer-vs-alternatives pt locale (create_new_guide_page 20260827-3)
   '/guides/pt/file-viewer-vs-alternatives.html',
+  // file-viewer-vs-alternatives es locale (create_new_guide_page 20260827-4)
+  '/guides/es/file-viewer-vs-alternatives.html',
   // file-viewer-step-by-step vi locale (create_new_guide_page 20260826-8)
   '/guides/vi/file-viewer-step-by-step.html',
   // file-viewer-step-by-step id locale (create_new_guide_page 20260827)
@@ -16688,6 +16692,7 @@ export const ALIAS_ROUTES = {
   '/file-viewer.html': '/pdf-tools/file-viewer.html',
   '/alt-text-generator.html': '/image-tools/alt-text-generator.html',
   '/image-colorizer.html': '/image-tools/image-colorizer.html',
+  '/duplicate-photo-finder.html': '/image-tools/duplicate-photo-finder.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28942,8 +28947,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/file-viewer-step-by-step.html': 'guide/de/file-viewer-step-by-step.jsp',
   '/guides/file-viewer-vs-alternatives.html': 'guide/file-viewer-vs-alternatives.jsp',
   '/guides/pt/file-viewer-vs-alternatives.html': 'guide/pt/file-viewer-vs-alternatives.jsp',
+  '/guides/es/file-viewer-vs-alternatives.html': 'guide/es/file-viewer-vs-alternatives.jsp',
   '/image-tools/alt-text-generator.html': 'convert/alt-text-generator.jsp',
   '/image-tools/image-colorizer.html': 'convert/image-colorizer.jsp',
+  '/image-tools/duplicate-photo-finder.html': 'convert/duplicate-photo-finder.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

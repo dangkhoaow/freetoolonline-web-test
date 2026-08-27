@@ -1,0 +1,258 @@
+<script>
+    // Duplicate & Similar Photo Finder - 100% client-side, two-tier engine.
+    // Registry Gate-H: image_embedding_dupfinder_clip_transformersjs
+    // (probe artifact seo-reports/20260827-ailocal-fire32/qa/gate-h_probe_duplicate-photo-finder.json:
+    //  cos(near-dup)=0.958, margin 0.187, dHash 12 vs 22, zero page errors).
+    // Tier 1 (deterministic, NO download): SHA-256 exact-byte duplicates (WebCrypto)
+    //   + 64-bit dHash near-duplicates on a downscaled canvas.
+    // Tier 2 (optional AI, explicit click): CLIP image embeddings via
+    //   @huggingface/transformers@4.2.0 (EXACT pin per HARD GUARD 5 - the version the
+    //   Gate-H probe ran under; v4 works on this Xenova CLIP export), model
+    //   Xenova/clip-vit-base-patch32 q8 (~35MB, stated BEFORE download, cached by
+    //   the library in the browser). WebGPU when available, else WASM.
+    // The tool NEVER deletes files (browsers cannot); it groups pairs for review
+    // and offers a downloadable text report. Photos never leave the browser.
+    // Framework contract: doAfterPageRendered(); no top-level DOM work.
+
+    web.localUpload = false;
+
+    var DPF_PIN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
+    var DPF_MODEL = 'Xenova/clip-vit-base-patch32';
+    var DPF_MODEL_MB = 35;          // honest size label shown before download
+    var DPF_MAX_FILES = 200;        // memory cap - photos are processed sequentially
+    var DPF_DHASH_NEAR = 12;        // hamming <= 12 of 64 = near-duplicate (probe: crop+jpeg re-encode scored 12; a different scene scored 22)
+    var DPF_STATE = { items: [], groups: [], aiPairs: [], extractor: null, running: false };
+
+    function dpfEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    function dpfStatus(msg, isErr) {
+        var el = document.getElementById('dpfStatus');
+        if (el) { el.textContent = msg; el.style.color = isErr ? '#b00020' : '#333'; }
+    }
+
+    function dpfHamming(a, b) {
+        var d = 0;
+        for (var i = 0; i < a.length; i++) d += (a[i] ^ b[i]);
+        return d;
+    }
+
+    function dpfDhashFromCanvas(cv) {
+        var t = document.createElement('canvas'); t.width = 9; t.height = 8;
+        var c = t.getContext('2d'); c.drawImage(cv, 0, 0, 9, 8);
+        var d = c.getImageData(0, 0, 9, 8).data, bits = [];
+        for (var y = 0; y < 8; y++) for (var x = 0; x < 8; x++) {
+            var i = (y * 9 + x) * 4, j = i + 4;
+            var l1 = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+            var l2 = 0.299 * d[j] + 0.587 * d[j + 1] + 0.114 * d[j + 2];
+            bits.push(l1 > l2 ? 1 : 0);
+        }
+        return bits;
+    }
+
+    async function dpfSha256Hex(buf) {
+        var h = await crypto.subtle.digest('SHA-256', buf);
+        var a = new Uint8Array(h), s = '';
+        for (var i = 0; i < a.length; i++) s += a[i].toString(16).padStart(2, '0');
+        return s;
+    }
+
+    async function dpfLoadItem(file, idx) {
+        var buf = await file.arrayBuffer();
+        var sha = await dpfSha256Hex(buf);
+        var bmp;
+        try { bmp = await createImageBitmap(new Blob([buf], { type: file.type || 'image/*' })); }
+        catch (e) {
+            bmp = await new Promise(function (res, rej) {
+                var img = new Image();
+                img.onload = function () { res(img); };
+                img.onerror = function () { rej(new Error('Cannot decode ' + file.name)); };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+        var w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
+        var scale = Math.min(1, 256 / Math.max(w, h));
+        var cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(w * scale)); cv.height = Math.max(1, Math.round(h * scale));
+        cv.getContext('2d').drawImage(bmp, 0, 0, cv.width, cv.height);
+        var thumb = document.createElement('canvas');
+        var ts = Math.min(1, 96 / Math.max(cv.width, cv.height));
+        thumb.width = Math.max(1, Math.round(cv.width * ts)); thumb.height = Math.max(1, Math.round(cv.height * ts));
+        thumb.getContext('2d').drawImage(cv, 0, 0, thumb.width, thumb.height);
+        if (bmp.close) try { bmp.close(); } catch (e) {}
+        return {
+            idx: idx, name: file.name, size: file.size, sha: sha,
+            hash: dpfDhashFromCanvas(cv), canvas: cv, thumbUrl: thumb.toDataURL('image/jpeg', 0.7),
+            embedding: null
+        };
+    }
+
+    function dpfGroupDeterministic(items) {
+        var groups = [], used = {};
+        var bySha = {};
+        items.forEach(function (it) { (bySha[it.sha] = bySha[it.sha] || []).push(it); });
+        Object.keys(bySha).forEach(function (k) {
+            if (bySha[k].length > 1) {
+                groups.push({ kind: 'exact', items: bySha[k], note: 'identical file bytes (SHA-256 match)' });
+                bySha[k].forEach(function (it) { used[it.idx] = 1; });
+            }
+        });
+        for (var i = 0; i < items.length; i++) {
+            if (used[items[i].idx]) continue;
+            var g = [items[i]];
+            for (var j = i + 1; j < items.length; j++) {
+                if (used[items[j].idx]) continue;
+                var d = dpfHamming(items[i].hash, items[j].hash);
+                if (d <= DPF_DHASH_NEAR) { g.push(items[j]); used[items[j].idx] = 1; }
+            }
+            if (g.length > 1) {
+                used[items[i].idx] = 1;
+                groups.push({ kind: 'near', items: g, note: 'near-duplicate pixels (dHash distance <= ' + DPF_DHASH_NEAR + ' of 64)' });
+            }
+        }
+        return groups;
+    }
+
+    function dpfRenderGroups() {
+        var out = document.getElementById('dpfResults');
+        if (!out) return;
+        var groups = DPF_STATE.groups, aiPairs = DPF_STATE.aiPairs;
+        var html = '';
+        if (!groups.length && !aiPairs.length) {
+            html = '<p style="margin:8px 0;">No duplicates found in this batch. ' + DPF_STATE.items.length + ' photo(s) scanned - every file has unique bytes and no close pixel match.</p>';
+        }
+        groups.forEach(function (g, gi) {
+            html += '<div class="w3-panel w3-border" style="text-align:left;padding:8px;">' +
+                '<b>' + (g.kind === 'exact' ? 'Exact duplicates' : 'Near-duplicates') + '</b> <span style="color:#555;font-size:0.9em;">(' + dpfEsc(g.note) + ')</span><br>' +
+                g.items.map(function (it) {
+                    return '<span style="display:inline-block;margin:6px;text-align:center;max-width:110px;vertical-align:top;">' +
+                        '<img src="' + it.thumbUrl + '" alt="thumbnail of ' + dpfEsc(it.name) + '" style="max-width:96px;max-height:96px;border:1px solid #ccc;"><br>' +
+                        '<span style="font-size:0.75em;word-break:break-all;">' + dpfEsc(it.name) + '<br>' + Math.round(it.size / 1024) + ' KB</span></span>';
+                }).join('') + '</div>';
+        });
+        aiPairs.forEach(function (p) {
+            html += '<div class="w3-panel w3-border" style="text-align:left;padding:8px;">' +
+                '<b>Similar (AI)</b> <span style="color:#555;font-size:0.9em;">(embedding similarity ' + p.cos.toFixed(3) + ')</span><br>' +
+                [p.a, p.b].map(function (it) {
+                    return '<span style="display:inline-block;margin:6px;text-align:center;max-width:110px;vertical-align:top;">' +
+                        '<img src="' + it.thumbUrl + '" alt="thumbnail of ' + dpfEsc(it.name) + '" style="max-width:96px;max-height:96px;border:1px solid #ccc;"><br>' +
+                        '<span style="font-size:0.75em;word-break:break-all;">' + dpfEsc(it.name) + '</span></span>';
+                }).join('') + '</div>';
+        });
+        out.innerHTML = html;
+        var rep = document.getElementById('dpfReportBtn');
+        if (rep) rep.style.display = (groups.length || aiPairs.length) ? 'inline-block' : 'none';
+        var aiBtn = document.getElementById('dpfAiBtn');
+        if (aiBtn) aiBtn.style.display = DPF_STATE.items.length > 1 ? 'inline-block' : 'none';
+    }
+
+    async function dpfScanFiles(files) {
+        if (DPF_STATE.running) return;
+        DPF_STATE.running = true;
+        try {
+            var list = Array.prototype.slice.call(files).filter(function (f) { return /image\//.test(f.type) || /\.(jpe?g|png|webp|gif|bmp)$/i.test(f.name); });
+            if (list.length > DPF_MAX_FILES) {
+                dpfStatus('Batch capped at ' + DPF_MAX_FILES + ' photos for memory - scanning the first ' + DPF_MAX_FILES + ' of ' + list.length + '.');
+                list = list.slice(0, DPF_MAX_FILES);
+            }
+            if (!list.length) { dpfStatus('No image files selected. Pick .jpg, .png, .webp, .gif or .bmp photos.', true); DPF_STATE.running = false; return; }
+            DPF_STATE.items = []; DPF_STATE.groups = []; DPF_STATE.aiPairs = [];
+            for (var i = 0; i < list.length; i++) {
+                dpfStatus('Reading photo ' + (i + 1) + ' of ' + list.length + ' - nothing is uploaded.');
+                try { DPF_STATE.items.push(await dpfLoadItem(list[i], i)); }
+                catch (e) { console.error(e); dpfStatus('Skipped ' + list[i].name + ': ' + e.message, true); }
+            }
+            DPF_STATE.groups = dpfGroupDeterministic(DPF_STATE.items);
+            var dupCount = DPF_STATE.groups.reduce(function (s, g) { return s + g.items.length; }, 0);
+            dpfStatus('Scanned ' + DPF_STATE.items.length + ' photo(s): ' + DPF_STATE.groups.length + ' duplicate group(s), ' + dupCount + ' photo(s) involved. Photos stayed on this device.');
+            dpfRenderGroups();
+        } catch (e) {
+            console.error(e); dpfStatus('Scan failed: ' + e.message, true);
+        }
+        DPF_STATE.running = false;
+    }
+
+    async function dpfRunAi() {
+        if (DPF_STATE.running) return;
+        var thr = parseFloat((document.getElementById('dpfThr') || {}).value || '0.90');
+        DPF_STATE.running = true;
+        var btn = document.getElementById('dpfAiBtn');
+        try {
+            if (!DPF_STATE.extractor) {
+                if (btn) btn.disabled = true;
+                dpfStatus('Downloading the AI model (about ' + DPF_MODEL_MB + ' MB, one time - cached in this browser). Photos still never leave your device.');
+                var tf = await import(DPF_PIN);
+                var device = (navigator.gpu ? 'webgpu' : 'wasm');
+                try {
+                    DPF_STATE.extractor = await tf.pipeline('image-feature-extraction', DPF_MODEL, { dtype: 'q8', device: device });
+                } catch (e) {
+                    console.warn('webgpu path failed, retrying wasm', e);
+                    DPF_STATE.extractor = await tf.pipeline('image-feature-extraction', DPF_MODEL, { dtype: 'q8', device: 'wasm' });
+                }
+            }
+            var items = DPF_STATE.items;
+            for (var i = 0; i < items.length; i++) {
+                if (!items[i].embedding) {
+                    dpfStatus('AI reading photo ' + (i + 1) + ' of ' + items.length + ' on this device...');
+                    var r = await DPF_STATE.extractor(items[i].canvas.toDataURL('image/png'), { pooling: 'mean', normalize: true });
+                    items[i].embedding = Array.from(r.data);
+                }
+            }
+            var inGroup = {};
+            DPF_STATE.groups.forEach(function (g) { g.items.forEach(function (it) { inGroup[it.idx] = 1; }); });
+            var pairs = [];
+            for (var a = 0; a < items.length; a++) {
+                for (var b = a + 1; b < items.length; b++) {
+                    if (inGroup[items[a].idx] && inGroup[items[b].idx]) continue;
+                    var ea = items[a].embedding, eb = items[b].embedding, s = 0;
+                    for (var k = 0; k < ea.length; k++) s += ea[k] * eb[k];
+                    if (s >= thr) pairs.push({ a: items[a], b: items[b], cos: s });
+                }
+            }
+            pairs.sort(function (x, y) { return y.cos - x.cos; });
+            DPF_STATE.aiPairs = pairs;
+            dpfStatus('AI pass done: ' + pairs.length + ' similar pair(s) at threshold ' + thr.toFixed(2) + '. Similarity is a judgement call - review each pair yourself.');
+            dpfRenderGroups();
+        } catch (e) {
+            console.error(e);
+            dpfStatus('The AI model could not load here (' + e.message + '). The hash-based duplicate scan above still works without it.', true);
+        }
+        if (btn) btn.disabled = false;
+        DPF_STATE.running = false;
+    }
+
+    function dpfDownloadReport() {
+        var lines = ['Duplicate photo report - generated locally in your browser', ''];
+        DPF_STATE.groups.forEach(function (g, i) {
+            lines.push('Group ' + (i + 1) + ' [' + g.kind + '] - ' + g.note);
+            g.items.forEach(function (it) { lines.push('  ' + it.name + ' (' + Math.round(it.size / 1024) + ' KB)'); });
+            lines.push('');
+        });
+        DPF_STATE.aiPairs.forEach(function (p, i) {
+            lines.push('Similar pair ' + (i + 1) + ' [AI, cosine ' + p.cos.toFixed(3) + ']');
+            lines.push('  ' + p.a.name); lines.push('  ' + p.b.name); lines.push('');
+        });
+        lines.push('This tool groups photos for review only. It cannot and does not delete files.');
+        var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'duplicate-photo-report.txt';
+        document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    function doAfterPageRendered() {
+        var input = document.getElementById('dpfInput');
+        var runBtn = document.getElementById('dpfRunBtn');
+        var aiBtn = document.getElementById('dpfAiBtn');
+        var repBtn = document.getElementById('dpfReportBtn');
+        if (!input || !runBtn) return;
+        runBtn.addEventListener('click', function () { input.click(); });
+        input.addEventListener('change', function () { if (input.files && input.files.length) dpfScanFiles(input.files); });
+        if (aiBtn) aiBtn.addEventListener('click', dpfRunAi);
+        if (repBtn) repBtn.addEventListener('click', dpfDownloadReport);
+        var thr = document.getElementById('dpfThr'), thrVal = document.getElementById('dpfThrVal');
+        if (thr && thrVal) thr.addEventListener('input', function () { thrVal.textContent = parseFloat(thr.value).toFixed(2); });
+    }
+</script>
