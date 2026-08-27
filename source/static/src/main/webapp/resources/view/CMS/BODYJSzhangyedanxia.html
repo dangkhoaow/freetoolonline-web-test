@@ -1,0 +1,348 @@
+<script>
+    // 3D scene archetype skeleton (zhangye-danxia) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (zhangye-danxia).
+    // All geometry is procedural. places-3d-discovery-loop-runbook, 2026-08-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology. The rounded hill shapes,
+    // stripe placement, lighting toggle, and boardwalk markers are exaggerated
+    // schematic teaching cues. Published figures (encyclopedic / UNESCO
+    // consensus, cross-checked 2026-08-28):
+    //   - Zhangye Danxia Geopark, Gansu Province, China, in the foothills of
+    //     the Qilian Mountains
+    //   - Danxia ("rosy cloud") landform: red sandstone and siltstone layers
+    //     deposited over roughly 24 million years, then tectonically uplifted
+    //     and eroded into rounded ridges and canyons
+    //   - Colors come from different mineral content and oxidation states in
+    //     the layers - iron oxide gives red and orange, other minerals give
+    //     yellow, green, and grey-purple bands
+    //   - Park covers roughly 300 sq km across two main scenic areas
+    //     (Binggou Danxia and the Colorful Hills / Qicai Danxia), at
+    //     elevations around 2,000-3,800 m
+    //   - Part of the "China Danxia" UNESCO World Heritage Site, a joint
+    //     listing of six Danxia landform areas, inscribed in 2010
+    //   - Elevated wooden boardwalks and viewing platforms were built through
+    //     the park so visitors can view the formations while the fragile
+    //     rock surface is protected from foot-traffic erosion
+    //   - Colors read most vividly near sunrise and sunset, and often appear
+    //     more saturated right after rain when the rock surface is wet
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'zhangye-danxia';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeszhangyedanxia'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a1220, 1);
+        var ambient = new THREE.AmbientLight(0xffffff, 0.65);
+        scene.add(ambient);
+        var key = new THREE.DirectionalLight(0xffffff, 1.0);
+        key.position.set(-9, 14, 7);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+
+        // Broad, rounded eroded hills (NOT jagged peaks and NOT a single
+        // dominant ridge) - several overlapping low domes via fbm at
+        // moderate amplitude, matching the smooth-topped rounded silhouette
+        // of the real Colorful Hills area. 1 unit ~= 60 m; total footprint
+        // about 1.4 x 1.1 km.
+        var W = 22, D = 17;
+        function height(x, z) {
+            var base = 3.6 * fbm(x * 0.16 + 3, z * 0.16 + 9, 4);
+            var domes = 1.7 * Math.exp(-((x + 3.5) * (x + 3.5) + (z - 1.5) * (z - 1.5)) / 22) +
+                        1.35 * Math.exp(-((x - 2.5) * (x - 2.5) + (z + 2.5) * (z + 2.5)) / 17) +
+                        1.15 * Math.exp(-((x - 7.0) * (x - 7.0) + (z - 0.5) * (z - 0.5)) / 14);
+            var fine = 0.18 * (fbm(x * 1.3 + 20, z * 1.3 + 14, 3) - 0.5);
+            return Math.max(0.1, base + domes + fine + 0.4);
+        }
+
+        // Danxia color signature: the stripes follow the ORIGINAL tilted
+        // sedimentary layers, not the modern elevation contour - so the
+        // banding runs at an angle across the rounded hills rather than
+        // wrapping their outline. stratum combines a tilted-plane term
+        // (rotated direction + a height contribution) with low-frequency
+        // noise for waviness, then wraps through a 6-color palette.
+        var TILT = 0.52; // radians
+        var TCOS = Math.cos(TILT), TSIN = Math.sin(TILT);
+        var STRIPE_W = 1.35;
+        var PALETTE = [
+            new THREE.Color(0x8a2d20), // deep red
+            new THREE.Color(0xc45a2e), // red-orange
+            new THREE.Color(0xd98f3c), // orange
+            new THREE.Color(0xd9c24a), // yellow-ochre
+            new THREE.Color(0x8fa356), // green-grey
+            new THREE.Color(0x9c7ea3)  // purple-grey
+        ];
+        function stratumValue(x, z, h) {
+            var tilted = x * TCOS + z * TSIN;
+            var wobble = 0.9 * (fbm(x * 0.22 + 5, z * 0.22 + 17, 3) - 0.5);
+            return tilted + h * 1.6 + wobble;
+        }
+        var goldenOn = false;
+        var tmpColor = new THREE.Color();
+        function colorAt(out, x, z, h, golden) {
+            var s = stratumValue(x, z, h) / STRIPE_W;
+            var idx = Math.floor(s);
+            var frac = s - idx;
+            var n = PALETTE.length;
+            var a = PALETTE[((idx % n) + n) % n];
+            var b = PALETTE[(((idx + 1) % n) + n) % n];
+            out.copy(a).lerp(b, smooth(0.15, 0.85, frac));
+            var texture = 0.94 + 0.14 * fbm(x * 1.6 + 30, z * 1.6 + 12, 3);
+            out.multiplyScalar(texture);
+            if (golden) {
+                // Golden-hour / after-rain look: warmer, more saturated - a
+                // precomputed alternate buffer, not a per-frame recompute.
+                out.lerp(tmpColor.copy(out).multiplyScalar(1.18), 0.55);
+                out.r = clamp01(out.r * 1.12);
+                out.g = clamp01(out.g * 0.98);
+                out.b = clamp01(out.b * 0.86);
+            }
+            return out;
+        }
+
+        var segW = shell.low ? 110 : 160, segD = shell.low ? 86 : 128;
+        var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+        geo.rotateX(-Math.PI / 2);
+        var pos = geo.attributes.position;
+        var count = pos.count;
+        var colorsNormal = new Float32Array(count * 3);
+        var colorsGolden = new Float32Array(count * 3);
+        var col = new THREE.Color();
+        for (var i = 0; i < count; i++) {
+            var x = pos.getX(i), z = pos.getZ(i);
+            var h = height(x, z);
+            pos.setY(i, h);
+            colorAt(col, x, z, h, false);
+            colorsNormal[i * 3] = col.r; colorsNormal[i * 3 + 1] = col.g; colorsNormal[i * 3 + 2] = col.b;
+            colorAt(col, x, z, h, true);
+            colorsGolden[i * 3] = col.r; colorsGolden[i * 3 + 1] = col.g; colorsGolden[i * 3 + 2] = col.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colorsNormal.slice(), 3));
+        geo.computeVertexNormals();
+        var terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+        var terrain = new THREE.Mesh(geo, terrainMat);
+        scene.add(terrain);
+
+        // Viewing boardwalk markers: a raised plank-line path tracing a
+        // meandering route along one ridge crest, echoing the real elevated
+        // wooden boardwalks built through the park to protect the fragile
+        // rock surface from foot traffic.
+        var boardwalkGroup = new THREE.Group();
+        var boardwalkMat = new THREE.MeshStandardMaterial({ color: 0xc9a86a, roughness: 0.8 });
+        var bwPts = [];
+        for (var s = 0; s <= 30; s++) {
+            var t = s / 30;
+            var bx = -8 + t * 15;
+            var bz = 1.2 * Math.sin(t * Math.PI * 2.1) - 1.0;
+            bwPts.push(new THREE.Vector3(bx, height(bx, bz) + 0.06, bz));
+        }
+        var bwCurve = new THREE.CatmullRomCurve3(bwPts);
+        var bwGeo = new THREE.TubeGeometry(bwCurve, 70, 0.045, 5, false);
+        boardwalkGroup.add(new THREE.Mesh(bwGeo, boardwalkMat));
+        // Small platform posts every few segments for a plank-walk read.
+        var postMat = new THREE.MeshStandardMaterial({ color: 0x8a6a3f, roughness: 0.85 });
+        for (var p = 2; p < bwPts.length - 2; p += 5) {
+            var post = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.14, 0.09), postMat);
+            post.position.copy(bwPts[p]);
+            post.position.y += 0.03;
+            boardwalkGroup.add(post);
+        }
+        scene.add(boardwalkGroup);
+
+        var boardwalkOn = true;
+
+        function panelHtml() {
+            return '<h3>Zhangye Danxia: rainbow rock layers</h3>' +
+                '<p>Rounded hills near the Qilian Mountains in Gansu, China, striped with tilted bands of red, orange, yellow and green rock. Toggle golden-hour lighting to see the colors deepen, and the viewing boardwalks that protect the fragile surface.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Location</td><td>Zhangye, Gansu Province, China, in the foothills of the Qilian Mountains</td></tr>' +
+                '<tr><td>Landform</td><td>Danxia ("rosy cloud") - tilted red sandstone and siltstone layers exposed by erosion</td></tr>' +
+                '<tr><td>Layer age</td><td>deposited over roughly 24 million years, then tectonically uplifted</td></tr>' +
+                '<tr><td>Colors</td><td>from mineral content and oxidation state - iron oxide gives red and orange; other minerals give yellow, green, and purple-grey</td></tr>' +
+                '<tr><td>Park area</td><td>roughly 300 sq km across two main scenic areas, at elevations around 2,000-3,800 m</td></tr>' +
+                '<tr><td>Heritage status</td><td>part of the "China Danxia" UNESCO World Heritage Site, inscribed 2010</td></tr>' +
+                '<tr><td>Best viewing</td><td>near sunrise and sunset, and often more vivid right after rain</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the hill shapes, stripe placement, lighting toggle, and boardwalk markers are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            var colorAttr = geo.attributes.color;
+            colorAttr.array.set(goldenOn ? colorsGolden : colorsNormal);
+            colorAttr.needsUpdate = true;
+            key.color.setHex(goldenOn ? 0xffd9a0 : 0xffffff);
+            key.intensity = goldenOn ? 1.15 : 1.0;
+            ambient.intensity = goldenOn ? 0.5 : 0.65;
+            var gb = document.getElementById('t3dZydGoldenBtn');
+            if (gb) gb.textContent = 'Golden-hour light: ' + (goldenOn ? 'On' : 'Off');
+            boardwalkGroup.visible = boardwalkOn;
+            var bb = document.getElementById('t3dZydBoardwalkBtn');
+            if (bb) bb.textContent = 'Viewing boardwalks: ' + (boardwalkOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ goldenOn: goldenOn, boardwalkOn: boardwalkOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.goldenOn === 'boolean') goldenOn = store.goldenOn;
+        if (typeof store.boardwalkOn === 'boolean') boardwalkOn = store.boardwalkOn;
+        apply();
+
+        var goldenBtn = document.getElementById('t3dZydGoldenBtn');
+        if (goldenBtn) goldenBtn.addEventListener('click', function () { goldenOn = !goldenOn; apply(); });
+        var boardwalkBtn = document.getElementById('t3dZydBoardwalkBtn');
+        if (boardwalkBtn) boardwalkBtn.addEventListener('click', function () { boardwalkOn = !boardwalkOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle golden-hour lighting or the viewing boardwalk markers.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00003;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeszhangyedanxia: 't3dZydControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeszhangyedanxia: { radius: 21, maxR: 60, minR: 5, phi: 1.28, theta: 0.5, targetY: 1.6 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
