@@ -21,6 +21,10 @@ export const INFO_ROUTES = new Set([
   '/guides/es/file-viewer-vs-alternatives.html',
   // file-viewer-vs-alternatives vi locale (create_new_guide_page 20260827-5)
   '/guides/vi/file-viewer-vs-alternatives.html',
+  // file-viewer-vs-alternatives id locale (locale-completeness backfill)
+  '/guides/id/file-viewer-vs-alternatives.html',
+  // file-viewer-vs-alternatives de locale (locale-completeness backfill)
+  '/guides/de/file-viewer-vs-alternatives.html',
   '/guides/file-viewer-step-by-step.html',
   // file-viewer-step-by-step pt locale (create_new_guide_page 20260826-6)
   '/guides/pt/file-viewer-step-by-step.html',
@@ -33,6 +37,12 @@ export const INFO_ROUTES = new Set([
   // file-viewer-step-by-step de locale (create_new_guide_page 20260827-2)
   '/guides/de/file-viewer-step-by-step.html',
   '/guides/file-viewer-when.html',
+  // file-viewer-when locale fanout (locale-completeness debt drain 20260828)
+  '/guides/pt/file-viewer-when.html',
+  '/guides/es/file-viewer-when.html',
+  '/guides/vi/file-viewer-when.html',
+  '/guides/id/file-viewer-when.html',
+  '/guides/de/file-viewer-when.html',
   '/guides/daylight-saving-time-countdown-next-clock-change-when.html',
   // ai-watermarks-explained vi locale (create_new_guide_page 20260823-3)
   '/guides/vi/ai-watermarks-explained.html',
@@ -7236,12 +7246,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/file-viewer-vs-alternatives.html',
   // file-viewer-vs-alternatives vi locale (create_new_guide_page 20260827-5)
   '/guides/vi/file-viewer-vs-alternatives.html',
+  // file-viewer-vs-alternatives id locale (locale-completeness backfill)
+  '/guides/id/file-viewer-vs-alternatives.html',
+  // file-viewer-vs-alternatives de locale (locale-completeness backfill)
+  '/guides/de/file-viewer-vs-alternatives.html',
   // file-viewer-step-by-step vi locale (create_new_guide_page 20260826-8)
   '/guides/vi/file-viewer-step-by-step.html',
   // file-viewer-step-by-step id locale (create_new_guide_page 20260827)
   '/guides/id/file-viewer-step-by-step.html',
   // file-viewer-step-by-step de locale (create_new_guide_page 20260827-2)
   '/guides/de/file-viewer-step-by-step.html',
+  // file-viewer-when locale fanout (locale-completeness debt drain 20260828)
+  '/guides/pt/file-viewer-when.html',
+  '/guides/es/file-viewer-when.html',
+  '/guides/vi/file-viewer-when.html',
+  '/guides/id/file-viewer-when.html',
+  '/guides/de/file-viewer-when.html',
   // client-side-pdf-editor-toolkit-when pt locale (create_new_guide_page 20260824)
   '/guides/pt/client-side-pdf-editor-toolkit-when.html',
   // client-side-pdf-editor-toolkit-when es locale (create_new_guide_page 20260824)
@@ -28958,6 +28978,11 @@ export const JSP_BY_ROUTE = {
   '/image-tools/photo-translator.html': 'convert/photo-translator.jsp',
   '/pdf-tools/file-viewer.html': 'pdf/file-viewer.jsp',
   '/guides/file-viewer-when.html': 'guide/file-viewer-when.jsp',
+  '/guides/pt/file-viewer-when.html': 'guide/pt/file-viewer-when.jsp',
+  '/guides/es/file-viewer-when.html': 'guide/es/file-viewer-when.jsp',
+  '/guides/vi/file-viewer-when.html': 'guide/vi/file-viewer-when.jsp',
+  '/guides/id/file-viewer-when.html': 'guide/id/file-viewer-when.jsp',
+  '/guides/de/file-viewer-when.html': 'guide/de/file-viewer-when.jsp',
   '/guides/file-viewer-step-by-step.html': 'guide/file-viewer-step-by-step.jsp',
   '/guides/pt/file-viewer-step-by-step.html': 'guide/pt/file-viewer-step-by-step.jsp',
   '/guides/es/file-viewer-step-by-step.html': 'guide/es/file-viewer-step-by-step.jsp',
@@ -28968,6 +28993,8 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/file-viewer-vs-alternatives.html': 'guide/pt/file-viewer-vs-alternatives.jsp',
   '/guides/es/file-viewer-vs-alternatives.html': 'guide/es/file-viewer-vs-alternatives.jsp',
   '/guides/vi/file-viewer-vs-alternatives.html': 'guide/vi/file-viewer-vs-alternatives.jsp',
+  '/guides/id/file-viewer-vs-alternatives.html': 'guide/id/file-viewer-vs-alternatives.jsp',
+  '/guides/de/file-viewer-vs-alternatives.html': 'guide/de/file-viewer-vs-alternatives.jsp',
   '/image-tools/alt-text-generator.html': 'convert/alt-text-generator.jsp',
   '/image-tools/image-colorizer.html': 'convert/image-colorizer.jsp',
   '/image-tools/duplicate-photo-finder.html': 'convert/duplicate-photo-finder.jsp',
