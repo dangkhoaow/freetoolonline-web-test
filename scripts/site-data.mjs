@@ -1875,7 +1875,6 @@ export const INFO_ROUTES = new Set([
   '/guides/uuid-generator-step-by-step.html',
   '/guides/uuid-generator-when.html',
   '/guides/jwt-decoder-vs-alternatives.html',
-  '/guides/jwt-decoder-step-by-step.html',
   '/guides/jwt-decoder-when.html',
   '/guides/json-typescript-interface-generator-when.html',
   '/guides/pt/json-typescript-interface-generator-when.html',
@@ -1911,16 +1910,12 @@ export const INFO_ROUTES = new Set([
   '/guides/de/markdown-html-previewer-step-by-step.html',
   '/guides/de/markdown-html-previewer-vs-alternatives.html',
   '/guides/pt/jwt-decoder-when.html',
-  '/guides/pt/jwt-decoder-step-by-step.html',
   '/guides/pt/jwt-decoder-vs-alternatives.html',
   '/guides/es/jwt-decoder-when.html',
-  '/guides/es/jwt-decoder-step-by-step.html',
   '/guides/es/jwt-decoder-vs-alternatives.html',
   '/guides/id/jwt-decoder-when.html',
-  '/guides/id/jwt-decoder-step-by-step.html',
   '/guides/id/jwt-decoder-vs-alternatives.html',
   '/guides/de/jwt-decoder-when.html',
-  '/guides/de/jwt-decoder-step-by-step.html',
   '/guides/de/jwt-decoder-vs-alternatives.html',
   '/guides/document-scanner-pdf-when.html',
   '/guides/pt/document-scanner-pdf-when.html',
@@ -9404,19 +9399,14 @@ export const GUIDE_ROUTES = new Set([
   // class as fires 32/56/57/62/66/84/113/115/120) plus their full
   // pt/es/vi/id/de locale fanout.
   '/guides/jwt-decoder-when.html',
-  '/guides/jwt-decoder-step-by-step.html',
   '/guides/jwt-decoder-vs-alternatives.html',
   '/guides/pt/jwt-decoder-when.html',
-  '/guides/pt/jwt-decoder-step-by-step.html',
   '/guides/pt/jwt-decoder-vs-alternatives.html',
   '/guides/es/jwt-decoder-when.html',
-  '/guides/es/jwt-decoder-step-by-step.html',
   '/guides/es/jwt-decoder-vs-alternatives.html',
   '/guides/id/jwt-decoder-when.html',
-  '/guides/id/jwt-decoder-step-by-step.html',
   '/guides/id/jwt-decoder-vs-alternatives.html',
   '/guides/de/jwt-decoder-when.html',
-  '/guides/de/jwt-decoder-step-by-step.html',
   '/guides/de/jwt-decoder-vs-alternatives.html',
   // GUIDE_ROUTES locale fanout for flashcards-maker's 3 EN companion guide
   // angles - pt/es/vi/id/de.
@@ -14042,6 +14032,11 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  '/guides/jwt-decoder-step-by-step.html': '/guides/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper
+  '/guides/pt/jwt-decoder-step-by-step.html': '/guides/pt/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper
+  '/guides/es/jwt-decoder-step-by-step.html': '/guides/es/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper
+  '/guides/id/jwt-decoder-step-by-step.html': '/guides/id/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper
+  '/guides/de/jwt-decoder-step-by-step.html': '/guides/de/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper
   '/angel-falls.html': '/places-3d/angel-falls.html',
   '/guides/gravitational-slingshot-step-by-step.html': '/guides/gravitational-slingshot-when.html',
   '/guides/retrograde-motion-step-by-step.html': '/guides/retrograde-motion-when.html',
@@ -14901,6 +14896,7 @@ export const ALIAS_ROUTES = {
   '/wadi-rum.html': '/places-3d/wadi-rum.html',
   '/postojna-cave.html': '/places-3d/postojna-cave.html',
   '/denali.html': '/places-3d/denali.html',
+  '/table-mountain.html': '/places-3d/table-mountain.html',
   '/perito-moreno-glacier.html': '/places-3d/perito-moreno-glacier.html',
   '/great-blue-hole.html': '/places-3d/great-blue-hole.html',
   '/niagara-falls.html': '/places-3d/niagara-falls.html',
@@ -16668,7 +16664,7 @@ export const ALIAS_ROUTES = {
   '/guides/vi/jwst-l2-halo-orbit-step-by-step.html': '/guides/jwst-l2-halo-orbit-step-by-step.html',
   '/guides/vi/jwst-l2-halo-orbit-vs-alternatives.html': '/guides/jwst-l2-halo-orbit-vs-alternatives.html',
   '/guides/vi/jwst-l2-halo-orbit-when.html': '/guides/jwst-l2-halo-orbit-when.html',
-  '/guides/vi/jwt-decoder-step-by-step.html': '/guides/jwt-decoder-step-by-step.html',
+  '/guides/vi/jwt-decoder-step-by-step.html': '/guides/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper (re-pointed direct, no chain)
   '/guides/vi/jwt-decoder-vs-alternatives.html': '/guides/jwt-decoder-vs-alternatives.html',
   '/guides/vi/jwt-decoder-when.html': '/guides/jwt-decoder-when.html',
   '/guides/vi/image-to-base64-embed-in-html-vs-link.html': '/guides/en/image-to-base64-embed-in-html-vs-link.html', // vi-batch-6 cont#4 crammed-line fix restore (fire 342)
@@ -17143,6 +17139,7 @@ export const JSP_BY_ROUTE = {
   '/places-3d/wadi-rum.html': 'place/wadirum.jsp',
   '/places-3d/postojna-cave.html': 'place/postojna-cave.jsp',
   '/places-3d/denali.html': 'place/denali.jsp',
+  '/places-3d/table-mountain.html': 'place/table-mountain.jsp',
   '/places-3d/perito-moreno-glacier.html': 'place/perito-moreno-glacier.jsp',
   '/places-3d/great-blue-hole.html': 'place/great-blue-hole.jsp',
   '/places-3d/niagara-falls.html': 'place/niagara-falls.jsp',
@@ -25796,19 +25793,14 @@ export const JSP_BY_ROUTE = {
   '/guides/de/json-typescript-interface-generator-vs-alternatives.html': 'guide/de/json-typescript-interface-generator-vs-alternatives.jsp',
   '/guides/json-typescript-interface-generator-step-by-step.html': 'guide/json-typescript-interface-generator-step-by-step.jsp',
   '/guides/json-typescript-interface-generator-vs-alternatives.html': 'guide/json-typescript-interface-generator-vs-alternatives.jsp',
-  '/guides/jwt-decoder-step-by-step.html': 'guide/jwt-decoder-step-by-step.jsp',
   '/guides/jwt-decoder-vs-alternatives.html': 'guide/jwt-decoder-vs-alternatives.jsp',
   '/guides/pt/jwt-decoder-when.html': 'guide/pt/jwt-decoder-when.jsp',
-  '/guides/pt/jwt-decoder-step-by-step.html': 'guide/pt/jwt-decoder-step-by-step.jsp',
   '/guides/pt/jwt-decoder-vs-alternatives.html': 'guide/pt/jwt-decoder-vs-alternatives.jsp',
   '/guides/es/jwt-decoder-when.html': 'guide/es/jwt-decoder-when.jsp',
-  '/guides/es/jwt-decoder-step-by-step.html': 'guide/es/jwt-decoder-step-by-step.jsp',
   '/guides/es/jwt-decoder-vs-alternatives.html': 'guide/es/jwt-decoder-vs-alternatives.jsp',
   '/guides/id/jwt-decoder-when.html': 'guide/id/jwt-decoder-when.jsp',
-  '/guides/id/jwt-decoder-step-by-step.html': 'guide/id/jwt-decoder-step-by-step.jsp',
   '/guides/id/jwt-decoder-vs-alternatives.html': 'guide/id/jwt-decoder-vs-alternatives.jsp',
   '/guides/de/jwt-decoder-when.html': 'guide/de/jwt-decoder-when.jsp',
-  '/guides/de/jwt-decoder-step-by-step.html': 'guide/de/jwt-decoder-step-by-step.jsp',
   '/guides/de/jwt-decoder-vs-alternatives.html': 'guide/de/jwt-decoder-vs-alternatives.jsp',
   '/developer-tools/uuid-generator.html': 'utility/uuid-generator.jsp',
   '/guides/uuid-generator-when.html': 'guide/uuid-generator-when.jsp',
@@ -32258,7 +32250,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/jpg-webp-converter-step-by-step.html',
   '/guides/pt/jpg-webp-converter-vs-alternatives.html',
   '/guides/pt/jpg-webp-converter-when.html',
-  '/guides/pt/jwt-decoder-step-by-step.html',
   '/guides/pt/jwt-decoder-vs-alternatives.html',
   '/guides/pt/jwt-decoder-when.html',
   '/guides/pt/karman-line-atmosphere-layers-step-by-step.html',
@@ -33594,7 +33585,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/jpg-webp-converter-step-by-step.html',
   '/guides/es/jpg-webp-converter-vs-alternatives.html',
   '/guides/es/jpg-webp-converter-when.html',
-  '/guides/es/jwt-decoder-step-by-step.html',
   '/guides/es/jwt-decoder-vs-alternatives.html',
   '/guides/es/jwt-decoder-when.html',
   '/guides/es/karman-line-atmosphere-layers-step-by-step.html',
@@ -35304,7 +35294,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/json-typescript-interface-generator-vs-alternatives.html',
   '/guides/id/json-typescript-interface-generator-when.html',
   '/guides/id/json-vs-yaml-vs-toml-config-formats-explained.html',
-  '/guides/id/jwt-decoder-step-by-step.html',
   '/guides/id/jwt-decoder-vs-alternatives.html',
   '/guides/id/jwt-decoder-when.html',
   '/guides/id/karman-line-atmosphere-layers-step-by-step.html',
