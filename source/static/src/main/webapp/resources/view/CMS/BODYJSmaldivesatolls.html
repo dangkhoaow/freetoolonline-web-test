@@ -1,0 +1,366 @@
+<script>
+    // 3D scene archetype (maldives-atolls) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN engine), fully client-side.
+    // places-3d cluster, places-3d-discovery-loop-runbook, 2026-08-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not a survey-grade bathymetric model.
+    // Published figures (encyclopedic consensus):
+    //   - About 1,192 coral islands grouped into 26 natural atolls
+    //   - The 26 atolls form a double chain running roughly north-south
+    //   - Average ground elevation about 1.5 m (4.9 ft) above sea level -
+    //     the world's lowest-lying country
+    //   - Located in the Indian Ocean, south-southwest of India and Sri Lanka
+    //   - Capital and largest city: Male
+    //   - Each atoll is a ring-shaped coral reef enclosing a shallow lagoon,
+    //     with low sand-and-coral islets sitting on the reef rim
+    //   - Widely cited as one of the countries most exposed to sea-level rise
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'maldives-atolls';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesmaldivesatolls'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0d3f6e, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+        var key = new THREE.DirectionalLight(0xffffff, 1.0);
+        key.position.set(-8, 20, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, x) { var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0 }));
+        }
+
+        // Signature figure: a DOUBLE CHAIN of ring-shaped coral atolls (the
+        // real Maldives' 26-atoll double chain, approximated by 12 rings in
+        // two staggered rows), each ring a raised reef rim enclosing a
+        // shallow turquoise lagoon, sitting only a hair above open ocean -
+        // the "world's lowest country" story is the STORY of this scene.
+        var OCEAN_Y = -1.5;
+        var LAGOON_Y = -0.55;
+        var REEF_Y = 0.16; // deliberately thin freeboard above sea level (y=0)
+        var ATOLL_R = 1.35;
+        var ATOLL_BAND = 0.95;
+        var ROWS = 2, PER_ROW = 6, ROW_SPACING_Z = 4.4, ROW_OFFSET_X = 2.5;
+        var ATOLLS = [];
+        for (var row = 0; row < ROWS; row++) {
+            for (var i = 0; i < PER_ROW; i++) {
+                var jz = (hash2(i, row * 11 + 3) - 0.5) * 0.9;
+                var jx = (hash2(i, row * 7 + 1) - 0.5) * 0.5;
+                var jr = (hash2(i, row * 5 + 9) - 0.5) * 0.35;
+                ATOLLS.push({
+                    x: (row === 0 ? -ROW_OFFSET_X : ROW_OFFSET_X) + jx,
+                    z: (i - (PER_ROW - 1) / 2) * ROW_SPACING_Z + (row === 1 ? ROW_SPACING_Z * 0.5 : 0) + jz,
+                    r: ATOLL_R + jr
+                });
+            }
+        }
+
+        function atollRingR(atoll, x, z) {
+            var dx = x - atoll.x, dz = z - atoll.z;
+            var r = Math.sqrt(dx * dx + dz * dz);
+            var ang = Math.atan2(dz, dx);
+            r *= 1 + 0.02 * Math.sin(ang * 3.0 + atoll.x * 3.1) + 0.01 * (fbm(x * 0.5 + atoll.x * 9, z * 0.5 + atoll.z * 9, 2) - 0.5);
+            return r;
+        }
+        function atollHeight(atoll, x, z) {
+            var r = atollRingR(atoll, x, z);
+            var R = atoll.r;
+            var lagoonFloor = LAGOON_Y + 0.08 * (fbm(x * 0.9 + 33, z * 0.9 + 33, 3) - 0.5);
+            var reefCrest = REEF_Y + 0.04 * fbm(x * 2.2 + 71, z * 2.2 + 71, 2);
+            if (r <= R - ATOLL_BAND) { return lagoonFloor; }
+            if (r <= R) { return lagoonFloor + (reefCrest - lagoonFloor) * smooth(R - ATOLL_BAND, R, r); }
+            if (r <= R + ATOLL_BAND) { return reefCrest + (OCEAN_Y - reefCrest) * smooth(R, R + ATOLL_BAND, r); }
+            return OCEAN_Y;
+        }
+        function nearestAtoll(x, z) {
+            var best = null, bestD = 1e9;
+            for (var i = 0; i < ATOLLS.length; i++) {
+                var a = ATOLLS[i], dx = x - a.x, dz = z - a.z, d = dx * dx + dz * dz;
+                if (d < bestD) { bestD = d; best = a; }
+            }
+            return best;
+        }
+        function height(x, z) {
+            var best = -1e9;
+            for (var i = 0; i < ATOLLS.length; i++) {
+                var h = atollHeight(ATOLLS[i], x, z);
+                if (h > best) best = h;
+            }
+            var oceanNoise = OCEAN_Y + 0.12 * (fbm(x * 0.35 + 5, z * 0.35 + 5, 3) - 0.5);
+            return Math.max(best, oceanNoise) === best ? best : oceanNoise;
+        }
+
+        var normColors = null, bandedColors = null, terrain;
+        function lagoonColor(c, h, banded) {
+            var frac = Math.max(0, Math.min(1, (REEF_Y - h) / (REEF_Y - LAGOON_Y + 0.55)));
+            if (banded) { frac = Math.floor(frac * 5) / 5; }
+            var shallow = new THREE.Color(0x57e6da);
+            var mid = new THREE.Color(0x1c9fc9);
+            var deep = new THREE.Color(0x0e4d84);
+            var col2 = frac < 0.5 ? shallow.clone().lerp(mid, frac / 0.5) : mid.clone().lerp(deep, (frac - 0.5) / 0.5);
+            c.copy(col2);
+            if (banded) { c.multiplyScalar(0.95 + 0.05 * Math.sin(frac * 24)); }
+        }
+        function bandColor(c, h, x, z, banded) {
+            var a = nearestAtoll(x, z);
+            var r = a ? atollRingR(a, x, z) : 1e9;
+            var R = a ? a.r : 0;
+            var reefT = a ? smooth(R - ATOLL_BAND, R + ATOLL_BAND, r) : 1;
+            var oceanT = a ? smooth(R + ATOLL_BAND, R + ATOLL_BAND * 2.6, r) : 1;
+            if (oceanT > 0.1 || !a) {
+                c.setHex(0x0a2c5c);
+                c.multiplyScalar(0.85 + 0.25 * Math.min(1, oceanT));
+                return;
+            }
+            if (reefT > 0.15 && reefT < 0.9) {
+                var g = fbm(x * 1.8 + 12, z * 1.8 + 8, 3);
+                c.setHex(g > 0.5 ? 0xe6d9a8 : 0xf5ecc9); // sun-bleached coral / sand rim
+                c.multiplyScalar(0.88 + 0.2 * g);
+                return;
+            }
+            lagoonColor(c, h, banded);
+        }
+        terrain = makeTerrain(11, 30, shell.low ? 110 : 180, shell.low ? 280 : 460, height, function (c, h, x, z) { bandColor(c, h, x, z, false); });
+        scene.add(terrain);
+        var normArr = terrain.geometry.attributes.color.array.slice();
+        var pos2 = terrain.geometry.attributes.position, col2 = new THREE.Color();
+        var bandedArr = new Float32Array(pos2.count * 3);
+        for (var bi = 0; bi < pos2.count; bi++) {
+            bandColor(col2, pos2.getY(bi), pos2.getX(bi), pos2.getZ(bi), true);
+            bandedArr[bi * 3] = col2.r; bandedArr[bi * 3 + 1] = col2.g; bandedArr[bi * 3 + 2] = col2.b;
+        }
+        normColors = normArr;
+        bandedColors = bandedArr;
+
+        // Coral-sand islets: low flat markers sitting on a few points of each
+        // reef rim, matching the real geography (islets sit ON the rim, not
+        // inside the lagoon or out in open ocean).
+        var isletGroup = new THREE.Group();
+        for (var ai = 0; ai < ATOLLS.length; ai++) {
+            var atoll = ATOLLS[ai];
+            var nIslet = 3 + Math.floor(hash2(ai, 41) * 3);
+            for (var ii = 0; ii < nIslet; ii++) {
+                var ang = (ii / nIslet) * Math.PI * 2 + hash2(ai, ii) * 0.8;
+                var ir = atoll.r * (0.97 + 0.04 * hash2(ii, ai + 3));
+                var ix = atoll.x + Math.cos(ang) * ir, iz = atoll.z + Math.sin(ang) * ir;
+                var islet = new THREE.Mesh(new THREE.BoxGeometry(0.22 + 0.08 * hash2(ii, 5), 0.09, 0.16 + 0.06 * hash2(ii, 9)), new THREE.MeshStandardMaterial({ color: 0xf3e8c2 }));
+                islet.position.set(ix, REEF_Y + 0.07, iz);
+                islet.rotation.y = ang;
+                isletGroup.add(islet);
+            }
+        }
+        scene.add(isletGroup);
+
+        // Sea-level plane: today's mean sea level (y=0), sized to cover the
+        // whole double chain, showing how thin the reef rims' freeboard is.
+        var seaPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(11, 30),
+            new THREE.MeshStandardMaterial({ color: 0x8fd3ff, transparent: true, opacity: 0.28, side: THREE.DoubleSide, roughness: 0.9 })
+        );
+        seaPlane.rotation.x = -Math.PI / 2;
+        seaPlane.position.y = 0;
+        scene.add(seaPlane);
+
+        var seaOn = true, bandsOn = true;
+
+        function panelHtml() {
+            return '<h3>Maldives: a double chain of low coral rings</h3>' +
+                '<p>Two staggered rows approximate the real double chain of ring-shaped atolls, each enclosing a shallow lagoon behind a reef rim only a little above sea level.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Coral islands</td><td>about 1,192, grouped into 26 natural atolls</td></tr>' +
+                '<tr><td>Atoll layout</td><td>a double chain running roughly north-south</td></tr>' +
+                '<tr><td>Average elevation</td><td>about 1.5 m (4.9 ft) above sea level - the world\'s lowest country</td></tr>' +
+                '<tr><td>Location</td><td>Indian Ocean, south-southwest of India and Sri Lanka</td></tr>' +
+                '<tr><td>Capital</td><td>Male</td></tr>' +
+                '<tr><td>Climate exposure</td><td>widely cited as one of the countries most exposed to sea-level rise</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - ring count, spacing, and rim freeboard are procedural teaching cues, not a survey-grade model.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(bandsOn ? bandedColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            seaPlane.visible = seaOn;
+            var sb = document.getElementById('t3dMldSeaBtn');
+            if (sb) sb.textContent = 'Sea-level plane: ' + (seaOn ? 'On' : 'Off');
+            var bb = document.getElementById('t3dMldBandsBtn');
+            if (bb) bb.textContent = 'Lagoon depth bands: ' + (bandsOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ seaOn: seaOn, bandsOn: bandsOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.seaOn === 'boolean') seaOn = store.seaOn;
+        if (typeof store.bandsOn === 'boolean') bandsOn = store.bandsOn;
+        apply();
+
+        var seaBtn = document.getElementById('t3dMldSeaBtn');
+        if (seaBtn) seaBtn.addEventListener('click', function () { seaOn = !seaOn; apply(); });
+        var bandsBtn = document.getElementById('t3dMldBandsBtn');
+        if (bandsBtn) bandsBtn.addEventListener('click', function () { bandsOn = !bandsOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the sea-level plane or the lagoon depth bands.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmaldivesatolls: 't3dMldControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesmaldivesatolls: { radius: 22, maxR: 50, minR: 6, phi: 0.78, theta: 0.45, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
