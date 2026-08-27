@@ -1,0 +1,392 @@
+<script>
+    // 3D scene archetype skeleton (okavango-delta) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only (okavango-delta).
+    // All geometry is procedural. places-3d cluster, authored 2026-08-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey hydrology.
+    // Published figures (encyclopedic/UNESCO consensus, cross-checked 2026-08-27):
+    //   - Permanent wetland about 6,000 sq km, expanding to roughly
+    //     15,000-22,000 sq km at peak seasonal flood
+    //   - Fed by the Cubango and Cuito Rivers, rising in the Angolan highlands
+    //     and joining to form the Okavango River
+    //   - Rain falls in Angola roughly October-April; floodwater takes about
+    //     4 months to travel roughly 1,200 km downstream, so peak flood in the
+    //     delta usually arrives June-August - Botswana's dry winter
+    //   - In most years almost all the water disappears through evaporation,
+    //     plant transpiration and seepage into Kalahari sand - no permanent
+    //     outflow to the ocean
+    //   - UNESCO World Heritage Site since 2014, celebrated as the 1,000th
+    //     site on the World Heritage List
+    //   - Thousands of low islands across the delta; many began as termite
+    //     mounds that trapped sediment and grew over centuries
+    //   - Chief's Island, the delta's largest, commonly cited about 70 km
+    //     long, largely within Moremi Game Reserve
+    //   - Home to elephants, hippos, lions and more than 400 recorded bird
+    //     species
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'okavango-delta';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesokavangodelta'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x141912, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.64));
+        var key = new THREE.DirectionalLight(0xfff2d0, 1.0);
+        key.position.set(-9, 18, -5);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 })), geo: geo, pos: pos };
+        }
+
+        // Inland fan delta: x = east-west, z = north (the Okavango Panhandle,
+        // where the river enters as a single trunk from Angola) to south
+        // (where the fanned-out channels shrink and dry into the flat
+        // Kalahari sand near the Thamalakane Fault - there is NO sea; this is
+        // the defining contrast with the coastal Mekong Delta already in the
+        // cluster). PANHANDLE_END_Z..FAN_Z is where the single trunk fans out
+        // to many braided channels; FADE_Z0..FADE_Z1 is where those channels
+        // narrow back down to nothing as the water evaporates, transpires, and
+        // seeps into the sand.
+        var ENTRY_Z = -9, PANHANDLE_END_Z = -5, FAN_Z = -1, FADE_Z0 = 4, FADE_Z1 = 8;
+        var N_CHANNELS = 14, BASE_HALF = 0.14, WIDEN_AMT = 0.28, MIN_HALF = 0.02;
+        var GROOVE_MAX = 0.20, LEVEE_H = 0.05;
+        var NORTH_H = 0.30, FLOOD_PLAIN_H = 0.03, DRY_H = 0.16;
+        var ISLAND_H = 0.09;
+        // Chief's Island - the delta's largest island, roughly centered in
+        // the fan, deliberately offset from the channel centerlines so it
+        // reads as solid ground between braided channels rather than a
+        // carved-out shape.
+        var CHIEF_X = -1.1, CHIEF_Z = 1.2, CHIEF_RX = 1.9, CHIEF_RZ = 1.5, CHIEF_H = 0.16;
+        var MOUTH_X = [];
+        for (var mi = 0; mi < N_CHANNELS; mi++) {
+            MOUTH_X.push(-7 + mi * (14 / (N_CHANNELS - 1)) + (hash2(mi * 3.1 + 4.2, 7.7) - 0.5) * 0.5);
+        }
+
+        function fanFactor(z) { return smooth(PANHANDLE_END_Z, FAN_Z, z); }
+        function meander(i, z) {
+            return (fbm(z * 0.22 + i * 3.7, i * 5.1 + 2, 3) - 0.5) * 1.2 * fanFactor(z);
+        }
+        function centerlineX(i, z) { return MOUTH_X[i] * fanFactor(z) + meander(i, z); }
+        function channelHalfWidth(z) {
+            var w = BASE_HALF + WIDEN_AMT * fanFactor(z);
+            var dryT = smooth(FADE_Z0, FADE_Z1, z);
+            return w * (1 - dryT) + MIN_HALF * dryT;
+        }
+        function channelProx(x, z) {
+            var half = channelHalfWidth(z), best = 1e9;
+            for (var i = 0; i < N_CHANNELS; i++) {
+                var d = Math.abs(x - centerlineX(i, z)) / half;
+                if (d < best) best = d;
+            }
+            return { dn: best, half: half };
+        }
+        function plainHeight(z) {
+            var t1 = smooth(ENTRY_Z, FAN_Z, z);
+            var base = NORTH_H + (FLOOD_PLAIN_H - NORTH_H) * t1;
+            var t2 = smooth(FADE_Z0, FADE_Z1, z);
+            return base + (DRY_H - FLOOD_PLAIN_H) * t2;
+        }
+        // Thousands-of-islands texture, restricted to the fanned delta plain
+        // and never inside a channel groove. Same technique feeds both the
+        // height field and the color function so the two never disagree
+        // (the Galapagos-fire lesson: a factor function must return a
+        // well-defined number everywhere, never fall through to a bad
+        // default).
+        function islandFactor(x, z, prox) {
+            if (prox.dn <= 1.6) return 0;
+            var inoise = fbm(x * 2.4 + 11, z * 2.4 + 3, 3);
+            var bumpT = smooth(0.55, 0.78, inoise);
+            var fanZoneT = smooth(FAN_Z - 1, FAN_Z + 0.5, z) * (1 - smooth(FADE_Z0 - 1, FADE_Z0 + 1, z));
+            return bumpT * fanZoneT;
+        }
+        function chiefFactor(x, z) {
+            var dcx = x - CHIEF_X, dcz = z - CHIEF_Z;
+            var r2 = (dcx * dcx) / (CHIEF_RX * CHIEF_RX) + (dcz * dcz) / (CHIEF_RZ * CHIEF_RZ);
+            return r2 < 1 ? Math.pow(1 - r2, 1.4) : 0;
+        }
+        function height(x, z) {
+            var plain = plainHeight(z);
+            var micro = 0.02 * (fbm(x * 1.3 + 5, z * 1.3 + 2, 3) - 0.5);
+            var prox = channelProx(x, z);
+            var grooveT = 1 - smooth(0, 1, prox.dn);
+            var lv = 0;
+            if (prox.dn >= 1 && prox.dn < 2.2) {
+                var up = smooth(1.0, 1.5, prox.dn), down = 1 - smooth(1.5, 2.2, prox.dn);
+                lv = LEVEE_H * Math.max(0, Math.min(up, down));
+            }
+            return plain + micro + lv - GROOVE_MAX * grooveT
+                + ISLAND_H * islandFactor(x, z, prox)
+                + CHIEF_H * chiefFactor(x, z);
+        }
+
+        var col = {
+            land: new THREE.Color(0x6f8f52), flood: new THREE.Color(0x2f7f86),
+            bank: new THREE.Color(0x9c8a5e), channel: new THREE.Color(0x2a8791),
+            drySand: new THREE.Color(0xc2a467), island: new THREE.Color(0x4f7a45),
+            chiefWood: new THREE.Color(0x3d6a3a)
+        };
+        var floodOn = false, chiefOn = true;
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.6 + 3, z * 1.6 + 8, 3);
+            var prox = channelProx(x, z);
+            var inChan = 1 - smooth(0.5, 1.0, prox.dn);
+            if (inChan > 0.03) {
+                var water = col.channel.clone();
+                if (inChan < 0.85) { water.lerp(col.bank, (1 - inChan) * 0.7); }
+                c.copy(water).multiplyScalar(n);
+                return;
+            }
+            var dryT = smooth(FADE_Z0 - 1, FADE_Z1, z);
+            var base = col.land.clone().lerp(col.drySand, dryT);
+            var islandT = islandFactor(x, z, prox);
+            base.lerp(col.island, islandT * 0.8);
+            var chiefT = chiefFactor(x, z);
+            base.lerp(col.chiefWood, chiefT * 0.9);
+            if (floodOn) {
+                var wetT = Math.max(1 - smooth(FLOOD_PLAIN_H - 0.02, FLOOD_PLAIN_H + 0.16, h), (1 - smooth(0.6, 2.0, prox.dn)) * 0.7);
+                wetT = Math.max(0, Math.min(1, wetT)) * (1 - dryT);
+                base.lerp(col.flood, wetT);
+            }
+            c.copy(base).multiplyScalar(n);
+        }
+        var terrainInfo = makeTerrain(20, 22, shell.low ? 110 : 170, shell.low ? 120 : 190, height, color);
+        scene.add(terrainInfo.mesh);
+
+        // Chief's Island marker: a beacon ring plus a few small tree cones
+        // standing in for the woodland/Moremi Game Reserve setting, sampled
+        // at runtime on the actual bump height so it always sits on the
+        // island regardless of parameter tuning.
+        var chiefY = height(CHIEF_X, CHIEF_Z);
+        var chiefGroup = new THREE.Group();
+        for (var ti = 0; ti < 4; ti++) {
+            var tx = CHIEF_X + (hash2(ti + 2.2, 9.4) - 0.5) * 1.1;
+            var tz = CHIEF_Z + (hash2(ti + 6.6, 1.3) - 0.5) * 0.9;
+            var tree = new THREE.Mesh(
+                new THREE.ConeGeometry(0.09, 0.24, 6),
+                new THREE.MeshStandardMaterial({ color: 0x2e5a2b, roughness: 0.85 })
+            );
+            tree.position.set(tx, chiefY + 0.12, tz);
+            chiefGroup.add(tree);
+        }
+        var chiefRing = new THREE.Mesh(
+            new THREE.RingGeometry(0.5, 0.66, 30),
+            new THREE.MeshBasicMaterial({ color: 0xf2b84a, transparent: true, opacity: 0.6, side: THREE.DoubleSide })
+        );
+        chiefRing.rotation.x = -Math.PI / 2;
+        chiefRing.position.set(CHIEF_X, chiefY + 0.02, CHIEF_Z);
+        chiefGroup.add(chiefRing);
+        scene.add(chiefGroup);
+
+        function recolor() {
+            var pos = terrainInfo.pos, geo = terrainInfo.geo, colors = geo.attributes.color, col2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                color(col2, pos.getY(i), pos.getX(i), pos.getZ(i));
+                colors.setXYZ(i, col2.r, col2.g, col2.b);
+            }
+            colors.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Okavango Delta: a river that never reaches the sea</h3>' +
+                '<p>Rain falling in the Angolan highlands feeds a single trunk that enters at the Okavango Panhandle, then fans into thousands of braided channels across the Kalahari before drying away completely - no coastline, no ocean mouth.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Delta type</td><td>inland (endorheic) delta - no permanent outflow to the ocean</td></tr>' +
+                '<tr><td>Wetland area</td><td>permanent marsh about 6,000 sq km, expanding to roughly 15,000-22,000 sq km at peak seasonal flood</td></tr>' +
+                '<tr><td>Source rivers</td><td>Cubango and Cuito Rivers, rising in the Angolan highlands and joining to form the Okavango River</td></tr>' +
+                '<tr><td>Flood pulse</td><td>rain falls in Angola roughly October-April; floodwater takes about 4 months to travel about 1,200 km downstream, so peak flood in the delta usually arrives June-August, Botswana\'s dry winter</td></tr>' +
+                '<tr><td>Where the water goes</td><td>in most years almost all of it disappears through evaporation, plant transpiration, and seepage into Kalahari sand</td></tr>' +
+                '<tr><td>World Heritage status</td><td>UNESCO World Heritage Site since 2014, celebrated as the 1,000th site on the list</td></tr>' +
+                '<tr><td>Islands</td><td>thousands of low islands across the delta; many began as termite mounds that trapped sediment and grew over centuries</td></tr>' +
+                '<tr><td>Chief\'s Island</td><td>the delta\'s largest island, commonly cited about 70 km long, largely within Moremi Game Reserve</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the channel network, plain profile, and vertical scale are schematic teaching cues, not survey hydrology.</p>';
+        }
+
+        function apply() {
+            chiefGroup.visible = chiefOn;
+            var fb = document.getElementById('t3dPodFloodBtn');
+            if (fb) fb.textContent = 'Peak flood pulse: ' + (floodOn ? 'On' : 'Off');
+            var cb = document.getElementById('t3dPodChiefBtn');
+            if (cb) cb.textContent = 'Chief\'s Island marker: ' + (chiefOn ? 'On' : 'Off');
+            recolor();
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ floodOn: floodOn, chiefOn: chiefOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.floodOn === 'boolean') floodOn = store.floodOn;
+        if (typeof store.chiefOn === 'boolean') chiefOn = store.chiefOn;
+        apply();
+
+        var floodBtn = document.getElementById('t3dPodFloodBtn');
+        if (floodBtn) floodBtn.addEventListener('click', function () { floodOn = !floodOn; apply(); });
+        var chiefBtn = document.getElementById('t3dPodChiefBtn');
+        if (chiefBtn) chiefBtn.addEventListener('click', function () { chiefOn = !chiefOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the peak flood pulse or the Chief\'s Island marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesokavangodelta: 't3dPodControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesokavangodelta: { radius: 27, maxR: 60, minR: 8, phi: 0.62, theta: 0.42, targetY: -0.05 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
