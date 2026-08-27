@@ -771,6 +771,7 @@ try {
     { title: "Pamukkale 3D Explorer", url: "https://freetoolonline.com/places-3d/pamukkale.html", include: !1, tags: "places-3d" },
     { title: "Aletsch Glacier 3D Explorer", url: "https://freetoolonline.com/places-3d/aletsch-glacier.html", include: !1, tags: "places-3d" },
     { title: "Fish River Canyon 3D Explorer", url: "https://freetoolonline.com/places-3d/fish-river-canyon.html", include: !1, tags: "places-3d" },
+    { title: "Yosemite Falls 3D Explorer", url: "https://freetoolonline.com/places-3d/yosemite-falls.html", include: !1, tags: "places-3d" },
     { title: "Maldives Atolls 3D Explorer", url: "https://freetoolonline.com/places-3d/maldives-atolls.html", include: !1, tags: "places-3d" },
     { title: "Caspian Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caspian-sea.html", include: !1, tags: "places-3d" },
     { title: "Lake Baikal 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-baikal.html", include: !1, tags: "places-3d" },

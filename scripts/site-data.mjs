@@ -14066,6 +14066,7 @@ export const ALIAS_ROUTES = {
   '/guides/id/jwt-decoder-step-by-step.html': '/guides/id/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper
   '/guides/de/jwt-decoder-step-by-step.html': '/guides/de/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper
   '/angel-falls.html': '/places-3d/angel-falls.html',
+  '/yosemite-falls.html': '/places-3d/yosemite-falls.html',
   '/guides/gravitational-slingshot-step-by-step.html': '/guides/gravitational-slingshot-when.html',
   '/guides/retrograde-motion-step-by-step.html': '/guides/retrograde-motion-when.html',
   '/guides/pt/gravitational-slingshot-step-by-step.html': '/guides/pt/gravitational-slingshot-when.html',
@@ -16755,6 +16756,7 @@ export const ALIAS_ROUTES = {
 // ─────────────────────────────────────────────────────────────────────────
 export const JSP_BY_ROUTE = {
   '/places-3d/angel-falls.html': 'place/angel-falls.jsp',
+  '/places-3d/yosemite-falls.html': 'place/yosemite-falls.jsp',
   // game-server-status companion guides (new-tool-discovery-loop fire728)
   '/guides/game-server-status-step-by-step.html': 'guide/game-server-status-step-by-step.jsp',
   '/guides/game-server-status-when.html': 'guide/game-server-status-when.jsp',
