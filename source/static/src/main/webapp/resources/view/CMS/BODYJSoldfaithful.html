@@ -1,0 +1,359 @@
+<script>
+    // 3D scene archetype skeleton (oldfaithful) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (oldfaithful).
+    // All geometry is procedural. places-3d-discovery-loop-runbook, 2026-08-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology. The basin relief, sinter
+    // cone, runoff channels, and eruption timing are exaggerated schematic
+    // teaching cues, sped up for demonstration.
+    // Published figures (NPS / USGS consensus, cross-checked 2026-08-27):
+    //   - Location: Upper Geyser Basin, Yellowstone National Park, Wyoming,
+    //     elevation about 7,349 ft (2,240 m)
+    //   - Eruption height: typically about 106 to 185 ft (32 to 56 m),
+    //     averaging around 130 ft (40 m)
+    //   - Eruption duration: about 1.5 to 5 minutes
+    //   - Interval between eruptions: about 44 to 125 minutes, averaging
+    //     around 90 minutes - intervals have lengthened somewhat over recent
+    //     decades, a change NPS/USGS link partly to earthquake-related shifts
+    //     in the underground plumbing
+    //   - Water temperature at the vent: about 204 F (95.5 C)
+    //   - Water ejected per eruption: roughly 3,700 to 8,400 US gallons
+    //     (about 14,000 to 32,000 L)
+    //   - Upper Geyser Basin holds the highest concentration of geysers in
+    //     the world - over 150 geysers within about 1 sq mile (2.6 sq km)
+    //   - Yellowstone was established in 1872 - the world's first national
+    //     park; Old Faithful was named in 1870 by the Washburn Expedition
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'oldfaithful';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesoldfaithful'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0e1420, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+        var key = new THREE.DirectionalLight(0xfff3e0, 1.0);
+        key.position.set(-10, 16, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+        // Upper Geyser Basin: a broad, mostly flat thermal flat (unlike a
+        // dome or a canyon) with a low sinter cone at the origin (the Old
+        // Faithful vent) and a handful of low steam-vent bumps scattered
+        // nearby, standing in for the world's densest geyser field. Six
+        // runoff channels radiate from the cone, colored by toggle. 1 unit
+        // ~= 8 m; x = east-west, z = north-south.
+        var CONE_R = 1.15, CONE_H = 0.42, APRON_R = 3.6;
+        var VENTS = [
+            { x: 2.6, z: -1.8, r: 0.42, h: 0.14 },
+            { x: -2.2, z: 2.1, r: 0.36, h: 0.11 },
+            { x: -3.0, z: -2.4, r: 0.3, h: 0.09 },
+            { x: 3.4, z: 2.6, r: 0.34, h: 0.1 },
+        ];
+        function height(x, z) {
+            var r = Math.sqrt(x * x + z * z);
+            var flat = 0.02 * (fbm(x * 0.6 + 4, z * 0.6 + 2, 3) - 0.5);
+            var cone = CONE_H * Math.pow(Math.max(0, 1 - r / CONE_R), 1.6);
+            var apron = 0.05 * Math.pow(Math.max(0, 1 - Math.max(0, r - CONE_R) / (APRON_R - CONE_R)), 2);
+            var h = flat + cone + (r > CONE_R ? apron : 0);
+            for (var i = 0; i < VENTS.length; i++) {
+                var v = VENTS[i];
+                var dr = Math.sqrt((x - v.x) * (x - v.x) + (z - v.z) * (z - v.z));
+                h += v.h * Math.pow(Math.max(0, 1 - dr / v.r), 1.6);
+            }
+            return h;
+        }
+        // Six runoff channels radiating from the vent - angular bands that
+        // stay low relief (they are shallow rivulets, not gullies).
+        var CHANNEL_COUNT = 6;
+        function channelMask(x, z) {
+            var ang = Math.atan2(z, x), r = Math.sqrt(x * x + z * z);
+            if (r < CONE_R * 0.5 || r > APRON_R) return 0;
+            var best = 0;
+            for (var i = 0; i < CHANNEL_COUNT; i++) {
+                var ca = (i / CHANNEL_COUNT) * Math.PI * 2 + 0.3;
+                var d = Math.abs(Math.atan2(Math.sin(ang - ca), Math.cos(ang - ca)));
+                var band = Math.pow(Math.max(0, 1 - d / 0.22), 3) * smooth(CONE_R * 0.5, APRON_R, r) * (1 - smooth(APRON_R * 0.75, APRON_R, r));
+                if (band > best) best = band;
+            }
+            return best;
+        }
+        var colGrass = new THREE.Color(0x5f7a4a), colSinter = new THREE.Color(0xe9e3d6), colSinterShadow = new THREE.Color(0xc9c0ac);
+        var colThermo = new THREE.Color(0xc98a2e), colThermoDeep = new THREE.Color(0x8a4a1e);
+        function baseColor(c, h, x, z) {
+            var r = Math.sqrt(x * x + z * z);
+            var n = 0.9 + 0.2 * fbm(x * 1.6 + 3, z * 1.6 + 9, 3);
+            if (r <= APRON_R) {
+                var shade = smooth(0, CONE_R, r);
+                c.copy(colSinter).lerp(colSinterShadow, shade * 0.4).multiplyScalar(n);
+                return;
+            }
+            for (var i = 0; i < VENTS.length; i++) {
+                var v = VENTS[i];
+                var dr = Math.sqrt((x - v.x) * (x - v.x) + (z - v.z) * (z - v.z));
+                if (dr < v.r * 1.6) { c.copy(colSinter).multiplyScalar(n * 0.96); return; }
+            }
+            c.copy(colGrass).multiplyScalar(n);
+        }
+        function colorThermoOn(c, h, x, z) {
+            baseColor(c, h, x, z);
+            var m = channelMask(x, z);
+            if (m > 0.02) {
+                var far = Math.min(1, Math.sqrt(x * x + z * z) / APRON_R);
+                c.lerp(far > 0.55 ? colThermoDeep : colThermo, Math.min(1, m * 1.1));
+            }
+        }
+        function colorThermoOff(c, h, x, z) { baseColor(c, h, x, z); }
+
+        function makeTerrain(W, D, segW, segD) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position;
+            var n = pos.count;
+            var onColors = new Float32Array(n * 3), offColors = new Float32Array(n * 3);
+            var col = new THREE.Color();
+            for (var i = 0; i < n; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = height(x, z);
+                pos.setY(i, h);
+                colorThermoOn(col, h, x, z);
+                onColors[i * 3] = col.r; onColors[i * 3 + 1] = col.g; onColors[i * 3 + 2] = col.b;
+                colorThermoOff(col, h, x, z);
+                offColors[i * 3] = col.r; offColors[i * 3 + 1] = col.g; offColors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(onColors.slice(), 3));
+            geo.computeVertexNormals();
+            var mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 }));
+            mesh.userData.onColors = onColors;
+            mesh.userData.offColors = offColors;
+            return mesh;
+        }
+        var terrain = makeTerrain(20, 20, shell.low ? 100 : 160, shell.low ? 100 : 160);
+        scene.add(terrain);
+
+        // Eruption column: a small cluster of translucent "steam puff"
+        // spheres that rise and expand from the vent during the eruption
+        // phase, then fade - sped up from the real ~90-minute average
+        // interval into a short demo cycle.
+        var ventTop = CONE_H;
+        var puffCount = shell.low ? 8 : 14;
+        var puffGroup = new THREE.Group();
+        var puffMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
+        var puffs = [];
+        for (var p = 0; p < puffCount; p++) {
+            var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.14 + 0.05 * hash2(p, 9), 8, 8), puffMat.clone());
+            puffGroup.add(mesh);
+            puffs.push({ mesh: mesh, seed: hash2(p, 3), jitter: (hash2(p, 5) - 0.5) * 0.3 });
+        }
+        scene.add(puffGroup);
+
+        var IDLE_SEC = 9, ERUPT_SEC = 4, MAX_HEIGHT = 2.1;
+        var cycleT = 0, eruptOn = true, thermoOn = true;
+
+        function panelHtml() {
+            return '<h3>Old Faithful: the timed eruption</h3>' +
+                '<p>The most famous geyser in Yellowstone\'s Upper Geyser Basin - not the tallest or most regular, but predictable enough that rangers post eruption forecasts. Toggle the eruption cycle and the thermophile-colored runoff channels.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Eruption height</td><td>typically about 106 to 185 ft (32 to 56 m), averaging around 130 ft (40 m)</td></tr>' +
+                '<tr><td>Eruption duration</td><td>about 1.5 to 5 minutes</td></tr>' +
+                '<tr><td>Interval between eruptions</td><td>about 44 to 125 minutes, averaging around 90 minutes - intervals have lengthened somewhat in recent decades</td></tr>' +
+                '<tr><td>Vent water temperature</td><td>about 204 F (95.5 C)</td></tr>' +
+                '<tr><td>Water per eruption</td><td>roughly 3,700 to 8,400 US gallons (about 14,000-32,000 L)</td></tr>' +
+                '<tr><td>Upper Geyser Basin</td><td>the highest concentration of geysers on Earth - over 150 within about 1 sq mile</td></tr>' +
+                '<tr><td>Yellowstone</td><td>established 1872 - the world\'s first national park; Old Faithful was named in 1870</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation, sped up for demonstration - the basin relief, sinter cone, and eruption timing are schematic teaching cues, not survey data or a real-time forecast.</p>';
+        }
+
+        function apply() {
+            var eb = document.getElementById('t3dOfEruptBtn');
+            if (eb) eb.textContent = 'Eruption cycle: ' + (eruptOn ? 'On' : 'Off');
+            var tb = document.getElementById('t3dOfThermoBtn');
+            if (tb) tb.textContent = 'Runoff channel colors: ' + (thermoOn ? 'On' : 'Off');
+            var arr = terrain.geometry.attributes.color;
+            arr.array.set(thermoOn ? terrain.userData.onColors : terrain.userData.offColors);
+            arr.needsUpdate = true;
+            puffGroup.visible = eruptOn;
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ eruptOn: eruptOn, thermoOn: thermoOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.eruptOn === 'boolean') eruptOn = store.eruptOn;
+        if (typeof store.thermoOn === 'boolean') thermoOn = store.thermoOn;
+        apply();
+
+        var eruptBtn = document.getElementById('t3dOfEruptBtn');
+        if (eruptBtn) eruptBtn.addEventListener('click', function () { eruptOn = !eruptOn; apply(); });
+        var thermoBtn = document.getElementById('t3dOfThermoBtn');
+        if (thermoBtn) thermoBtn.addEventListener('click', function () { thermoOn = !thermoOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the eruption cycle or the runoff channel colors.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+            if (!eruptOn) return;
+            cycleT += dt * 0.001;
+            var cycle = IDLE_SEC + ERUPT_SEC;
+            var phase = cycleT % cycle;
+            var erupting = phase >= IDLE_SEC;
+            var eruptT = erupting ? (phase - IDLE_SEC) / ERUPT_SEC : 0;
+            for (var i = 0; i < puffs.length; i++) {
+                var pu = puffs[i];
+                var m = pu.mesh;
+                if (!erupting) { m.material.opacity = 0; continue; }
+                var rise = Math.min(1, eruptT + pu.seed * 0.25);
+                var fade = eruptT > 0.7 ? (1 - (eruptT - 0.7) / 0.3) : 1;
+                m.position.set(pu.jitter * rise, ventTop + rise * MAX_HEIGHT * (0.6 + 0.4 * pu.seed), pu.jitter * 0.7 * rise);
+                m.scale.setScalar(0.6 + rise * 1.6);
+                m.material.opacity = 0.55 * fade;
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesoldfaithful: 't3dOfControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesoldfaithful: { radius: 9, maxR: 30, minR: 3, phi: 0.85, theta: 0.6, targetY: 0.2 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
