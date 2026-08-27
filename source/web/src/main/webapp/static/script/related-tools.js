@@ -776,6 +776,7 @@ try {
     { title: "Zhangye Danxia 3D Explorer", url: "https://freetoolonline.com/places-3d/zhangye-danxia.html", include: !1, tags: "places-3d" },
     { title: "Namib Desert 3D Explorer", url: "https://freetoolonline.com/places-3d/namib-desert.html", include: !1, tags: "places-3d" },
     { title: "Mount St. Helens 3D Explorer", url: "https://freetoolonline.com/places-3d/mount-st-helens.html", include: !1, tags: "places-3d" },
+    { title: "White Sands 3D Explorer", url: "https://freetoolonline.com/places-3d/white-sands.html", include: !1, tags: "places-3d" },
     { title: "Caspian Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caspian-sea.html", include: !1, tags: "places-3d" },
     { title: "Lake Baikal 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-baikal.html", include: !1, tags: "places-3d" },
     { title: "Milford Sound 3D Explorer", url: "https://freetoolonline.com/places-3d/milford-sound.html", include: !1, tags: "places-3d" },

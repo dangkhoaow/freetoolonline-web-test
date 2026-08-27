@@ -1,0 +1,325 @@
+<script>
+    // 3D scene archetype skeleton (white-sands) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (white-sands).
+    // All geometry is procedural. places-3d-discovery-loop-runbook, 2026-08-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology. The dune ridge shapes,
+    // color gradient, moonlight toggle, and soaptree yucca markers are
+    // exaggerated schematic teaching cues. Published figures (encyclopedic /
+    // national-park consensus, cross-checked 2026-08-28):
+    //   - White Sands National Park sits in the Tularosa Basin of southern
+    //     New Mexico, USA
+    //   - The gypsum dune field covers about 275 sq mi (712 sq km) - the
+    //     largest gypsum dune field on Earth; roughly 40% lies inside the
+    //     national park, the rest inside White Sands Missile Range
+    //   - The gypsum washed down from the surrounding Sacramento and San
+    //     Andres Mountains into ancient Lake Otero, which dried up; wind then
+    //     grinds the leftover gypsum crystals into fine white sand
+    //   - Dunes reach up to about 60 ft (18 m) tall and migrate up to about
+    //     30 ft (9 m) per year, driven by prevailing southwest winds
+    //   - Unlike typical quartz sand, the pale gypsum reflects sunlight and
+    //     stays notably cooler underfoot than a typical hot desert dune
+    //   - Protected as White Sands National Monument since 1933, and
+    //     redesignated White Sands National Park in December 2019
+    //   - Soaptree yucca grows on the dunes and can stretch its stem several
+    //     meters to keep pace with the rising sand as a dune migrates over it
+    //   - Ranger-led full-moon hikes are a popular park program - the pale
+    //     gypsum sand reflects moonlight strongly at night
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'white-sands';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeswhitesands'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a1220, 1);
+        var ambient = new THREE.AmbientLight(0xffffff, 0.68);
+        scene.add(ambient);
+        var key = new THREE.DirectionalLight(0xfff6e6, 1.05);
+        key.position.set(-8, 15, 6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 143.9 + z * 271.3) * 51839.1213; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.07; } return s; }
+        function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+
+        // Barchanoid dune field: parallel asymmetric crescent ridges trending
+        // roughly across the prevailing southwest wind, each ridge with a
+        // gentle windward rise and a steeper leeward slip face - distinct
+        // from Namib's simple sinusoidal ridge crests. 1 unit ~= 45 m; total
+        // footprint about 1 x 0.7 km.
+        var W = 22, D = 16;
+        function ridgeShape(x, z) {
+            var phase = x * 1.05 + z * 0.18 + 0.6 * fbm(x * 0.14 + 4, z * 0.14 + 2, 3);
+            var cyc = phase / (Math.PI * 2);
+            var frac = cyc - Math.floor(cyc);
+            if (frac < 0.72) { return Math.pow(frac / 0.72, 0.85); }
+            return Math.pow((1 - frac) / 0.28, 0.45);
+        }
+        function height(x, z) {
+            var shape = ridgeShape(x, z);
+            var amp = 0.32 + 0.5 * fbm(x * 0.3 + 9, z * 0.3 + 3, 4);
+            var dune = shape * amp;
+            var interdune = 0.05 * fbm(x * 0.4 + 1, z * 0.4 + 1, 3);
+            return Math.max(0.04, dune + interdune + 0.08);
+        }
+
+        // Color signature: uniformly pale gypsum (no iron-oxide reddening
+        // like Namib/Sahara) - crest tone slightly warmer/cream, interdune
+        // flats read cooler grey where trace moisture darkens the gypsum.
+        var CREST_CREAM = new THREE.Color(0xf3ecd9);
+        var FLAT_GREY = new THREE.Color(0xcac4b2);
+        var NIGHT_CREST = new THREE.Color(0xd7ddec);
+        var NIGHT_FLAT = new THREE.Color(0x8f97ac);
+        var tmp = new THREE.Color();
+        function colorAt(out, x, z, night) {
+            var shape = ridgeShape(x, z);
+            var base = night ? NIGHT_FLAT : FLAT_GREY;
+            var crest = night ? NIGHT_CREST : CREST_CREAM;
+            out.copy(base).lerp(crest, clamp01(shape * 1.1));
+            var shade = 0.88 + 0.22 * shape;
+            out.multiplyScalar(shade);
+            var texture = 0.94 + 0.12 * fbm(x * 1.8 + 22, z * 1.8 + 14, 3);
+            out.multiplyScalar(texture);
+            return out;
+        }
+
+        var segW = shell.low ? 110 : 160, segD = shell.low ? 80 : 118;
+        var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+        geo.rotateX(-Math.PI / 2);
+        var pos = geo.attributes.position;
+        var count = pos.count;
+        var colorsDay = new Float32Array(count * 3);
+        var colorsNight = new Float32Array(count * 3);
+        var col = new THREE.Color();
+        for (var i = 0; i < count; i++) {
+            var x = pos.getX(i), z = pos.getZ(i);
+            pos.setY(i, height(x, z));
+            colorAt(col, x, z, false);
+            colorsDay[i * 3] = col.r; colorsDay[i * 3 + 1] = col.g; colorsDay[i * 3 + 2] = col.b;
+            colorAt(col, x, z, true);
+            colorsNight[i * 3] = col.r; colorsNight[i * 3 + 1] = col.g; colorsNight[i * 3 + 2] = col.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colorsDay.slice(), 3));
+        geo.computeVertexNormals();
+        var terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+        var terrain = new THREE.Mesh(geo, terrainMat);
+        scene.add(terrain);
+
+        // Soaptree yucca marker toggle: a scatter of small blue-green spiky
+        // clumps on dune mid-slopes, echoing the plant that stretches its
+        // stem several meters to keep pace with a dune migrating over it.
+        var yuccaGroup = new THREE.Group();
+        var yuccaMat = new THREE.MeshStandardMaterial({ color: 0x6f8a6a, roughness: 0.85 });
+        for (var yI = 0; yI < 12; yI++) {
+            var yx = -W / 2 + 1.5 + hash2(yI, 11) * (W - 3);
+            var yz = -D / 2 + 1.5 + hash2(yI, 27) * (D - 3);
+            var clump = new THREE.Group();
+            var blades = 6;
+            for (var bI = 0; bI < blades; bI++) {
+                var ang = (bI / blades) * Math.PI * 2 + hash2(yI, bI) * 0.5;
+                var blade = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.32, 5), yuccaMat);
+                blade.position.set(Math.cos(ang) * 0.09, 0.16, Math.sin(ang) * 0.09);
+                blade.rotation.z = Math.cos(ang) * 0.5;
+                blade.rotation.x = -Math.sin(ang) * 0.5;
+                clump.add(blade);
+            }
+            clump.position.set(yx, height(yx, yz), yz);
+            yuccaGroup.add(clump);
+        }
+        scene.add(yuccaGroup);
+        var yuccaOn = true;
+
+        function panelHtml() {
+            return '<h3>White Sands: gypsum dunes under desert sky</h3>' +
+                '<p>The world\'s largest gypsum dune field, in New Mexico\'s Tularosa Basin - pale barchanoid ridges that migrate downwind and stay cool underfoot even in strong sun. Toggle moonlit night lighting and the soaptree yucca markers.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Location</td><td>Tularosa Basin, southern New Mexico, USA (White Sands National Park)</td></tr>' +
+                '<tr><td>Dune field area</td><td>about 275 sq mi (712 sq km) - the largest gypsum dune field on Earth; about 40% lies inside the national park</td></tr>' +
+                '<tr><td>Formation</td><td>gypsum washed from surrounding mountains into ancient Lake Otero, which dried up; wind grinds the leftover crystals into sand</td></tr>' +
+                '<tr><td>Dune height</td><td>up to about 60 ft (18 m) tall</td></tr>' +
+                '<tr><td>Migration rate</td><td>up to about 30 ft (9 m) per year, driven by prevailing southwest winds</td></tr>' +
+                '<tr><td>Surface feel</td><td>pale gypsum reflects sunlight and stays notably cooler underfoot than typical quartz sand</td></tr>' +
+                '<tr><td>Park status</td><td>National Monument since 1933, redesignated White Sands National Park in December 2019</td></tr>' +
+                '<tr><td>Soaptree yucca</td><td>stretches its stem several meters to keep pace with a dune migrating over it</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the dune shapes, color gradient, moonlight toggle, and yucca markers are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            var colorAttr = geo.attributes.color;
+            colorAttr.array.set(moonOn ? colorsNight : colorsDay);
+            colorAttr.needsUpdate = true;
+            key.color.set(moonOn ? 0x9fb2e0 : 0xfff6e6);
+            key.intensity = moonOn ? 0.55 : 1.05;
+            ambient.intensity = moonOn ? 0.38 : 0.68;
+            yuccaGroup.visible = yuccaOn;
+            var mb = document.getElementById('t3dWsMoonBtn');
+            if (mb) mb.textContent = 'Moonlit night: ' + (moonOn ? 'On' : 'Off');
+            var yb = document.getElementById('t3dWsYuccaBtn');
+            if (yb) yb.textContent = 'Soaptree yucca markers: ' + (yuccaOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ moonOn: moonOn, yuccaOn: yuccaOn }); } catch (e) {}
+        }
+
+        var moonOn = false;
+        var store = t3dLoadStore();
+        if (typeof store.moonOn === 'boolean') moonOn = store.moonOn;
+        if (typeof store.yuccaOn === 'boolean') yuccaOn = store.yuccaOn;
+        apply();
+
+        var moonBtn = document.getElementById('t3dWsMoonBtn');
+        if (moonBtn) moonBtn.addEventListener('click', function () { moonOn = !moonOn; apply(); });
+        var yuccaBtn = document.getElementById('t3dWsYuccaBtn');
+        if (yuccaBtn) yuccaBtn.addEventListener('click', function () { yuccaOn = !yuccaOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle moonlit night lighting or the soaptree yucca markers.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00003;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeswhitesands: 't3dWsControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeswhitesands: { radius: 22, maxR: 65, minR: 5, phi: 1.08, theta: 0.95, targetY: 0.9 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
