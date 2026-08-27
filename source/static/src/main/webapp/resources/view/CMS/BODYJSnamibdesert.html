@@ -1,0 +1,370 @@
+<script>
+    // 3D scene archetype skeleton (namib-desert) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (namib-desert).
+    // All geometry is procedural. places-3d-discovery-loop-runbook, 2026-08-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology. The dune ridge shapes,
+    // color gradient, fog-bank toggle, and welwitschia markers are exaggerated
+    // schematic teaching cues. Published figures (encyclopedic / national-park
+    // consensus, cross-checked 2026-08-28):
+    //   - Namib Desert: a coastal desert stretching roughly 2,000 km (1,200 mi)
+    //     along Namibia's Atlantic coast (into southern Angola and northwestern
+    //     South Africa), 50-160 km wide
+    //   - Widely described as the oldest desert in the world, with arid to
+    //     semi-arid conditions persisting for at least 55-80 million years
+    //   - Namib-Naukluft National Park (roughly 49,768 sq km) protects the
+    //     central dune sea; Dune 7 near Walvis Bay is one of the tallest
+    //     dunes on Earth at about 383 m, and "Big Daddy" near Sossusvlei
+    //     reaches about 325 m
+    //   - Dune sand is coated in iron oxide - younger dunes read pale apricot,
+    //     older dunes read deep burnt-orange to red as the coating oxidizes
+    //     further over time
+    //   - The cold Benguela current offshore drives a persistent Atlantic fog
+    //     belt that rolls inland most mornings, the desert's main source of
+    //     moisture
+    //   - The fog-fed northern strip is the Skeleton Coast, named for
+    //     shipwrecks and whale/seal bones exposed on its beaches
+    //   - Welwitschia mirabilis, a fog-dependent gravel-plain plant unique to
+    //     this desert, can live over 1,000 years (some individuals estimated
+    //     near 2,000 years)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'namib-desert';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesnamibdesert'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a1220, 1);
+        var ambient = new THREE.AmbientLight(0xffffff, 0.65);
+        scene.add(ambient);
+        var key = new THREE.DirectionalLight(0xffffff, 1.0);
+        key.position.set(-9, 14, 7);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 143.9 + z * 271.3) * 51839.1213; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.07; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+
+        // Coastal dune field: a near-flat gravel plain along the coast (low z)
+        // where the fog rolls in, rising into linear dune ridges running
+        // roughly parallel to the coastline, with two taller star-dune peaks
+        // further inland (high z) echoing giants like Dune 7 / Big Daddy.
+        // 1 unit ~= 45 m; total footprint about 1.1 x 0.8 km.
+        var W = 24, D = 18;
+        var COAST_Z = -9;
+        function height(x, z) {
+            var inland = smooth(COAST_Z, COAST_Z + 6.5, z); // 0 at the coast, 1 deep inland
+            // Several parallel linear dune ridges running with a slight
+            // diagonal drift (the real Namib dune rows trend roughly
+            // NW-SE), frequency tuned so about 5-6 distinct crests cross
+            // the visible footprint rather than one broad wave.
+            var ridgePhase = x * 1.35 + z * 0.22 + 0.7 * fbm(x * 0.16 + 2, z * 0.16 + 5, 3);
+            var ridgeCrest = Math.pow(0.5 + 0.5 * Math.sin(ridgePhase), 1.3);
+            var duneAmp = 0.3 + 2.0 * inland;
+            var ridges = ridgeCrest * duneAmp * (0.6 + 0.4 * fbm(x * 0.3 + 9, z * 0.3 + 3, 4));
+            // Two taller star-dune peaks deep inland (echoing giants like
+            // Dune 7 / Big Daddy) - sigma kept tight so they read as
+            // distinct dune giants rather than smoothing the ridge field.
+            var star = inland * (
+                1.1 * Math.exp(-((x - 4.2) * (x - 4.2) + (z - 6.0) * (z - 6.0)) / 4.2) +
+                0.85 * Math.exp(-((x + 5.4) * (x + 5.4) + (z - 4.6) * (z - 4.6)) / 3.2)
+            );
+            var gravel = 0.05 * (1 - inland) * fbm(x * 0.35 + 1, z * 0.35 + 1, 3);
+            return Math.max(0.06, ridges + star + gravel + 0.08);
+        }
+
+        // Sand-age color signature: pale apricot near the fog-fed coast where
+        // dunes are younger, deepening to burnt orange-red inland as the iron
+        // oxide coating on the sand grains oxidizes further with age. The
+        // gravel plain near the coast reads a duller grey-tan.
+        var GRAVEL_TAN = new THREE.Color(0x8a7455);
+        var YOUNG_APRICOT = new THREE.Color(0xe8ac6c);
+        var OLD_RED = new THREE.Color(0x8c3620);
+        var tmpColor = new THREE.Color();
+        function colorAt(out, x, z, h, fogged) {
+            var inland = smooth(COAST_Z, COAST_Z + 6.5, z);
+            var gravelMix = smooth(0.05, 0.45, inland);
+            out.copy(GRAVEL_TAN).lerp(YOUNG_APRICOT, gravelMix);
+            var ageMix = smooth(0.3, 1.0, inland) * (0.7 + 0.3 * fbm(x * 0.4 + 30, z * 0.4 + 12, 3));
+            out.lerp(OLD_RED, clamp01(ageMix));
+            // Crest/trough banding: the ridge shape itself darkens troughs
+            // and lightens crests slightly on top of the shading normals
+            // already provide, so the parallel dune rows read clearly even
+            // in flat top-down light.
+            var ridgePhase = x * 1.35 + z * 0.22 + 0.7 * fbm(x * 0.16 + 2, z * 0.16 + 5, 3);
+            var crestShade = 0.5 + 0.5 * Math.sin(ridgePhase);
+            out.multiplyScalar(0.86 + 0.28 * crestShade);
+            var texture = 0.92 + 0.16 * fbm(x * 1.7 + 22, z * 1.7 + 14, 3);
+            out.multiplyScalar(texture);
+            if (fogged) {
+                // Fog-bank look: coastal band desaturated and lightened toward
+                // a cool grey-white, as if seen through a rolling marine fog.
+                var fogAmt = (1 - smooth(COAST_Z, COAST_Z + 4.5, z)) * 0.7;
+                out.lerp(tmpColor.setRGB(0.74, 0.77, 0.80), fogAmt);
+            }
+            return out;
+        }
+
+        var segW = shell.low ? 110 : 160, segD = shell.low ? 84 : 124;
+        var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+        geo.rotateX(-Math.PI / 2);
+        var pos = geo.attributes.position;
+        var count = pos.count;
+        var colorsClear = new Float32Array(count * 3);
+        var colorsFog = new Float32Array(count * 3);
+        var col = new THREE.Color();
+        for (var i = 0; i < count; i++) {
+            var x = pos.getX(i), z = pos.getZ(i);
+            var h = height(x, z);
+            pos.setY(i, h);
+            colorAt(col, x, z, h, false);
+            colorsClear[i * 3] = col.r; colorsClear[i * 3 + 1] = col.g; colorsClear[i * 3 + 2] = col.b;
+            colorAt(col, x, z, h, true);
+            colorsFog[i * 3] = col.r; colorsFog[i * 3 + 1] = col.g; colorsFog[i * 3 + 2] = col.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colorsClear.slice(), 3));
+        geo.computeVertexNormals();
+        var terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
+        var terrain = new THREE.Mesh(geo, terrainMat);
+        scene.add(terrain);
+
+        // Atlantic fog-bank toggle: a low bank of translucent puff meshes
+        // hugging the coastal edge of the terrain, echoing the persistent
+        // Benguela-current fog that rolls in off the ocean most mornings.
+        var fogGroup = new THREE.Group();
+        var fogMat = new THREE.MeshStandardMaterial({ color: 0xecf1f3, transparent: true, opacity: 0.22, roughness: 1, metalness: 0, depthWrite: false });
+        // Three overlapping wide, very flat sheets per row so the bank
+        // reads as a continuous rolling haze along the coast rather than
+        // discrete round puffs - low, wide, thin, staggered in height.
+        var FOG_ROWS = [COAST_Z - 3.4, COAST_Z - 2.2, COAST_Z - 1.0, COAST_Z + 0.2];
+        for (var rI = 0; rI < FOG_ROWS.length; rI++) {
+            var fz0 = FOG_ROWS[rI];
+            for (var f = 0; f < 9; f++) {
+                var fx = -W / 2 + f * (W / 8) + (hash2(f, rI * 7 + 3) - 0.5) * 1.4;
+                var fz = fz0 + (hash2(f, rI * 7 + 9) - 0.5) * 0.6;
+                var fh = height(fx, fz) + 0.35 + rI * 0.28 + hash2(f, rI * 7 + 15) * 0.2;
+                var sheet = new THREE.Mesh(new THREE.SphereGeometry(1.9 + hash2(f, rI * 7 + 21) * 0.6, 10, 6), fogMat);
+                sheet.position.set(fx, fh, fz);
+                sheet.scale.set(1.55, 0.16, 0.85);
+                fogGroup.add(sheet);
+            }
+        }
+        scene.add(fogGroup);
+        var fogOn = true;
+
+        // Welwitschia marker toggle: a scatter of small dark-green rounded
+        // clusters on the fog-fed gravel plain, the only place this ancient
+        // fog-drinking plant survives - some individuals are estimated to be
+        // over a thousand years old.
+        var welwGroup = new THREE.Group();
+        var welwMat = new THREE.MeshStandardMaterial({ color: 0x4c5a3e, roughness: 0.9 });
+        var welwSpots = [];
+        for (var wI = 0; wI < 11; wI++) {
+            var wx = -8 + hash2(wI, 40) * 16;
+            var wz = COAST_Z + 0.5 + hash2(wI, 55) * 4.0;
+            welwSpots.push([wx, wz]);
+            var clump = new THREE.Group();
+            var petals = 5;
+            for (var pI = 0; pI < petals; pI++) {
+                var ang = (pI / petals) * Math.PI * 2 + hash2(wI, pI) * 0.6;
+                var leaf = new THREE.Mesh(new THREE.SphereGeometry(0.11, 6, 5), welwMat);
+                leaf.position.set(Math.cos(ang) * 0.12, 0.05, Math.sin(ang) * 0.12);
+                leaf.scale.set(1.6, 0.4, 1.0);
+                clump.add(leaf);
+            }
+            clump.position.set(wx, height(wx, wz) + 0.03, wz);
+            welwGroup.add(clump);
+        }
+        scene.add(welwGroup);
+        var welwitschiaOn = true;
+
+        function panelHtml() {
+            return '<h3>Namib Desert: dunes meeting the fog</h3>' +
+                '<p>A coastal dune sea along Namibia\'s Atlantic edge, where towering apricot-to-red star and linear dunes meet a gravel plain fed by rolling Atlantic fog. Toggle the fog bank and the fog-fed welwitschia plant markers.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Location</td><td>coastal Namibia, stretching roughly 2,000 km along the Atlantic coast, 50-160 km wide</td></tr>' +
+                '<tr><td>Age</td><td>widely described as the world\'s oldest desert - arid conditions for at least 55-80 million years</td></tr>' +
+                '<tr><td>Tallest dunes</td><td>Dune 7 near Walvis Bay, about 383 m; "Big Daddy" near Sossusvlei, about 325 m</td></tr>' +
+                '<tr><td>Dune color</td><td>iron-oxide-coated sand - younger dunes read pale apricot, older dunes read deep burnt orange-red</td></tr>' +
+                '<tr><td>Moisture source</td><td>a persistent Atlantic fog belt driven by the cold Benguela current, rolling inland most mornings</td></tr>' +
+                '<tr><td>Skeleton Coast</td><td>the fog-fed northern strip, named for shipwrecks and whale/seal bones on its beaches</td></tr>' +
+                '<tr><td>Welwitschia</td><td>a fog-dependent plant unique to this desert - some individuals are estimated to live over 1,000 years</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the dune shapes, color gradient, fog bank, and plant markers are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            var colorAttr = geo.attributes.color;
+            colorAttr.array.set(fogOn ? colorsFog : colorsClear);
+            colorAttr.needsUpdate = true;
+            fogGroup.visible = fogOn;
+            welwGroup.visible = welwitschiaOn;
+            var fb = document.getElementById('t3dNmbFogBtn');
+            if (fb) fb.textContent = 'Atlantic fog bank: ' + (fogOn ? 'On' : 'Off');
+            var wb = document.getElementById('t3dNmbWelwBtn');
+            if (wb) wb.textContent = 'Welwitschia markers: ' + (welwitschiaOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ fogOn: fogOn, welwitschiaOn: welwitschiaOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.fogOn === 'boolean') fogOn = store.fogOn;
+        if (typeof store.welwitschiaOn === 'boolean') welwitschiaOn = store.welwitschiaOn;
+        apply();
+
+        var fogBtn = document.getElementById('t3dNmbFogBtn');
+        if (fogBtn) fogBtn.addEventListener('click', function () { fogOn = !fogOn; apply(); });
+        var welwBtn = document.getElementById('t3dNmbWelwBtn');
+        if (welwBtn) welwBtn.addEventListener('click', function () { welwitschiaOn = !welwitschiaOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the Atlantic fog bank or the welwitschia plant markers.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00003;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesnamibdesert: 't3dNmbControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesnamibdesert: { radius: 22, maxR: 65, minR: 5, phi: 1.08, theta: 0.95, targetY: 0.9 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
