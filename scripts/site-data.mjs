@@ -15,6 +15,8 @@ export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
   '/guides/file-viewer-vs-alternatives.html',
+  // file-viewer-vs-alternatives pt locale (create_new_guide_page 20260827-3)
+  '/guides/pt/file-viewer-vs-alternatives.html',
   '/guides/file-viewer-step-by-step.html',
   // file-viewer-step-by-step pt locale (create_new_guide_page 20260826-6)
   '/guides/pt/file-viewer-step-by-step.html',
@@ -7249,6 +7251,8 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // file-viewer-vs-alternatives pt locale (create_new_guide_page 20260827-3)
+  '/guides/pt/file-viewer-vs-alternatives.html',
   // file-viewer-step-by-step vi locale (create_new_guide_page 20260826-8)
   '/guides/vi/file-viewer-step-by-step.html',
   // file-viewer-step-by-step id locale (create_new_guide_page 20260827)
@@ -28941,6 +28945,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/file-viewer-step-by-step.html': 'guide/id/file-viewer-step-by-step.jsp',
   '/guides/de/file-viewer-step-by-step.html': 'guide/de/file-viewer-step-by-step.jsp',
   '/guides/file-viewer-vs-alternatives.html': 'guide/file-viewer-vs-alternatives.jsp',
+  '/guides/pt/file-viewer-vs-alternatives.html': 'guide/pt/file-viewer-vs-alternatives.jsp',
   '/image-tools/alt-text-generator.html': 'convert/alt-text-generator.jsp',
   '/image-tools/image-colorizer.html': 'convert/image-colorizer.jsp',
 };
