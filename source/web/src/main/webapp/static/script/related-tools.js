@@ -764,6 +764,7 @@ try {
     { title: "Postojna Cave 3D Explorer", url: "https://freetoolonline.com/places-3d/postojna-cave.html", include: !1, tags: "places-3d" },
     { title: "Denali 3D Explorer", url: "https://freetoolonline.com/places-3d/denali.html", include: !1, tags: "places-3d" },
     { title: "Table Mountain 3D Explorer", url: "https://freetoolonline.com/places-3d/table-mountain.html", include: !1, tags: "places-3d" },
+    { title: "Galapagos Islands 3D Explorer", url: "https://freetoolonline.com/places-3d/galapagos-islands.html", include: !1, tags: "places-3d" },
     { title: "Caspian Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caspian-sea.html", include: !1, tags: "places-3d" },
     { title: "Lake Baikal 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-baikal.html", include: !1, tags: "places-3d" },
     { title: "Milford Sound 3D Explorer", url: "https://freetoolonline.com/places-3d/milford-sound.html", include: !1, tags: "places-3d" },

@@ -1,0 +1,382 @@
+<script>
+    // 3D scene archetype skeleton (galapagos-islands) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (galapagos-islands).
+    // All geometry is procedural. places-3d cluster member, 2026-08-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geography - island positions,
+    // sizes, and shapes are schematic teaching cues.
+    // Published figures (commonly cited government/UNESCO/encyclopedic
+    // consensus, cross-checked 2026-08-27):
+    //   - Galapagos Islands: a volcanic archipelago in the Pacific Ocean,
+    //     about 1,000 km (620 mi) west of mainland Ecuador, straddling the
+    //     equator
+    //   - 13 major islands, 6 smaller islands, and more than 100 islets and
+    //     rocks (Galapagos National Park figures)
+    //   - Total land area about 8,010 sq km (3,093 sq mi)
+    //   - Isabela is the largest island (about 4,588 sq km), shaped like a
+    //     seahorse by six shield volcanoes joined by lava fields: Wolf,
+    //     Ecuador, Darwin, Alcedo, Sierra Negra, and Cerro Azul
+    //   - Highest point: Volcan Wolf on Isabela, about 1,707 m (5,600 ft)
+    //   - Galapagos Marine Reserve covers about 133,000 sq km, among the
+    //     largest marine reserves on Earth
+    //   - UNESCO World Heritage Site since 1978 - the very first site ever
+    //     inscribed on the list
+    //   - Formed above the Galapagos hotspot near the boundary of the Nazca
+    //     and Cocos tectonic plates
+    //   - Charles Darwin visited in 1835 aboard HMS Beagle; his observations
+    //     there later informed On the Origin of Species (1859)
+    //   - Each island's isolated wildlife (including several distinct giant
+    //     tortoise populations) is a textbook example of island-by-island
+    //     evolutionary divergence
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'galapagos-islands';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesgalapagosislands'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a2f5c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        var key = new THREE.DirectionalLight(0xffffff, 1.0);
+        key.position.set(-9, 18, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 91.7 + z * 173.3) * 39217.6317; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.05; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0, side: THREE.DoubleSide }));
+        }
+
+        // Signature figure: a scattered volcanic archipelago straddling the
+        // equator - Isabela (west, an elongated seahorse-shaped island built
+        // from six joined shield volcanoes: Wolf, Ecuador, Darwin, Alcedo,
+        // Sierra Negra, Cerro Azul), single-volcano Fernandina just west of
+        // it, and the smaller central/eastern islands (Santiago, Santa Cruz,
+        // San Cristobal) and outliers (Espanola south, Genovesa north). Each
+        // island rises from a shallow shelf into deep open ocean - the
+        // archetype that distinguishes an archipelago from a single-peak or
+        // single-basin place already shipped elsewhere in this cluster.
+        var ISABELA = [
+            { x: -6.8, z: -5.6, rx: 1.15, rz: 1.35, h: 1.10, exp: 1.25, name: 'Wolf' },
+            { x: -7.2, z: -3.6, rx: 1.00, rz: 1.15, h: 0.85, exp: 1.30, name: 'Ecuador' },
+            { x: -6.5, z: -1.6, rx: 1.05, rz: 1.20, h: 0.95, exp: 1.28, name: 'Darwin' },
+            { x: -6.0, z: 0.4,  rx: 1.10, rz: 1.25, h: 0.90, exp: 1.30, name: 'Alcedo' },
+            { x: -5.6, z: 2.4,  rx: 1.30, rz: 1.40, h: 1.00, exp: 1.25, name: 'Sierra Negra' },
+            { x: -5.4, z: 4.4,  rx: 1.20, rz: 1.30, h: 1.05, exp: 1.25, name: 'Cerro Azul' }
+        ];
+        var OTHER_ISLANDS = [
+            { x: -11.0, z: -1.0, rx: 2.6, rz: 2.2, h: 1.05, exp: 1.30 }, // Fernandina
+            { x: -3.5,  z: -3.0, rx: 2.0, rz: 1.8, h: 0.55, exp: 1.40 }, // Santiago
+            { x: 0.0,   z: -0.2, rx: 2.3, rz: 1.9, h: 0.50, exp: 1.40 }, // Santa Cruz
+            { x: 0.6,   z: -1.6, rx: 0.6, rz: 0.5, h: 0.20, exp: 1.50 }, // Baltra (islet)
+            { x: -1.6,  z: 0.9,  rx: 0.5, rz: 0.5, h: 0.22, exp: 1.50 }, // Pinzon (islet)
+            { x: 6.0,   z: 1.2,  rx: 1.9, rz: 1.6, h: 0.50, exp: 1.35 }, // San Cristobal
+            { x: 3.4,   z: 6.0,  rx: 1.3, rz: 1.0, h: 0.32, exp: 1.40 }, // Espanola
+            { x: 3.6,   z: -6.6, rx: 1.0, rz: 0.9, h: 0.30, exp: 1.40 }  // Genovesa
+        ];
+        var ALL_ISLANDS = ISABELA.concat(OTHER_ISLANDS);
+
+        function distToSegment(px, pz, ax, az, bx, bz) {
+            var vx = bx - ax, vz = bz - az, wx = px - ax, wz = pz - az;
+            var len2 = vx * vx + vz * vz;
+            var t = len2 > 1e-6 ? Math.max(0, Math.min(1, (wx * vx + wz * vz) / len2)) : 0;
+            var cx = ax + t * vx, cz = az + t * vz;
+            var dx = px - cx, dz = pz - cz;
+            return Math.sqrt(dx * dx + dz * dz);
+        }
+        function isabelaSpine(x, z) {
+            // Lava-field land bridges joining the six Isabela shield volcanoes
+            // into one continuous seahorse-shaped island.
+            var best = 0;
+            for (var i = 0; i < ISABELA.length - 1; i++) {
+                var a = ISABELA[i], b = ISABELA[i + 1];
+                var d = distToSegment(x, z, a.x, a.z, b.x, b.z);
+                var t = Math.max(0, 1 - d / 0.85);
+                best = Math.max(best, 0.30 * Math.pow(t, 1.6));
+            }
+            return best > 0.004 ? best : null;
+        }
+        function isabelaMask(x, z) {
+            // 0..1, peaks at each of the six named summits - used only to
+            // recolor Isabela's volcanoes for the highlight toggle.
+            var best = 0;
+            for (var i = 0; i < ISABELA.length; i++) {
+                var p = ISABELA[i];
+                var dx = (x - p.x) / p.rx, dz = (z - p.z) / p.rz;
+                var d = Math.sqrt(dx * dx + dz * dz);
+                best = Math.max(best, Math.max(0, 1 - d));
+            }
+            return Math.min(1, best);
+        }
+        function islandProfile(isl, x, z) {
+            var dx = (x - isl.x) / isl.rx, dz = (z - isl.z) / isl.rz;
+            var d = Math.sqrt(dx * dx + dz * dz);
+            if (d > 1.6) return null;
+            if (d <= 1) return isl.h * Math.pow(Math.max(0, 1 - d), isl.exp || 1.3);
+            return -0.85 * smooth(1, 1.6, d);
+        }
+        function oceanDeep(x, z) {
+            return -2.0 + 0.15 * (fbm(x * 0.35 + 70, z * 0.35 + 70, 3) - 0.5);
+        }
+        function height(x, z) {
+            var best = null;
+            for (var i = 0; i < ALL_ISLANDS.length; i++) {
+                var v = islandProfile(ALL_ISLANDS[i], x, z);
+                if (v !== null && (best === null || v > best)) best = v;
+            }
+            var spine = isabelaSpine(x, z);
+            if (spine !== null && (best === null || spine > best)) best = spine;
+            if (best === null) return oceanDeep(x, z);
+            var noiseMask = Math.min(1, Math.abs(best) * 3 + 0.15);
+            return best + 0.05 * (fbm(x * 1.4 + 12, z * 1.4 + 12, 3) - 0.5) * noiseMask;
+        }
+
+        var highlightOn = false;
+        function terrainColor(c, h, x, z, highlight) {
+            if (h > 0.02) {
+                var land = new THREE.Color(0x5c8a4a), summit = new THREE.Color(0x9a7a52);
+                c.copy(land).lerp(summit, smooth(0.05, 1.05, h));
+                if (highlight) {
+                    var m = isabelaMask(x, z);
+                    if (m > 0.05) { c.lerp(new THREE.Color(0xe8722c), Math.min(0.75, m * 0.85)); }
+                }
+                return;
+            }
+            if (h > -0.85) {
+                var shelfShallow = new THREE.Color(0x4de3d6), shelfDeep = new THREE.Color(0x1a6fa8);
+                c.copy(shelfShallow).lerp(shelfDeep, smooth(-0.02, -0.85, h));
+                return;
+            }
+            var deep = new THREE.Color(0x0a2f5c), abyss = new THREE.Color(0x061a38);
+            c.copy(deep).lerp(abyss, smooth(-0.9, -2.6, h));
+        }
+
+        var normColors = null, highlightColors = null, terrain;
+        function buildColors(highlight) {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                terrainColor(col, pos.getY(i), pos.getX(i), pos.getZ(i), highlight);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        }
+
+        terrain = makeTerrain(32, 26, shell.low ? 90 : 170, shell.low ? 74 : 140, height, function (c, h, x, z) { terrainColor(c, h, x, z, false); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        highlightColors = buildColors(true);
+
+        // Equator marker: a dashed line of thin boxes across z=0, the full
+        // width of the scene - the archipelago straddles this line, with
+        // Volcan Ecuador on Isabela named for it.
+        var equatorGroup = new THREE.Group();
+        var eqMat = new THREE.MeshStandardMaterial({ color: 0xffcf40, emissive: 0x664400, emissiveIntensity: 0.5, roughness: 0.5 });
+        for (var ex = -15.4; ex <= 15.4; ex += 1.15) {
+            var dash = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.05, 0.14), eqMat);
+            dash.position.set(ex, 0.12, 0);
+            equatorGroup.add(dash);
+        }
+        scene.add(equatorGroup);
+        var equatorOn = true;
+
+        function panelHtml() {
+            return '<h3>Galapagos Islands: an equator-straddling volcanic archipelago</h3>' +
+                '<p>A scattered archipelago rising from the ocean floor - Isabela\'s seahorse shape (six joined shield volcanoes) on the west, single-cone Fernandina beside it, and the smaller central and outlying islands.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Islands</td><td>13 major, 6 smaller, 100+ islets and rocks</td></tr>' +
+                '<tr><td>Location</td><td>about 1,000 km (620 mi) west of Ecuador, straddling the equator</td></tr>' +
+                '<tr><td>Total land area</td><td>about 8,010 sq km (3,093 sq mi)</td></tr>' +
+                '<tr><td>Largest island</td><td>Isabela, about 4,588 sq km - six joined shield volcanoes</td></tr>' +
+                '<tr><td>Highest point</td><td>Volcan Wolf (Isabela), about 1,707 m (5,600 ft)</td></tr>' +
+                '<tr><td>Marine reserve</td><td>about 133,000 sq km - among the largest on Earth</td></tr>' +
+                '<tr><td>UNESCO listing</td><td>1978 - the first site ever inscribed on the World Heritage List</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - island positions, sizes, and shapes are procedural teaching cues, not survey geography.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(highlightOn ? highlightColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            equatorGroup.visible = equatorOn;
+            var eb = document.getElementById('t3dPgiEquatorBtn');
+            if (eb) eb.textContent = 'Equator line: ' + (equatorOn ? 'On' : 'Off');
+            var ib = document.getElementById('t3dPgiIsabelaBtn');
+            if (ib) ib.textContent = 'Isabela\'s six volcanoes: ' + (highlightOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ equatorOn: equatorOn, highlightOn: highlightOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.equatorOn === 'boolean') equatorOn = store.equatorOn;
+        if (typeof store.highlightOn === 'boolean') highlightOn = store.highlightOn;
+        apply();
+
+        var equatorBtn = document.getElementById('t3dPgiEquatorBtn');
+        if (equatorBtn) equatorBtn.addEventListener('click', function () { equatorOn = !equatorOn; apply(); });
+        var isabelaBtn = document.getElementById('t3dPgiIsabelaBtn');
+        if (isabelaBtn) isabelaBtn.addEventListener('click', function () { highlightOn = !highlightOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the equator line or highlight Isabela\'s six volcanoes.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00003;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesgalapagosislands: 't3dPgiControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesgalapagosislands: { radius: 32, maxR: 68, minR: 6, phi: 1.05, theta: 0.5, targetY: -0.3 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
