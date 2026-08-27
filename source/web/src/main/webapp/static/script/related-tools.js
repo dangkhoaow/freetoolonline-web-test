@@ -757,6 +757,7 @@ try {
     { title: "Victoria Falls 3D Explorer", url: "https://freetoolonline.com/places-3d/victoria-falls.html", include: !1, tags: "places-3d" },
     { title: "Great Rift Valley 3D Explorer", url: "https://freetoolonline.com/places-3d/great-rift-valley.html", include: !1, tags: "places-3d" },
     { title: "Bora Bora Lagoon 3D Explorer", url: "https://freetoolonline.com/places-3d/bora-bora-lagoon.html", include: !1, tags: "places-3d" },
+    { title: "Vatnajokull 3D Explorer", url: "https://freetoolonline.com/places-3d/vatnajokull.html", include: !1, tags: "places-3d" },
     { title: "Caspian Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caspian-sea.html", include: !1, tags: "places-3d" },
     { title: "Lake Baikal 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-baikal.html", include: !1, tags: "places-3d" },
     { title: "Milford Sound 3D Explorer", url: "https://freetoolonline.com/places-3d/milford-sound.html", include: !1, tags: "places-3d" },
