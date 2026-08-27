@@ -1,0 +1,326 @@
+<script>
+    // In-browser PHOTO COLORIZER (image-colorizer) - DDColor-tiny via ONNX Runtime Web.
+    // 100% client-side: the PHOTO never leaves the browser; only the ~130 MB
+    // colorization model downloads once, on an explicit click, sha256-verified
+    // and cached (Cache API) so repeat visits skip the network.
+    // Registry Gate-H entry: image_colorizer_ddcolor_onnx (verified 2026-08-27
+    // in a real headless-Chromium probe - I/O signature, mean predicted chroma
+    // 31.65 on a grayscale-converted PD-NASA portrait, and a visual colorized
+    // composite all confirmed before this skeleton was authored).
+    //
+    // ENGINE (raw onnxruntime-web, NOT transformers.js - DDColor is not a
+    // transformers.js pipeline task): model edgetools/ddcolor
+    // `ddcolor-tiny-fp16.onnx` (Apache-2.0, 135,444,402 bytes, revision-pinned
+    // resolve URL + sha256 pinned below and VERIFIED after every fetch). I/O:
+    // input `input` float32 [1,3,512,512] = the GRAYSCALE photo (L-channel
+    // round-trip) resized to 512x512, RGB 0..1 planar; output `output` float32
+    // [1,2,512,512] = predicted Lab ab channels. Composite: keep the photo's
+    // ORIGINAL full-resolution L channel, bilinear-upscale the predicted ab to
+    // native size, Lab->sRGB per pixel - so detail/sharpness is preserved at
+    // full resolution and only color is added.
+    //
+    // LADDER (ai-local class rule 1): (1) no Chrome Built-in tier - no browser
+    // colorization API exists; (2) on-device DDColor (this); (3) a deterministic
+    // no-download WARM-TONE fallback - a fixed sepia mapping of the grayscale
+    // photo, honestly labeled a simple tint, not predicted color. The G16
+    // zero-interaction/zero-download demo (a REAL before/after pair produced by
+    // this same model in the Gate-H probe) is baked into the paired BODYHTML
+    // and renders on load without touching this script.
+    //
+    // Framework contract: doAfterPageRendered(); no top-level DOM. web.localUpload
+    // = false (plain <input type=file>, no server upload widget).
+
+    web.localUpload = false;
+
+    var IC_SLUG = 'image-colorizer';
+    var IC_ORT_CDN = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js';
+    var IC_ORT_WASM_DIR = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
+    var IC_MODEL_URL = 'https://huggingface.co/edgetools/ddcolor/resolve/4755ae9f1f7a35a9e7693b96c2a88f3432cb6ab0/ddcolor-tiny-fp16.onnx';
+    var IC_MODEL_SHA256 = '2653da00dc15e54a45e5200b61dbf82ee9ceaf56b02bb9b9657569ac775e82e6';
+    var IC_MODEL_MB = 130;              // honest size label, stated BEFORE download
+    var IC_CACHE_NAME = 'ftol-ai-models';
+    var IC_IN = 512;                    // fixed model input size (probe-verified)
+    var IC_MAX_SIDE = 4000;             // photos larger than this are downscaled first
+
+    var icOrtPromise = null;
+    function icLoadOrt() {
+        if (window.ort) return Promise.resolve(window.ort);
+        if (icOrtPromise) return icOrtPromise;
+        icOrtPromise = new Promise(function (res, rej) {
+            var s = document.createElement('script');
+            s.src = IC_ORT_CDN;
+            s.onload = function () {
+                try {
+                    window.ort.env.wasm.numThreads = 1;   // avoid COOP/COEP requirement
+                    window.ort.env.wasm.simd = true;
+                    window.ort.env.wasm.proxy = false;
+                    window.ort.env.wasm.wasmPaths = IC_ORT_WASM_DIR;
+                    res(window.ort);
+                } catch (e) { rej(e); }
+            };
+            s.onerror = function () { rej(new Error('Could not load the ONNX runtime from the CDN.')); };
+            document.head.appendChild(s);
+        });
+        return icOrtPromise;
+    }
+
+    async function icSha256Hex(bytes) {
+        var digest = await crypto.subtle.digest('SHA-256', bytes);
+        var arr = new Uint8Array(digest);
+        var hex = '';
+        for (var i = 0; i < arr.length; i++) hex += (arr[i] < 16 ? '0' : '') + arr[i].toString(16);
+        return hex;
+    }
+
+    // Fetch the model bytes with streamed % progress, Cache API storage and a
+    // MANDATORY sha256 integrity check on every load path (cache hits too).
+    async function icFetchModelBytes(setStatus) {
+        var resp = null, fromCache = false;
+        try {
+            if (window.caches) {
+                var cache = await caches.open(IC_CACHE_NAME);
+                var hit = await cache.match(IC_MODEL_URL);
+                if (hit) { resp = hit; fromCache = true; }
+            }
+        } catch (e) { /* private mode / cache unavailable - fall through */ }
+        var bytes;
+        if (!resp) {
+            setStatus('Downloading the colorization model (about ' + IC_MODEL_MB + ' MB, one time - it is cached for your next visit) ... 0%');
+            resp = await fetch(IC_MODEL_URL);
+            if (!resp.ok) throw new Error('model download failed (HTTP ' + resp.status + ')');
+            var total = parseInt(resp.headers.get('content-length') || '0', 10);
+            if (resp.body && resp.body.getReader && total > 0) {
+                var reader = resp.body.getReader();
+                var chunks = [], got = 0, lastPct = -1;
+                for (;;) {
+                    var r = await reader.read();
+                    if (r.done) break;
+                    chunks.push(r.value); got += r.value.length;
+                    var pct = Math.floor(got * 100 / total);
+                    if (pct !== lastPct) { lastPct = pct; setStatus('Downloading the colorization model (about ' + IC_MODEL_MB + ' MB, one time) ... ' + pct + '%'); }
+                }
+                bytes = new Uint8Array(got);
+                var off = 0;
+                for (var c = 0; c < chunks.length; c++) { bytes.set(chunks[c], off); off += chunks[c].length; }
+            } else {
+                bytes = new Uint8Array(await resp.arrayBuffer());
+            }
+            try {
+                if (window.caches) {
+                    var cache2 = await caches.open(IC_CACHE_NAME);
+                    await cache2.put(IC_MODEL_URL, new Response(bytes.slice().buffer, { headers: { 'content-type': 'application/octet-stream' } }));
+                }
+            } catch (e) { /* cache write is best-effort */ }
+        } else {
+            setStatus('Loading the colorization model from your browser cache ...');
+            bytes = new Uint8Array(await resp.arrayBuffer());
+        }
+        setStatus('Checking the model file ...');
+        var hex = await icSha256Hex(bytes);
+        if (hex !== IC_MODEL_SHA256) {
+            try { if (fromCache && window.caches) { var c3 = await caches.open(IC_CACHE_NAME); await c3.delete(IC_MODEL_URL); } } catch (e) { }
+            throw new Error('the downloaded model failed its integrity check - please try again');
+        }
+        return bytes;
+    }
+
+    var icSessionPromise = null;
+    function icLoadModel(setStatus) {
+        if (icSessionPromise) return icSessionPromise;
+        icSessionPromise = (async function () {
+            var ort = await icLoadOrt();
+            var bytes = await icFetchModelBytes(setStatus);
+            setStatus('Starting the colorizer in your browser (this can take a few seconds) ...');
+            var session = await ort.InferenceSession.create(bytes, { executionProviders: ['wasm'] });
+            return { ort: ort, session: session };
+        })();
+        icSessionPromise.catch(function () { icSessionPromise = null; }); // allow retry after a failure
+        return icSessionPromise;
+    }
+
+    // ---- sRGB <-> Lab (D65), plain JS, no deps ----
+    function icSrgb2lin(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+    function icLin2srgb(c) { c = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055; var v = Math.round(c * 255); return v < 0 ? 0 : (v > 255 ? 255 : v); }
+    function icRgb2L(r, g, b) {
+        var y = icSrgb2lin(r) * 0.2126 + icSrgb2lin(g) * 0.7152 + icSrgb2lin(b) * 0.0722;
+        var fy = y > 0.008856 ? Math.cbrt(y) : (7.787 * y + 16 / 116);
+        return 116 * fy - 16;
+    }
+    function icLab2rgb(L, a, b) {
+        var y = (L + 16) / 116, x = a / 500 + y, z = y - b / 200;
+        function fi(t) { var t3 = t * t * t; return t3 > 0.008856 ? t3 : (t - 16 / 116) / 7.787; }
+        x = fi(x) * 0.95047; y = fi(y); z = fi(z) * 1.08883;
+        var rl = x * 3.2406 + y * -1.5372 + z * -0.4986;
+        var gl = x * -0.9689 + y * 1.8758 + z * 0.0415;
+        var bl = x * 0.0557 + y * -0.2040 + z * 1.0570;
+        return [icLin2srgb(rl), icLin2srgb(gl), icLin2srgb(bl)];
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('imageColorizerTool');
+        if (!root) return; // not a colorizer page
+
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="icFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div id="icStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Choose a black-and-white (or faded) photo. It never leaves your browser - everything runs on your device.</div>' +
+            '<div class="w3-row" style="position:relative;display:inline-block;max-width:100%;"><canvas id="icCanvas" class="outputImgs" style="visibility:visible !important;max-width:90vw;border:1px solid #ddd;background:#f4f4f4;"></canvas></div>' +
+            '<div style="margin-top:8px;">' +
+              '<button id="icRunAi" type="button" class="w3-button w3-green w3-large" disabled>Colorize (AI, ~' + IC_MODEL_MB + ' MB one-time download)</button> ' +
+              '<button id="icRunTint" type="button" class="w3-button w3-amber" disabled>Warm tint (no download)</button> ' +
+              '<button id="icRevert" type="button" class="w3-button w3-white w3-border" style="display:none;">Show original</button> ' +
+              '<a id="icDownload" class="w3-button w3-blue" style="display:none;">Download PNG</a>' +
+            '</div>' +
+            '<div id="icErr" style="color:#b00020;margin-top:6px;min-height:1em;"></div>';
+
+        var fileEl = root.querySelector('#icFile');
+        var canvas = root.querySelector('#icCanvas');
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+        var aiBtn = root.querySelector('#icRunAi');
+        var tintBtn = root.querySelector('#icRunTint');
+        var revertBtn = root.querySelector('#icRevert');
+        var dl = root.querySelector('#icDownload');
+        var statusEl = root.querySelector('#icStatus');
+        var errEl = root.querySelector('#icErr');
+
+        function setStatus(m) { statusEl.textContent = m; }
+        function setErr(m) { errEl.textContent = m || ''; }
+
+        var natW = 0, natH = 0;
+        var origImage = null;        // ImageData of the loaded (possibly downscaled) photo
+        var showingResult = false, currentURL = null;
+
+        function loadFile(f) {
+            if (!f) return;
+            setErr(''); dl.style.display = 'none'; revertBtn.style.display = 'none'; showingResult = false;
+            if (currentURL) URL.revokeObjectURL(currentURL);
+            currentURL = URL.createObjectURL(f);
+            var img = new Image();
+            img.onload = function () {
+                var w = img.naturalWidth, h = img.naturalHeight;
+                var scale = Math.min(1, IC_MAX_SIDE / Math.max(w, h));
+                natW = Math.max(1, Math.round(w * scale));
+                natH = Math.max(1, Math.round(h * scale));
+                canvas.width = natW; canvas.height = natH;
+                ctx.clearRect(0, 0, natW, natH);
+                ctx.drawImage(img, 0, 0, natW, natH);
+                origImage = ctx.getImageData(0, 0, natW, natH);
+                aiBtn.disabled = false; tintBtn.disabled = false;
+                setStatus(scale < 1
+                    ? 'Large photo scaled to ' + natW + 'x' + natH + ' for processing. Click "Colorize (AI)" - the model downloads once, then runs on your device.'
+                    : 'Click "Colorize (AI)" - the model downloads once (~' + IC_MODEL_MB + ' MB), then runs on your device. Typically 15-60 seconds per photo.');
+            };
+            img.onerror = function () { setErr('Could not read that image.'); };
+            img.src = currentURL;
+        }
+
+        fileEl.addEventListener('change', function () { loadFile(fileEl.files && fileEl.files[0]); });
+
+        function finish(name, doneMsg) {
+            canvas.toBlob(function (blob) {
+                var u = URL.createObjectURL(blob);
+                dl.href = u; dl.download = name; dl.style.display = '';
+            }, 'image/png');
+            revertBtn.style.display = '';
+            showingResult = true;
+            setStatus(doneMsg);
+        }
+
+        revertBtn.addEventListener('click', function () {
+            if (!origImage) return;
+            if (showingResult) {
+                var result = ctx.getImageData(0, 0, natW, natH);
+                ctx.putImageData(origImage, 0, 0);
+                revertBtn.textContent = 'Show result';
+                showingResult = false;
+                revertBtn._result = result;
+            } else if (revertBtn._result) {
+                ctx.putImageData(revertBtn._result, 0, 0);
+                revertBtn.textContent = 'Show original';
+                showingResult = true;
+            }
+        });
+
+        // TIER 2: on-device DDColor - predict ab, keep the original L at full res.
+        aiBtn.addEventListener('click', async function () {
+            if (!origImage) { setErr('Choose a photo first.'); return; }
+            setErr(''); aiBtn.disabled = true; tintBtn.disabled = true;
+            try {
+                var m = await icLoadModel(setStatus);
+                setStatus('Colorizing in your browser (nothing is uploaded) - this typically takes 15-60 seconds ...');
+                await new Promise(function (r) { setTimeout(r, 30); }); // let the status paint
+
+                // 1) per-pixel L of the original photo (this is what we keep)
+                var od = origImage.data;
+                var Lbuf = new Float32Array(natW * natH);
+                var gray = ctx.createImageData(natW, natH);
+                for (var i = 0; i < natW * natH; i++) {
+                    var L = icRgb2L(od[i * 4], od[i * 4 + 1], od[i * 4 + 2]);
+                    Lbuf[i] = L;
+                    var g = icLab2rgb(L, 0, 0);
+                    gray.data[i * 4] = g[0]; gray.data[i * 4 + 1] = g[1]; gray.data[i * 4 + 2] = g[2]; gray.data[i * 4 + 3] = 255;
+                }
+
+                // 2) model input: the grayscale photo at 512x512, RGB 0..1 planar
+                var gc = document.createElement('canvas'); gc.width = natW; gc.height = natH;
+                gc.getContext('2d').putImageData(gray, 0, 0);
+                var sc = document.createElement('canvas'); sc.width = IC_IN; sc.height = IC_IN;
+                var scx = sc.getContext('2d');
+                scx.drawImage(gc, 0, 0, IC_IN, IC_IN);
+                var sd = scx.getImageData(0, 0, IC_IN, IC_IN).data;
+                var plane = IC_IN * IC_IN;
+                var f = new Float32Array(3 * plane);
+                for (var p = 0; p < plane; p++) {
+                    f[p] = sd[p * 4] / 255; f[plane + p] = sd[p * 4 + 1] / 255; f[2 * plane + p] = sd[p * 4 + 2] / 255;
+                }
+                var feeds = {};
+                feeds[m.session.inputNames[0]] = new m.ort.Tensor('float32', f, [1, 3, IC_IN, IC_IN]);
+                var out = await m.session.run(feeds);
+                var ab = out[m.session.outputNames[0]].data; // [1,2,512,512]
+
+                // 3) composite: original L + bilinear-upscaled predicted ab
+                var OS = IC_IN;
+                var result = ctx.createImageData(natW, natH);
+                for (var y = 0; y < natH; y++) {
+                    var fy = natH === 1 ? 0 : y * (OS - 1) / (natH - 1);
+                    var y0 = Math.floor(fy), y1 = Math.min(OS - 1, y0 + 1), wy = fy - y0;
+                    for (var x = 0; x < natW; x++) {
+                        var fx = natW === 1 ? 0 : x * (OS - 1) / (natW - 1);
+                        var x0 = Math.floor(fx), x1 = Math.min(OS - 1, x0 + 1), wx = fx - x0;
+                        var i00 = y0 * OS + x0, i01 = y0 * OS + x1, i10 = y1 * OS + x0, i11 = y1 * OS + x1;
+                        var a = (ab[i00] * (1 - wx) + ab[i01] * wx) * (1 - wy) + (ab[i10] * (1 - wx) + ab[i11] * wx) * wy;
+                        var b = (ab[plane + i00] * (1 - wx) + ab[plane + i01] * wx) * (1 - wy) + (ab[plane + i10] * (1 - wx) + ab[plane + i11] * wx) * wy;
+                        var idx = y * natW + x;
+                        var rgb = icLab2rgb(Lbuf[idx], a, b);
+                        result.data[idx * 4] = rgb[0]; result.data[idx * 4 + 1] = rgb[1]; result.data[idx * 4 + 2] = rgb[2]; result.data[idx * 4 + 3] = 255;
+                    }
+                }
+                ctx.putImageData(result, 0, 0);
+                revertBtn._result = result; revertBtn.textContent = 'Show original';
+                finish('colorized.png', 'Colorized on your device - no upload. The colors are the model\'s best guess, not a historical record. Compare with "Show original" or download the PNG.');
+            } catch (err) {
+                setErr('Could not run the colorizer: ' + (err && err.message ? err.message : String(err)) + '. The "Warm tint (no download)" path still works.');
+            } finally { aiBtn.disabled = false; tintBtn.disabled = false; }
+        });
+
+        // TIER 3 (deterministic, zero network): fixed warm sepia tone - honest
+        // label: a simple tint, NOT predicted color.
+        tintBtn.addEventListener('click', function () {
+            if (!origImage) { setErr('Choose a photo first.'); return; }
+            setErr('');
+            var od = origImage.data;
+            var result = ctx.createImageData(natW, natH);
+            for (var i = 0; i < natW * natH; i++) {
+                var lum = 0.2126 * od[i * 4] + 0.7152 * od[i * 4 + 1] + 0.0722 * od[i * 4 + 2];
+                var t = lum / 255;
+                // warm duotone: shadows #2b1d0e -> highlights #f5e7c9
+                result.data[i * 4] = Math.round(43 + (245 - 43) * t);
+                result.data[i * 4 + 1] = Math.round(29 + (231 - 29) * t);
+                result.data[i * 4 + 2] = Math.round(14 + (201 - 14) * t);
+                result.data[i * 4 + 3] = 255;
+            }
+            ctx.putImageData(result, 0, 0);
+            revertBtn._result = result; revertBtn.textContent = 'Show original';
+            finish('warm-tint.png', 'Warm tint applied - instant, no download, nothing uploaded. This is a simple tone, not real color prediction; the AI button does the real thing.');
+        });
+    }
+</script>
