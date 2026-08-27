@@ -1,0 +1,328 @@
+<script>
+    // 3D scene archetype skeleton (great-rift-valley) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (great-rift-valley).
+    // All geometry is procedural. places-3d-discovery-loop-runbook, 2026-08-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology. Vertical relief and the
+    // valley-segment length are exaggerated/schematic for visibility.
+    // Published figures (encyclopedic consensus, cross-checked 2026-08-27):
+    //   - Total length about 6,000 km (3,700 mi), from the Jordan Rift in
+    //     Lebanon south through East Africa to Mozambique
+    //   - East African segment typically about 30-100 km wide
+    //   - Escarpment walls rise roughly 600-2,000 m above the valley floor
+    //   - Rifting began about 25-30 million years ago as the African and
+    //     Somali tectonic plates pull apart
+    //   - Notable peaks near the rift: Mount Kilimanjaro and Mount Kenya
+    //   - Notable rift lakes: Lake Malawi, Lake Tanganyika, Lake Turkana
+    //   - Sometimes called the "Cradle of Humankind" - major hominid fossil
+    //     sites, including Olduvai Gorge, lie within it
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'great-rift-valley';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesgreatriftvalley'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x141a12, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.58));
+        var key = new THREE.DirectionalLight(0xfff2d0, 1.0);
+        key.position.set(-11, 17, 9);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0 }));
+        }
+
+        // A long, flat-floored rift trench (z = along the valley, x = across
+        // it) between two parallel escarpment walls rising to plateau level,
+        // with a few isolated volcanic cones and rift-lake basins along the
+        // floor. 1 unit ~= roughly 50 km horizontally (schematic scale).
+        var FLOOR = -0.85, PLATEAU = 0.15;
+        var WALL_INNER = 3.0, WALL_OUTER = 5.2;
+        var VOLCANOES = [ // schematic positions along the floor/shoulder
+            { x: 1.6, z: -5.5, r: 2.0, peak: 1.35, name: 'Mount Kilimanjaro' },
+            { x: -1.2, z: 1.0, r: 1.5, peak: 1.05, name: 'Mount Kenya' }
+        ];
+        var LAKES = [ // rift-lake basins depressed into the floor
+            { x: 0.2, z: -8.5, rx: 1.3, rz: 2.6, depth: 0.28, name: 'Lake Turkana' },
+            { x: -0.3, z: 4.0, rx: 1.1, rz: 3.4, depth: 0.34, name: 'Lake Malawi' }
+        ];
+        function wallT(x) { return smooth(WALL_INNER, WALL_OUTER, Math.abs(x)); }
+        function height(x, z) {
+            var floorNoise = FLOOR + 0.09 * (fbm(x * 0.5 + 3, z * 0.5 + 2, 4) - 0.5);
+            var plateauNoise = PLATEAU + 0.14 * (fbm(x * 0.4 + 9, z * 0.4 + 5, 4) - 0.5);
+            var t = wallT(x);
+            var h = floorNoise * (1 - t) + plateauNoise * t;
+            for (var v = 0; v < VOLCANOES.length; v++) {
+                var vo = VOLCANOES[v];
+                var d = Math.hypot(x - vo.x, z - vo.z);
+                if (d < vo.r) { h += vo.peak * Math.pow(1 - d / vo.r, 1.7); }
+            }
+            for (var l = 0; l < LAKES.length; l++) {
+                var lk = LAKES[l];
+                var nd = Math.pow((x - lk.x) / lk.rx, 2) + Math.pow((z - lk.z) / lk.rz, 2);
+                if (nd < 1) { h -= lk.depth * (1 - nd); }
+            }
+            return h;
+        }
+        var col = {
+            floor: new THREE.Color(0x8f8b52), wall: new THREE.Color(0x6b5d46),
+            plateau: new THREE.Color(0x8a7a5c), volcano: new THREE.Color(0x4a423e),
+            water: new THREE.Color(0x2b6b7a)
+        };
+        var normColors = null, accentColors = null, terrain;
+        function bandColor(c, h, x, z, accent) {
+            var n = 0.9 + 0.2 * fbm(x * 1.3 + 11, z * 1.3 + 7, 3);
+            var t = wallT(x);
+            var inLake = false;
+            for (var l = 0; l < LAKES.length; l++) {
+                var lk = LAKES[l];
+                var nd = Math.pow((x - lk.x) / lk.rx, 2) + Math.pow((z - lk.z) / lk.rz, 2);
+                if (nd < 1 && h < FLOOR - 0.03) { inLake = true; break; }
+            }
+            if (inLake) { c.copy(col.water).multiplyScalar(n); return; }
+            var isVolcano = false;
+            for (var v = 0; v < VOLCANOES.length; v++) {
+                var vo = VOLCANOES[v];
+                var d = Math.hypot(x - vo.x, z - vo.z);
+                if (d < vo.r && h > FLOOR + 0.6) { isVolcano = true; break; }
+            }
+            if (isVolcano) { c.copy(col.volcano).multiplyScalar(n); return; }
+            if (t > 0.02 && t < 0.98) { // on the escarpment wall itself
+                c.copy(col.wall).multiplyScalar(n);
+                if (accent) c.offsetHSL(0.02, 0.25, 0.05);
+                return;
+            }
+            c.copy(col.floor).lerp(col.plateau, t).multiplyScalar(n);
+        }
+        function build(accent) {
+            var pos = terrain.geometry.attributes.position, col2 = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                bandColor(col2, pos.getY(i), pos.getX(i), pos.getZ(i), accent);
+                arr[i * 3] = col2.r; arr[i * 3 + 1] = col2.g; arr[i * 3 + 2] = col2.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(16, 22, shell.low ? 120 : 190, shell.low ? 150 : 230, height, function (c, h, x, z) { bandColor(c, h, x, z, false); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        accentColors = build(true);
+
+        // Named markers for the volcanoes and lakes - small pins above the
+        // terrain surface, toggled as a group (no geometry rebuild needed).
+        var markerGroup = new THREE.Group();
+        function addMarker(x, z, color, isCone) {
+            var h = height(x, z);
+            var geo = isCone ? new THREE.ConeGeometry(0.14, 0.36, 10) : new THREE.SphereGeometry(0.13, 10, 8);
+            var mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: color, roughness: 0.4 }));
+            mesh.position.set(x, h + (isCone ? 0.5 : 0.16), z);
+            markerGroup.add(mesh);
+        }
+        for (var vv = 0; vv < VOLCANOES.length; vv++) { addMarker(VOLCANOES[vv].x, VOLCANOES[vv].z, 0xd05a3a, true); }
+        for (var ll = 0; ll < LAKES.length; ll++) { addMarker(LAKES[ll].x, LAKES[ll].z, 0x4fb8d8, false); }
+        scene.add(markerGroup);
+
+        var shadingOn = true, markersOn = true;
+
+        function panelHtml() {
+            return '<h3>Great Rift Valley: East Africa\'s tectonic trench</h3>' +
+                '<p>A flat trench floor between two parallel escarpment walls, formed as the African and Somali plates pull apart - toggle escarpment shading and the lake/volcano markers.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Total length</td><td>about 6,000 km (3,700 mi), Lebanon to Mozambique</td></tr>' +
+                '<tr><td>Width (East Africa)</td><td>typically about 30-100 km across</td></tr>' +
+                '<tr><td>Escarpment relief</td><td>walls rise roughly 600-2,000 m above the floor</td></tr>' +
+                '<tr><td>Age</td><td>rifting began about 25-30 million years ago</td></tr>' +
+                '<tr><td>Notable peaks</td><td>Mount Kilimanjaro and Mount Kenya</td></tr>' +
+                '<tr><td>Notable rift lakes</td><td>Lake Malawi, Lake Tanganyika, Lake Turkana</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the valley segment, escarpment profile, and peak/lake positions are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(shadingOn ? accentColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            markerGroup.visible = markersOn;
+            var sb = document.getElementById('t3dGrvShadingBtn');
+            if (sb) sb.textContent = 'Escarpment shading: ' + (shadingOn ? 'On' : 'Off');
+            var mb = document.getElementById('t3dGrvMarkersBtn');
+            if (mb) mb.textContent = 'Lakes & volcanoes: ' + (markersOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ shadingOn: shadingOn, markersOn: markersOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.shadingOn === 'boolean') shadingOn = store.shadingOn;
+        if (typeof store.markersOn === 'boolean') markersOn = store.markersOn;
+        apply();
+
+        var shadingBtn = document.getElementById('t3dGrvShadingBtn');
+        if (shadingBtn) shadingBtn.addEventListener('click', function () { shadingOn = !shadingOn; apply(); });
+        var markersBtn = document.getElementById('t3dGrvMarkersBtn');
+        if (markersBtn) markersBtn.addEventListener('click', function () { markersOn = !markersOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle escarpment shading or the lake/volcano markers.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesgreatriftvalley: 't3dGrvControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesgreatriftvalley: { radius: 24, maxR: 55, minR: 8, phi: 0.85, theta: 1.0, targetY: -0.3 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
