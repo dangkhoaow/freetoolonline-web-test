@@ -1,0 +1,305 @@
+<script>
+    // 3D scene archetype skeleton (fish-river-canyon) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (fish-river-canyon).
+    // All geometry is procedural. places-3d cluster, authored 2026-08-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology.
+    // Published figures (Namibia Tourism / Ai-Ais Richtersveld park consensus):
+    //   - Length about 160 km (100 mi); depth up to 550 m (1,800 ft);
+    //     width up to 27 km at the widest point
+    //   - Africa's largest canyon, among the largest in the world
+    //   - Formed by ancient rifting and long-term erosion by the Fish River
+    //   - Ai-Ais/Richtersveld Transfrontier Park, southern Namibia
+    //   - The 85 km Fish River Canyon Trail is one of Africa's best-known
+    //     multi-day hikes, open May-September only
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'fish-river-canyon';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesfishrivercanyon'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x140d08, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xffe6c0, 1.05);
+        key.position.set(-11, 17, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.97, metalness: 0 }));
+        }
+
+        // Fish River Canyon relief, 1 unit = ~55 m vertical (0.55 km depth).
+        // A SINGLE sinuous incised meander cut into a flat semi-arid plateau -
+        // no dendritic tributaries (unlike Grand Canyon). A gentle base sweep
+        // plus a tighter overlaid wiggle reproduces the famous "big bend"
+        // horseshoe loop the canyon is known for (near "Bushman's Paradise").
+        var RIM = 0.55, DEPTH = 0.55;
+        function chan(z) { return 3.0 * Math.sin(z * 0.20) + 1.35 * Math.sin(z * 0.47 + 0.6); }
+        function carve(d, w, depth) {
+            if (d >= w) return 0;
+            var t = 1 - d / w;
+            var steps = Math.floor(t * 5) / 5;      // stepped terrace profile
+            return depth * Math.pow(0.55 * t + 0.45 * steps, 1.15);
+        }
+        function height(x, z) {
+            var h = RIM + 0.10 * (fbm(x * 0.24 + 6, z * 0.24 + 2, 4) - 0.5);
+            h -= carve(Math.abs(x - chan(z)), 5.4, DEPTH + 0.06);
+            // wall micro-relief (the crinkled DEM texture on the canyon flanks)
+            h -= 0.07 * (1 - Math.min(1, Math.abs(x - chan(z)) / 5.4)) * fbm(x * 1.5 + 3, z * 1.5 + 9, 4);
+            return Math.max(h, RIM - DEPTH - 0.06);
+        }
+        var LAYERS = [
+            [0.00, 0xcdb98f], // sun-bleached rim tan
+            [0.18, 0xb98552], // ochre upper wall
+            [0.38, 0xa3552f], // rust-red dolerite/quartzite - the iconic band
+            [0.58, 0x7a3d28], // deep maroon-brown
+            [0.78, 0x5a3624], // dark brown lower wall
+            [0.92, 0x2e211c]  // near-black gorge floor shadow
+        ];
+        var normColors = null, terrain;
+        function bandColor(c, h, x, z) {
+            var n = 0.9 + 0.2 * fbm(x * 1.3 + 12, z * 1.3 + 6, 3);
+            var u = Math.max(0, Math.min(1, (RIM - h) / DEPTH));
+            if (u < 0.02) { // plateau surface: sparse scrub on pale tan desert
+                var g = fbm(x * 0.85 + 21, z * 0.85 + 15, 3);
+                c.setHex(g > 0.68 ? 0x6f7a4f : 0xcdb98f).multiplyScalar(n);
+                return;
+            }
+            var hex = LAYERS[LAYERS.length - 1][1];
+            for (var i = LAYERS.length - 1; i >= 0; i--) { if (u >= LAYERS[i][0]) { hex = LAYERS[i][1]; break; } }
+            c.setHex(hex).multiplyScalar(n);
+        }
+        terrain = makeTerrain(20, 26, shell.low ? 120 : 185, shell.low ? 150 : 230, height, bandColor);
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+
+        // Fish River: a muted, often-seasonal green-brown ribbon along the
+        // gorge floor (rarely the teal of a perennial river like the Colorado).
+        var riverPts = [];
+        for (var i2 = 0; i2 <= 70; i2++) {
+            var z3 = -12.5 + (25 * i2) / 70;
+            riverPts.push(new THREE.Vector3(chan(z3), RIM - DEPTH + 0.05, z3));
+        }
+        var river = new THREE.Mesh(
+            new THREE.TubeGeometry(new THREE.CatmullRomCurve3(riverPts), 100, 0.12, 6, false),
+            new THREE.MeshStandardMaterial({ color: 0x5f7a5a, roughness: 0.3 })
+        );
+        scene.add(river);
+
+        // Trail markers: small beacons tracing the famous 85 km Fish River
+        // Canyon hiking trail along one rim, roughly parallel to the gorge.
+        var trailGroup = new THREE.Group();
+        var beaconGeo = new THREE.SphereGeometry(0.09, 10, 8);
+        var beaconMat = new THREE.MeshStandardMaterial({ color: 0xffcf4d, emissive: 0x664400, roughness: 0.5 });
+        for (var i3 = 0; i3 <= 16; i3++) {
+            var zt = -11.5 + (23 * i3) / 16;
+            var xt = chan(zt) + 5.9; // offset onto the rim, outside the gorge wall
+            var b = new THREE.Mesh(beaconGeo, beaconMat);
+            b.position.set(xt, height(xt, zt) + 0.08, zt);
+            trailGroup.add(b);
+        }
+        scene.add(trailGroup);
+
+        var riverOn = true, trailOn = true;
+
+        function panelHtml() {
+            return '<h3>Fish River Canyon: Africa\'s largest canyon</h3>' +
+                '<p>A relief of the gorge: one sinuous incised meander with a signature "big bend" loop, terraced rust-red walls cut into a flat semi-arid plateau, the Fish River below, and the rim-hugging hiking trail.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Length</td><td>about 160 km (100 miles)</td></tr>' +
+                '<tr><td>Depth</td><td>up to 550 m (1,800 ft)</td></tr>' +
+                '<tr><td>Width</td><td>up to 27 km (17 miles) at the widest point</td></tr>' +
+                '<tr><td>Rank</td><td>Africa\'s largest canyon - among the largest in the world</td></tr>' +
+                '<tr><td>Formed by</td><td>ancient rifting and long-term erosion by the Fish River</td></tr>' +
+                '<tr><td>Protected area</td><td>Ai-Ais/Richtersveld Transfrontier Park, Namibia</td></tr>' +
+                '<tr><td>Hiking trail</td><td>the 85 km Fish River Canyon Trail, open May-September only</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the meander shape, terraces, and trail markers are procedural teaching cues, not survey geology.</p>';
+        }
+
+        function apply() {
+            river.visible = riverOn;
+            trailGroup.visible = trailOn;
+            var rb = document.getElementById('t3dPfrcRiverBtn');
+            if (rb) rb.textContent = 'River: ' + (riverOn ? 'On' : 'Off');
+            var tb = document.getElementById('t3dPfrcTrailBtn');
+            if (tb) tb.textContent = 'Hiking trail: ' + (trailOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ riverOn: riverOn, trailOn: trailOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.riverOn === 'boolean') riverOn = store.riverOn;
+        if (typeof store.trailOn === 'boolean') trailOn = store.trailOn;
+        apply();
+
+        var riverBtn = document.getElementById('t3dPfrcRiverBtn');
+        if (riverBtn) riverBtn.addEventListener('click', function () { riverOn = !riverOn; apply(); });
+        var trailBtn = document.getElementById('t3dPfrcTrailBtn');
+        if (trailBtn) trailBtn.addEventListener('click', function () { trailOn = !trailOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the river or the hiking-trail markers.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesfishrivercanyon: 't3dPfrcControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesfishrivercanyon: { radius: 20, maxR: 46, minR: 6, phi: 0.95, theta: 0.6, targetY: 0.4 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
