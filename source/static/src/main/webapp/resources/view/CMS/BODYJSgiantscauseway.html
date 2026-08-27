@@ -1,0 +1,366 @@
+<script>
+    // 3D scene archetype skeleton (giants-causeway) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Signature figure: a dense field of hexagonal basalt column tops
+    // (InstancedMesh of hexagonal prisms - CylinderGeometry(r,r,h,6) is a
+    // hexagonal prism) forming an elliptical promontory stepping from a cliff
+    // backdrop into the sea. places-3d discovery loop, 2026-08-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain. The scene renders a
+    // REPRESENTATIVE dense field of columns (about 1300), not the literal
+    // ~40,000 - sized to read clearly at the intended camera distance.
+    //
+    // Published figures (encyclopedic consensus, cross-checked 2026-08-27):
+    //   - About 40,000 interlocking basalt columns, mostly hexagonal
+    //   - Column tops mostly about 20-90 cm across; tallest columns near 12 m
+    //   - Formed about 50-60 million years ago from cooling volcanic lava
+    //   - County Antrim, Northern Ireland, north Atlantic coast
+    //   - UNESCO World Heritage Site + National Nature Reserve since 1986
+    //   - Intertidal coastal feature - lower columns covered/exposed by tide
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'giants-causeway';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesgiantscauseway'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x9fb8c9, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
+        key.position.set(-10, 16, 6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
+        }
+
+        // Layout: x = along the coastline, z = from the cliff (negative,
+        // high) out to the open sea (positive, low). Elliptical column
+        // footprint pushes out from the cliff base into the water.
+        var LOW_TIDE_Y = -0.12, HIGH_TIDE_Y = 0.32;
+        function baseY(x, z) {
+            var fall = smooth(-6.5, 6.0, z); // 0 near cliff, 1 far out to sea
+            var y = 3.2 * (1 - fall) - 0.55 * fall;
+            y += 0.14 * (fbm(x * 0.6 + 3, z * 0.6 + 9, 4) - 0.5);
+            return y;
+        }
+        function inField(x, z) {
+            var cx = x, cz = z - 1.0;
+            var ex = cx / 4.6, ez = cz / 6.4;
+            var edge = 0.12 * (vnoise(x * 0.7 + 4, z * 0.7 + 2) - 0.5);
+            return (ex * ex + ez * ez) <= (1.0 + edge);
+        }
+
+        // Cliff backdrop: a tall dark rock wall at the back with a grassy cap.
+        var cliff = makeTerrain(20, 8, shell.low ? 40 : 70, shell.low ? 26 : 46, function (x, z) {
+            var zz = z - 9.2;
+            return 3.0 + 3.6 * smooth(4.0, -2.0, zz) + 0.6 * fbm(x * 0.4 + 2, zz * 0.4 + 5, 4);
+        }, function (c, h, x, z) {
+            var n = 0.9 + 0.2 * fbm(x * 1.1 + 3, z * 1.1 + 8, 3);
+            if (h > 5.6) c.set(0x4c6b3a).multiplyScalar(n); // grassy cap
+            else c.set(0x5a5049).lerp(new THREE.Color(0x3a332e), smooth(3.0, 6.0, h)).multiplyScalar(n);
+        });
+        cliff.position.z = -9.2;
+        scene.add(cliff);
+
+        // Rock apron the columns sit on (visible between/around the hex tops).
+        var apron = makeTerrain(15, 16, shell.low ? 70 : 120, shell.low ? 74 : 128, baseY, function (c, h, x, z) {
+            var n = 0.88 + 0.24 * fbm(x * 1.4 + 6, z * 1.4 + 2, 3);
+            c.set(0x55524c).lerp(new THREE.Color(0x2f2d2a), smooth(0.5, -0.6, h)).multiplyScalar(n);
+        });
+        scene.add(apron);
+
+        // Sea floor + open water beyond the promontory.
+        var seaFloor = new THREE.Mesh(
+            new THREE.PlaneGeometry(24, 20),
+            new THREE.MeshStandardMaterial({ color: 0x14324a, roughness: 0.9 })
+        );
+        seaFloor.rotation.x = -Math.PI / 2;
+        seaFloor.position.set(0, -1.2, 6);
+        scene.add(seaFloor);
+
+        // Hexagonal basalt column field - InstancedMesh of hexagonal prisms
+        // (a 6-sided cylinder IS a hexagonal prism). Representative density
+        // (~1300 instances), not the literal ~40,000, sized to read clearly.
+        var HEX_R = 0.22, HEX_GAP = 0.03;
+        var stepX = HEX_R * 1.5 + HEX_GAP, stepZ = (HEX_R * Math.sqrt(3)) + HEX_GAP;
+        var cols = [];
+        for (var row = -34; row <= 34; row++) {
+            var zRow = -6.4 + row * stepZ * 0.5;
+            var xOff = (row % 2 === 0) ? 0 : stepX * 0.5;
+            for (var col = -20; col <= 20; col++) {
+                var x = xOff + col * stepX;
+                var z = zRow;
+                if (!inField(x, z)) continue;
+                cols.push({ x: x, z: z });
+            }
+        }
+        var N = cols.length;
+        var hexGeo = new THREE.CylinderGeometry(1, 1, 1, 6);
+        var hexMat = new THREE.MeshStandardMaterial({ vertexColors: false, roughness: 0.85, metalness: 0.05 });
+        var hexMesh = new THREE.InstancedMesh(hexGeo, hexMat, N);
+        hexMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(N * 3), 3);
+
+        var colTops = new Float32Array(N);      // world Y of each column top
+        var dryFlat = new Float32Array(N * 3);
+        var dryBand = new Float32Array(N * 3);
+        var wetFlat = new Float32Array(N * 3);
+        var wetBand = new Float32Array(N * 3);
+        var mtx = new THREE.Matrix4(), quat = new THREE.Quaternion(), scaleV = new THREE.Vector3(), col3 = new THREE.Color();
+        var basalt = new THREE.Color(0x2b2b2c), basaltLight = new THREE.Color(0x45443f);
+        var bandLow = new THREE.Color(0x5b73ae), bandMid = new THREE.Color(0x7dafa3), bandHigh = new THREE.Color(0xd9c7a3);
+        var wetTint = new THREE.Color(0x1c3a4a);
+
+        for (var i = 0; i < N; i++) {
+            var p = cols[i];
+            var by = baseY(p.x, p.z);
+            var rTop = HEX_R * (0.72 + 0.5 * hash2(p.x * 3.1 + 1, p.z * 3.1 + 5));
+            var stepNoise = fbm(p.x * 2.3 + 11, p.z * 2.3 + 4, 3);
+            var h = 0.32 + 0.9 * stepNoise + 0.35 * hash2(p.x * 5.2, p.z * 5.2 + 2);
+            var top = by + h;
+            colTops[i] = top;
+
+            scaleV.set(rTop, h, rTop);
+            mtx.compose(new THREE.Vector3(p.x, by + h / 2, p.z), quat, scaleV);
+            hexMesh.setMatrixAt(i, mtx);
+
+            var weather = 0.85 + 0.3 * hash2(p.x * 7.7 + 3, p.z * 7.7 + 9);
+            col3.copy(basalt).lerp(basaltLight, hash2(p.x * 4.4, p.z * 4.4) * 0.35).multiplyScalar(weather);
+            dryFlat[i * 3] = col3.r; dryFlat[i * 3 + 1] = col3.g; dryFlat[i * 3 + 2] = col3.b;
+
+            var bandT = smooth(-0.4, 3.6, top);
+            var bcol = bandT < 0.5 ? bandLow.clone().lerp(bandMid, bandT * 2) : bandMid.clone().lerp(bandHigh, (bandT - 0.5) * 2);
+            bcol.multiplyScalar(weather * 0.95 + 0.15);
+            dryBand[i * 3] = bcol.r; dryBand[i * 3 + 1] = bcol.g; dryBand[i * 3 + 2] = bcol.b;
+
+            var submerged = top < HIGH_TIDE_Y;
+            var wf = col3.clone(); if (submerged) wf.lerp(wetTint, 0.55);
+            wetFlat[i * 3] = wf.r; wetFlat[i * 3 + 1] = wf.g; wetFlat[i * 3 + 2] = wf.b;
+            var wb = bcol.clone(); if (submerged) wb.lerp(wetTint, 0.55);
+            wetBand[i * 3] = wb.r; wetBand[i * 3 + 1] = wb.g; wetBand[i * 3 + 2] = wb.b;
+        }
+        hexMesh.instanceMatrix.needsUpdate = true;
+        scene.add(hexMesh);
+
+        // Tide-level translucent water plane over the whole causeway area.
+        var tidePlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(14, 15),
+            new THREE.MeshBasicMaterial({ color: 0x2f7fb0, transparent: true, opacity: 0.38, depthWrite: false, side: THREE.DoubleSide })
+        );
+        tidePlane.rotation.x = -Math.PI / 2;
+        tidePlane.position.set(0, LOW_TIDE_Y, 1.5);
+        scene.add(tidePlane);
+
+        var highTide = false, heightBands = false;
+        var curTideY = LOW_TIDE_Y, goalTideY = LOW_TIDE_Y;
+
+        function applyColorBuffer() {
+            var buf = heightBands ? (highTide ? wetBand : dryBand) : (highTide ? wetFlat : dryFlat);
+            hexMesh.instanceColor.array.set(buf);
+            hexMesh.instanceColor.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Giant\'s Causeway: hexagonal basalt columns</h3>' +
+                '<p>A promontory of interlocking hexagonal basalt column tops stepping from the Antrim cliffs into the North Atlantic.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Column count</td><td>about 40,000 interlocking columns</td></tr>' +
+                '<tr><td>Column shape</td><td>mostly hexagonal (6-sided); some 4-8 sided</td></tr>' +
+                '<tr><td>Column top size</td><td>mostly about 20-90 cm across</td></tr>' +
+                '<tr><td>Tallest columns</td><td>up to about 12 m</td></tr>' +
+                '<tr><td>Formation age</td><td>about 50-60 million years ago, cooling lava</td></tr>' +
+                '<tr><td>Location</td><td>County Antrim, Northern Ireland</td></tr>' +
+                '<tr><td>Heritage status</td><td>UNESCO World Heritage Site since 1986</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the column field, tide level, and height bands are schematic teaching cues, not survey data. A representative dense field stands in for the literal ~40,000 columns.</p>';
+        }
+
+        function apply() {
+            var tb = document.getElementById('t3dGcTideBtn');
+            if (tb) tb.textContent = 'Tide: ' + (highTide ? 'High' : 'Low');
+            var hb = document.getElementById('t3dGcHeightBtn');
+            if (hb) hb.textContent = 'Height bands: ' + (heightBands ? 'On' : 'Off');
+            goalTideY = highTide ? HIGH_TIDE_Y : LOW_TIDE_Y;
+            applyColorBuffer();
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ highTide: highTide, heightBands: heightBands }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.highTide === 'boolean') highTide = store.highTide;
+        if (typeof store.heightBands === 'boolean') heightBands = store.heightBands;
+        curTideY = highTide ? HIGH_TIDE_Y : LOW_TIDE_Y;
+        tidePlane.position.y = curTideY;
+        apply();
+
+        var tideBtn = document.getElementById('t3dGcTideBtn');
+        if (tideBtn) tideBtn.addEventListener('click', function () { highTide = !highTide; apply(); });
+        var heightBtn = document.getElementById('t3dGcHeightBtn');
+        if (heightBtn) heightBtn.addEventListener('click', function () { heightBands = !heightBands; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the tide level or the column height bands.');
+        return function animate(dt) {
+            curTideY += (goalTideY - curTideY) * Math.min(1, dt * 0.003);
+            tidePlane.position.y = curTideY;
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesgiantscauseway: 't3dGcControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesgiantscauseway: { radius: 18, maxR: 48, minR: 6, phi: 1.05, theta: 0.55, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
