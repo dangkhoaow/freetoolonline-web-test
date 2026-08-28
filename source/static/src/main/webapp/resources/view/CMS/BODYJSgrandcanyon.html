@@ -2,7 +2,13 @@
     // 3D scene archetype skeleton (grand-canyon) - vendored three.js
     // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
     // LEAN from the shared t3d* skeleton - ONE scene only (grand-canyon).
-    // All geometry is procedural. places-3d cluster seed 2026-07-27.
+    // places-3d cluster seed 2026-07-27; DETAILED-TERRAIN migration 2026-08-28
+    // (prompts/places-3d-detailed-terrain-runbook.md): the procedural relief
+    // below renders FIRST (unchanged, G16 render-only pass + CDN-outage
+    // fallback), then async fetches real Terrarium DEM elevation + Sentinel-2
+    // true-color imagery from the ftol-vm-assets CDN, IndexedDB-caches it, and
+    // swaps it in in-place once ready. A CDN failure or slow network leaves the
+    // procedural relief on screen - it never blanks.
     //
     // EDUCATIONAL APPROXIMATION, not survey geology.
     // Published figures (NPS / USGS consensus, cross-checked 2026-07-27):
@@ -52,6 +58,51 @@
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSmarsterrain.html's
+    // t3dMarsIdb* pattern) - heights.bin (Int16 LE meters) + texture.jpg
+    // (Sentinel-2 true-color), sha256-verified, cached once per manifest version.
+    var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+    var T3D_PLACES_DB = 'ftol-places3d-assets';
+    function t3dPlacesIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(T3D_PLACES_DB, 1);
+            req.onupgradeneeded = function () {
+                if (!req.result.objectStoreNames.contains('assets')) {
+                    req.result.createObjectStore('assets', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function t3dPlacesIdbGet(key) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function t3dPlacesIdbPut(key, blob) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function t3dPlacesSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
     }
 
     function t3dShell(THREE, host, opts) {
@@ -231,7 +282,25 @@
 
         var accentOn = false, riverOn = true;
 
+        // ---- Real-terrain progressive upgrade state (filled once loaded) ----
+        var realMesh = null, realReady = false, realLoading = false;
+        var realWhiteCol = null, realTintCol = null, realMinH = 0, realMaxH = 0;
+
         function panelHtml() {
+            if (realReady) {
+                return '<h3>Grand Canyon: real elevation + satellite imagery</h3>' +
+                    '<p>This relief now shows the actual measured terrain of the South Rim and river core - the meanders, terraces, and side canyons here are real elevation data, not a procedural approximation.</p>' +
+                    '<table class="w3-table w3-bordered">' +
+                    '<tr><td>Length</td><td>446 km (277 miles)</td></tr>' +
+                    '<tr><td>Width</td><td>up to 29 km (18 miles)</td></tr>' +
+                    '<tr><td>Depth</td><td>about 1.86 km - over a mile</td></tr>' +
+                    '<tr><td>Elevation in this view</td><td>' + Math.round(realMinH) + ' m to ' + Math.round(realMaxH) + ' m</td></tr>' +
+                    '<tr><td>Carved by</td><td>the Colorado River, main incision over the last 5-6 million years</td></tr>' +
+                    '<tr><td>Oldest rock</td><td>Vishnu Basement, about 1.7-1.8 billion years old</td></tr>' +
+                    '<tr><td>Protected</td><td>Grand Canyon National Park, Arizona, USA - established 1919</td></tr>' +
+                    '</table>' +
+                    '<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs). Imagery: contains modified Copernicus Sentinel data 2026. Relief is shown at true 1:1 scale relative to the mapped width - no vertical exaggeration. Educational approximation - not survey-grade geology.</p>';
+            }
             return '<h3>Grand Canyon: a mile of rock layers</h3>' +
                 '<p>A relief of the gorge: the meandering main canyon, dendritic side canyons, terraced walls from the cream Kaibab rim to the dark Vishnu basement, and the Colorado River below.</p>' +
                 '<table class="w3-table w3-bordered">' +
@@ -242,19 +311,144 @@
                 '<tr><td>Oldest rock</td><td>Vishnu Basement, about 1.7-1.8 billion years old</td></tr>' +
                 '<tr><td>Protected</td><td>Grand Canyon National Park, Arizona, USA - established 1919</td></tr>' +
                 '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the meanders, tributaries, and layer bands are procedural teaching cues, not survey geology.</p>';
+                '<p class="t3d-note">' + (realLoading
+                    ? 'Loading real elevation and satellite imagery now (one time, then cached) - this procedural relief is a teaching placeholder while it downloads.'
+                    : 'Educational relief approximation - the meanders, tributaries, and layer bands are procedural teaching cues, not survey geology.') + '</p>';
         }
 
         function apply() {
-            terrain.geometry.attributes.color.array.set(accentOn ? accentColors : normColors);
-            terrain.geometry.attributes.color.needsUpdate = true;
-            river.visible = riverOn;
+            if (realReady && realMesh) {
+                realMesh.geometry.attributes.color.array.set(accentOn ? realTintCol : realWhiteCol);
+                realMesh.geometry.attributes.color.needsUpdate = true;
+            } else {
+                terrain.geometry.attributes.color.array.set(accentOn ? accentColors : normColors);
+                terrain.geometry.attributes.color.needsUpdate = true;
+                river.visible = riverOn;
+            }
             var lb = document.getElementById('t3dPgcLayersBtn');
             if (lb) lb.textContent = 'Layer accents: ' + (accentOn ? 'On' : 'Off');
             var rb = document.getElementById('t3dPgcRiverBtn');
             if (rb) rb.textContent = 'River: ' + (riverOn ? 'On' : 'Off');
             t3dInfo(panelHtml());
             try { t3dSaveStore({ accentOn: accentOn, riverOn: riverOn }); } catch (e) {}
+        }
+
+        // Decimate a row-major Int16 grid to at most maxDim x maxDim cells,
+        // keeping the MAX value per cell (per the runbook: preserve summits,
+        // never average them away).
+        function decimateMax(view, w, h, maxDim) {
+            var stepX = Math.max(1, Math.ceil(w / maxDim));
+            var stepZ = Math.max(1, Math.ceil(h / maxDim));
+            var ow = Math.floor((w - 1) / stepX) + 1;
+            var oh = Math.floor((h - 1) / stepZ) + 1;
+            var out = new Int16Array(ow * oh);
+            for (var oz = 0; oz < oh; oz++) {
+                var z0 = oz * stepZ;
+                for (var ox = 0; ox < ow; ox++) {
+                    var x0 = ox * stepX, best = -32768;
+                    for (var dz = 0; dz < stepZ && z0 + dz < h; dz++) {
+                        var rowBase = (z0 + dz) * w;
+                        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+                            var v = view[rowBase + x0 + dx];
+                            if (v > best) best = v;
+                        }
+                    }
+                    out[oz * ow + ox] = best;
+                }
+            }
+            return { data: out, w: ow, h: oh };
+        }
+
+        function buildRealMesh(view, grid, texBlob) {
+            var dec = decimateMax(view, grid.width_px, grid.height_px, 220);
+            var W = 22, D = 20; // same footprint as the procedural terrain above
+            var geo2 = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+            geo2.rotateX(-Math.PI / 2);
+            // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1
+            // vertical proportion relative to the mapped width (no exaggeration).
+            var vertScale = W / (grid.width_px * grid.meters_per_px);
+            var minH = grid.min_h_m, maxH = grid.max_h_m, span = Math.max(1, maxH - minH);
+            var pos2 = geo2.attributes.position;
+            var whiteCol = new Float32Array(pos2.count * 3);
+            var tintCol = new Float32Array(pos2.count * 3);
+            var c = new THREE.Color();
+            for (var i = 0; i < pos2.count; i++) {
+                var ix = i % dec.w, iz = Math.floor(i / dec.w);
+                var hRaw = dec.data[iz * dec.w + ix];
+                pos2.setY(i, (hRaw - minH) * vertScale);
+                var u = Math.max(0, Math.min(1, (hRaw - minH) / span));
+                whiteCol[i * 3] = 1; whiteCol[i * 3 + 1] = 1; whiteCol[i * 3 + 2] = 1;
+                bandColor(c, RIM - u * DEPTH, 0, 0, false);
+                tintCol[i * 3] = c.r; tintCol[i * 3 + 1] = c.g; tintCol[i * 3 + 2] = c.b;
+            }
+            geo2.setAttribute('color', new THREE.BufferAttribute(accentOn ? tintCol : whiteCol, 3));
+            geo2.computeVertexNormals();
+            var mat2 = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+            var mesh2 = new THREE.Mesh(geo2, mat2);
+            scene.add(mesh2);
+            terrain.visible = false;
+            river.visible = false;
+            realMesh = mesh2; realWhiteCol = whiteCol; realTintCol = tintCol;
+            realMinH = minH; realMaxH = maxH;
+            realLoading = false; realReady = true;
+            apply();
+            t3dStatus('Real terrain loaded (Terrarium DEM + Sentinel-2 imagery). Drag to orbit, scroll to zoom.');
+            if (texBlob) {
+                var url = URL.createObjectURL(texBlob);
+                new THREE.TextureLoader().load(url, function (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    mat2.map = tex;
+                    mat2.needsUpdate = true;
+                    URL.revokeObjectURL(url);
+                }, undefined, function () { URL.revokeObjectURL(url); });
+            }
+        }
+
+        function fetchPlacesAsset(file, mimeType, verKey) {
+            var key = verKey + ':' + file.file;
+            return t3dPlacesIdbGet(key).then(function (cached) {
+                if (cached) return cached;
+                return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+                    return r.arrayBuffer();
+                }).then(function (buf) {
+                    return t3dPlacesSha256Hex(buf).then(function (hex) {
+                        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+                        var blob = new Blob([buf], { type: mimeType });
+                        t3dPlacesIdbPut(key, blob);
+                        return blob;
+                    });
+                });
+            });
+        }
+
+        function loadRealTerrain() {
+            realLoading = true;
+            apply();
+            fetch(T3D_PLACES_CDN + '/manifest.json').then(function (r) { return r.json(); })
+                .then(function (manifest) {
+                    var asset = manifest && manifest.assets && manifest.assets['grand-canyon'];
+                    if (!asset) throw new Error('manifest missing the grand-canyon asset');
+                    var heightsFile = null, texFile = null;
+                    (asset.files || []).forEach(function (f) {
+                        if (f.role === 'heightfield') heightsFile = f;
+                        if (f.role === 'satellite-texture') texFile = f;
+                    });
+                    if (!heightsFile) throw new Error('manifest missing the heightfield file');
+                    var verKey = 'grand-canyon@' + manifest.version;
+                    var jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+                    if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+                    return Promise.all(jobs).then(function (blobs) {
+                        return blobs[0].arrayBuffer().then(function (buf) {
+                            buildRealMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    realLoading = false;
+                    apply();
+                    t3dStatus('Could not load real terrain data (' + (err && err.message ? err.message : err) + ') - showing the procedural relief instead.');
+                });
         }
 
         var store = t3dLoadStore();
@@ -268,6 +462,8 @@
         if (riverBtn) riverBtn.addEventListener('click', function () { riverOn = !riverOn; apply(); });
 
         t3dStatus('Drag to orbit, scroll to zoom. Toggle layer accents or the river.');
+        if ('requestIdleCallback' in window) { requestIdleCallback(loadRealTerrain, { timeout: 4000 }); }
+        else { setTimeout(loadRealTerrain, 800); }
         return function animate(dt) {
             scene.rotation.y += dt * 0.00004;
         };
