@@ -3661,16 +3661,6 @@ export const INFO_ROUTES = new Set([
   '/guides/es/comet-orbit-when.html',
   '/guides/de/comet-orbit-when.html',
   '/guides/id/comet-orbit-when.html',
-  '/guides/comet-orbit-step-by-step.html',
-  '/guides/pt/comet-orbit-step-by-step.html',
-  '/guides/es/comet-orbit-step-by-step.html',
-  '/guides/de/comet-orbit-step-by-step.html',
-  '/guides/id/comet-orbit-step-by-step.html',
-  '/guides/comet-orbit-vs-alternatives.html',
-  '/guides/pt/comet-orbit-vs-alternatives.html',
-  '/guides/es/comet-orbit-vs-alternatives.html',
-  '/guides/de/comet-orbit-vs-alternatives.html',
-  '/guides/id/comet-orbit-vs-alternatives.html',
   '/guides/seasons-earth-when.html',
   '/guides/pt/seasons-earth-when.html',
   '/guides/es/seasons-earth-when.html',
@@ -4216,24 +4206,12 @@ export const INFO_ROUTES = new Set([
   '/guides/de/tides-earth-moon-vs-alternatives.html',
   '/guides/vi/tides-earth-moon-vs-alternatives.html',
   '/guides/id/tides-earth-moon-vs-alternatives.html',
-  '/guides/solar-wind-heliosphere-step-by-step.html',
-  '/guides/pt/solar-wind-heliosphere-step-by-step.html',
-  '/guides/es/solar-wind-heliosphere-step-by-step.html',
-  '/guides/de/solar-wind-heliosphere-step-by-step.html',
-  '/guides/vi/solar-wind-heliosphere-step-by-step.html',
-  '/guides/id/solar-wind-heliosphere-step-by-step.html',
   '/guides/solar-wind-heliosphere-when.html',
   '/guides/pt/solar-wind-heliosphere-when.html',
   '/guides/es/solar-wind-heliosphere-when.html',
   '/guides/de/solar-wind-heliosphere-when.html',
   '/guides/vi/solar-wind-heliosphere-when.html',
   '/guides/id/solar-wind-heliosphere-when.html',
-  '/guides/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/pt/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/es/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/de/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/vi/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/id/solar-wind-heliosphere-vs-alternatives.html',
   '/guides/escape-velocity-step-by-step.html',
   '/guides/pt/escape-velocity-step-by-step.html',
   '/guides/es/escape-velocity-step-by-step.html',
@@ -14115,6 +14093,39 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // consolidation fire69 (2026-08-28): retire the comet-orbit and
+  // solar-wind-heliosphere -step-by-step + -vs-alternatives guide-farm families
+  // into their -when keeper, locale-matched. Backlog items
+  // topical-map-space-3d.comet-orbit.3d-explorer +
+  // topical-map-space-3d.solar-wind-heliosphere.3d-explorer. Every unique fact was
+  // folded into the keeper BEFORE the 301: the full control order (drag/scroll/Play
+  // orbit, Orbit progress, Ion+Dust tail toggles, fullscreen; Wind 200-800 km/s,
+  // Pause wind, Hide labels, AU table), the comparison tables, the boundary/figure
+  // tables and the step-by-step illustration. Edge layer patched in the same push.
+  '/guides/comet-orbit-step-by-step.html': '/guides/comet-orbit-when.html',
+  '/guides/pt/comet-orbit-step-by-step.html': '/guides/pt/comet-orbit-when.html',
+  '/guides/es/comet-orbit-step-by-step.html': '/guides/es/comet-orbit-when.html',
+  '/guides/de/comet-orbit-step-by-step.html': '/guides/de/comet-orbit-when.html',
+  '/guides/id/comet-orbit-step-by-step.html': '/guides/id/comet-orbit-when.html',
+  '/guides/vi/comet-orbit-step-by-step.html': '/guides/comet-orbit-when.html',
+  '/guides/comet-orbit-vs-alternatives.html': '/guides/comet-orbit-when.html',
+  '/guides/pt/comet-orbit-vs-alternatives.html': '/guides/pt/comet-orbit-when.html',
+  '/guides/es/comet-orbit-vs-alternatives.html': '/guides/es/comet-orbit-when.html',
+  '/guides/de/comet-orbit-vs-alternatives.html': '/guides/de/comet-orbit-when.html',
+  '/guides/id/comet-orbit-vs-alternatives.html': '/guides/id/comet-orbit-when.html',
+  '/guides/vi/comet-orbit-vs-alternatives.html': '/guides/comet-orbit-when.html',
+  '/guides/solar-wind-heliosphere-step-by-step.html': '/guides/solar-wind-heliosphere-when.html',
+  '/guides/pt/solar-wind-heliosphere-step-by-step.html': '/guides/pt/solar-wind-heliosphere-when.html',
+  '/guides/es/solar-wind-heliosphere-step-by-step.html': '/guides/es/solar-wind-heliosphere-when.html',
+  '/guides/de/solar-wind-heliosphere-step-by-step.html': '/guides/de/solar-wind-heliosphere-when.html',
+  '/guides/id/solar-wind-heliosphere-step-by-step.html': '/guides/id/solar-wind-heliosphere-when.html',
+  '/guides/vi/solar-wind-heliosphere-step-by-step.html': '/guides/vi/solar-wind-heliosphere-when.html',
+  '/guides/solar-wind-heliosphere-vs-alternatives.html': '/guides/solar-wind-heliosphere-when.html',
+  '/guides/pt/solar-wind-heliosphere-vs-alternatives.html': '/guides/pt/solar-wind-heliosphere-when.html',
+  '/guides/es/solar-wind-heliosphere-vs-alternatives.html': '/guides/es/solar-wind-heliosphere-when.html',
+  '/guides/de/solar-wind-heliosphere-vs-alternatives.html': '/guides/de/solar-wind-heliosphere-when.html',
+  '/guides/id/solar-wind-heliosphere-vs-alternatives.html': '/guides/id/solar-wind-heliosphere-when.html',
+  '/guides/vi/solar-wind-heliosphere-vs-alternatives.html': '/guides/vi/solar-wind-heliosphere-when.html',
   '/guides/jwt-decoder-step-by-step.html': '/guides/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper
   '/guides/pt/jwt-decoder-step-by-step.html': '/guides/pt/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper
   '/guides/es/jwt-decoder-step-by-step.html': '/guides/es/jwt-decoder-when.html', // consolidation fire73: doorway family retired into the -when keeper
@@ -14631,8 +14642,6 @@ export const ALIAS_ROUTES = {
   '/guides/vi/aspect-ratio-calculator-vs-alternatives.html': '/guides/aspect-ratio-calculator-vs-alternatives.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-2)
   '/guides/vi/aspect-ratio-calculator-when.html': '/guides/aspect-ratio-calculator-when.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-2)
   '/guides/vi/comet-orbit-when.html': '/guides/comet-orbit-when.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
-  '/guides/vi/comet-orbit-vs-alternatives.html': '/guides/comet-orbit-vs-alternatives.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
-  '/guides/vi/comet-orbit-step-by-step.html': '/guides/comet-orbit-step-by-step.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
   '/guides/vi/color-contrast-checker-wcag-when.html': '/guides/color-contrast-checker-wcag-when.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
   '/guides/vi/color-contrast-checker-wcag-vs-alternatives.html': '/guides/color-contrast-checker-wcag-vs-alternatives.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
   '/guides/vi/color-contrast-checker-wcag-step-by-step.html': '/guides/color-contrast-checker-wcag-step-by-step.html', // guide-farm-prune Phase-B 301 (2026-08-18, vi-batch-1)
@@ -22962,24 +22971,12 @@ export const JSP_BY_ROUTE = {
   '/guides/de/tides-earth-moon-vs-alternatives.html': 'guide/de/tides-earth-moon-vs-alternatives.jsp',
   '/guides/vi/tides-earth-moon-vs-alternatives.html': 'guide/vi/tides-earth-moon-vs-alternatives.jsp',
   '/guides/id/tides-earth-moon-vs-alternatives.html': 'guide/id/tides-earth-moon-vs-alternatives.jsp',
-  '/guides/solar-wind-heliosphere-step-by-step.html': 'guide/solar-wind-heliosphere-step-by-step.jsp',
-  '/guides/pt/solar-wind-heliosphere-step-by-step.html': 'guide/pt/solar-wind-heliosphere-step-by-step.jsp',
-  '/guides/es/solar-wind-heliosphere-step-by-step.html': 'guide/es/solar-wind-heliosphere-step-by-step.jsp',
-  '/guides/de/solar-wind-heliosphere-step-by-step.html': 'guide/de/solar-wind-heliosphere-step-by-step.jsp',
-  '/guides/vi/solar-wind-heliosphere-step-by-step.html': 'guide/vi/solar-wind-heliosphere-step-by-step.jsp',
-  '/guides/id/solar-wind-heliosphere-step-by-step.html': 'guide/id/solar-wind-heliosphere-step-by-step.jsp',
   '/guides/solar-wind-heliosphere-when.html': 'guide/solar-wind-heliosphere-when.jsp',
   '/guides/pt/solar-wind-heliosphere-when.html': 'guide/pt/solar-wind-heliosphere-when.jsp',
   '/guides/es/solar-wind-heliosphere-when.html': 'guide/es/solar-wind-heliosphere-when.jsp',
   '/guides/de/solar-wind-heliosphere-when.html': 'guide/de/solar-wind-heliosphere-when.jsp',
   '/guides/vi/solar-wind-heliosphere-when.html': 'guide/vi/solar-wind-heliosphere-when.jsp',
   '/guides/id/solar-wind-heliosphere-when.html': 'guide/id/solar-wind-heliosphere-when.jsp',
-  '/guides/solar-wind-heliosphere-vs-alternatives.html': 'guide/solar-wind-heliosphere-vs-alternatives.jsp',
-  '/guides/pt/solar-wind-heliosphere-vs-alternatives.html': 'guide/pt/solar-wind-heliosphere-vs-alternatives.jsp',
-  '/guides/es/solar-wind-heliosphere-vs-alternatives.html': 'guide/es/solar-wind-heliosphere-vs-alternatives.jsp',
-  '/guides/de/solar-wind-heliosphere-vs-alternatives.html': 'guide/de/solar-wind-heliosphere-vs-alternatives.jsp',
-  '/guides/vi/solar-wind-heliosphere-vs-alternatives.html': 'guide/vi/solar-wind-heliosphere-vs-alternatives.jsp',
-  '/guides/id/solar-wind-heliosphere-vs-alternatives.html': 'guide/id/solar-wind-heliosphere-vs-alternatives.jsp',
   '/space-3d/escape-velocity.html': 'space/escape-velocity.jsp',
   '/space-3d/habitable-zone.html': 'space/habitable-zone.jsp',
   '/space-3d/cosmic-distance-ladder.html': 'space/cosmic-distance-ladder.jsp',
@@ -24818,16 +24815,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/comet-orbit-when.html': 'guide/es/comet-orbit-when.jsp',
   '/guides/de/comet-orbit-when.html': 'guide/de/comet-orbit-when.jsp',
   '/guides/id/comet-orbit-when.html': 'guide/id/comet-orbit-when.jsp',
-  '/guides/comet-orbit-step-by-step.html': 'guide/comet-orbit-step-by-step.jsp',
-  '/guides/pt/comet-orbit-step-by-step.html': 'guide/pt/comet-orbit-step-by-step.jsp',
-  '/guides/es/comet-orbit-step-by-step.html': 'guide/es/comet-orbit-step-by-step.jsp',
-  '/guides/de/comet-orbit-step-by-step.html': 'guide/de/comet-orbit-step-by-step.jsp',
-  '/guides/id/comet-orbit-step-by-step.html': 'guide/id/comet-orbit-step-by-step.jsp',
-  '/guides/comet-orbit-vs-alternatives.html': 'guide/comet-orbit-vs-alternatives.jsp',
-  '/guides/pt/comet-orbit-vs-alternatives.html': 'guide/pt/comet-orbit-vs-alternatives.jsp',
-  '/guides/es/comet-orbit-vs-alternatives.html': 'guide/es/comet-orbit-vs-alternatives.jsp',
-  '/guides/de/comet-orbit-vs-alternatives.html': 'guide/de/comet-orbit-vs-alternatives.jsp',
-  '/guides/id/comet-orbit-vs-alternatives.html': 'guide/id/comet-orbit-vs-alternatives.jsp',
   '/guides/seasons-earth-when.html': 'guide/seasons-earth-when.jsp',
   '/guides/pt/seasons-earth-when.html': 'guide/pt/seasons-earth-when.jsp',
   '/guides/es/seasons-earth-when.html': 'guide/es/seasons-earth-when.jsp',
