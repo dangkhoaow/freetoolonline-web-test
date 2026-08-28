@@ -1,0 +1,215 @@
+<script>
+    // Keyword Extractor - 100% client-side, two-tier engine.
+    // Registry Gate-H: keyword_extraction_embeddings_transformersjs
+    // (probe artifact seo-reports/20260828-ailocal-fire34/qa/gate-h_probe_keyword-extractor_minilm.json:
+    //  solar/coffee top-5 on-topic, zero cross-topic overlap, ~1.2s per ~120-word doc, zero page errors).
+    // Tier 1 (deterministic, NO download): term-frequency ranking over
+    //   stopword-filtered n-gram candidates - the "basic" mode and the fallback.
+    // Tier 2 (optional AI, explicit click): MiniLM sentence embeddings via
+    //   @huggingface/transformers@4.2.0 (EXACT pin per HARD GUARD 5 - the version
+    //   the Gate-H probe ran under), model Xenova/all-MiniLM-L6-v2 q8 (~24MB
+    //   total, stated BEFORE download, cached by the library in the browser).
+    //   KeyBERT-style: cosine similarity to the document embedding + MMR
+    //   diversification. WebGPU when available, else WASM.
+    // Relevance is relevance-to-THIS-text only - the tool has no web data and
+    // never claims search volume or any SEO metric. Text never leaves the browser.
+    // Framework contract: doAfterPageRendered(); no top-level DOM work.
+
+    web.localUpload = false;
+
+    var KWE_PIN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
+    var KWE_MODEL = 'Xenova/all-MiniLM-L6-v2';
+    var KWE_MODEL_MB = 24;          // honest size label shown before download (HF HEAD-verified 23MB onnx + 0.7MB tokenizer)
+    var KWE_MAX_CANDS = 400;        // candidate cap - phrases are embedded in order of first appearance
+    var KWE_CHUNK_WORDS = 220;      // long documents are embedded in chunks and averaged
+    var KWE_MMR_LAMBDA = 0.65;      // relevance vs diversity tradeoff (probe-verified value)
+    var KWE_STATE = { embedder: null, running: false, lastList: [] };
+
+    var KWE_STOP = {};
+    ('a an and are as at be but by for from has have i if in into is it its of on or such that the their then there these they this to was were will with you your our we he she his her not no yes can could should would may might do does did done more most other some any each which who whom what when where why how all also than too very just about over under between during before after above below up down out off again further once here').split(' ').forEach(function (w) { KWE_STOP[w] = 1; });
+
+    function kweEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    function kweStatus(msg, isErr) {
+        var el = document.getElementById('kweStatus');
+        if (el) { el.textContent = msg; el.style.color = isErr ? '#b00020' : '#333'; }
+    }
+
+    function kweWords(txt) {
+        return String(txt || '').toLowerCase().replace(/[^a-z0-9À-ɏ\s-]/g, ' ').split(/\s+/).filter(Boolean);
+    }
+
+    // Candidate n-grams (1..maxN words), stopword-boundary-filtered, with counts.
+    function kweCandidates(txt, maxN) {
+        var w = kweWords(txt);
+        var map = {}, order = [];
+        for (var n = 1; n <= maxN; n++) {
+            for (var i = 0; i + n <= w.length; i++) {
+                var gram = w.slice(i, i + n);
+                if (KWE_STOP[gram[0]] || KWE_STOP[gram[gram.length - 1]]) continue;
+                var short = false;
+                for (var g = 0; g < gram.length; g++) if (gram[g].length < 2) { short = true; break; }
+                if (short) continue;
+                var phrase = gram.join(' ');
+                if (!Object.prototype.hasOwnProperty.call(map, phrase)) { map[phrase] = 0; order.push(phrase); }
+                map[phrase]++;
+            }
+        }
+        return order.slice(0, KWE_MAX_CANDS).map(function (p) { return { phrase: p, count: map[p] }; });
+    }
+
+    // Tier 1: deterministic frequency ranking (count, longer phrases get a mild boost).
+    function kweBasicRank(txt, maxN, topK) {
+        var cands = kweCandidates(txt, maxN);
+        cands.sort(function (a, b) {
+            var sa = a.count * (1 + 0.25 * (a.phrase.split(' ').length - 1));
+            var sb = b.count * (1 + 0.25 * (b.phrase.split(' ').length - 1));
+            return sb - sa;
+        });
+        return cands.slice(0, topK).map(function (c) { return { phrase: c.phrase, label: 'seen ' + c.count + 'x' }; });
+    }
+
+    function kweDot(a, b) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+
+    // Document embedding: chunk long texts and average the unit vectors.
+    async function kweDocVector(txt) {
+        var w = kweWords(txt);
+        var chunks = [];
+        for (var i = 0; i < w.length; i += KWE_CHUNK_WORDS) chunks.push(w.slice(i, i + KWE_CHUNK_WORDS).join(' '));
+        if (!chunks.length) chunks = [txt];
+        var vecs = [];
+        for (var c = 0; c < chunks.length; c++) {
+            var r = await KWE_STATE.embedder(chunks[c], { pooling: 'mean', normalize: true });
+            vecs.push(Array.from(r.data));
+        }
+        var dim = vecs[0].length, avg = new Array(dim).fill(0);
+        vecs.forEach(function (v) { for (var k = 0; k < dim; k++) avg[k] += v[k]; });
+        var norm = Math.sqrt(kweDot(avg, avg)) || 1;
+        for (var k2 = 0; k2 < dim; k2++) avg[k2] /= norm;
+        return avg;
+    }
+
+    // Tier 2: KeyBERT-style ranking with MMR diversification.
+    async function kweAiRank(txt, maxN, topK, progressCb) {
+        var cands = kweCandidates(txt, maxN);
+        if (!cands.length) return [];
+        var docVec = await kweDocVector(txt);
+        var vecs = [];
+        for (var i = 0; i < cands.length; i++) {
+            if (progressCb && i % 25 === 0) progressCb(i, cands.length);
+            var r = await KWE_STATE.embedder(cands[i].phrase, { pooling: 'mean', normalize: true });
+            vecs.push(Array.from(r.data));
+        }
+        var sims = vecs.map(function (v) { return kweDot(v, docVec); });
+        var picked = [], idxs = sims.map(function (_, i) { return i; });
+        while (picked.length < topK && idxs.length) {
+            var best = -1, bestScore = -Infinity;
+            for (var j = 0; j < idxs.length; j++) {
+                var i2 = idxs[j];
+                var div = 0;
+                for (var p = 0; p < picked.length; p++) div = Math.max(div, kweDot(vecs[i2], vecs[picked[p]]));
+                var s = KWE_MMR_LAMBDA * sims[i2] - (1 - KWE_MMR_LAMBDA) * div;
+                if (s > bestScore) { bestScore = s; best = i2; }
+            }
+            picked.push(best);
+            idxs.splice(idxs.indexOf(best), 1);
+        }
+        return picked.map(function (i3) { return { phrase: cands[i3].phrase, label: 'relevance ' + sims[i3].toFixed(2) }; });
+    }
+
+    function kweRender(list, modeNote) {
+        var el = document.getElementById('kweResults');
+        if (!el) return;
+        if (!list.length) {
+            el.innerHTML = '<div class="w3-panel w3-pale-yellow" style="display:inline-block;text-align:left;padding:8px;">No phrases found - paste at least a sentence or two of text.</div>';
+            return;
+        }
+        KWE_STATE.lastList = list.map(function (x) { return x.phrase; });
+        var html = '<div class="w3-panel w3-border" style="display:inline-block;text-align:left;padding:8px;max-width:560px;">' +
+            '<span style="font-size:0.85em;color:#555;">' + kweEsc(modeNote) + '</span><ol style="margin:6px 0 4px 18px;">';
+        list.forEach(function (x) {
+            html += '<li>' + kweEsc(x.phrase) + ' <span style="color:#555;font-size:0.85em;">(' + kweEsc(x.label) + ')</span></li>';
+        });
+        html += '</ol></div>';
+        el.innerHTML = html;
+        var copyBtn = document.getElementById('kweCopyBtn');
+        if (copyBtn) copyBtn.style.display = '';
+    }
+
+    function kweGetOpts() {
+        var maxN = parseInt((document.getElementById('kweNgram') || {}).value || '3', 10);
+        var topK = parseInt((document.getElementById('kweCount') || {}).value || '10', 10);
+        var txt = (document.getElementById('kweInput') || {}).value || '';
+        return { maxN: maxN, topK: topK, txt: txt };
+    }
+
+    function kweRunBasic() {
+        var o = kweGetOpts();
+        if (!o.txt.trim()) { kweStatus('Paste some text first.', true); return; }
+        var list = kweBasicRank(o.txt, o.maxN, o.topK);
+        kweRender(list, 'Basic mode - phrases ranked by how often they appear in your text (instant, no AI).');
+        kweStatus('Done: ' + list.length + ' phrase(s), ranked by frequency on this device. For meaning-based ranking, use "Rank with AI".');
+    }
+
+    async function kweRunAi() {
+        if (KWE_STATE.running) return;
+        var o = kweGetOpts();
+        if (!o.txt.trim()) { kweStatus('Paste some text first.', true); return; }
+        if (kweWords(o.txt).length < 30) kweStatus('Short texts (under ~30 words) rank poorly - results improve with a full paragraph or more.');
+        KWE_STATE.running = true;
+        var btn = document.getElementById('kweAiBtn');
+        try {
+            if (!KWE_STATE.embedder) {
+                if (btn) btn.disabled = true;
+                kweStatus('Downloading the AI model (about ' + KWE_MODEL_MB + ' MB, one time - cached in this browser). Your text still never leaves your device.');
+                var tf = await import(KWE_PIN);
+                var device = (navigator.gpu ? 'webgpu' : 'wasm');
+                try {
+                    KWE_STATE.embedder = await tf.pipeline('feature-extraction', KWE_MODEL, { dtype: 'q8', device: device });
+                } catch (e) {
+                    console.warn('webgpu path failed, retrying wasm', e);
+                    KWE_STATE.embedder = await tf.pipeline('feature-extraction', KWE_MODEL, { dtype: 'q8', device: 'wasm' });
+                }
+            }
+            kweStatus('Ranking phrases by meaning on this device...');
+            var list = await kweAiRank(o.txt, o.maxN, o.topK, function (i, n) {
+                kweStatus('AI reading phrase ' + (i + 1) + ' of ' + n + ' on this device...');
+            });
+            kweRender(list, 'AI mode - phrases ranked by how close they sit to the meaning of the whole text. Relevance is not search volume.');
+            kweStatus('Done: ' + list.length + ' phrase(s), ranked by meaning on this device. English works best; very long texts take longer.');
+        } catch (e) {
+            console.error(e);
+            kweStatus('The AI model could not load here (' + e.message + '). The instant frequency ranking still works - showing it below.', true);
+            kweRunBasic();
+        }
+        if (btn) btn.disabled = false;
+        KWE_STATE.running = false;
+    }
+
+    function kweCopy() {
+        var txt = KWE_STATE.lastList.join('\n');
+        if (!txt) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txt).then(function () { kweStatus('Copied ' + KWE_STATE.lastList.length + ' phrase(s) to the clipboard.'); });
+        } else {
+            var ta = document.createElement('textarea');
+            ta.value = txt; document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); kweStatus('Copied ' + KWE_STATE.lastList.length + ' phrase(s) to the clipboard.'); } catch (e) {}
+            ta.remove();
+        }
+    }
+
+    function doAfterPageRendered() {
+        var runBtn = document.getElementById('kweRunBtn');
+        var aiBtn = document.getElementById('kweAiBtn');
+        var copyBtn = document.getElementById('kweCopyBtn');
+        if (!runBtn) return;
+        runBtn.addEventListener('click', kweRunBasic);
+        if (aiBtn) aiBtn.addEventListener('click', kweRunAi);
+        if (copyBtn) copyBtn.addEventListener('click', kweCopy);
+    }
+</script>

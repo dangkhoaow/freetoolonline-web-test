@@ -16747,6 +16747,7 @@ export const ALIAS_ROUTES = {
   '/alt-text-generator.html': '/image-tools/alt-text-generator.html',
   '/image-colorizer.html': '/image-tools/image-colorizer.html',
   '/duplicate-photo-finder.html': '/image-tools/duplicate-photo-finder.html',
+  '/keyword-extractor.html': '/developer-tools/keyword-extractor.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29020,6 +29021,7 @@ export const JSP_BY_ROUTE = {
   '/image-tools/alt-text-generator.html': 'convert/alt-text-generator.jsp',
   '/image-tools/image-colorizer.html': 'convert/image-colorizer.jsp',
   '/image-tools/duplicate-photo-finder.html': 'convert/duplicate-photo-finder.jsp',
+  '/developer-tools/keyword-extractor.html': 'utility/keyword-extractor.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
