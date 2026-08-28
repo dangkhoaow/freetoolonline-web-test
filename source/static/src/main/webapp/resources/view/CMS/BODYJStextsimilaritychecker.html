@@ -1,0 +1,192 @@
+<script>
+    // Text Similarity Checker - 100% client-side, two-tier engine.
+    // Registry Gate-H: semantic_similarity_embeddings_transformersjs
+    // (probe artifact seo-reports/20260828-ailocal-fire35/qa/gate-h_probe_text-similarity_minilm.json:
+    //  paraphrase pair cosine 0.7718 vs unrelated 0.0810 at 10.7% verbatim word
+    //  overlap; per-sentence heatmap mean 0.6626 vs 0.0636; ~210ms per comparison; zero page errors).
+    // Tier 1 (deterministic, NO download): Jaccard word overlap + shared-phrase
+    //   detection - the "basic" verbatim mode and the fallback.
+    // Tier 2 (optional AI, explicit click): MiniLM sentence embeddings via
+    //   @huggingface/transformers@4.2.0 (EXACT pin per HARD GUARD 5 - the version
+    //   the Gate-H probe ran under), model Xenova/all-MiniLM-L6-v2 q8 (~24MB
+    //   total, stated BEFORE download, cached by the library in the browser -
+    //   SHARED cache with the keyword extractor, same model files).
+    //   Whole-text cosine on mean-pooled unit vectors + per-sentence best-match
+    //   breakdown. WebGPU when available, else the ONNX WebAssembly (.wasm) backend.
+    // NOT a plagiarism detector: no source corpus, no originality verdict - the
+    // score compares only the two pasted texts. Texts never leave the browser.
+    // Framework contract: doAfterPageRendered(); no top-level DOM work.
+
+    web.localUpload = false;
+
+    var TSC_PIN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
+    var TSC_MODEL = 'Xenova/all-MiniLM-L6-v2';
+    var TSC_MODEL_MB = 24;          // honest size label shown before download (HF HEAD-verified 23MB onnx + 0.7MB tokenizer)
+    var TSC_CHUNK_WORDS = 220;      // long texts are embedded in chunks and averaged
+    var TSC_MAX_SENTS = 40;         // per-sentence breakdown cap (keeps the table readable + fast)
+    var TSC_STATE = { embedder: null, running: false };
+
+    function tscEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    function tscStatus(msg, isErr) {
+        var el = document.getElementById('tscStatus');
+        if (el) { el.textContent = msg; el.style.color = isErr ? '#b00020' : '#333'; }
+    }
+
+    function tscWords(txt) {
+        return String(txt || '').toLowerCase().replace(/[^a-z0-9À-ɏ\s-]/g, ' ').split(/\s+/).filter(Boolean);
+    }
+
+    function tscSentences(txt) {
+        return String(txt || '').split(/(?<=[.!?])\s+/).map(function (s) { return s.trim(); })
+            .filter(function (s) { return s.length > 3; }).slice(0, TSC_MAX_SENTS);
+    }
+
+    function tscBand(score) {
+        if (score >= 0.8) return 'very similar meaning';
+        if (score >= 0.6) return 'similar meaning';
+        if (score >= 0.4) return 'somewhat related';
+        return 'mostly different';
+    }
+
+    // Tier 1: Jaccard word overlap + shared 3-word phrases (verbatim mode).
+    function tscBasicCompare(a, b) {
+        var wa = tscWords(a), wb = tscWords(b);
+        var sa = {}, sb = {};
+        wa.forEach(function (w) { sa[w] = 1; });
+        wb.forEach(function (w) { sb[w] = 1; });
+        var inter = 0, union = 0, k;
+        for (k in sa) { union++; if (sb[k]) inter++; }
+        for (k in sb) { if (!sa[k]) union++; }
+        var jaccard = union ? inter / union : 0;
+        var tri = {}, shared = [];
+        for (var i = 0; i + 3 <= wa.length; i++) tri[wa.slice(i, i + 3).join(' ')] = 1;
+        for (var j = 0; j + 3 <= wb.length; j++) {
+            var p = wb.slice(j, j + 3).join(' ');
+            if (tri[p] && shared.length < 5 && shared.indexOf(p) < 0) shared.push(p);
+        }
+        return { jaccard: jaccard, sharedPhrases: shared };
+    }
+
+    function tscDot(a, b) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+
+    async function tscVec(txt) {
+        var r = await TSC_STATE.embedder(txt, { pooling: 'mean', normalize: true });
+        return Array.from(r.data);
+    }
+
+    // Whole-text embedding: chunk long texts and average the unit vectors.
+    async function tscDocVector(txt) {
+        var w = tscWords(txt);
+        var chunks = [];
+        for (var i = 0; i < w.length; i += TSC_CHUNK_WORDS) chunks.push(w.slice(i, i + TSC_CHUNK_WORDS).join(' '));
+        if (!chunks.length) chunks = [txt];
+        var vecs = [];
+        for (var c = 0; c < chunks.length; c++) vecs.push(await tscVec(chunks[c]));
+        var dim = vecs[0].length, avg = new Array(dim).fill(0);
+        vecs.forEach(function (v) { for (var k = 0; k < dim; k++) avg[k] += v[k]; });
+        var norm = Math.sqrt(tscDot(avg, avg)) || 1;
+        for (var k2 = 0; k2 < dim; k2++) avg[k2] /= norm;
+        return avg;
+    }
+
+    function tscRenderScore(pct, band, extraHtml) {
+        var el = document.getElementById('tscResults');
+        if (!el) return;
+        el.innerHTML = '<div class="w3-panel w3-border" style="display:inline-block;text-align:left;padding:8px;max-width:640px;">' +
+            '<p style="margin:2px 0;font-size:1.15em;"><b>Similarity: ' + pct + '%</b> - ' + tscEsc(band) + '</p>' +
+            (extraHtml || '') + '</div>';
+    }
+
+    function tscRunBasic() {
+        var a = document.getElementById('tscInputA').value || '';
+        var b = document.getElementById('tscInputB').value || '';
+        if (!a.trim() || !b.trim()) { tscStatus('Paste text into both boxes first.', true); return; }
+        var r = tscBasicCompare(a, b);
+        var pct = Math.round(r.jaccard * 100);
+        var extra = '<p style="margin:4px 0;font-size:0.9em;color:#555;">Basic verbatim mode - the score is the share of words the two texts have in common (Jaccard). It cannot see reworded meaning; for that, use "Compare meaning with AI".</p>';
+        if (r.sharedPhrases.length) {
+            extra += '<p style="margin:4px 0;font-size:0.9em;">Shared phrases: ' + r.sharedPhrases.map(tscEsc).join('; ') + '</p>';
+        }
+        tscRenderScore(pct, pct >= 50 ? 'high word overlap' : pct >= 20 ? 'some word overlap' : 'low word overlap', extra);
+        tscStatus('Done: verbatim word-overlap score computed on this device.');
+    }
+
+    async function tscRunAi() {
+        if (TSC_STATE.running) return;
+        var a = document.getElementById('tscInputA').value || '';
+        var b = document.getElementById('tscInputB').value || '';
+        if (!a.trim() || !b.trim()) { tscStatus('Paste text into both boxes first.', true); return; }
+        if (tscWords(a).length < 10 || tscWords(b).length < 10) {
+            tscStatus('Very short texts (under ~10 words) score unreliably - results improve with at least a sentence or two.');
+        }
+        TSC_STATE.running = true;
+        var btn = document.getElementById('tscAiBtn');
+        try {
+            if (!TSC_STATE.embedder) {
+                if (btn) btn.disabled = true;
+                tscStatus('Downloading the AI model (about ' + TSC_MODEL_MB + ' MB, one time - cached in this browser, shared with the keyword extractor). Your texts still never leave your device.');
+                var tf = await import(TSC_PIN);
+                var device = (navigator.gpu ? 'webgpu' : 'wasm');
+                try {
+                    TSC_STATE.embedder = await tf.pipeline('feature-extraction', TSC_MODEL, { dtype: 'q8', device: device });
+                } catch (e) {
+                    console.warn('webgpu path failed, retrying wasm', e);
+                    TSC_STATE.embedder = await tf.pipeline('feature-extraction', TSC_MODEL, { dtype: 'q8', device: 'wasm' });
+                }
+            }
+            tscStatus('Comparing meaning on this device...');
+            var va = await tscDocVector(a);
+            var vb = await tscDocVector(b);
+            var sim = Math.max(0, tscDot(va, vb));
+            var pct = Math.round(sim * 100);
+
+            // Per-sentence best-match breakdown (sentences of text 1 vs text 2).
+            var sentsA = tscSentences(a), sentsB = tscSentences(b);
+            var rows = '';
+            if (sentsA.length && sentsB.length && (sentsA.length > 1 || sentsB.length > 1)) {
+                var vecsB = [];
+                for (var j = 0; j < sentsB.length; j++) {
+                    tscStatus('AI reading sentence ' + (j + 1) + ' of ' + sentsB.length + ' (text 2) on this device...');
+                    vecsB.push(await tscVec(sentsB[j]));
+                }
+                for (var i = 0; i < sentsA.length; i++) {
+                    tscStatus('AI reading sentence ' + (i + 1) + ' of ' + sentsA.length + ' (text 1) on this device...');
+                    var v = await tscVec(sentsA[i]);
+                    var best = -1, bestIdx = 0;
+                    for (var k = 0; k < vecsB.length; k++) {
+                        var d = tscDot(v, vecsB[k]);
+                        if (d > best) { best = d; bestIdx = k; }
+                    }
+                    var shortA = sentsA[i].length > 90 ? sentsA[i].slice(0, 87) + '...' : sentsA[i];
+                    var shortB = sentsB[bestIdx].length > 90 ? sentsB[bestIdx].slice(0, 87) + '...' : sentsB[bestIdx];
+                    rows += '<tr><td style="vertical-align:top;">' + tscEsc(shortA) + '</td><td style="vertical-align:top;">' + tscEsc(shortB) + '</td><td style="text-align:right;vertical-align:top;">' + Math.round(Math.max(0, best) * 100) + '%</td></tr>';
+                }
+            }
+            var extra = '<p style="margin:4px 0;font-size:0.9em;color:#555;">AI mode - the score reflects MEANING, so reworded passages can score high with little shared wording. It is not a plagiarism verdict.</p>';
+            if (rows) {
+                extra += '<div class="w3-responsive"><table class="w3-table-all w3-small"><thead><tr><th>Sentence (text 1)</th><th>Closest sentence (text 2)</th><th>Match</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+            }
+            tscRenderScore(pct, tscBand(sim), extra);
+            tscStatus('Done: meaning similarity scored on this device. English works best; other languages score less reliably.');
+        } catch (e) {
+            console.error(e);
+            tscStatus('The AI model could not load here (' + e.message + '). The instant word-overlap comparison still works - showing it below.', true);
+            tscRunBasic();
+        }
+        if (btn) btn.disabled = false;
+        TSC_STATE.running = false;
+    }
+
+    function doAfterPageRendered() {
+        var runBtn = document.getElementById('tscRunBtn');
+        var aiBtn = document.getElementById('tscAiBtn');
+        if (!runBtn) return;
+        runBtn.addEventListener('click', tscRunBasic);
+        if (aiBtn) aiBtn.addEventListener('click', tscRunAi);
+    }
+</script>

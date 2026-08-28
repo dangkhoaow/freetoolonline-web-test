@@ -998,6 +998,7 @@ try {
     { title: "Colorize Black and White Photos - AI, On-Device", url: "https://freetoolonline.com/image-tools/image-colorizer.html", include: !1, tags: "image-editing" },
     { title: "Duplicate & Similar Photo Finder (Local, No Upload)", url: "https://freetoolonline.com/image-tools/duplicate-photo-finder.html", include: !1, tags: "image-editing" },
     { title: "Keyword Extractor - Pull Key Phrases from Text in Your Browser", url: "https://freetoolonline.com/developer-tools/keyword-extractor.html", include: !1, tags: "developer" },
+    { title: "Text Similarity Checker - Semantic Comparison (Local, No Upload)", url: "https://freetoolonline.com/developer-tools/text-similarity-checker.html", include: !1, tags: "developer" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
