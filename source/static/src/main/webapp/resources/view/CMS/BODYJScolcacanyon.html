@@ -1,0 +1,334 @@
+<script>
+    // 3D scene archetype skeleton (colca-canyon) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (colca-canyon).
+    // All geometry is procedural. places-3d discovery loop, 2026-08-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology.
+    // Published figures (cross-checked 2026-08-28):
+    //   - Depth about 3,270 m (10,725 ft) - one of the world's deepest canyons
+    //   - Length about 100 km, Arequipa region, southern Peru
+    //   - Carved by the Colca River
+    //   - Pre-Inca agricultural terraces (Collagua and Cabana peoples), some
+    //     still farmed after 1,000+ years
+    //   - Cruz del Condor viewpoint - Andean condors soar on rising air,
+    //     wingspan up to about 3.2 m, the widest of any flying bird
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'colca-canyon';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placescolcacanyon'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x120e0a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xffe6c0, 1.05);
+        key.position.set(-11, 17, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
+        }
+
+        // Colca Canyon relief, 1 unit = ~1 km. A single deep, gently winding
+        // gorge (not a fan-out network like the grand-canyon dendritic
+        // tributaries) - narrow near the river, terraced on the upper slopes
+        // where Andean villages farm, bare steep rock below the terrace band
+        // down to the Colca River. This staircase-on-upper-slope-only profile
+        // is a NEW places-3d terrain archetype distinct from every prior
+        // canyon page (grand-canyon = geological rock-layer bands the whole
+        // depth; fish-river-canyon = rift-style; antelope-canyon/bryce-canyon
+        // = slot/hoodoo forms).
+        var RIM = 3.6, DEPTH = 3.27; // ~3,270 m published depth
+        function chan(z) { return 1.15 * Math.sin(z * 0.22) + 0.55 * Math.sin(z * 0.09 + 1.1); }
+        var TERRACE_FRAC = 0.45; // upper 45% of the depth carries the terraces
+        var TERRACE_STEPS = 16;
+        function smoothDepthFrac(x, z) {
+            var d = Math.abs(x - chan(z)), W = 5.4;
+            var t = Math.max(0, Math.min(1, 1 - d / W));
+            return Math.pow(t, 1.55); // 0 at the wall crest .. 1 at the river
+        }
+        function height(x, z) {
+            var u = smoothDepthFrac(x, z);
+            if (u > 0 && u < TERRACE_FRAC) {
+                // Staircase quantization ONLY on the upper terraced slopes -
+                // the real Andean agricultural terraces. Below TERRACE_FRAC
+                // the gorge stays a smooth, steep bare-rock wall.
+                u = Math.floor(u * TERRACE_STEPS) / TERRACE_STEPS;
+            }
+            var h = RIM - u * DEPTH;
+            h += 0.30 * (fbm(x * 0.26 + 6, z * 0.26 + 2, 4) - 0.5) * (1 - Math.min(1, u * 2.4));
+            h -= 0.10 * u * fbm(x * 1.7 + 3, z * 1.7 + 9, 4); // wall micro-relief
+            return h;
+        }
+        function terraceStepOf(x, z) {
+            var u = smoothDepthFrac(x, z);
+            return Math.floor(Math.min(u, 0.999) * TERRACE_STEPS);
+        }
+        var PUNA = 0xc7bd94, ROCK_UPPER = 0x8a6c4a, ROCK_LOWER = 0x5c463a, RIVER_WALL = 0x3c2f2c;
+        var TERRACE_TREAD = 0x7d8f5e, TERRACE_TREAD_ACCENT = 0x4f8f42, TERRACE_RISER = 0x8a6c4a;
+        function bandColor(c, h, x, z, accent) {
+            var n = 0.9 + 0.2 * fbm(x * 1.3 + 10, z * 1.3 + 6, 3);
+            var u = Math.max(0, Math.min(1, (RIM - h) / DEPTH));
+            if (u < 0.015) { c.setHex(PUNA).multiplyScalar(n); return; }
+            if (u < TERRACE_FRAC) {
+                var step = terraceStepOf(x, z);
+                if (step % 2 === 0) { c.setHex(accent ? TERRACE_TREAD_ACCENT : TERRACE_TREAD); }
+                else { c.setHex(TERRACE_RISER); }
+                c.multiplyScalar(n);
+                return;
+            }
+            var uu = (u - TERRACE_FRAC) / (1 - TERRACE_FRAC);
+            c.setHex(uu < 0.5 ? ROCK_UPPER : (uu < 0.85 ? ROCK_LOWER : RIVER_WALL));
+            c.multiplyScalar(n);
+        }
+        var normColors = null, accentColors = null, terrain;
+        function build(accent) {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                bandColor(col, pos.getY(i), pos.getX(i), pos.getZ(i), accent);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(20, 20, shell.low ? 120 : 190, shell.low ? 110 : 175, height, function (c, h, x, z) { bandColor(c, h, x, z, false); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        accentColors = build(true);
+
+        // Colca River: a slim teal ribbon threading the gorge floor.
+        var riverPts = [];
+        for (var i2 = 0; i2 <= 60; i2++) {
+            var z3 = -9.6 + (19.2 * i2) / 60;
+            riverPts.push(new THREE.Vector3(chan(z3), RIM - DEPTH + 0.05, z3));
+        }
+        var river = new THREE.Mesh(
+            new THREE.TubeGeometry(new THREE.CatmullRomCurve3(riverPts), 90, 0.10, 6, false),
+            new THREE.MeshStandardMaterial({ color: 0x2f7f8f, roughness: 0.28 })
+        );
+        scene.add(river);
+
+        // Condor markers: a handful of flat wing-silhouette groups soaring
+        // above the gorge near the Cruz del Condor viewpoint band.
+        var condorGroup = new THREE.Group();
+        var wingMat = new THREE.MeshBasicMaterial({ color: 0x1c1c1e, side: THREE.DoubleSide });
+        var condorSpots = [
+            [1.4, 2.4, -3.0], [-0.6, 2.7, -1.2], [2.6, 2.1, 1.6],
+            [-1.8, 2.5, 3.4], [0.4, 2.9, 5.6]
+        ];
+        for (var ci = 0; ci < condorSpots.length; ci++) {
+            var s = condorSpots[ci];
+            var wing = new THREE.Group();
+            var left = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.16), wingMat);
+            left.position.set(-0.30, 0, 0); left.rotation.z = 0.22;
+            var right = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.16), wingMat);
+            right.position.set(0.30, 0, 0); right.rotation.z = -0.22;
+            wing.add(left); wing.add(right);
+            wing.position.set(s[0], s[1], s[2]);
+            wing.rotation.y = hash2(ci, 5) * Math.PI * 2;
+            condorGroup.add(wing);
+        }
+        scene.add(condorGroup);
+
+        var terraceAccentOn = false, condorsOn = true;
+
+        function panelHtml() {
+            return '<h3>Colca Canyon: terraced walls, condors overhead</h3>' +
+                '<p>A relief of the gorge: a single deep channel with Andean agricultural terraces stepping down the upper slopes, bare rock walls below them, and the Colca River at the floor.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Depth</td><td>about 3,270 m (10,725 ft) - one of the world\'s deepest canyons</td></tr>' +
+                '<tr><td>Length</td><td>about 100 km</td></tr>' +
+                '<tr><td>Location</td><td>Arequipa region, southern Peru</td></tr>' +
+                '<tr><td>Carved by</td><td>the Colca River</td></tr>' +
+                '<tr><td>Terraces</td><td>pre-Inca, built by the Collagua and Cabana peoples - some still farmed after 1,000+ years</td></tr>' +
+                '<tr><td>Condors</td><td>Cruz del Condor viewpoint - Andean condor wingspan up to about 3.2 m, the widest of any flying bird</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the terrace steps, gorge profile, and condor markers are procedural teaching cues, not survey geology.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(terraceAccentOn ? accentColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            condorGroup.visible = condorsOn;
+            var tb = document.getElementById('t3dPccTerraceBtn');
+            if (tb) tb.textContent = 'Terrace accents: ' + (terraceAccentOn ? 'On' : 'Off');
+            var cb = document.getElementById('t3dPccCondorBtn');
+            if (cb) cb.textContent = 'Condor markers: ' + (condorsOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ terraceAccentOn: terraceAccentOn, condorsOn: condorsOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.terraceAccentOn === 'boolean') terraceAccentOn = store.terraceAccentOn;
+        if (typeof store.condorsOn === 'boolean') condorsOn = store.condorsOn;
+        apply();
+
+        var terraceBtn = document.getElementById('t3dPccTerraceBtn');
+        if (terraceBtn) terraceBtn.addEventListener('click', function () { terraceAccentOn = !terraceAccentOn; apply(); });
+        var condorBtn = document.getElementById('t3dPccCondorBtn');
+        if (condorBtn) condorBtn.addEventListener('click', function () { condorsOn = !condorsOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle terrace accents or the condor markers.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placescolcacanyon: 't3dPccControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placescolcacanyon: { radius: 19, maxR: 45, minR: 6, phi: 1.02, theta: 0.6, targetY: 0.9 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

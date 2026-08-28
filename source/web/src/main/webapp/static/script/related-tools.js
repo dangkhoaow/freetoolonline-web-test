@@ -802,6 +802,7 @@ try {
     { title: "Loch Ness 3D Explorer", url: "https://freetoolonline.com/places-3d/loch-ness.html", include: !1, tags: "places-3d" },
     { title: "Congo River 3D Explorer", url: "https://freetoolonline.com/places-3d/congo-river.html", include: !1, tags: "places-3d" },
     { title: "Santorini Caldera 3D Explorer", url: "https://freetoolonline.com/places-3d/santorini-caldera.html", include: !1, tags: "places-3d" },
+    { title: "Colca Canyon 3D Explorer", url: "https://freetoolonline.com/places-3d/colca-canyon.html", include: !1, tags: "places-3d" },
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
     { title: "Main-Sequence Lifetime 3D Explorer", url: "https://freetoolonline.com/space-3d/main-sequence-lifetime.html", include: !1, tags: "space-3d" },
     { title: "Earth Perihelion & Aphelion 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-perihelion-aphelion.html", include: !1, tags: "space-3d" },
