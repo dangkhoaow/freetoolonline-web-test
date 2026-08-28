@@ -1,0 +1,364 @@
+<script>
+    // 3D scene archetype skeleton (santorini-caldera) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (santorini-caldera).
+    // All geometry is procedural. places-3d discovery loop, 2026-08-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic / geological consensus, cross-checked 2026-08-28):
+    //   - Caldera dimensions about 12 km by 7 km (7.5 by 4.3 miles)
+    //   - Maximum caldera (lagoon) depth about 400 m (1,300 ft) below sea level
+    //   - Highest clifftop rim (near Imerovigli/Fira) about 300 m (984 ft) above sea level
+    //   - Total vertical relief roughly 700 m (2,300 ft), clifftop to caldera floor
+    //   - Nea Kameni: youngest lava-dome island, last erupted in 1950, still vents gas
+    //   - Caldera rim breached on the southwest, letting ships sail directly in
+    //   - Formed about 3,600 years ago (c. 1600 BCE) by the Minoan eruption
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'santorini-caldera';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placessantorinicaldera'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a1220, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
+        key.position.set(-10, 16, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 }));
+        }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+        // Caldera relief, 1 unit = 100 m vertical (ties directly to the
+        // published 400 m max lagoon depth and 300 m clifftop height figures:
+        // FLOOR sits at -4.0, tallest rim crest around +3.0). The rim is NOT a
+        // simple circle - it is tall on the northwest (the clifftop-town side,
+        // CLIFF_ANGLE) and dips almost to sea level on the southwest breach
+        // (BREACH_ANGLE), where the open sea connects to the lagoon.
+        var OUTER_R = 7.6, WALL_R = 5.8, BOWL_R = 5.2;
+        var LAKE_Y = 0, FLOOR = -4.0;
+        var CLIFF_ANGLE = 2.6, CLIFF_WIDTH = 1.7, CLIFF_BOOST = 2.0;
+        var BREACH_ANGLE = -0.9, BREACH_WIDTH = 1.0;
+
+        // Kameni islands - Nea Kameni (larger, closer to lagoon center) and
+        // Palea Kameni (smaller, just northeast of it) - both sampled from the
+        // same radial bowl so they sit correctly relative to the lagoon surface.
+        var NEA = { x: 0.4, z: 0.7, r: 0.65 };
+        var PALEA = { x: -0.6, z: 1.7, r: 0.4 };
+
+        function angleFactor(x, z, targetAngle, width) {
+            var ang = Math.atan2(x, z);
+            var d = ang - targetAngle;
+            while (d > Math.PI) d -= 2 * Math.PI;
+            while (d < -Math.PI) d += 2 * Math.PI;
+            var t = Math.min(1, Math.abs(d) / width);
+            return 1 - smooth(0, 1, t);
+        }
+        function bowlDepth(r) {
+            // 0 at the wall base (r=WALL_R), FLOOR at the center (r=0).
+            var t = smooth(0, WALL_R, r);
+            return FLOOR + (LAKE_Y - 1.0 - FLOOR) * Math.pow(t, 1.4);
+        }
+        function rimHeightAt(x, z) {
+            var rimNoise = 0.5 * fbm(x * 0.4 + 3, z * 0.4 + 5, 4);
+            var cliffF = angleFactor(x, z, CLIFF_ANGLE, CLIFF_WIDTH);
+            var breachF = angleFactor(x, z, BREACH_ANGLE, BREACH_WIDTH);
+            var rimH = 1.0 + rimNoise + CLIFF_BOOST * cliffF;
+            rimH = rimH * (1 - 0.9 * breachF) + 0.15 * breachF;
+            return rimH;
+        }
+        function height(x, z) {
+            var r = Math.sqrt(x * x + z * z);
+            var rimH = rimHeightAt(x, z);
+            var outerHighland = rimH + 0.3 * fbm(x * 0.3 + 20, z * 0.3 + 11, 3);
+            var h;
+            if (r >= OUTER_R) {
+                h = outerHighland - 0.5 * smooth(OUTER_R, OUTER_R + 3, r);
+            } else if (r >= WALL_R) {
+                // steep inner cliff wall from rim crest down to the shoreline
+                h = rimH + (LAKE_Y - 0.3 - rimH) * smooth(WALL_R, OUTER_R, r);
+            } else {
+                h = bowlDepth(r);
+            }
+            // Nea Kameni lava dome rising above the lagoon.
+            var dn = Math.sqrt((x - NEA.x) * (x - NEA.x) + (z - NEA.z) * (z - NEA.z));
+            if (dn < NEA.r) {
+                var coneN = (LAKE_Y + 0.9) * (1 - smooth(0, NEA.r, dn));
+                h = Math.max(h, coneN);
+            }
+            // Palea Kameni, a smaller neighboring dome.
+            var dp = Math.sqrt((x - PALEA.x) * (x - PALEA.x) + (z - PALEA.z) * (z - PALEA.z));
+            if (dp < PALEA.r) {
+                var coneP = (LAKE_Y + 0.55) * (1 - smooth(0, PALEA.r, dp));
+                h = Math.max(h, coneP);
+            }
+            return h;
+        }
+        var col = {
+            island: new THREE.Color(0xc9b896), cliff: new THREE.Color(0x8a6a52),
+            rimTop: new THREE.Color(0xd9c7a3), basin: new THREE.Color(0x123a52),
+            lava: new THREE.Color(0x2b2b2b),
+        };
+        function color(c, h, x, z) {
+            var n = 0.9 + 0.2 * fbm(x * 1.3 + 11, z * 1.3 + 7, 3);
+            var r = Math.sqrt(x * x + z * z);
+            var dn = Math.sqrt((x - NEA.x) * (x - NEA.x) + (z - NEA.z) * (z - NEA.z));
+            var dp = Math.sqrt((x - PALEA.x) * (x - PALEA.x) + (z - PALEA.z) * (z - PALEA.z));
+            if (h > LAKE_Y + 0.05 && (dn < NEA.r + 0.15 || dp < PALEA.r + 0.15)) { c.copy(col.lava).multiplyScalar(n); return; }
+            if (r >= OUTER_R) { c.copy(col.island).multiplyScalar(n); return; }
+            if (h < LAKE_Y - 0.3) { c.copy(col.basin).multiplyScalar(0.85 + 0.15 * n); return; }
+            if (r >= WALL_R) { c.copy(col.rimTop).lerp(col.island, smooth(WALL_R, OUTER_R, r)).multiplyScalar(n); return; }
+            c.copy(col.cliff).multiplyScalar(n);
+        }
+        var terrain = makeTerrain(18, 18, shell.low ? 110 : 170, shell.low ? 110 : 170, height, color);
+        scene.add(terrain);
+
+        // Flat lagoon disc at sea level - deep blue, slightly translucent so the
+        // submerged bowl below is faintly visible through it.
+        var lakeGeo = new THREE.CircleGeometry(WALL_R - 0.08, 64);
+        var lake = new THREE.Mesh(lakeGeo, new THREE.MeshStandardMaterial({
+            color: 0x1c5f86, roughness: 0.12, metalness: 0.1, transparent: true, opacity: 0.88,
+        }));
+        lake.rotation.x = -Math.PI / 2;
+        lake.position.y = LAKE_Y;
+        scene.add(lake);
+
+        // Caldera-depth marker: a thin rod from the sea surface to the caldera
+        // floor, placed clear of the Kameni islands.
+        var depthGroup = new THREE.Group();
+        (function () {
+            var rod = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, LAKE_Y - FLOOR, 10),
+                new THREE.MeshBasicMaterial({ color: 0xffd166 })
+            );
+            rod.position.set(1.6, (LAKE_Y + FLOOR) / 2, -1.4);
+            depthGroup.add(rod);
+            var cap = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffd166 }));
+            cap.position.set(1.6, FLOOR, -1.4);
+            depthGroup.add(cap);
+        })();
+        scene.add(depthGroup);
+
+        // Clifftop-height marker: a rod from sea level up to the rim crest on
+        // the tall (northwest, CLIFF_ANGLE) side, showing the roughly 300 m the
+        // rim rises above the water.
+        var cliffGroup = new THREE.Group();
+        (function () {
+            var ang = CLIFF_ANGLE, rad = WALL_R + 0.5;
+            var cx = rad * Math.sin(ang), cz = rad * Math.cos(ang);
+            var top = rimHeightAt(cx, cz);
+            var rod = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.09, 0.09, top - LAKE_Y, 10),
+                new THREE.MeshBasicMaterial({ color: 0x9be8ff, transparent: true, opacity: 0.85 })
+            );
+            rod.position.set(cx, (top + LAKE_Y) / 2, cz);
+            cliffGroup.add(rod);
+            var cap = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 12), new THREE.MeshBasicMaterial({ color: 0x9be8ff, transparent: true, opacity: 0.85 }));
+            cap.position.set(cx, top, cz);
+            cliffGroup.add(cap);
+        })();
+        scene.add(cliffGroup);
+
+        var depthOn = true, cliffOn = true;
+
+        function panelHtml() {
+            return '<h3>Santorini: a sea-flooded volcanic caldera</h3>' +
+                '<p>A near-complete ring of cliffs, breached on the southwest, with the dark Kameni lava domes rising from the lagoon. Two markers compare how deep the floor lies against how high the clifftop rim rises.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Caldera dimensions</td><td>about 12 km by 7 km (7.5 by 4.3 miles)</td></tr>' +
+                '<tr><td>Maximum caldera depth</td><td>about 400 m (1,300 ft) below sea level</td></tr>' +
+                '<tr><td>Highest clifftop rim</td><td>about 300 m (984 ft) above sea level, near Imerovigli</td></tr>' +
+                '<tr><td>Total vertical relief</td><td>about 700 m (2,300 ft), clifftop to caldera floor</td></tr>' +
+                '<tr><td>Nea Kameni</td><td>youngest lava-dome island, last erupted in 1950, still vents gas</td></tr>' +
+                '<tr><td>Caldera opening</td><td>breached on the southwest, letting ships sail directly in</td></tr>' +
+                '<tr><td>Formed</td><td>about 3,600 years ago (c. 1600 BCE) by the Minoan eruption</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the caldera profile, island shapes, and vertical scale are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            depthGroup.visible = depthOn;
+            var db = document.getElementById('t3dPscDepthBtn');
+            if (db) db.textContent = 'Caldera depth marker: ' + (depthOn ? 'On' : 'Off');
+            cliffGroup.visible = cliffOn;
+            var cb = document.getElementById('t3dPscCliffBtn');
+            if (cb) cb.textContent = 'Clifftop height marker: ' + (cliffOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ depthOn: depthOn, cliffOn: cliffOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.depthOn === 'boolean') depthOn = store.depthOn;
+        if (typeof store.cliffOn === 'boolean') cliffOn = store.cliffOn;
+        apply();
+
+        var depthBtn = document.getElementById('t3dPscDepthBtn');
+        if (depthBtn) depthBtn.addEventListener('click', function () { depthOn = !depthOn; apply(); });
+        var cliffBtn = document.getElementById('t3dPscCliffBtn');
+        if (cliffBtn) cliffBtn.addEventListener('click', function () { cliffOn = !cliffOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the caldera-depth marker or the clifftop-height marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placessantorinicaldera: 't3dPscControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placessantorinicaldera: { radius: 24, maxR: 60, minR: 8, phi: 0.9, theta: 0.6, targetY: -1 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
