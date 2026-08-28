@@ -777,7 +777,6 @@ try {
     { title: "Namib Desert 3D Explorer", url: "https://freetoolonline.com/places-3d/namib-desert.html", include: !1, tags: "places-3d" },
     { title: "Mount St. Helens 3D Explorer", url: "https://freetoolonline.com/places-3d/mount-st-helens.html", include: !1, tags: "places-3d" },
     { title: "White Sands 3D Explorer", url: "https://freetoolonline.com/places-3d/white-sands.html", include: !1, tags: "places-3d" },
-    { title: "Carlsbad Caverns 3D Explorer", url: "https://freetoolonline.com/places-3d/carlsbad-caverns.html", include: !1, tags: "places-3d" },
     { title: "K2 3D Explorer", url: "https://freetoolonline.com/places-3d/k2.html", include: !1, tags: "places-3d" },
     { title: "Caspian Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caspian-sea.html", include: !1, tags: "places-3d" },
     { title: "Lake Baikal 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-baikal.html", include: !1, tags: "places-3d" },
