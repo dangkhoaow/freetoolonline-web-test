@@ -1,0 +1,364 @@
+<script>
+    // 3D scene archetype skeleton (congo-river) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (congo-river).
+    // All geometry is procedural. places-3d cluster, 2026-08-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-08-28):
+    //   - Length about 4,700 km - Africa's second-longest river after the Nile
+    //   - Deepest sounding over 220 m - the deepest river channel on Earth
+    //   - Average discharge about 41,000 m3/s at the mouth - world's second
+    //     largest by volume after the Amazon
+    //   - Basin area about 4,000,000 km2 - world's second largest river basin
+    //   - The only major river that crosses the equator twice, which keeps its
+    //     flow unusually steady year-round (rainy seasons offset north/south)
+    //   - Livingstone Falls: about 350 km of rapids and cataracts near the
+    //     mouth, dropping roughly 270 m before the Atlantic - unnavigable,
+    //     which is why no railway-free shipping route reaches the interior
+    //   - Flows past Kinshasa (DR Congo) opposite Brazzaville (Congo)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'congo-river';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placescongoriver'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0e1a10, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
+        key.position.set(-10, 16, 8);
+        scene.add(key);
+        var fill = new THREE.DirectionalLight(0xbfe0ff, 0.28);
+        fill.position.set(9, 8, -6);
+        scene.add(fill);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0 }));
+        }
+
+        // Winding deep-river channel through rainforest, z = source (west
+        // African interior, z=-9.5) to mouth (Atlantic, z=9.5). x = east-west
+        // offset. The path carries the two big equatorial bends the real
+        // Congo makes (a broad northward arc then a broad southward arc)
+        // before straightening into the Livingstone Falls rapids stretch just
+        // before the ocean - the signature that separates this from every
+        // fan-delta (okavango-delta, mekong-delta) or flood-plume (amazon-
+        // river) river page already in the cluster: ONE incised deep channel,
+        // never fanning into distributaries.
+        var SRC_Z = -9.5, MOUTH_Z = 9.5;
+        var RAPIDS_Z0 = 6.4, RAPIDS_Z1 = 9.0;      // Livingstone Falls stretch
+        var DEEP_Z = 3.6;                            // schematic deepest bend
+        var PLAIN_H = 0.55, GROOVE_MAX = 0.50, RAPIDS_STEP = 0.07;
+        function pathX(z) {
+            // Two broad arcs (north bend, then south bend) plus gentle meander.
+            return 3.4 * Math.sin((z - SRC_Z) * 0.34) + 0.6 * fbm(z * 0.4 + 3, 2, 3);
+        }
+        function channelHalf(z) {
+            var rapidsT = smooth(RAPIDS_Z0, RAPIDS_Z1, z);
+            return 0.95 * (1 - 0.3 * rapidsT); // a real navigable-width river, narrows slightly through the rapids gorge
+        }
+        function channelDepth(z) {
+            // Shallow near the source, deepening toward DEEP_Z (schematic
+            // deepest-sounding bend), then stepping up in stages through the
+            // rapids/cataract stretch before leveling at the estuary.
+            var grow = smooth(SRC_Z, DEEP_Z, z);
+            var afterDeep = 1 - smooth(DEEP_Z, RAPIDS_Z0, z) * 0.35;
+            var base = GROOVE_MAX * grow * afterDeep;
+            var rapidsT = smooth(RAPIDS_Z0, RAPIDS_Z1, z);
+            return base * (1 - rapidsT) + RAPIDS_STEP * rapidsT * (2 + Math.sin(z * 6));
+        }
+        function distToChannel(x, z) {
+            var half = channelHalf(z);
+            return Math.abs(x - pathX(z)) / half;
+        }
+        function height(x, z) {
+            var canopy = PLAIN_H + 0.30 * fbm(x * 0.55 + 4, z * 0.4 + 1, 4);
+            var dn = distToChannel(x, z);
+            var bank = smooth(1.6, 1.0, dn); // gentle bank slope into the channel
+            var depth = channelDepth(z);
+            var inChan = smooth(1.15, 0.35, dn);
+            var h = canopy - bank * 0.14;
+            if (inChan > 0) h = h - inChan * (depth + 0.05 * fbm(x * 2 + 7, z * 2 + 3, 3));
+            return h;
+        }
+        // Turbid brownish-green water (real Congo sediment load), kept clearly
+        // distinct in hue from the canopy greens so the channel reads as
+        // WATER, not as a dark crevasse.
+        var col = { canopy: new THREE.Color(0x2e6b2f), canopyLight: new THREE.Color(0x4f8f3f), water: new THREE.Color(0x5a6b3a), deep: new THREE.Color(0x30422a), foam: new THREE.Color(0xdfe9e2) };
+        function color(c, h, x, z) {
+            var dn = distToChannel(x, z);
+            var n = 0.9 + 0.2 * fbm(x * 1.4 + 5, z * 1.4 + 2, 3);
+            if (dn < 1.0) {
+                var depth = channelDepth(z);
+                var deepT = Math.min(1, depth / GROOVE_MAX);
+                c.copy(col.water).lerp(col.deep, deepT).multiplyScalar(n);
+                var rapidsT = smooth(RAPIDS_Z0, RAPIDS_Z1, z);
+                if (rapidsT > 0.15 && dn > 0.55) c.copy(col.foam).multiplyScalar(0.85 + 0.15 * n);
+            } else {
+                c.copy(col.canopy).lerp(col.canopyLight, 0.5 + 0.5 * (fbm(x * 1.1 + 9, z * 1.1 + 6, 3) - 0.5)).multiplyScalar(n);
+            }
+        }
+        var terrain = makeTerrain(16, 22, shell.low ? 100 : 160, shell.low ? 140 : 220, height, color);
+        scene.add(terrain);
+
+        // Rainforest canopy decor: static clumps scattered off the channel,
+        // sparse for perf, thinning out through the rapids gorge where real
+        // banks turn to bare rock.
+        var canopyDecor = new THREE.Group();
+        (function () {
+            var n = 46;
+            for (var i = 0; i < n; i++) {
+                var z = SRC_Z + (MOUTH_Z - SRC_Z) * (i / n) + (hash2(i * 3.1, 4.7) - 0.5) * 0.6;
+                var side = (hash2(i * 5.3, 1.1) < 0.5) ? -1 : 1;
+                var x = pathX(z) + side * (channelHalf(z) + 0.5 + hash2(i * 7.9, 2.3) * 1.8);
+                var rapidsT = smooth(RAPIDS_Z0, RAPIDS_Z1, z);
+                if (hash2(i * 9.1, 6.6) < rapidsT * 0.7) continue; // thin canopy near bare-rock rapids
+                var h = height(x, z);
+                var s = 0.16 + hash2(i * 2.2, 8.8) * 0.10;
+                var trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.03, s * 1.4, 5), new THREE.MeshStandardMaterial({ color: 0x4a3524, roughness: 0.9 }));
+                trunk.position.set(x, h + s * 0.7, z);
+                canopyDecor.add(trunk);
+                var top = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 0), new THREE.MeshStandardMaterial({ color: (i % 3 === 0) ? 0x35803a : 0x2c6b31, roughness: 0.85 }));
+                top.position.set(x, h + s * 1.5, z);
+                canopyDecor.add(top);
+            }
+        })();
+        scene.add(canopyDecor);
+
+        // Rapids / cataract markers: jagged rock outcrops across the channel
+        // through the Livingstone Falls stretch - the reason ocean shipping
+        // can never reach the interior.
+        var rapids = new THREE.Group();
+        (function () {
+            var n = 16;
+            for (var i = 0; i < n; i++) {
+                var z = RAPIDS_Z0 + (RAPIDS_Z1 - RAPIDS_Z0) * (i / (n - 1)) + (hash2(i * 4.4, 9.9) - 0.5) * 0.15;
+                var x = pathX(z) + (hash2(i * 6.6, 3.3) - 0.5) * channelHalf(z) * 1.7;
+                var h = height(x, z);
+                var s = 0.05 + hash2(i * 8.8, 5.5) * 0.07;
+                var rock = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), new THREE.MeshStandardMaterial({ color: 0x3a3a38, roughness: 0.95 }));
+                rock.position.set(x, h + s * 0.5, z);
+                rock.rotation.set(hash2(i, 1) * 6, hash2(i, 2) * 6, hash2(i, 3) * 6);
+                rapids.add(rock);
+            }
+        })();
+        scene.add(rapids);
+
+        // Deepest-sounding marker: a vertical rod from the channel floor at
+        // DEEP_Z up to a reference plane, labelled with the published figure.
+        var deepMarkerZ = DEEP_Z, deepMarkerX = pathX(DEEP_Z);
+        var deepFloorY = height(deepMarkerX, deepMarkerZ);
+        var refY = PLAIN_H + 0.4;
+        var rodH = Math.max(0.1, refY - deepFloorY);
+        var depthRod = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.025, 0.025, rodH, 8),
+            new THREE.MeshBasicMaterial({ color: 0xffd35c })
+        );
+        depthRod.position.set(deepMarkerX, deepFloorY + rodH / 2, deepMarkerZ);
+        scene.add(depthRod);
+        var depthCap = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 10), new THREE.MeshBasicMaterial({ color: 0xffd35c }));
+        depthCap.position.set(deepMarkerX, refY, deepMarkerZ);
+        scene.add(depthCap);
+
+        var depthOn = true, rapidsOn = true;
+
+        function panelHtml() {
+            return '<h3>Congo River: the deepest river on Earth</h3>' +
+                '<p>A single incised channel through equatorial rainforest, winding through two broad bends before the Livingstone Falls rapids stretch near the Atlantic mouth - never fanning into a delta.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Length</td><td>about 4,700 km - Africa\'s second-longest river after the Nile</td></tr>' +
+                '<tr><td>Maximum depth</td><td>over 220 m - the deepest river channel measured on Earth (yellow marker)</td></tr>' +
+                '<tr><td>Average discharge</td><td>about 41,000 m3/s at the mouth - second largest by volume worldwide, after the Amazon</td></tr>' +
+                '<tr><td>Basin area</td><td>about 4,000,000 km2 - the world\'s second largest river basin</td></tr>' +
+                '<tr><td>Equator crossings</td><td>the only major river to cross the equator twice - offsetting rainy seasons keep its flow unusually steady year-round</td></tr>' +
+                '<tr><td>Livingstone Falls</td><td>about 350 km of rapids and cataracts dropping roughly 270 m before the ocean - unnavigable, cutting the interior off from direct sea shipping</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the channel path, bend geometry, and rapids placement are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            depthRod.visible = depthOn; depthCap.visible = depthOn;
+            var db = document.getElementById('t3dCorDepthBtn');
+            if (db) db.textContent = 'Deepest-point marker: ' + (depthOn ? 'On' : 'Off');
+            rapids.visible = rapidsOn;
+            var rb = document.getElementById('t3dCorRapidsBtn');
+            if (rb) rb.textContent = 'Rapids markers: ' + (rapidsOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ depthOn: depthOn, rapidsOn: rapidsOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.depthOn === 'boolean') depthOn = store.depthOn;
+        if (typeof store.rapidsOn === 'boolean') rapidsOn = store.rapidsOn;
+        apply();
+
+        var depthBtn = document.getElementById('t3dCorDepthBtn');
+        if (depthBtn) depthBtn.addEventListener('click', function () { depthOn = !depthOn; apply(); });
+        var rapidsBtn = document.getElementById('t3dCorRapidsBtn');
+        if (rapidsBtn) rapidsBtn.addEventListener('click', function () { rapidsOn = !rapidsOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the deepest-point marker or the rapids.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placescongoriver: 't3dCorControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placescongoriver: { radius: 15, maxR: 45, minR: 5, phi: 1.12, theta: 0.55, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
