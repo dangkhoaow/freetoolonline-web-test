@@ -799,6 +799,7 @@ try {
     { title: "Amazon River 3D Explorer", url: "https://freetoolonline.com/places-3d/amazon-river.html", include: !1, tags: "places-3d" },
     { title: "Carlsbad Caverns 3D Explorer", url: "https://freetoolonline.com/places-3d/carlsbad-caverns.html", include: !1, tags: "places-3d" },
     { title: "Serengeti Plains 3D Explorer", url: "https://freetoolonline.com/places-3d/serengeti-plains.html", include: !1, tags: "places-3d" },
+    { title: "Loch Ness 3D Explorer", url: "https://freetoolonline.com/places-3d/loch-ness.html", include: !1, tags: "places-3d" },
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
     { title: "Main-Sequence Lifetime 3D Explorer", url: "https://freetoolonline.com/space-3d/main-sequence-lifetime.html", include: !1, tags: "space-3d" },
     { title: "Earth Perihelion & Aphelion 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-perihelion-aphelion.html", include: !1, tags: "space-3d" },

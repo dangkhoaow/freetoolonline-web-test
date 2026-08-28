@@ -1,0 +1,334 @@
+<script>
+    // 3D scene archetype skeleton (loch-ness) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (loch-ness).
+    // All geometry is procedural. places-3d discovery loop, 2026-08-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic / Scottish Natural Heritage consensus,
+    // cross-checked 2026-08-28):
+    //   - Length about 37 km (23 miles) - a long, STRAIGHT fault-line loch
+    //   - Maximum depth about 230 m (755 ft)
+    //   - Average depth about 132 m (433 ft)
+    //   - Average width about 1.6 km (1 mile), narrower at points
+    //   - Surface elevation about 16 m (52 ft) above sea level
+    //   - Holds more fresh water than all the lakes of England and Wales combined
+    //   - Water is heavily peat-stained, limiting visibility to a few meters
+    //     even though the loch itself is very deep
+    //   - Occupies part of the Great Glen Fault, a geological fault line that
+    //     runs diagonally across the Scottish Highlands
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'loch-ness';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeslochness'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x18251f, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.68));
+        var key = new THREE.DirectionalLight(0xf3ead0, 1.15);
+        key.position.set(-10, 16, 6);
+        scene.add(key);
+        var fill = new THREE.DirectionalLight(0xbcd8cc, 0.4);
+        fill.position.set(8, 8, -6);
+        scene.add(fill);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 }));
+        }
+
+        // Straight fault-line trough, 1 unit = 100 m vertical AND horizontal on
+        // the width axis (ties directly to the published 230 m max-depth figure:
+        // FLOOR sits at -2.30). Unlike a fjord (wavy width, winding walls) or a
+        // caldera (radial bowl), Loch Ness is a STRAIGHT, near-uniform-width
+        // trough - the width bounds (WALL_X / OUTER_X) below do NOT vary with z,
+        // only the floor depth drifts gently along the length between three
+        // basins, with one localized deepening at the real deepest sounding.
+        var WALL_X = 1.0, OUTER_X = 1.9;
+        var WATER_Y = 0, FLOOR = -2.30;
+        var DEEP_Z = -1.4; // approximate position of the deepest sounding
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+        function floorAt(z) {
+            var base = -1.32 + 0.28 * fbm(z * 0.16 + 7, 0.3, 2); // drifts around the -132 m average depth
+            var dz = Math.abs(z - DEEP_Z);
+            var deepBump = Math.max(0, 1 - dz / 1.1);
+            return base + (FLOOR - base) * Math.pow(deepBump, 2.2);
+        }
+        function height(x, z) {
+            var w = Math.abs(x);
+            var floor = floorAt(z);
+            var rimNoise = 0.6 * fbm(x * 0.4 + 3, z * 0.35 + 5, 4);
+            var rimH = 1.6 + rimNoise;
+            var outerHighland = rimH + 0.5 * fbm(x * 0.3 + 20, z * 0.28 + 11, 3);
+            if (w >= OUTER_X) {
+                return outerHighland - 0.5 * smooth(OUTER_X, OUTER_X + 2.2, w);
+            }
+            if (w >= WALL_X) {
+                // steep granite hillside from the rim crest down to the shoreline
+                var t = smooth(WALL_X, OUTER_X, w);
+                return rimH + (WATER_Y - 0.25 - rimH) * t;
+            }
+            // underwater bowl, deepest at the centerline (w=0)
+            var tt = smooth(0, WALL_X, w);
+            return floor + (WATER_Y - 0.12 - floor) * Math.pow(tt, 1.35);
+        }
+        var col = {
+            heather: new THREE.Color(0x4a5a3a), granite: new THREE.Color(0x7c766c),
+            rim: new THREE.Color(0x8a8270), wall: new THREE.Color(0x635a4c),
+            peat: new THREE.Color(0x0d2a24),
+        };
+        function color(c, h, x, z) {
+            var n = 0.9 + 0.2 * fbm(x * 1.3 + 11, z * 1.2 + 7, 3);
+            var w = Math.abs(x);
+            if (h < WATER_Y - 0.25) { c.copy(col.peat).multiplyScalar(0.85 + 0.15 * n); return; }
+            if (w >= OUTER_X) { c.copy(col.heather).multiplyScalar(n); return; }
+            if (w >= WALL_X) { c.copy(col.rim).lerp(col.wall, smooth(WALL_X, OUTER_X, w)).multiplyScalar(n); return; }
+            c.copy(col.wall).multiplyScalar(n);
+        }
+        var terrain = makeTerrain(4.2, 15, shell.low ? 70 : 110, shell.low ? 190 : 300, height, color);
+        scene.add(terrain);
+
+        // Flat water surface - very dark, peat-stained, only lightly translucent
+        // (the real loch's visibility is limited to a few meters).
+        var waterGeo = new THREE.PlaneGeometry(WALL_X * 2 - 0.06, 15, 1, 1);
+        waterGeo.rotateX(-Math.PI / 2);
+        var water = new THREE.Mesh(waterGeo, new THREE.MeshStandardMaterial({
+            color: 0x163c34, roughness: 0.1, metalness: 0.15, transparent: true, opacity: 0.9,
+        }));
+        water.position.y = WATER_Y;
+        scene.add(water);
+
+        // Max-depth marker: a thin rod from the surface to the deepest sounding.
+        var depthGroup = new THREE.Group();
+        (function () {
+            var rod = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, WATER_Y - FLOOR, 10),
+                new THREE.MeshBasicMaterial({ color: 0xffd166 })
+            );
+            rod.position.set(0.15, (WATER_Y + FLOOR) / 2, DEEP_Z);
+            depthGroup.add(rod);
+            var cap = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffd166 }));
+            cap.position.set(0.15, FLOOR, DEEP_Z);
+            depthGroup.add(cap);
+        })();
+        scene.add(depthGroup);
+
+        // Great Glen Fault trace: a dashed line running the FULL length of the
+        // scene and extending well past both ends of the loch itself, showing
+        // that the loch is only one flooded segment of a much longer fault line
+        // slicing diagonally across the Highlands.
+        var faultGroup = new THREE.Group();
+        (function () {
+            var pts = [];
+            for (var i = -13; i <= 13; i += 0.25) { pts.push(new THREE.Vector3(0.02, WATER_Y + 0.06, i)); }
+            var geo = new THREE.BufferGeometry().setFromPoints(pts);
+            var mat = new THREE.LineDashedMaterial({ color: 0xff8a4c, dashSize: 0.35, gapSize: 0.22, linewidth: 2 });
+            var line = new THREE.Line(geo, mat);
+            line.computeLineDistances();
+            faultGroup.add(line);
+        })();
+        scene.add(faultGroup);
+
+        var depthOn = true, faultOn = true;
+
+        function panelHtml() {
+            return '<h3>Loch Ness: a straight fault-line loch</h3>' +
+                '<p>A long, narrow, remarkably STRAIGHT trough - not a winding fjord or a round caldera - because it fills part of the Great Glen Fault. Toggle the fault line to see it run past both ends of the loch, and the depth marker to see how far the floor really drops below the dark, peat-stained surface.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Length</td><td>about 37 km (23 miles)</td></tr>' +
+                '<tr><td>Maximum depth</td><td>about 230 m (755 ft)</td></tr>' +
+                '<tr><td>Average depth</td><td>about 132 m (433 ft)</td></tr>' +
+                '<tr><td>Average width</td><td>about 1.6 km (1 mile)</td></tr>' +
+                '<tr><td>Surface elevation</td><td>about 16 m (52 ft) above sea level</td></tr>' +
+                '<tr><td>Water volume</td><td>more fresh water than all the lakes of England and Wales combined</td></tr>' +
+                '<tr><td>Water clarity</td><td>heavily peat-stained - visibility often just a few meters despite the depth</td></tr>' +
+                '<tr><td>Geology</td><td>occupies part of the Great Glen Fault across the Scottish Highlands</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the trough profile, basin depths, and vertical scale are schematic teaching cues, not survey bathymetry.</p>';
+        }
+
+        function apply() {
+            depthGroup.visible = depthOn;
+            var db = document.getElementById('t3dPlnDepthBtn');
+            if (db) db.textContent = 'Max depth marker: ' + (depthOn ? 'On' : 'Off');
+            faultGroup.visible = faultOn;
+            var fb = document.getElementById('t3dPlnFaultBtn');
+            if (fb) fb.textContent = 'Great Glen Fault line: ' + (faultOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ depthOn: depthOn, faultOn: faultOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.depthOn === 'boolean') depthOn = store.depthOn;
+        if (typeof store.faultOn === 'boolean') faultOn = store.faultOn;
+        apply();
+
+        var depthBtn = document.getElementById('t3dPlnDepthBtn');
+        if (depthBtn) depthBtn.addEventListener('click', function () { depthOn = !depthOn; apply(); });
+        var faultBtn = document.getElementById('t3dPlnFaultBtn');
+        if (faultBtn) faultBtn.addEventListener('click', function () { faultOn = !faultOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the depth marker or the fault line.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00003;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeslochness: 't3dPlnControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeslochness: { radius: 13, maxR: 45, minR: 5, phi: 1.18, theta: 0.32, targetY: -0.35 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

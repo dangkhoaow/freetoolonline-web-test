@@ -14962,6 +14962,7 @@ export const ALIAS_ROUTES = {
   '/mammoth-cave.html': '/places-3d/mammoth-cave.html',
   '/carlsbad-caverns.html': '/places-3d/carlsbad-caverns.html',
   '/serengeti-plains.html': '/places-3d/serengeti-plains.html',
+  '/loch-ness.html': '/places-3d/loch-ness.html',
   '/iguazu-falls.html': '/places-3d/iguazu-falls.html',
   '/antelope-canyon.html': '/places-3d/antelope-canyon.html',
   '/great-barrier-reef.html': '/places-3d/great-barrier-reef.html',
@@ -17255,6 +17256,7 @@ export const JSP_BY_ROUTE = {
   '/places-3d/matterhorn.html': 'place/matterhorn.jsp',
   '/places-3d/plitvice-lakes.html': 'place/plitvice-lakes.jsp',
   '/places-3d/mekong-delta.html': 'place/mekong-delta.jsp',
+  '/places-3d/loch-ness.html': 'place/loch-ness.jsp',
   // dinosaur-loop (2026-07-15): the /dinosaur-3d cluster hub (non-'-tools'
   // hubRoute, registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   // Member routes live at /dinosaur-3d/<slug>.html (JSP folder: dinosaur/).
