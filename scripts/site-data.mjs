@@ -143,6 +143,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html',
   // foxit-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260828-2)
   '/guides/es/foxit-pdf-editor-browser-vs-alternatives.html',
+  // foxit-pdf-editor-browser-vs-alternatives vi locale (create_new_guide_page 20260828-3)
+  '/guides/vi/foxit-pdf-editor-browser-vs-alternatives.html',
   '/guides/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/es/foxit-pdf-editor-browser-step-by-step.html',
@@ -7295,6 +7297,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html',
   // foxit-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260828-2)
   '/guides/es/foxit-pdf-editor-browser-vs-alternatives.html',
+  // foxit-pdf-editor-browser-vs-alternatives vi locale (create_new_guide_page 20260828-3)
+  '/guides/vi/foxit-pdf-editor-browser-vs-alternatives.html',
   // foxit-pdf-editor-browser-step-by-step pt locale (create_new_guide_page 20260819-4)
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   // foxit-pdf-editor-browser-step-by-step es locale (create_new_guide_page 20260826-2)
@@ -28881,6 +28885,7 @@ export const JSP_BY_ROUTE = {
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/foxit-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/pt/foxit-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/es/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/es/foxit-pdf-editor-browser-vs-alternatives.jsp',
+  '/guides/vi/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/vi/foxit-pdf-editor-browser-vs-alternatives.jsp',
   '/image-converter-tools/adobe-pdf-editor-browser.html': 'convert/adobe-pdf-editor-browser.jsp',
   '/guides/pt/adobe-pdf-editor-browser-when.html': 'guide/pt/adobe-pdf-editor-browser-when.jsp',
   '/guides/es/adobe-pdf-editor-browser-when.html': 'guide/es/adobe-pdf-editor-browser-when.jsp',
