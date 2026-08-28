@@ -1,0 +1,200 @@
+<script>
+    // Text Anonymizer - 100% client-side, two-layer engine.
+    // Registry Gate-H: pii_redactor_ner_transformersjs
+    // (probe artifact seo-reports/20260828-ailocal-fire36/qa/gate-h_probe_text-anonymizer_ner.json:
+    //  2 person names + org + location reconstructed exactly at score >= 0.60;
+    //  email/phone/Luhn-card/IBAN 4/4; redaction leak-check clean; PII-free
+    //  negative text 0 false hits; inference 539ms after 10s model load).
+    // Layer 1 (deterministic, NO download): regex patterns for emails, intl
+    //   phones, payment cards (Luhn-verified) and IBANs - instant mode and the
+    //   no-AI fallback. Runs FIRST so digits are gone before the model sees text.
+    // Layer 2 (optional AI, explicit click): token-classification NER via
+    //   @huggingface/transformers@4.2.0 (EXACT pin per HARD GUARD 5 - the version
+    //   the Gate-H probe ran under), model Xenova/bert-base-NER q8 (~105 MB,
+    //   HF-verified 108,952,255 bytes model file; size stated BEFORE download,
+    //   cached by the library in the browser). B-/I- span aggregation with
+    //   wordpiece join; spans under 3 chars or under 0.60 score never replace.
+    // No Chrome Built-in AI tier: there is no built-in NER API to feature-detect.
+    // Honesty: finds MOST names, not every name (stated on-page); not a
+    // certified de-identification tool. Text never leaves the browser.
+    // Framework contract: doAfterPageRendered(); no top-level DOM work.
+
+    web.localUpload = false;
+
+    var TAZ_PIN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
+    var TAZ_MODEL = 'Xenova/bert-base-NER';
+    var TAZ_MODEL_MB = 105;      // honest size label shown before download (HF API-verified)
+    var TAZ_MIN_SCORE = 0.60;    // NER span confidence floor (Gate-H probe threshold)
+    var TAZ_CHUNK_WORDS = 180;   // long texts are scanned in chunks (BERT 512-token cap)
+    var TAZ_STATE = { ner: null, running: false };
+
+    function tazEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    function tazStatus(msg, isErr) {
+        var el = document.getElementById('tazStatus');
+        if (el) { el.textContent = msg; el.style.color = isErr ? '#b00020' : '#333'; }
+    }
+
+    // ---------- Layer 1: deterministic patterns (no download) ----------
+    var TAZ_RX = {
+        email: /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,
+        iban: /\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]{4}){2,7}(?:[ ]?[A-Z0-9]{1,4})?\b/g,
+        card: /\b(?:\d[ -]?){13,19}\d\b/g,
+        phone: /(?:\+|00)[1-9]\d{0,2}[\s.-]?(?:\(?\d{1,4}\)?[\s.-]?)?\d{2,4}[\s.-]?\d{2,4}(?:[\s.-]?\d{2,4})?/g
+    };
+
+    function tazLuhnOk(s) {
+        var d = s.replace(/\D/g, '');
+        if (d.length < 13 || d.length > 19) return false;
+        var sum = 0, alt = false;
+        for (var i = d.length - 1; i >= 0; i--) {
+            var n = +d[i];
+            if (alt) { n *= 2; if (n > 9) n -= 9; }
+            sum += n; alt = !alt;
+        }
+        return sum % 10 === 0;
+    }
+
+    function tazRegexRedact(text) {
+        var counts = { EMAIL: 0, IBAN: 0, CARD: 0, PHONE: 0 };
+        var out = String(text || '');
+        out = out.replace(TAZ_RX.email, function () { counts.EMAIL++; return '[EMAIL]'; });
+        out = out.replace(TAZ_RX.iban, function (m) { counts.IBAN++; return '[IBAN]'; });
+        out = out.replace(TAZ_RX.card, function (m) { if (!tazLuhnOk(m)) return m; counts.CARD++; return '[CARD]'; });
+        out = out.replace(TAZ_RX.phone, function (m) {
+            if (m.replace(/\D/g, '').length < 8) return m;
+            counts.PHONE++; return '[PHONE]';
+        });
+        return { text: out, counts: counts };
+    }
+
+    // ---------- Layer 2: NER span aggregation (same code the Gate-H probe verified) ----------
+    async function tazNerSpans(text) {
+        var toks = await TAZ_STATE.ner(text, { ignore_labels: [] });
+        var spans = [], cur = null;
+        for (var i = 0; i < toks.length; i++) {
+            var tk = toks[i];
+            var ent = tk.entity || tk.entity_group || 'O';
+            if (ent === 'O' || !/^[BI]-/.test(ent)) { if (cur) { spans.push(cur); cur = null; } continue; }
+            var type = ent.slice(2);
+            var isCont = tk.word.indexOf('##') === 0;
+            var piece = isCont ? tk.word.slice(2) : tk.word;
+            if (cur && (ent.indexOf('I-') === 0 || isCont) && cur.type === type) {
+                cur.text += isCont ? piece : ' ' + piece;
+                cur.scores.push(tk.score);
+            } else {
+                if (cur) spans.push(cur);
+                cur = { type: type, text: piece, scores: [tk.score] };
+            }
+        }
+        if (cur) spans.push(cur);
+        return spans.map(function (s) {
+            return { type: s.type, text: s.text, score: s.scores.reduce(function (a, b) { return a + b; }, 0) / s.scores.length };
+        }).filter(function (s) { return s.score >= TAZ_MIN_SCORE && s.text.length >= 3; });
+    }
+
+    function tazChunks(text) {
+        var w = String(text || '').split(/\s+/);
+        var chunks = [];
+        for (var i = 0; i < w.length; i += TAZ_CHUNK_WORDS) chunks.push(w.slice(i, i + TAZ_CHUNK_WORDS).join(' '));
+        return chunks.length ? chunks : [text];
+    }
+
+    function tazPlaceholder(type) {
+        return type === 'PER' ? '[NAME]' : type === 'ORG' ? '[ORGANIZATION]' : type === 'LOC' ? '[LOCATION]' : '[OTHER]';
+    }
+
+    function tazRender(cleaned, counts, aiCounts) {
+        var el = document.getElementById('tazResults');
+        if (!el) return;
+        var parts = [];
+        var order = ['EMAIL', 'PHONE', 'CARD', 'IBAN'];
+        for (var i = 0; i < order.length; i++) { if (counts[order[i]]) parts.push(counts[order[i]] + ' ' + order[i].toLowerCase() + (counts[order[i]] > 1 ? 's' : '')); }
+        if (aiCounts) {
+            if (aiCounts.PER) parts.push(aiCounts.PER + ' name' + (aiCounts.PER > 1 ? 's' : ''));
+            if (aiCounts.ORG) parts.push(aiCounts.ORG + ' organization' + (aiCounts.ORG > 1 ? 's' : ''));
+            if (aiCounts.LOC) parts.push(aiCounts.LOC + ' location' + (aiCounts.LOC > 1 ? 's' : ''));
+            if (aiCounts.MISC) parts.push(aiCounts.MISC + ' other');
+        }
+        var summary = parts.length ? 'Replaced: ' + parts.join(', ') + '.' : 'Nothing matching the patterns was found - the text is unchanged.';
+        el.innerHTML = '<div class="w3-panel w3-border" style="display:inline-block;text-align:left;padding:8px;max-width:720px;width:95%;">' +
+            '<p style="margin:2px 0;font-size:0.95em;"><b>' + tazEsc(summary) + '</b></p>' +
+            '<textarea id="tazOutput" class="w3-input w3-border" rows="7" style="width:100%;font-size:0.92em;" readonly>' + tazEsc(cleaned) + '</textarea>' +
+            '<button id="tazCopyBtn" type="button" class="w3-button w3-light-grey w3-border" style="margin-top:6px;">Copy cleaned text</button>' +
+            '<p style="margin:6px 0 2px;font-size:0.85em;color:#555;">Review before sharing: detection is threshold-based and finds most personal details, not provably all of them.</p>' +
+            '</div>';
+        var copyBtn = document.getElementById('tazCopyBtn');
+        if (copyBtn) copyBtn.addEventListener('click', function () {
+            var out = document.getElementById('tazOutput');
+            out.select();
+            try { navigator.clipboard.writeText(out.value); } catch (e) { document.execCommand('copy'); }
+            copyBtn.textContent = 'Copied';
+        });
+    }
+
+    function tazRunBasic() {
+        var txt = document.getElementById('tazInput').value || '';
+        if (!txt.trim()) { tazStatus('Paste some text first.', true); return; }
+        var r = tazRegexRedact(txt);
+        tazRender(r.text, r.counts, null);
+        tazStatus('Done: emails, phones, card and account numbers replaced on this device. Names and places need the AI mode.');
+    }
+
+    async function tazRunAi() {
+        if (TAZ_STATE.running) return;
+        var txt = document.getElementById('tazInput').value || '';
+        if (!txt.trim()) { tazStatus('Paste some text first.', true); return; }
+        TAZ_STATE.running = true;
+        var btn = document.getElementById('tazAiBtn');
+        try {
+            if (!TAZ_STATE.ner) {
+                if (btn) btn.disabled = true;
+                tazStatus('Downloading the recognition model (about ' + TAZ_MODEL_MB + ' MB, one time - cached in this browser). Your text still never leaves your device.');
+                var tf = await import(TAZ_PIN);
+                try {
+                    TAZ_STATE.ner = await tf.pipeline('token-classification', TAZ_MODEL, { dtype: 'q8', device: (navigator.gpu ? 'webgpu' : 'wasm') });
+                } catch (e) {
+                    console.warn('webgpu path failed, retrying wasm', e);
+                    TAZ_STATE.ner = await tf.pipeline('token-classification', TAZ_MODEL, { dtype: 'q8', device: 'wasm' });
+                }
+            }
+            var r = tazRegexRedact(txt); // digits and addresses go first, on-device
+            var aiCounts = { PER: 0, ORG: 0, LOC: 0, MISC: 0 };
+            var cleaned = r.text;
+            var chunks = tazChunks(cleaned);
+            var allSpans = [];
+            for (var c = 0; c < chunks.length; c++) {
+                tazStatus('AI scanning part ' + (c + 1) + ' of ' + chunks.length + ' on this device...');
+                var spans = await tazNerSpans(chunks[c]);
+                for (var s = 0; s < spans.length; s++) allSpans.push(spans[s]);
+            }
+            allSpans.sort(function (a, b) { return b.text.length - a.text.length; });
+            for (var i = 0; i < allSpans.length; i++) {
+                var sp = allSpans[i];
+                if (cleaned.indexOf(sp.text) < 0) continue;
+                cleaned = cleaned.split(sp.text).join(tazPlaceholder(sp.type));
+                aiCounts[sp.type === 'PER' || sp.type === 'ORG' || sp.type === 'LOC' ? sp.type : 'MISC']++;
+            }
+            tazRender(cleaned, r.counts, aiCounts);
+            tazStatus('Done: cleaned on this device. English names work best - review the output before sharing.');
+        } catch (e) {
+            console.error(e);
+            tazStatus('The AI model could not load here (' + e.message + '). The instant pattern clean still works - showing it below.', true);
+            tazRunBasic();
+        }
+        if (btn) btn.disabled = false;
+        TAZ_STATE.running = false;
+    }
+
+    function doAfterPageRendered() {
+        var runBtn = document.getElementById('tazRunBtn');
+        var aiBtn = document.getElementById('tazAiBtn');
+        if (!runBtn) return;
+        runBtn.addEventListener('click', tazRunBasic);
+        if (aiBtn) aiBtn.addEventListener('click', tazRunAi);
+    }
+</script>
