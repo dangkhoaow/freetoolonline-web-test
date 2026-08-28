@@ -1,0 +1,48 @@
+<script>
+    web.localUpload = false;
+    var SNS_GAME_URL = 'https://gh-static.freetool.online/games/sunset-soar/index.html';
+    function snsStatus(text) {
+        var el = document.getElementById('snsStatus');
+        if (el) el.textContent = text;
+    }
+    function snsInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'snsFrame';
+        frame.src = SNS_GAME_URL;
+        frame.title = 'Sunset Soar game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            snsStatus('Game loaded. Hold to dive down slopes, release at the crest to launch.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('snsLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('snsStage');
+        var playBtn = document.getElementById('snsPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('snsFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            snsStatus('Loading the game (~16 KB one time - then cached)...');
+            snsInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('snsFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>

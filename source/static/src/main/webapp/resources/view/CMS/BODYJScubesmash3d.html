@@ -1,0 +1,48 @@
+<script>
+    web.localUpload = false;
+    var CSM_GAME_URL = 'https://gh-static.freetool.online/games/cube-smash-3d/index.html';
+    function csmStatus(text) {
+        var el = document.getElementById('csmStatus');
+        if (el) el.textContent = text;
+    }
+    function csmInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'csmFrame';
+        frame.src = CSM_GAME_URL;
+        frame.title = 'Cube Smash 3D game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            csmStatus('Game loaded. WASD / arrows or drag to move, Space or tap to dash.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('csmLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('csmStage');
+        var playBtn = document.getElementById('csmPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('csmFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            csmStatus('Loading the game (~610 KB one time - then cached)...');
+            csmInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('csmFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
