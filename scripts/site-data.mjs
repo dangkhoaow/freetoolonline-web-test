@@ -119,6 +119,7 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/client-side-pdf-editor-toolkit-when.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
+  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-when.html',
   '/guides/adobe-pdf-editor-browser-vs-alternatives.html',
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html',
@@ -7323,6 +7324,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/adobe-pdf-editor-browser-when.html',
   // adobe-pdf-editor-browser-when de locale (create_new_guide_page 20260821-7)
   '/guides/de/adobe-pdf-editor-browser-when.html',
+  // pdf-xchange-editor-browser-plugin-edge-step-by-step pt locale (create_new_guide_page 20260829-3)
+  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   // adobe-pdf-editor-browser-vs-alternatives pt locale (create_new_guide_page 20260820-937)
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html',
   // adobe-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260820-939)
@@ -16848,6 +16851,7 @@ export const ALIAS_ROUTES = {
   '/keyword-extractor.html': '/developer-tools/keyword-extractor.html',
   '/text-similarity-checker.html': '/developer-tools/text-similarity-checker.html',
   '/text-anonymizer.html': '/developer-tools/text-anonymizer.html',
+  '/ai-email-writer.html': '/utility-tools/ai-email-writer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29059,6 +29063,7 @@ export const JSP_BY_ROUTE = {
   '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html': 'convert/pdf-xchange-editor-browser-plugin-edge.jsp',
   '/guides/pdf-xchange-editor-browser-plugin-edge-when.html': 'guide/pdf-xchange-editor-browser-plugin-edge-when.jsp',
   '/guides/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
+  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
   '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
   '/image-converter-tools/client-side-pdf-editor-toolkit.html': 'convert/client-side-pdf-editor-toolkit.jsp',
   '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
@@ -29168,6 +29173,7 @@ export const JSP_BY_ROUTE = {
   '/developer-tools/keyword-extractor.html': 'utility/keyword-extractor.jsp',
   '/developer-tools/text-similarity-checker.html': 'utility/text-similarity-checker.jsp',
   '/developer-tools/text-anonymizer.html': 'utility/text-anonymizer.jsp',
+  '/utility-tools/ai-email-writer.html': 'utility/ai-email-writer.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

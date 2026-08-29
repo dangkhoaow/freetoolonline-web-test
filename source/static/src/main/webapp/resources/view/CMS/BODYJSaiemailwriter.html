@@ -1,0 +1,626 @@
+<script>
+    // AI email-writer skeleton (ai-email-writer) - browser-local email drafting from a
+    // structured brief (recipient / goal / key points / tone / length), with a
+    // reply mode (paste the email you received). Registry entry:
+    // llm_email_draft_webllm. Distinct from llm-text-task (which TRANSFORMS
+    // existing text in one textarea) and from private-ai-chat (open-ended
+    // conversation): this page COMPOSES a one-shot draft with a subject line
+    // from a form-shaped brief.
+    //
+    // THREE-TIER ENGINE LADDER (in order, each honestly labeled):
+    //   1. Chrome Built-in Writer API when ALREADY on-device (no download):
+    //      `Writer` global (2025+ spec) + legacy ai.writer probe. Feature-
+    //      detected + try/catch everywhere; only availability 'available'
+    //      activates the tier (a 'downloadable' state would trigger a silent
+    //      model download).
+    //   2. WebLLM - EXACT PIN https://esm.run/@mlc-ai/web-llm@0.2.84 (HARD
+    //      GUARD 5; pin probe-verified 2026-08-29 headless Chromium). Engine
+    //      idioms from BODYJSprivateaichat.html / llm-text-task skeleton:
+    //      lazy import + model load ONLY on the explicit "Load model" click,
+    //      new webllm.MLCEngine() + engine.reload(modelId), determinate
+    //      progress via setInitProgressCallback, streaming chat.completions,
+    //      WebGPU preflight, last model in localStorage 'webllm-last-model'
+    //      (SAME key as private-ai-chat - shared browser weight cache),
+    //      'Clear cached models' via engine.clearCache(true), model ids
+    //      validated against webllm.prebuiltAppConfig.model_list and every
+    //      option's download size derived from that list (never hardcoded).
+    //   3. No-AI fallback so the page is NEVER dead: a deterministic template
+    //      assembler builds a complete draft (subject from the goal, greeting
+    //      from the recipient, opening per tone, one paragraph per key point,
+    //      closing per tone) labeled "Template draft (no AI model)". It is a
+    //      real zero-download tool on its own, and it renders the G16 sample
+    //      demo on load with zero interaction.
+    //
+    // STATUS LINE CONTRACT (ported from llm-text-task): "Output above: <engine>"
+    // names the engine that produced the visible output; "ready: <engine>" is
+    // availability only - the async tier-1 probe may flip "ready" while the
+    // sample demo stays on screen.
+    //
+    // 100% in-browser: no upload, no backend, nothing sent anywhere. This tool
+    // DRAFTS text only - it never sends email. Framework contract: bootstrap in
+    // doAfterPageRendered(); no top-level DOM access.
+
+    web.localUpload = false;
+
+    var AEW_SLUG = 'ai-email-writer';
+    var AEW_LS_MODEL = 'webllm-last-model'; // shared with private-ai-chat (shared cache)
+    var AEW_MAX_CHARS = 6000;               // combined brief + inbound email cap (small-model context)
+    var AEW_WEBLLM_URL = 'https://esm.run/@mlc-ai/web-llm@0.2.84'; // EXACT pin - HARD GUARD 5
+    var AEW_SYSTEM_PROMPT = 'You are a careful email-writing assistant running privately in the user browser. Write a complete, ready-to-send email. Output the subject line first as "Subject: ..." then a blank line, then the email body. Output only the email - no commentary.';
+
+    var AEW_WEBLLM_MODELS = [
+        { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 1B (default)' },
+        { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 3B' },
+        { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', label: 'Phi 3.5 mini' }
+    ];
+    var AEW_SIZE_UNKNOWN = 'size unknown - may be large';
+    var AEW_SIZE_PENDING = 'download size shown before the download starts';
+
+    var AEW_TONES = [
+        { value: 'professional', label: 'Professional' },
+        { value: 'friendly', label: 'Friendly' },
+        { value: 'direct', label: 'Short and direct' },
+        { value: 'apologetic', label: 'Apologetic' }
+    ];
+
+    // G16 sample brief - renders a complete tier-3 template draft on load.
+    var AEW_SAMPLE = {
+        recipient: 'Ms. Alvarez',
+        goal: 'Reschedule the Thursday project review meeting to next Monday',
+        points: 'Two team members are out with flu this week\nAll deliverables will still be ready on the original timeline\nMonday 10:00 or any time Tuesday morning works for us',
+        tone: 'professional'
+    };
+
+    // Engine state.
+    var aewEngine = null;
+    var aewEngineHooked = false;
+    var aewLoadedModel = null;
+    var aewGenerating = false;
+    var aewProgressCb = null;
+    var aewBuiltinOk = false;     // tier-1 Writer API availability
+    var aewBuiltinKind = null;    // 'new' | 'legacy'
+    var aewModelSizes = null;
+    var aewSizesPromise = null;
+    var aewLastOutputEngine = null;
+
+    // ---- Tier 3: deterministic template assembler --------------------------------
+    function aewPointsList(raw) {
+        var lines = String(raw || '').split(/\n+/);
+        var out = [];
+        for (var i = 0; i < lines.length; i++) {
+            var t = lines[i].replace(/^\s*[-*•]\s*/, '').replace(/^\s+|\s+$/g, '');
+            if (t) out.push(t);
+        }
+        return out;
+    }
+
+    function aewSentence(t) {
+        var s = String(t || '').replace(/^\s+|\s+$/g, '');
+        if (!s) return '';
+        s = s.charAt(0).toUpperCase() + s.slice(1);
+        if (!/[.!?]$/.test(s)) s += '.';
+        return s;
+    }
+
+    function aewTemplateDraft(brief) {
+        var tone = brief.tone || 'professional';
+        var name = String(brief.recipient || '').replace(/^\s+|\s+$/g, '');
+        var goal = String(brief.goal || '').replace(/^\s+|\s+$/g, '').replace(/[.!?]+$/, '');
+        var points = aewPointsList(brief.points);
+        var isReply = brief.mode === 'reply';
+
+        var subject = goal ? goal.charAt(0).toUpperCase() + goal.slice(1) : (isReply ? 'Re: your email' : 'Quick note');
+        if (isReply && !/^re:/i.test(subject)) subject = 'Re: ' + subject;
+
+        var greeting = name ? ((tone === 'friendly' ? 'Hi ' : 'Dear ') + name + ',') : (tone === 'friendly' ? 'Hi,' : 'Hello,');
+
+        var open;
+        if (isReply) {
+            open = tone === 'apologetic'
+                ? 'Thank you for your email, and apologies for the delay in getting back to you.'
+                : 'Thank you for your email.';
+            if (goal) open += ' ' + aewSentence('I am writing back about ' + goal.charAt(0).toLowerCase() + goal.slice(1));
+        } else if (tone === 'apologetic') {
+            open = goal ? aewSentence('I am sorry to trouble you, but I am writing about ' + goal.charAt(0).toLowerCase() + goal.slice(1)) : 'I am sorry to trouble you.';
+        } else if (tone === 'direct') {
+            open = goal ? aewSentence(goal) : '';
+        } else {
+            open = goal ? aewSentence('I am writing to ' + goal.charAt(0).toLowerCase() + goal.slice(1)) : '';
+        }
+
+        var body = [];
+        for (var i = 0; i < points.length; i++) body.push(aewSentence(points[i]));
+
+        var close;
+        if (tone === 'friendly') close = 'Let me know what you think - happy to talk it through.';
+        else if (tone === 'direct') close = 'Please let me know by reply.';
+        else if (tone === 'apologetic') close = 'Thank you for your patience and understanding.';
+        else close = 'Please let me know if you have any questions.';
+
+        var signoff = (tone === 'friendly' ? 'Best,' : 'Best regards,') + '\n[Your name]';
+
+        var paragraphs = [greeting];
+        if (open) paragraphs.push(open);
+        if (body.length) paragraphs.push(body.join('\n'));
+        paragraphs.push(close);
+        paragraphs.push(signoff);
+        return 'Subject: ' + subject + '\n\n' + paragraphs.join('\n\n');
+    }
+
+    // ---- Tier 1: Chrome Built-in Writer API ---------------------------------------
+    function aewBuiltinApi() {
+        try {
+            if (typeof Writer !== 'undefined' && Writer && typeof Writer.availability === 'function') return Writer;
+        } catch (e) { void e; }
+        return null;
+    }
+
+    function aewProbeBuiltin(cb) {
+        var done = false;
+        function finish(ok, kind) { if (!done) { done = true; cb(!!ok, kind || null); } }
+        function legacyProbe() {
+            try {
+                if (typeof window !== 'undefined' && window.ai && window.ai.writer && typeof window.ai.writer.capabilities === 'function') {
+                    window.ai.writer.capabilities()
+                        .then(function (c) { finish(c && c.available === 'readily', 'legacy'); })
+                        .catch(function () { finish(false, null); });
+                    return;
+                }
+            } catch (e) { void e; }
+            finish(false, null);
+        }
+        var api = aewBuiltinApi();
+        if (!api) { legacyProbe(); return; }
+        try {
+            Promise.resolve(api.availability())
+                .then(function (a) { if (a === 'available') { finish(true, 'new'); } else { legacyProbe(); } })
+                .catch(legacyProbe);
+        } catch (e) { legacyProbe(); }
+    }
+
+    function aewRunBuiltin(task, onDone, onError) {
+        try {
+            if (aewBuiltinKind === 'legacy') {
+                window.ai.writer.create().then(function (w) { return w.write(task); })
+                    .then(function (out) { onDone(String(out == null ? '' : out)); }).catch(onError);
+                return;
+            }
+            var api = aewBuiltinApi();
+            if (!api) { onError(new Error('Built-in AI unavailable')); return; }
+            Promise.resolve(api.create({ format: 'plain-text' }))
+                .then(function (inst) { return inst.write(task); })
+                .then(function (res) { onDone(String(res == null ? '' : res)); })
+                .catch(onError);
+        } catch (e) { onError(e); }
+    }
+
+    // ---- Tier 2: WebLLM (lazy, click-gated, exact pin) ----------------------------
+    function aewWebGpuSupported() { return typeof navigator !== 'undefined' && 'gpu' in navigator; }
+    function aewWebGpuAdapter() {
+        if (!aewWebGpuSupported()) { return Promise.resolve(false); }
+        try { return navigator.gpu.requestAdapter().then(function (a) { return !!a; }).catch(function () { return false; }); }
+        catch (e) { return Promise.resolve(false); }
+    }
+
+    function aewLoadWebLLM() {
+        if (window.__aewWebLLM) { return Promise.resolve(window.__aewWebLLM); }
+        if (window.__aewWebLLMPromise) { return window.__aewWebLLMPromise; }
+        window.__aewWebLLMPromise = import(AEW_WEBLLM_URL)
+            .then(function (mod) { window.__aewWebLLM = mod; return mod; });
+        return window.__aewWebLLMPromise;
+    }
+
+    function aewValidateModelId(webllm, wanted) {
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            var ids = {}, i;
+            for (i = 0; i < list.length; i++) { if (list[i] && list[i].model_id) ids[list[i].model_id] = true; }
+            if (ids[wanted]) return wanted;
+            for (i = 0; i < AEW_WEBLLM_MODELS.length; i++) { if (ids[AEW_WEBLLM_MODELS[i].id]) return AEW_WEBLLM_MODELS[i].id; }
+            for (i = 0; i < list.length; i++) {
+                var id = list[i] && list[i].model_id;
+                if (id && /instruct|chat/i.test(id) && (/-(0\.5B|1B|1\.5B)-/i.test(id) || /TinyLlama/i.test(id))) return id;
+            }
+            return (list.length && list[0].model_id) ? list[0].model_id : wanted;
+        } catch (e) { return wanted; }
+    }
+
+    function aewFormatSizeMb(mb) {
+        var n = typeof mb === 'number' ? mb : parseFloat(mb);
+        if (!isFinite(n) || n <= 0) { return null; }
+        if (n >= 1024) { return (Math.round((n / 1024) * 10) / 10) + ' GB'; }
+        return Math.round(n) + ' MB';
+    }
+
+    function aewSizeMapFrom(webllm) {
+        var map = {};
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            for (var i = 0; i < list.length; i++) {
+                var e = list[i];
+                if (!e || !e.model_id) { continue; }
+                var s = aewFormatSizeMb(e.vram_required_MB);
+                if (s) { map[e.model_id] = s; }
+            }
+        } catch (e) { void e; }
+        return map;
+    }
+
+    function aewEnsureModelSizes() {
+        if (aewModelSizes) { return Promise.resolve(aewModelSizes); }
+        if (aewSizesPromise) { return aewSizesPromise; }
+        aewSizesPromise = aewLoadWebLLM()
+            .then(function (webllm) { aewModelSizes = aewSizeMapFrom(webllm); return aewModelSizes; })
+            .catch(function () { aewModelSizes = {}; return aewModelSizes; });
+        return aewSizesPromise;
+    }
+
+    function aewBaseLabelFor(id) {
+        for (var i = 0; i < AEW_WEBLLM_MODELS.length; i++) {
+            if (AEW_WEBLLM_MODELS[i].id === id) { return AEW_WEBLLM_MODELS[i].label; }
+        }
+        return id;
+    }
+
+    function aewOptionText(id) {
+        var base = aewBaseLabelFor(id);
+        if (!aewModelSizes) { return base + ' - ' + AEW_SIZE_PENDING; }
+        var size = aewModelSizes[id];
+        return base + ' - ' + (size ? 'about ' + size : AEW_SIZE_UNKNOWN);
+    }
+
+    function aewGetEngine(webllm) {
+        if (!aewEngine) { aewEngine = new webllm.MLCEngine(); }
+        if (!aewEngineHooked) {
+            aewEngineHooked = true;
+            try {
+                aewEngine.setInitProgressCallback(function (report) {
+                    if (aewProgressCb) { aewProgressCb(typeof report.progress === 'number' ? report.progress : 0, report.text || ''); }
+                });
+            } catch (e) { void e; }
+        }
+        return aewEngine;
+    }
+
+    function aewLoadModel(modelId, progressCb) {
+        aewProgressCb = progressCb || null;
+        return aewLoadWebLLM().then(function (webllm) {
+            var id = aewValidateModelId(webllm, modelId || AEW_WEBLLM_MODELS[0].id);
+            var engine = aewGetEngine(webllm);
+            if (aewLoadedModel === id) { return engine; }
+            return Promise.resolve(engine.reload(id)).then(function () {
+                aewLoadedModel = id;
+                try { localStorage.setItem(AEW_LS_MODEL, id); } catch (e) { void e; }
+                return engine;
+            });
+        });
+    }
+
+    function aewClearModelCache(onDone, onError) {
+        aewLoadWebLLM().then(function (webllm) {
+            var engine = aewGetEngine(webllm);
+            if (typeof engine.clearCache !== 'function') { throw new Error('clearCache is unavailable in this WebLLM build'); }
+            return Promise.resolve(engine.clearCache(true));
+        }).then(function () { aewLoadedModel = null; if (onDone) onDone(); })
+            .catch(function (err) { if (onError) onError(err); });
+    }
+
+    // Build the model/Writer task text from the brief. Same text serves tiers 1+2.
+    function aewBuildTask(brief) {
+        var toneWord = brief.tone === 'friendly' ? 'friendly' : brief.tone === 'direct' ? 'short, direct' : brief.tone === 'apologetic' ? 'polite, apologetic' : 'professional';
+        var lines = ['Write a ' + toneWord + ' email.'];
+        if (brief.mode === 'reply' && brief.inbound) {
+            lines.push('It is a REPLY to this email I received:\n"""\n' + brief.inbound + '\n"""');
+        }
+        if (brief.recipient) lines.push('Recipient: ' + brief.recipient);
+        if (brief.goal) lines.push('Goal of the email: ' + brief.goal);
+        var pts = aewPointsList(brief.points);
+        if (pts.length) lines.push('It must cover these points:\n- ' + pts.join('\n- '));
+        lines.push('Keep it concise. Start with "Subject: ..." then a blank line, then the body. Sign off with a placeholder [Your name].');
+        return lines.join('\n\n');
+    }
+
+    function aewRunWebLLM(task, onToken, onDone, onError) {
+        if (!aewEngine || !aewLoadedModel) { if (onError) onError(new Error('Load a model first.')); return; }
+        if (aewGenerating) { return; }
+        aewGenerating = true;
+        var truncated = false;
+        if (task.length > AEW_MAX_CHARS) { task = task.slice(0, AEW_MAX_CHARS); truncated = true; }
+        var messages = [{ role: 'system', content: AEW_SYSTEM_PROMPT }, { role: 'user', content: task }];
+        var full = '';
+        aewEngine.chat.completions.create({ messages: messages, stream: true, temperature: 0.4 })
+            .then(function (stream) {
+                (async function () {
+                    try {
+                        for await (const chunk of stream) {
+                            var d = (chunk && chunk.choices && chunk.choices[0] && chunk.choices[0].delta && chunk.choices[0].delta.content) || '';
+                            if (d) { full += d; if (onToken) { onToken(full); } }
+                        }
+                        aewGenerating = false;
+                        if (onDone) { onDone(full, truncated); }
+                    } catch (err) { aewGenerating = false; if (onError) { onError(err); } }
+                })();
+            })
+            .catch(function (err) { aewGenerating = false; if (onError) { onError(err); } });
+    }
+
+    // ---- UI ------------------------------------------------------------------------
+    function aewOptionsHtml(options) {
+        var out = '';
+        for (var i = 0; i < options.length; i++) { out += '<option value="' + options[i].value + '">' + options[i].label + '</option>'; }
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('aiEmailWriterTool');
+        if (!root) return; // not an email-writer page
+
+        var modelOpts = [];
+        for (var mi = 0; mi < AEW_WEBLLM_MODELS.length; mi++) { modelOpts.push({ value: AEW_WEBLLM_MODELS[mi].id, label: aewOptionText(AEW_WEBLLM_MODELS[mi].id) }); }
+
+        root.innerHTML =
+            '<div style="max-width:720px;margin:0 auto;text-align:left;">' +
+            '<div style="margin-bottom:10px;">' +
+            '<label><input type="radio" name="aewMode" id="aewModeNew" value="new" checked> New email</label> ' +
+            '<label style="margin-left:14px;"><input type="radio" name="aewMode" id="aewModeReply" value="reply"> Reply to an email</label>' +
+            '</div>' +
+            '<div id="aewInboundWrap" style="display:none;margin-bottom:8px;">' +
+            '<label for="aewInbound"><b>The email you received</b></label>' +
+            '<textarea id="aewInbound" rows="5" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin-top:4px;" placeholder="Paste the email you are replying to - it never leaves your browser."></textarea>' +
+            '</div>' +
+            '<label for="aewRecipient"><b>Who is it for?</b> <span class="w3-small w3-text-grey">(name, optional role)</span></label>' +
+            '<input id="aewRecipient" type="text" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin:4px 0 8px 0;" placeholder="e.g. Ms. Alvarez, project lead">' +
+            '<label for="aewGoal"><b>What should the email achieve?</b></label>' +
+            '<input id="aewGoal" type="text" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin:4px 0 8px 0;" placeholder="e.g. reschedule the Thursday meeting to Monday">' +
+            '<label for="aewPoints"><b>Key points</b> <span class="w3-small w3-text-grey">(one per line)</span></label>' +
+            '<textarea id="aewPoints" rows="4" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin-top:4px;" placeholder="- two colleagues are out sick&#10;- deliverables still on time&#10;- Monday 10:00 works"></textarea>' +
+            '<div id="aewCount" class="w3-small w3-text-grey" style="text-align:right;">0 chars</div>' +
+            '<div class="w3-row" style="margin:8px 0;">' +
+            '<label for="aewTone">Tone </label>' +
+            '<select id="aewTone" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;margin-right:10px;">' + aewOptionsHtml(AEW_TONES) + '</select>' +
+            '<button id="aewRunBtn" type="button" class="w3-button w3-blue">Draft email</button>' +
+            '</div>' +
+            '<div id="aewStatus" class="w3-small" role="status" style="color:#555;margin-bottom:6px;"></div>' +
+            '<div class="outputImgs" style="visibility:visible !important;background:#f7f7f7;border:1px solid #ddd;border-radius:4px;padding:12px;">' +
+            '<div id="aewOutputLabel" class="w3-small w3-text-grey" style="margin-bottom:6px;"></div>' +
+            '<div id="aewOutput" style="white-space:pre-wrap;min-height:2em;"></div>' +
+            '<div style="margin-top:8px;"><button id="aewCopyBtn" type="button" class="w3-button w3-light-grey w3-small">Copy draft</button>' +
+            '<span id="aewCopied" role="status" style="margin-left:8px;color:#2e7d32;font-size:0.9em;"></span></div>' +
+            '</div>' +
+            '<div class="w3-panel w3-light-grey w3-round" style="margin-top:16px;padding:10px;">' +
+            '<b>Optional: on-device AI model</b>' +
+            '<div class="w3-small" style="margin:4px 0;">Loads a small open model into your browser with WebLLM for more natural drafts. One-time download, cached for later visits, runs fully on your device.</div>' +
+            '<div id="aewGpuNote" class="w3-small" style="display:none;color:#b00020;margin:4px 0;">This browser has no WebGPU (needed by WebLLM). Try the latest Chrome or Edge, or Safari 18+. The template draft above still works without it.</div>' +
+            '<label for="aewModelSel">Model </label>' +
+            '<select id="aewModelSel" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;">' + aewOptionsHtml(modelOpts) + '</select> ' +
+            '<button id="aewLoadBtn" type="button" class="w3-button w3-green">Load model</button> ' +
+            '<button id="aewClearCacheBtn" type="button" class="w3-button w3-light-grey w3-small">Clear cached models</button>' +
+            '<div><progress id="aewProgress" max="1" value="0" style="width:100%;max-width:420px;margin-top:8px;display:none;"></progress></div>' +
+            '<div id="aewLoadStatus" class="w3-small w3-text-grey" role="status"></div>' +
+            '</div>' +
+            // Honest-notes block: keep in sync with tool-<slug>/SKILL.md ## NOT implemented anti-claims.
+            '<div id="aewNotes" class="w3-small w3-text-grey" style="margin-top:14px;"><b>Honest notes</b><ul style="margin:4px 0 0 0;">' +
+            '<li>Everything runs in your browser - the brief and any pasted email never leave this device.</li>' +
+            '<li>This tool drafts text only. It does not send email - copy the draft into your own mail app.</li>' +
+            '<li>On-device drafts come from small 1-3B parameter models - a solid first draft, review before sending.</li>' +
+            '<li>On the on-device model path, input longer than ' + AEW_MAX_CHARS + ' characters is truncated to fit the model context.</li>' +
+            '<li>The first model load downloads hundreds of MB to a few GB; later loads come from the browser cache. Each size in the picker is read from the WebLLM model list and shown again before the download starts.</li>' +
+            '</ul></div>' +
+            '</div>';
+
+        var q = function (sel) { return root.querySelector(sel); };
+        var modeNew = q('#aewModeNew'), modeReply = q('#aewModeReply'), inboundWrap = q('#aewInboundWrap');
+        var inbound = q('#aewInbound'), recipient = q('#aewRecipient'), goal = q('#aewGoal'), points = q('#aewPoints');
+        var count = q('#aewCount'), toneSel = q('#aewTone'), runBtn = q('#aewRunBtn'), status = q('#aewStatus');
+        var output = q('#aewOutput'), outputLabel = q('#aewOutputLabel');
+        var copyBtn = q('#aewCopyBtn'), copied = q('#aewCopied');
+        var modelSel = q('#aewModelSel'), loadBtn = q('#aewLoadBtn'), clearBtn = q('#aewClearCacheBtn');
+        var progress = q('#aewProgress'), loadStatus = q('#aewLoadStatus'), gpuNote = q('#aewGpuNote');
+
+        function aewMode() { return modeReply.checked ? 'reply' : 'new'; }
+        function aewBrief() {
+            return {
+                mode: aewMode(),
+                inbound: aewMode() === 'reply' ? (inbound.value || '').replace(/^\s+|\s+$/g, '') : '',
+                recipient: recipient.value, goal: goal.value, points: points.value,
+                tone: toneSel.value
+            };
+        }
+        function aewTotalChars() { return (inbound.value || '').length + (recipient.value || '').length + (goal.value || '').length + (points.value || '').length; }
+        function aewUpdateCount() { count.textContent = aewTotalChars() + ' chars'; }
+        function aewShowResult(label, text) { outputLabel.textContent = label; output.textContent = text; }
+        function aewActiveTier() { return aewBuiltinOk ? 1 : (aewEngine && aewLoadedModel ? 2 : 3); }
+
+        function aewReadyDescription() {
+            var t = aewActiveTier();
+            if (t === 1) { return 'built-in browser AI (no download)'; }
+            if (t === 2) { return 'on-device model ' + aewLoadedModel + ' via WebLLM'; }
+            return 'template draft (no AI model) - load a model below for more natural wording';
+        }
+
+        function aewRenderStatusLine() {
+            status.textContent = (aewLastOutputEngine
+                ? 'Output above: ' + aewLastOutputEngine
+                : 'Output above: none yet') + ' - ready: ' + aewReadyDescription() + '.';
+        }
+
+        function aewSetOutputEngine(name) { aewLastOutputEngine = name || null; aewRenderStatusLine(); }
+
+        function aewEnsureOption(sel, id) {
+            for (var i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].value === id) { sel.options[i].textContent = aewOptionText(id); return; }
+            }
+            var o = document.createElement('option');
+            o.value = id; o.textContent = aewOptionText(id); sel.appendChild(o);
+        }
+
+        function aewRefreshModelLabels() {
+            for (var i = 0; i < modelSel.options.length; i++) {
+                modelSel.options[i].textContent = aewOptionText(modelSel.options[i].value);
+            }
+        }
+
+        function aewHydrateModelSizes() { return aewEnsureModelSizes().then(aewRefreshModelLabels); }
+
+        function aewRunTemplate(brief, isDemo) {
+            var demoTag = isDemo ? 'Sample demo - ' : '';
+            aewShowResult(demoTag + 'Template draft (no AI model) - assembled from your brief, fully editable', aewTemplateDraft(brief));
+            aewSetOutputEngine('template draft, no AI model' + (isDemo ? ' (sample demo)' : ''));
+        }
+
+        function aewRunNow() {
+            var brief = aewBrief();
+            if (!brief.goal && !aewPointsList(brief.points).length && !(brief.mode === 'reply' && brief.inbound)) {
+                aewShowResult('No input', 'Fill in the goal or at least one key point above, then press Draft email.');
+                aewSetOutputEngine(null);
+                return;
+            }
+            runBtn.disabled = true;
+            function finish() { runBtn.disabled = false; }
+            var task = aewBuildTask(brief);
+            function tier2or3() {
+                if (aewEngine && aewLoadedModel) {
+                    var label = 'On-device AI model (' + aewLoadedModel + ') via WebLLM';
+                    var engineName = 'on-device model ' + aewLoadedModel + ' via WebLLM';
+                    aewShowResult(label, '');
+                    aewSetOutputEngine(engineName + ', working ...');
+                    aewRunWebLLM(task,
+                        function (partial) { output.textContent = partial; },
+                        function (full, truncated) {
+                            aewShowResult(label + (truncated ? ' - input truncated to ' + AEW_MAX_CHARS + ' chars to fit the model context' : ''), full);
+                            aewSetOutputEngine(engineName + (truncated ? ' (input truncated to ' + AEW_MAX_CHARS + ' chars)' : ''));
+                            finish();
+                        },
+                        function (err) {
+                            aewShowResult('Error', 'Generation failed: ' + (err && err.message ? err.message : 'unknown error') + '. The template draft below still works.');
+                            aewSetOutputEngine(engineName + ' - generation failed');
+                            finish();
+                        });
+                    return;
+                }
+                aewRunTemplate(brief, false);
+                finish();
+            }
+            if (aewBuiltinOk) {
+                aewShowResult('Built-in browser AI (no download)', 'Working ...');
+                aewSetOutputEngine('built-in browser AI (no download), working ...');
+                aewRunBuiltin(task,
+                    function (out) {
+                        aewShowResult('Built-in browser AI (no download)', out);
+                        aewSetOutputEngine('built-in browser AI (no download)');
+                        finish();
+                    },
+                    function () { aewBuiltinOk = false; aewRenderStatusLine(); tier2or3(); });
+                return;
+            }
+            tier2or3();
+        }
+
+        modeNew.addEventListener('change', function () { inboundWrap.style.display = 'none'; });
+        modeReply.addEventListener('change', function () { inboundWrap.style.display = 'block'; });
+        inbound.addEventListener('input', aewUpdateCount);
+        recipient.addEventListener('input', aewUpdateCount);
+        goal.addEventListener('input', aewUpdateCount);
+        points.addEventListener('input', aewUpdateCount);
+        runBtn.addEventListener('click', aewRunNow);
+
+        copyBtn.addEventListener('click', function () {
+            var text = output.textContent || '';
+            function ok() {
+                copied.textContent = 'Copied!';
+                setTimeout(function () { copied.textContent = ''; }, 1600);
+            }
+            function fallback() {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                var done = false;
+                try { done = document.execCommand('copy'); } catch (e) { done = false; }
+                document.body.removeChild(ta);
+                if (done) ok(); else copied.textContent = 'Copy failed - select the text and copy it manually.';
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok, fallback); }
+            else { fallback(); }
+        });
+
+        try {
+            var last = localStorage.getItem(AEW_LS_MODEL);
+            if (last) { aewEnsureOption(modelSel, last); modelSel.value = last; }
+        } catch (e) { void e; }
+
+        aewWebGpuAdapter().then(function (ok) {
+            if (!ok) { gpuNote.style.display = 'block'; loadBtn.disabled = true; }
+        });
+
+        var aewSizeHydrateOnce = function () {
+            modelSel.removeEventListener('pointerdown', aewSizeHydrateOnce);
+            modelSel.removeEventListener('focus', aewSizeHydrateOnce);
+            loadBtn.removeEventListener('pointerenter', aewSizeHydrateOnce);
+            loadBtn.removeEventListener('focus', aewSizeHydrateOnce);
+            aewHydrateModelSizes();
+        };
+        modelSel.addEventListener('pointerdown', aewSizeHydrateOnce);
+        modelSel.addEventListener('focus', aewSizeHydrateOnce);
+        loadBtn.addEventListener('pointerenter', aewSizeHydrateOnce);
+        loadBtn.addEventListener('focus', aewSizeHydrateOnce);
+
+        loadBtn.addEventListener('click', function () {
+            var wanted = modelSel.value || AEW_WEBLLM_MODELS[0].id;
+            loadBtn.disabled = true; modelSel.disabled = true;
+            loadStatus.textContent = 'Checking the download size for ' + wanted + ' ...';
+            aewHydrateModelSizes().then(function () {
+                var size = aewModelSizes[wanted];
+                progress.style.display = 'block';
+                loadStatus.textContent = 'Downloading ' + wanted + ' - ' +
+                    (size ? 'about ' + size : AEW_SIZE_UNKNOWN) +
+                    ' - one-time download, then cached in this browser ...';
+                return aewLoadModel(wanted, function (frac, msg) {
+                    progress.value = Math.max(0, Math.min(1, frac || 0));
+                    loadStatus.textContent = msg || ('Loading ... ' + Math.round((frac || 0) * 100) + '%');
+                });
+            }).then(function () {
+                progress.value = 1;
+                aewEnsureOption(modelSel, aewLoadedModel);
+                modelSel.value = aewLoadedModel;
+                aewRefreshModelLabels();
+                loadStatus.textContent = 'Model ready' +
+                    (aewLoadedModel === wanted ? '' : ' (requested id not in this WebLLM build; loaded ' + aewLoadedModel + ' instead)') +
+                    ' - drafting happens on your device.';
+                loadBtn.disabled = false; modelSel.disabled = false;
+                aewRenderStatusLine();
+            }).catch(function (err) {
+                loadBtn.disabled = false; modelSel.disabled = false;
+                loadStatus.textContent = 'Could not load the model: ' + (err && err.message ? err.message : 'unknown error') + '.';
+            });
+        });
+
+        clearBtn.addEventListener('click', function () {
+            clearBtn.disabled = true;
+            loadStatus.textContent = 'Clearing cached model files ...';
+            aewClearModelCache(function () {
+                clearBtn.disabled = false;
+                loadStatus.textContent = 'Cached model files cleared - the next load downloads again.';
+                aewRenderStatusLine();
+            }, function (err) {
+                clearBtn.disabled = false;
+                loadStatus.textContent = 'Could not clear the cache: ' + (err && err.message ? err.message : 'unknown error') + '.';
+            });
+        });
+
+        // Probe tier 1 (built-in Writer API) without downloading anything.
+        aewProbeBuiltin(function (ok, kind) { aewBuiltinOk = ok; aewBuiltinKind = kind; aewRenderStatusLine(); });
+
+        // Visible default output on load (e2e G16, zero interaction): the sample
+        // brief and its tier-3 template draft render immediately, labeled demo.
+        recipient.value = AEW_SAMPLE.recipient;
+        goal.value = AEW_SAMPLE.goal;
+        points.value = AEW_SAMPLE.points;
+        toneSel.value = AEW_SAMPLE.tone;
+        aewUpdateCount();
+        aewRunTemplate({ mode: 'new', inbound: '', recipient: AEW_SAMPLE.recipient, goal: AEW_SAMPLE.goal, points: AEW_SAMPLE.points, tone: AEW_SAMPLE.tone }, true);
+        aewRenderStatusLine();
+    }
+</script>
