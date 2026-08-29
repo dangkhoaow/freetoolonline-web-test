@@ -16631,7 +16631,14 @@ export const ALIAS_ROUTES = {
   '/chat-with-pdf.html': '/pdf-tools/chat-with-pdf.html',
   '/face-blur.html': '/image-tools/face-blur.html',
   '/game-server-status.html': '/utility-tools/game-server-status.html',
-  '/foxit-pdf-editor-browser.html': '/image-converter-tools/foxit-pdf-editor-browser.html',
+  // Retired 2026-08-30 (Phase 6 cluster-narrative axis_F CRITICAL, granted cards
+  // phase6-cluster-critical-image-conversion-1788029624 + cannibalization-foxit-vs-clientside-pdf):
+  // foxit-pdf-editor-browser is a functional duplicate of client-side-pdf-editor-toolkit
+  // (identical in-browser "add typed text to PDF" widget; only brand-name prose differs).
+  // G51 same-processing-model duplicate -> retire tool to canonical via ALIAS + CloudFront 301.
+  // Comparison guides (foxit-pdf-editor-browser-{when,step-by-step,vs-alternatives}) kept.
+  '/foxit-pdf-editor-browser.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
+  '/image-converter-tools/foxit-pdf-editor-browser.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
   '/adobe-pdf-editor-browser.html': '/image-converter-tools/adobe-pdf-editor-browser.html',
   '/pdf-xchange-editor-browser-plugin-edge.html': '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html',
   '/client-side-pdf-editor-toolkit.html': '/image-converter-tools/client-side-pdf-editor-toolkit.html',
@@ -29031,7 +29038,8 @@ export const JSP_BY_ROUTE = {
   '/pdf-tools/chat-with-pdf.html': 'pdf/chat-with-pdf.jsp',
   '/image-tools/face-blur.html': 'convert/face-blur.jsp',
   '/utility-tools/game-server-status.html': 'utility/game-server-status.jsp',
-  '/image-converter-tools/foxit-pdf-editor-browser.html': 'convert/foxit-pdf-editor-browser.jsp',
+  // foxit-pdf-editor-browser tool route retired 2026-08-30 -> aliased to client-side-pdf-editor-toolkit
+  // (Phase 6 axis_F functional-duplicate merge). Comparison guides below are kept.
   '/guides/foxit-pdf-editor-browser-when.html': 'guide/foxit-pdf-editor-browser-when.jsp',
   '/guides/pt/foxit-pdf-editor-browser-when.html': 'guide/pt/foxit-pdf-editor-browser-when.jsp',
   '/guides/es/foxit-pdf-editor-browser-when.html': 'guide/es/foxit-pdf-editor-browser-when.jsp',
