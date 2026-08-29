@@ -1,11 +1,20 @@
 <script>
     // 3D scene archetype skeleton (mammoth-cave) - vendored three.js
     // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
-    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
-    // (mammoth-cave). All geometry is procedural. places-3d cluster,
-    // authored 2026-07-28.
+    // client-side. places-3d cluster, authored 2026-07-28. DETAILED-TERRAIN
+    // migration 2026-08-29 (prompts/places-3d-detailed-terrain-runbook.md,
+    // SURFACE-KARST mode per guard 8): the cave interior layer-stack below
+    // is the ORIGINAL schematic scene, unchanged, and stays the first-paint
+    // default view (it needs no network, so it can never render blank).
+    // A NEW Surface view fetches real Terrarium DEM elevation + Sentinel-2
+    // true-color imagery of the karst plateau ABOVE the cave from the
+    // ftol-vm-assets CDN, IndexedDB-caches it, and becomes selectable via
+    // the View button once ready. A CDN failure leaves the View button on
+    // "Cave interior" and the page works exactly as before - it never
+    // blocks on the network.
     //
-    // EDUCATIONAL APPROXIMATION, not survey cave geology.
+    // EDUCATIONAL APPROXIMATION, not survey cave geology. The cave interior
+    // is schematic; the surface is real measured elevation + imagery.
     // Published figures (Mammoth Cave National Park / NPS + Cave Research
     // Foundation consensus, cross-checked 2026-07-28):
     //   - Mammoth Cave, Mammoth Cave National Park, Kentucky, USA
@@ -63,6 +72,52 @@
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSmountfuji.html /
+    // BODYJSmounteverest.html's t3dPlaces* pattern) - heights.bin (Int16 LE
+    // meters) + texture.jpg (Sentinel-2 true-color), sha256-verified, cached
+    // once per manifest version.
+    var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+    var T3D_PLACES_DB = 'ftol-places3d-assets';
+    function t3dPlacesIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(T3D_PLACES_DB, 1);
+            req.onupgradeneeded = function () {
+                if (!req.result.objectStoreNames.contains('assets')) {
+                    req.result.createObjectStore('assets', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function t3dPlacesIdbGet(key) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function t3dPlacesIdbPut(key, blob) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function t3dPlacesSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
     }
 
     function t3dShell(THREE, host, opts) {
@@ -206,6 +261,12 @@
             };
         }
 
+        // Interior scene lives in its own group so the Surface view (real
+        // terrain, added below) can hide it without tearing it down - it is
+        // the CDN-independent fallback per the render-quality contract.
+        var interiorGroup = new THREE.Group();
+        scene.add(interiorGroup);
+
         var slabs = [];
         for (var li = 0; li < LEVELS.length; li++) {
             var level = LEVELS[li];
@@ -219,7 +280,7 @@
                 var info = makeSlab(11, 15, shell.low ? 90 : 130, shell.low ? 120 : 170, heightFn, makeLevelColorFn(lvl));
                 info.mesh.position.y = lvl.y;
                 info.level = lvl;
-                scene.add(info.mesh);
+                interiorGroup.add(info.mesh);
                 slabs.push(info);
             })(level);
         }
@@ -237,7 +298,23 @@
             shaft.position.set(sx, -2.7, sz);
             shaftGroup.add(shaft);
         }
-        scene.add(shaftGroup);
+        interiorGroup.add(shaftGroup);
+
+        // ---- Surface view (real terrain, karst plateau above the cave) ----
+        var surfaceGroup = new THREE.Group();
+        surfaceGroup.visible = false;
+        scene.add(surfaceGroup);
+        var view = 'interior'; // default first paint - CDN-independent
+        var surfaceReady = false, surfaceLoading = false, surfaceMesh = null;
+        var surfaceMinH = 0, surfaceMaxH = 0;
+        var VIEW_CAMERA = {
+            interior: { radius: 22, phi: 1.0, theta: 0.7, targetY: -2.7, minR: 6, maxR: 55 },
+            surface: { radius: 16, phi: 1.05, theta: 0.7, targetY: 0, minR: 4, maxR: 45 }
+        };
+        function setCamera(preset) {
+            shell.orbit.goalRadius = preset.radius; shell.orbit.goalPhi = preset.phi; shell.orbit.goalTheta = preset.theta;
+            shell.orbit.target.y = preset.targetY; shell.orbit.minR = preset.minR; shell.orbit.maxR = preset.maxR;
+        }
 
         function recolor() {
             for (var i = 0; i < slabs.length; i++) {
@@ -248,8 +325,8 @@
             }
         }
 
-        function panelHtml() {
-            return '<h3>Mammoth Cave: the longest known cave system</h3>' +
+        function interiorPanelHtml() {
+            return '<h3>Mammoth Cave interior (schematic)</h3>' +
                 '<p>This scene stacks three rock levels, each carved with its own winding passage, and links them with vertical shafts - the same three-dimensional maze structure that makes Mammoth Cave the longest known cave system on Earth.</p>' +
                 '<table class="w3-table w3-bordered">' +
                 '<tr><td>Surveyed length</td><td>more than 400 miles (about 650 km) - the longest known cave system on Earth</td></tr>' +
@@ -259,30 +336,177 @@
                 '<tr><td>Location</td><td>Mammoth Cave National Park, Kentucky, USA</td></tr>' +
                 '<tr><td>Status</td><td>US National Park (1941), UNESCO World Heritage Site (1981)</td></tr>' +
                 '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the passage shapes, level spacing, and vertical scale are schematic teaching cues, not survey cave geology.</p>';
+                '<p class="t3d-note">Educational relief approximation - the passage shapes, level spacing, and vertical scale are schematic teaching cues, not survey cave geology. Switch to the Surface view for real measured terrain.</p>';
         }
+
+        function surfacePanelHtml() {
+            if (!surfaceReady) {
+                return '<h3>Mammoth Cave: karst surface above the cave</h3>' +
+                    '<p>' + (surfaceLoading ? 'Loading real elevation and satellite imagery of the sinkhole plain above the cave now (one time, then cached).' : 'Real terrain not loaded yet.') + '</p>';
+            }
+            return '<h3>Mammoth Cave: karst plateau surface (real terrain)</h3>' +
+                '<p>This is the sinkhole plain / karst plateau directly above the cave system - real measured elevation and satellite imagery, not a procedural surface. The cave passages themselves run underneath, out of view; switch to the Cave interior view for the schematic maze model.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Elevation in this view</td><td>' + Math.round(surfaceMinH) + ' m to ' + Math.round(surfaceMaxH) + ' m</td></tr>' +
+                '<tr><td>Signature feature</td><td>sinkhole plain cut by the Green River valley</td></tr>' +
+                '<tr><td>Location</td><td>Mammoth Cave National Park, Kentucky, USA</td></tr>' +
+                '<tr><td>Status</td><td>US National Park (1941), UNESCO World Heritage Site (1981)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs). Imagery: contains modified Copernicus Sentinel data 2026. Relief is shown at true 1:1 scale relative to the mapped width - no vertical exaggeration. Educational approximation - not survey-grade geodesy.</p>';
+        }
+
+        function panelHtml() { return view === 'surface' ? surfacePanelHtml() : interiorPanelHtml(); }
 
         function apply() {
             var lb = document.getElementById('t3dPmcLevelsBtn');
             if (lb) lb.textContent = 'Level colors: ' + (levelColorsOn ? 'On' : 'Off');
             var rb = document.getElementById('t3dPmcRiverBtn');
             if (rb) rb.textContent = 'Echo River highlight: ' + (riverOn ? 'On' : 'Off');
+            var vb = document.getElementById('t3dPmcViewBtn');
+            if (vb) vb.textContent = 'View: ' + (view === 'surface' ? 'Surface (real terrain)' : (surfaceLoading ? 'Cave interior (loading surface...)' : 'Cave interior (schematic)'));
+            interiorGroup.visible = (view === 'interior');
+            surfaceGroup.visible = (view === 'surface');
             t3dInfo(panelHtml());
-            try { t3dSaveStore({ levelColorsOn: levelColorsOn, riverOn: riverOn }); } catch (e) {}
+            try { t3dSaveStore({ levelColorsOn: levelColorsOn, riverOn: riverOn, view: view }); } catch (e) {}
+        }
+
+        function setView(next) {
+            if (next === 'surface' && !surfaceReady) return; // ignore clicks before real terrain has loaded
+            view = next;
+            setCamera(VIEW_CAMERA[view]);
+            apply();
+        }
+
+        // Decimate a row-major Int16 grid to at most maxDim x maxDim cells,
+        // keeping the MAX value per cell (per the runbook: preserve relief
+        // detail, never average it flat).
+        function decimateMax(view2, w, h, maxDim) {
+            var stepX = Math.max(1, Math.ceil(w / maxDim));
+            var stepZ = Math.max(1, Math.ceil(h / maxDim));
+            var ow = Math.floor((w - 1) / stepX) + 1;
+            var oh = Math.floor((h - 1) / stepZ) + 1;
+            var out = new Int16Array(ow * oh);
+            for (var oz = 0; oz < oh; oz++) {
+                var z0 = oz * stepZ;
+                for (var ox = 0; ox < ow; ox++) {
+                    var x0 = ox * stepX, best = -32768;
+                    for (var dz2 = 0; dz2 < stepZ && z0 + dz2 < h; dz2++) {
+                        var rowBase = (z0 + dz2) * w;
+                        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+                            var v = view2[rowBase + x0 + dx];
+                            if (v > best) best = v;
+                        }
+                    }
+                    out[oz * ow + ox] = best;
+                }
+            }
+            return { data: out, w: ow, h: oh };
+        }
+
+        function buildSurfaceMesh(heightsView, grid, texBlob) {
+            var dec = decimateMax(heightsView, grid.width_px, grid.height_px, 220);
+            var W = 20, D = 20;
+            var geo = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+            geo.rotateX(-Math.PI / 2);
+            // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1
+            // vertical proportion relative to the mapped width (no exaggeration).
+            var vertScale = W / (grid.width_px * grid.meters_per_px);
+            var minH = grid.min_h_m, maxH = grid.max_h_m;
+            var pos = geo.attributes.position;
+            var colors = new Float32Array(pos.count * 3), c = new THREE.Color();
+            var plain = new THREE.Color(0x8fae6e), rim = new THREE.Color(0x5f7a4a), valley = new THREE.Color(0x3f6f7a);
+            for (var i = 0; i < pos.count; i++) {
+                var ix = i % dec.w, iz = Math.floor(i / dec.w);
+                var hRaw = dec.data[iz * dec.w + ix];
+                pos.setY(i, (hRaw - minH) * vertScale);
+                var t = (hRaw - minH) / Math.max(1, maxH - minH);
+                if (t < 0.25) { c.copy(valley).lerp(plain, t / 0.25); } else { c.copy(plain).lerp(rim, (t - 0.25) / 0.75); }
+                colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            var mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+            var mesh = new THREE.Mesh(geo, mat);
+            surfaceGroup.add(mesh);
+            surfaceMesh = mesh; surfaceMinH = minH; surfaceMaxH = maxH;
+            surfaceLoading = false; surfaceReady = true;
+            setView('surface');
+            t3dStatus('Real surface terrain loaded (Terrarium DEM + Sentinel-2 imagery). Drag to orbit, scroll to zoom.');
+            if (texBlob) {
+                var texUrl = URL.createObjectURL(texBlob);
+                new THREE.TextureLoader().load(texUrl, function (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    mat.map = tex;
+                    mat.needsUpdate = true;
+                    URL.revokeObjectURL(texUrl);
+                }, undefined, function () { URL.revokeObjectURL(texUrl); });
+            }
+        }
+
+        function fetchPlacesAsset(file, mimeType, verKey) {
+            var key = verKey + ':' + file.file;
+            return t3dPlacesIdbGet(key).then(function (cached) {
+                if (cached) return cached;
+                return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+                    return r.arrayBuffer();
+                }).then(function (buf) {
+                    return t3dPlacesSha256Hex(buf).then(function (hex) {
+                        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+                        var blob = new Blob([buf], { type: mimeType });
+                        t3dPlacesIdbPut(key, blob);
+                        return blob;
+                    });
+                });
+            });
+        }
+
+        function loadRealSurface() {
+            surfaceLoading = true;
+            apply();
+            fetch(T3D_PLACES_CDN + '/manifest.json').then(function (r) { return r.json(); })
+                .then(function (manifest) {
+                    var asset = manifest && manifest.assets && manifest.assets['mammoth-cave'];
+                    if (!asset) throw new Error('manifest missing the mammoth-cave asset');
+                    var heightsFile = null, texFile = null;
+                    (asset.files || []).forEach(function (f) {
+                        if (f.role === 'heightfield') heightsFile = f;
+                        if (f.role === 'satellite-texture') texFile = f;
+                    });
+                    if (!heightsFile) throw new Error('manifest missing the heightfield file');
+                    var verKey = 'mammoth-cave@' + manifest.version;
+                    var jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+                    if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+                    return Promise.all(jobs).then(function (blobs) {
+                        return blobs[0].arrayBuffer().then(function (buf) {
+                            buildSurfaceMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    surfaceLoading = false;
+                    apply();
+                    t3dStatus('Could not load real surface terrain (' + (err && err.message ? err.message : err) + ') - showing the cave interior view instead.');
+                });
         }
 
         var store = t3dLoadStore();
         if (typeof store.levelColorsOn === 'boolean') levelColorsOn = store.levelColorsOn;
         if (typeof store.riverOn === 'boolean') riverOn = store.riverOn;
         recolor();
+        setCamera(VIEW_CAMERA.interior);
         apply();
 
         var levelsBtn = document.getElementById('t3dPmcLevelsBtn');
         if (levelsBtn) levelsBtn.addEventListener('click', function () { levelColorsOn = !levelColorsOn; recolor(); apply(); });
         var riverBtn = document.getElementById('t3dPmcRiverBtn');
         if (riverBtn) riverBtn.addEventListener('click', function () { riverOn = !riverOn; recolor(); apply(); });
+        var viewBtn = document.getElementById('t3dPmcViewBtn');
+        if (viewBtn) viewBtn.addEventListener('click', function () { setView(view === 'surface' ? 'interior' : 'surface'); });
 
         t3dStatus('Drag to orbit, scroll to zoom. Toggle level colors or the Echo River highlight.');
+        if ('requestIdleCallback' in window) { requestIdleCallback(loadRealSurface, { timeout: 4000 }); }
+        else { setTimeout(loadRealSurface, 800); }
         return function animate(dt) {
             scene.rotation.y += dt * 0.00003;
         };
