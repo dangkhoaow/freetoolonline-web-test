@@ -9,7 +9,14 @@
 // selectable via the View button once ready. A CDN failure leaves the View
 // button on "Procedural dunes" and the page works exactly as before - it
 // never blocks on the network.
-import * as THREE from '/vendor/three/three.module.min.js';
+//
+// 2026-08-30 pre-existing bug fix (unrelated to the terrain migration, found
+// while probing this ship on staging): the static import below used a
+// domain-root-absolute path, which 404s on staging's /freetoolonline-web-test
+// subpath (works on prod, which has no BASE_PATH). Every other places-3d page
+// loads three.js via a BASE_PATH-aware dynamic import - matched here.
+var THREE_BASE = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three/three.module.min.js';
+var THREE = await import(THREE_BASE);
 
 var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
 var T3D_PLACES_DB = 'ftol-places3d-assets';
