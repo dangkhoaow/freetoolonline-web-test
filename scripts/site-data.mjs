@@ -122,6 +122,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   '/guides/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   '/guides/vi/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
+  '/guides/id/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-when.html',
   '/guides/adobe-pdf-editor-browser-vs-alternatives.html',
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html',
@@ -7332,6 +7333,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   // pdf-xchange-editor-browser-plugin-edge-step-by-step vi locale (create_new_guide_page 20260829)
   '/guides/vi/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
+  // pdf-xchange-editor-browser-plugin-edge-step-by-step id locale (create_new_guide_page 20260830-3)
+  '/guides/id/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   // adobe-pdf-editor-browser-vs-alternatives pt locale (create_new_guide_page 20260820-937)
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html',
   // adobe-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260820-939)
@@ -29083,6 +29086,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
   '/guides/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
   '/guides/vi/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/vi/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
+  '/guides/id/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/id/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
   '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
   '/image-converter-tools/client-side-pdf-editor-toolkit.html': 'convert/client-side-pdf-editor-toolkit.jsp',
   '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
