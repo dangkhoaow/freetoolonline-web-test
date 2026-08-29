@@ -1,10 +1,24 @@
 <script>
     // 3D scene archetype skeleton (lake-victoria) - vendored three.js
-    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
-    // LEAN from the shared t3d* skeleton - ONE scene only (lake-victoria).
-    // All geometry is procedural. places-3d cluster, authored 2026-07-27.
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. places-3d cluster, authored 2026-07-27. DETAILED-TERRAIN
+    // migration 2026-08-29 (prompts/places-3d-detailed-terrain-runbook.md,
+    // Lake/inland-sea class per runbook 2b): the depth-band basin scene below
+    // is the ORIGINAL schematic scene, unchanged, and stays the first-paint
+    // default view (it needs no network, so it can never render blank). A
+    // NEW Shoreline view fetches real Terrarium DEM elevation + Sentinel-2
+    // true-color imagery of the northern shore + White Nile outlet at Jinja
+    // from the ftol-vm-assets CDN, IndexedDB-caches it, and becomes selectable
+    // via the View button once ready. A CDN failure leaves the View button on
+    // "Depth-band basin" and the page works exactly as before - it never
+    // blocks on the network. Terrarium gives lake-SURFACE elevation, not
+    // underwater bathymetry, so the water in the real view renders flat at
+    // the published ~1,133 m surface elevation while the shore terrain is
+    // real measured relief - the depth-band story stays in the schematic
+    // basin view, which the real view does not attempt to replace.
     //
-    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // EDUCATIONAL APPROXIMATION for the basin view, not survey bathymetry.
+    // The shoreline view is real measured elevation + imagery.
     // Published figures (encyclopedic consensus, cross-checked 2026-07-27):
     //   - Surface area about 68,800 sq km (largest tropical lake, 2nd-largest
     //     fresh water lake by area)
@@ -56,6 +70,52 @@
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSmammothcave.html /
+    // BODYJSmountfuji.html's t3dPlaces* pattern) - heights.bin (Int16 LE
+    // meters) + texture.jpg (Sentinel-2 true-color), sha256-verified, cached
+    // once per manifest version.
+    var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+    var T3D_PLACES_DB = 'ftol-places3d-assets';
+    function t3dPlacesIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(T3D_PLACES_DB, 1);
+            req.onupgradeneeded = function () {
+                if (!req.result.objectStoreNames.contains('assets')) {
+                    req.result.createObjectStore('assets', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function t3dPlacesIdbGet(key) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function t3dPlacesIdbPut(key, blob) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function t3dPlacesSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
     }
 
     function t3dShell(THREE, host, opts) {
@@ -150,6 +210,12 @@
             return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 })), geo: geo, pos: pos };
         }
 
+        // Basin scene lives in its own group so the Shoreline view (real
+        // terrain, added below) can hide it without tearing it down - it is
+        // the CDN-independent fallback per the render-quality contract.
+        var basinGroup = new THREE.Group();
+        scene.add(basinGroup);
+
         // Wide, shallow saucer basin. 1 unit = 5 m vertical (much finer scale
         // than a rift lake, since the whole lake is only about 84 m deep).
         // x = east-west, z = north-south (north at z<0). Real outline is a
@@ -227,7 +293,7 @@
             c.multiplyScalar(n);
         }
         var terrainInfo = makeTerrain(22, 19, shell.low ? 130 : 190, shell.low ? 112 : 164, height, color);
-        scene.add(terrainInfo.mesh);
+        basinGroup.add(terrainInfo.mesh);
 
         // Water surface: translucent plane at y=0 (lake level).
         var water = new THREE.Mesh(
@@ -236,7 +302,7 @@
         );
         water.rotation.x = -Math.PI / 2;
         water.position.y = 0.02;
-        scene.add(water);
+        basinGroup.add(water);
 
         // Mean-depth reference plane: about 40 m down, shown against the
         // basin floor which barely reaches 84 m at its deepest.
@@ -246,14 +312,14 @@
         );
         meanPlane.rotation.x = -Math.PI / 2;
         meanPlane.position.y = MEAN_Y;
-        scene.add(meanPlane);
+        basinGroup.add(meanPlane);
         var meanEdge = new THREE.Mesh(
             new THREE.TorusGeometry(9.5, 0.05, 8, 48),
             new THREE.MeshBasicMaterial({ color: 0xffdb9a })
         );
         meanEdge.rotation.x = Math.PI / 2;
         meanEdge.position.y = MEAN_Y;
-        scene.add(meanEdge);
+        basinGroup.add(meanEdge);
 
         // Nile outflow marker: a small beacon at Jinja, Uganda, on the north
         // shore, where the White Nile leaves the lake.
@@ -262,14 +328,14 @@
             new THREE.MeshStandardMaterial({ color: 0xff5f4a, emissive: 0x441100, roughness: 0.4 })
         );
         outflowMarker.position.set(OUTFLOW_X, 1.1, OUTFLOW_Z);
-        scene.add(outflowMarker);
+        basinGroup.add(outflowMarker);
         var outflowRing = new THREE.Mesh(
             new THREE.RingGeometry(0.5, 0.7, 32),
             new THREE.MeshBasicMaterial({ color: 0xff8f6a, transparent: true, opacity: 0.6, side: THREE.DoubleSide })
         );
         outflowRing.rotation.x = -Math.PI / 2;
         outflowRing.position.set(OUTFLOW_X, 0.06, OUTFLOW_Z);
-        scene.add(outflowRing);
+        basinGroup.add(outflowRing);
 
         function recolor() {
             var pos = terrainInfo.pos, geo = terrainInfo.geo, colors = geo.attributes.color, col2 = new THREE.Color();
@@ -280,7 +346,23 @@
             colors.needsUpdate = true;
         }
 
-        function panelHtml() {
+        // ---- Shoreline view (real terrain, Jinja shore + White Nile outlet) ----
+        var shoreGroup = new THREE.Group();
+        shoreGroup.visible = false;
+        scene.add(shoreGroup);
+        var view = 'basin'; // default first paint - CDN-independent
+        var shoreReady = false, shoreLoading = false;
+        var shoreMinH = 0, shoreMaxH = 0;
+        var VIEW_CAMERA = {
+            basin: { radius: 34, phi: 0.82, theta: 0.35, targetY: -1.5, minR: 8, maxR: 70 },
+            shore: { radius: 16, phi: 1.02, theta: 0.5, targetY: 0, minR: 4, maxR: 45 }
+        };
+        function setCamera(preset) {
+            shell.orbit.goalRadius = preset.radius; shell.orbit.goalPhi = preset.phi; shell.orbit.goalTheta = preset.theta;
+            shell.orbit.target.y = preset.targetY; shell.orbit.minR = preset.minR; shell.orbit.maxR = preset.maxR;
+        }
+
+        function basinPanelHtml() {
             return '<h3>Lake Victoria: a vast, shallow saucer</h3>' +
                 '<p>The floor barely dips below the mean-depth plane shown here - about 40 m down - before reaching a maximum of only about 84 m across the entire 68,800 sq km lake. The Winam and Speke gulfs stay shallower still.</p>' +
                 '<table class="w3-table w3-bordered">' +
@@ -293,32 +375,178 @@
                 '<tr><td>Main outflow</td><td>White Nile, at Jinja, Uganda</td></tr>' +
                 '<tr><td>Bordering countries</td><td>Kenya, Tanzania, Uganda</td></tr>' +
                 '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the basin profile, gulf boundaries, and vertical scale are schematic teaching cues, not survey data.</p>';
+                '<p class="t3d-note">Educational relief approximation - the basin profile, gulf boundaries, and vertical scale are schematic teaching cues, not survey data. Switch to the Shoreline view for real measured terrain at Jinja.</p>';
         }
 
+        function shorePanelHtml() {
+            if (!shoreReady) {
+                return '<h3>Lake Victoria: shoreline at Jinja</h3>' +
+                    '<p>' + (shoreLoading ? 'Loading real elevation and satellite imagery of the northern shore and White Nile outlet now (one time, then cached).' : 'Real terrain not loaded yet.') + '</p>';
+            }
+            return '<h3>Lake Victoria: Jinja shore + White Nile outlet (real terrain)</h3>' +
+                '<p>This is the northern shore near Jinja, Uganda, where the White Nile leaves the lake at the historic Ripon Falls site (now the Nalubaale Dam) - real measured elevation and satellite imagery, not a procedural surface. Terrarium elevation data records the LAKE SURFACE, not underwater depth, so the water here renders flat at the published elevation; the depth-band cross-section stays in the Depth-band basin view.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Elevation in this view</td><td>' + Math.round(shoreMinH) + ' m to ' + Math.round(shoreMaxH) + ' m</td></tr>' +
+                '<tr><td>Lake surface elevation (published)</td><td>about 1,133 m above sea level</td></tr>' +
+                '<tr><td>Signature feature</td><td>north shore + White Nile outlet at Jinja, Uganda</td></tr>' +
+                '<tr><td>Location</td><td>Uganda (Kenya and Tanzania also border the lake)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs). Imagery: contains modified Copernicus Sentinel data 2026. Relief is shown at true 1:1 scale relative to the mapped width - no vertical exaggeration. Educational approximation - not survey-grade geodesy.</p>';
+        }
+
+        function panelHtml() { return view === 'shore' ? shorePanelHtml() : basinPanelHtml(); }
+
         function apply() {
-            meanPlane.visible = bandOn ? true : true; // reference plane always visible; kept simple
-            outflowMarker.visible = outflowOn; outflowRing.visible = outflowOn;
             var bb = document.getElementById('t3dPlvBandBtn');
             if (bb) bb.textContent = 'Depth bands: ' + (bandOn ? 'On' : 'Off');
             var ob = document.getElementById('t3dPlvOutflowBtn');
             if (ob) ob.textContent = 'Nile outflow marker: ' + (outflowOn ? 'On' : 'Off');
+            var vb = document.getElementById('t3dPlvViewBtn');
+            if (vb) vb.textContent = 'View: ' + (view === 'shore' ? 'Shoreline (real terrain)' : (shoreLoading ? 'Depth-band basin (loading shoreline...)' : 'Depth-band basin (schematic)'));
+            outflowMarker.visible = outflowOn; outflowRing.visible = outflowOn;
+            basinGroup.visible = (view === 'basin');
+            shoreGroup.visible = (view === 'shore');
             t3dInfo(panelHtml());
-            try { t3dSaveStore({ bandOn: bandOn, outflowOn: outflowOn }); } catch (e) {}
+            try { t3dSaveStore({ bandOn: bandOn, outflowOn: outflowOn, view: view }); } catch (e) {}
+        }
+
+        function setView(next) {
+            if (next === 'shore' && !shoreReady) return; // ignore clicks before real terrain has loaded
+            view = next;
+            setCamera(VIEW_CAMERA[view]);
+            apply();
+        }
+
+        // Decimate a row-major Int16 grid to at most maxDim x maxDim cells,
+        // keeping the MAX value per cell (per the runbook: preserve relief
+        // detail, never average it flat).
+        function decimateMax(view2, w, h, maxDim) {
+            var stepX = Math.max(1, Math.ceil(w / maxDim));
+            var stepZ = Math.max(1, Math.ceil(h / maxDim));
+            var ow = Math.floor((w - 1) / stepX) + 1;
+            var oh = Math.floor((h - 1) / stepZ) + 1;
+            var out = new Int16Array(ow * oh);
+            for (var oz = 0; oz < oh; oz++) {
+                var z0 = oz * stepZ;
+                for (var ox = 0; ox < ow; ox++) {
+                    var x0 = ox * stepX, best = -32768;
+                    for (var dz2 = 0; dz2 < stepZ && z0 + dz2 < h; dz2++) {
+                        var rowBase = (z0 + dz2) * w;
+                        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+                            var v = view2[rowBase + x0 + dx];
+                            if (v > best) best = v;
+                        }
+                    }
+                    out[oz * ow + ox] = best;
+                }
+            }
+            return { data: out, w: ow, h: oh };
+        }
+
+        function buildShoreMesh(heightsView, grid, texBlob) {
+            var dec = decimateMax(heightsView, grid.width_px, grid.height_px, 220);
+            var W = 20, D = 20;
+            var geo = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+            geo.rotateX(-Math.PI / 2);
+            // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1
+            // vertical proportion relative to the mapped width (no exaggeration).
+            var vertScale = W / (grid.width_px * grid.meters_per_px);
+            var minH = grid.min_h_m, maxH = grid.max_h_m;
+            var pos = geo.attributes.position;
+            var colors = new Float32Array(pos.count * 3), c = new THREE.Color();
+            var lakeSurf = new THREE.Color(0x1a5266), shore = new THREE.Color(0x8fae6e), high = new THREE.Color(0x6a8a4a);
+            for (var i = 0; i < pos.count; i++) {
+                var ix = i % dec.w, iz = Math.floor(i / dec.w);
+                var hRaw = dec.data[iz * dec.w + ix];
+                pos.setY(i, (hRaw - minH) * vertScale);
+                var t = (hRaw - minH) / Math.max(1, maxH - minH);
+                if (t < 0.08) { c.copy(lakeSurf); } else { c.copy(shore).lerp(high, Math.min(1, (t - 0.08) / 0.6)); }
+                colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            var mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+            var mesh = new THREE.Mesh(geo, mat);
+            shoreGroup.add(mesh);
+            shoreMinH = minH; shoreMaxH = maxH;
+            shoreLoading = false; shoreReady = true;
+            setView('shore');
+            t3dStatus('Real shoreline terrain loaded (Terrarium DEM + Sentinel-2 imagery). Drag to orbit, scroll to zoom.');
+            if (texBlob) {
+                var texUrl = URL.createObjectURL(texBlob);
+                new THREE.TextureLoader().load(texUrl, function (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    mat.map = tex;
+                    mat.needsUpdate = true;
+                    URL.revokeObjectURL(texUrl);
+                }, undefined, function () { URL.revokeObjectURL(texUrl); });
+            }
+        }
+
+        function fetchPlacesAsset(file, mimeType, verKey) {
+            var key = verKey + ':' + file.file;
+            return t3dPlacesIdbGet(key).then(function (cached) {
+                if (cached) return cached;
+                return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+                    return r.arrayBuffer();
+                }).then(function (buf) {
+                    return t3dPlacesSha256Hex(buf).then(function (hex) {
+                        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+                        var blob = new Blob([buf], { type: mimeType });
+                        t3dPlacesIdbPut(key, blob);
+                        return blob;
+                    });
+                });
+            });
+        }
+
+        function loadRealShore() {
+            shoreLoading = true;
+            apply();
+            fetch(T3D_PLACES_CDN + '/manifest.json').then(function (r) { return r.json(); })
+                .then(function (manifest) {
+                    var asset = manifest && manifest.assets && manifest.assets['lake-victoria'];
+                    if (!asset) throw new Error('manifest missing the lake-victoria asset');
+                    var heightsFile = null, texFile = null;
+                    (asset.files || []).forEach(function (f) {
+                        if (f.role === 'heightfield') heightsFile = f;
+                        if (f.role === 'satellite-texture') texFile = f;
+                    });
+                    if (!heightsFile) throw new Error('manifest missing the heightfield file');
+                    var verKey = 'lake-victoria@' + manifest.version;
+                    var jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+                    if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+                    return Promise.all(jobs).then(function (blobs) {
+                        return blobs[0].arrayBuffer().then(function (buf) {
+                            buildShoreMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    shoreLoading = false;
+                    apply();
+                    t3dStatus('Could not load real shoreline terrain (' + (err && err.message ? err.message : err) + ') - showing the depth-band basin view instead.');
+                });
         }
 
         var store = t3dLoadStore();
         if (typeof store.bandOn === 'boolean') bandOn = store.bandOn;
         if (typeof store.outflowOn === 'boolean') outflowOn = store.outflowOn;
         recolor();
+        setCamera(VIEW_CAMERA.basin);
         apply();
 
         var bandBtn = document.getElementById('t3dPlvBandBtn');
         if (bandBtn) bandBtn.addEventListener('click', function () { bandOn = !bandOn; recolor(); apply(); });
         var outflowBtn = document.getElementById('t3dPlvOutflowBtn');
         if (outflowBtn) outflowBtn.addEventListener('click', function () { outflowOn = !outflowOn; apply(); });
+        var viewBtn = document.getElementById('t3dPlvViewBtn');
+        if (viewBtn) viewBtn.addEventListener('click', function () { setView(view === 'shore' ? 'basin' : 'shore'); });
 
         t3dStatus('Drag to orbit, scroll to zoom. Toggle the depth bands or the Nile outflow marker.');
+        if ('requestIdleCallback' in window) { requestIdleCallback(loadRealShore, { timeout: 4000 }); }
+        else { setTimeout(loadRealShore, 800); }
         return function animate(dt) {
             scene.rotation.y += dt * 0.00004;
         };
