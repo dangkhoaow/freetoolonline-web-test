@@ -2,7 +2,13 @@
     // 3D scene archetype skeleton (mount-kilimanjaro) - vendored three.js
     // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
     // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
-    // (mount-kilimanjaro). All geometry is procedural. places-3d cluster.
+    // (mount-kilimanjaro). places-3d cluster seed 2026-07-27; DETAILED-TERRAIN
+    // migration 2026-08-29 (prompts/places-3d-detailed-terrain-runbook.md): the
+    // procedural relief below renders FIRST (unchanged, G16 render-only pass +
+    // CDN-outage fallback), then async fetches real Terrarium DEM elevation +
+    // Sentinel-2 true-color imagery from the ftol-vm-assets CDN, IndexedDB-caches
+    // it, and swaps it in in-place once ready. A CDN failure or slow network
+    // leaves the procedural relief on screen - it never blanks.
     //
     // EDUCATIONAL APPROXIMATION, not survey terrain.
     // Published figures (encyclopedic consensus):
@@ -54,6 +60,51 @@
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSgrandcanyon.html's
+    // t3dPlaces* pattern) - heights.bin (Int16 LE meters) + texture.jpg
+    // (Sentinel-2 true-color), sha256-verified, cached once per manifest version.
+    var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+    var T3D_PLACES_DB = 'ftol-places3d-assets';
+    function t3dPlacesIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(T3D_PLACES_DB, 1);
+            req.onupgradeneeded = function () {
+                if (!req.result.objectStoreNames.contains('assets')) {
+                    req.result.createObjectStore('assets', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function t3dPlacesIdbGet(key) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function t3dPlacesIdbPut(key, blob) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function t3dPlacesSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
     }
 
     function t3dShell(THREE, host, opts) {
@@ -210,7 +261,33 @@
             cols.needsUpdate = true;
         }
 
+        // ---- Real-terrain progressive upgrade state (filled once loaded) ----
+        var realMesh = null, realReady = false, realLoading = false;
+        // 2026-08-29: handles so apply() can switch the real mesh between the
+        // satellite view and the altitude-band view. Turning vertexColors off
+        // (the fix for the black-terrain multiplication) would otherwise make
+        // the "bands" button a silent no-op once the texture lands. "Snow cap"
+        // stays an independent recolor toggle (no geometry/scale dependency,
+        // unlike a death-zone overlay) - it keeps working inside the band view
+        // on the real mesh exactly as it did procedurally.
+        var realMat = null, realTex = null, realHeights = null;
+        var realMinH = 0, realMaxH = 0;
+        var REAL_SNOWLINE_M = 4000; // matches procedural SNOWLINE (km -> m)
+
         function panelHtml() {
+            if (realReady) {
+                return '<h3>Mount Kilimanjaro: real elevation + satellite imagery</h3>' +
+                    '<p>This relief now shows the actual measured terrain of the Kibo summit cone - the crater rim, the flank ridges, and the summit shape here are real elevation data, not a procedural approximation.</p>' +
+                    '<table class="w3-table w3-bordered">' +
+                    '<tr><td>Height</td><td>5,895 m (Uhuru Peak)</td></tr>' +
+                    '<tr><td>Elevation in this view</td><td>' + Math.round(realMinH) + ' m to ' + Math.round(realMaxH) + ' m</td></tr>' +
+                    '<tr><td>Status</td><td>dormant volcano - last erupted about 360 years ago</td></tr>' +
+                    '<tr><td>Base diameter</td><td>about 60 km</td></tr>' +
+                    '<tr><td>Snow cap</td><td>permanent, but about 85% smaller than in 1912</td></tr>' +
+                    '<tr><td>Annual climbers</td><td>about 50,000</td></tr>' +
+                    '</table>' +
+                    '<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs). Imagery: contains modified Copernicus Sentinel data 2026. Relief is shown at true 1:1 scale relative to the mapped width - no vertical exaggeration. Educational approximation - not survey-grade geodesy.</p>';
+            }
             return '<h3>Mount Kilimanjaro: Africa\'s rooftop</h3>' +
                 '<p>A dormant volcano rising alone off the Tanzanian plateau - the world\'s highest free-standing mountain, snow-capped despite sitting near the equator.</p>' +
                 '<table class="w3-table w3-bordered">' +
@@ -220,30 +297,194 @@
                 '<tr><td>Snow cap</td><td>permanent, but about 85% smaller than in 1912</td></tr>' +
                 '<tr><td>Annual climbers</td><td>about 50,000</td></tr>' +
                 '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the asymmetric cone, altitude bands, and snowline are schematic teaching cues, not survey terrain.</p>';
+                '<p class="t3d-note">' + (realLoading
+                    ? 'Loading real elevation and satellite imagery now (one time, then cached) - this procedural relief is a teaching placeholder while it downloads.'
+                    : 'Educational relief approximation - the asymmetric cone, altitude bands, and snowline are procedural teaching cues, not survey terrain.') + '</p>';
+        }
+
+        // Real-elevation hypsometric banding (metres): reuses the procedural
+        // scrub/forest/moor/rock/snow zone thresholds (0.9/1.8/3.0/4.0 km ->
+        // 900/1800/3000/4000 m) so both toggles stay meaningful on real data.
+        function realColorAt(c, hRaw) {
+            var snowy = snowCapOn && hRaw >= REAL_SNOWLINE_M;
+            if (snowy) { c.copy(col.snow); }
+            else if (hRaw >= REAL_SNOWLINE_M) { c.copy(col.rock).multiplyScalar(0.9); }
+            else if (hRaw >= 3000) { c.copy(col.rock); }
+            else if (hRaw >= 1800) { c.copy(col.moor); }
+            else if (hRaw >= 900) { c.copy(col.forest); }
+            else { c.copy(col.scrub); }
+        }
+
+        function recolorReal() {
+            if (!realMesh || !realHeights) return;
+            var cols = realMesh.geometry.attributes.color, c2 = new THREE.Color();
+            for (var i = 0; i < realHeights.length; i++) {
+                realColorAt(c2, realHeights[i]);
+                cols.setXYZ(i, c2.r, c2.g, c2.b);
+            }
+            cols.needsUpdate = true;
         }
 
         function apply() {
+            if (realReady && realMesh) {
+                if (bandsOn) { recolorReal(); }
+                // With real imagery loaded, vertex-color bands and the satellite
+                // texture are mutually exclusive: multiplying them together is
+                // what produced dark/black terrain (2026-08-29 defect fix).
+                if (realMat && realTex) {
+                    realMat.map = bandsOn ? null : realTex;
+                    realMat.vertexColors = !!bandsOn;
+                    realMat.needsUpdate = true;
+                }
+            } else {
+                recolor();
+            }
             var sb = document.getElementById('t3dKmjSnowBtn');
             if (sb) sb.textContent = 'Snow cap: ' + (snowCapOn ? 'On' : 'Off');
             var bb = document.getElementById('t3dKmjBandsBtn');
-            if (bb) bb.textContent = 'Altitude bands: ' + (bandsOn ? 'On' : 'Off');
+            if (bb) bb.textContent = (realReady && realTex)
+                ? ('View: ' + (bandsOn ? 'Altitude bands' : 'Satellite view'))
+                : ('Altitude bands: ' + (bandsOn ? 'On' : 'Off'));
             t3dInfo(panelHtml());
             try { t3dSaveStore({ snowCapOn: snowCapOn, bandsOn: bandsOn }); } catch (e) {}
+        }
+
+        // Decimate a row-major Int16 grid to at most maxDim x maxDim cells,
+        // keeping the MAX value per cell (per the runbook: preserve summits,
+        // never average them away).
+        function decimateMax(view, w, h, maxDim) {
+            var stepX = Math.max(1, Math.ceil(w / maxDim));
+            var stepZ = Math.max(1, Math.ceil(h / maxDim));
+            var ow = Math.floor((w - 1) / stepX) + 1;
+            var oh = Math.floor((h - 1) / stepZ) + 1;
+            var out = new Int16Array(ow * oh);
+            for (var oz = 0; oz < oh; oz++) {
+                var z0 = oz * stepZ;
+                for (var ox = 0; ox < ow; ox++) {
+                    var x0 = ox * stepX, best = -32768;
+                    for (var dz = 0; dz < stepZ && z0 + dz < h; dz++) {
+                        var rowBase = (z0 + dz) * w;
+                        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+                            var v = view[rowBase + x0 + dx];
+                            if (v > best) best = v;
+                        }
+                    }
+                    out[oz * ow + ox] = best;
+                }
+            }
+            return { data: out, w: ow, h: oh };
+        }
+
+        function buildRealMesh(view, grid, texBlob) {
+            var dec = decimateMax(view, grid.width_px, grid.height_px, 220);
+            var W = BASE_RADIUS * 2.4, D = BASE_RADIUS * 2.4; // same footprint as the procedural terrain above
+            var geo2 = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+            geo2.rotateX(-Math.PI / 2);
+            // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1
+            // vertical proportion relative to the mapped width (no exaggeration).
+            var vertScale = W / (grid.width_px * grid.meters_per_px);
+            var minH = grid.min_h_m, maxH = grid.max_h_m;
+            var pos2 = geo2.attributes.position;
+            var heightsArr = new Float32Array(pos2.count);
+            var startCol = new Float32Array(pos2.count * 3);
+            var c = new THREE.Color();
+            for (var i = 0; i < pos2.count; i++) {
+                var ix = i % dec.w, iz = Math.floor(i / dec.w);
+                var hRaw = dec.data[iz * dec.w + ix];
+                pos2.setY(i, (hRaw - minH) * vertScale);
+                heightsArr[i] = hRaw;
+                realColorAt(c, hRaw);
+                startCol[i * 3] = c.r; startCol[i * 3 + 1] = c.g; startCol[i * 3 + 2] = c.b;
+            }
+            geo2.setAttribute('color', new THREE.BufferAttribute(startCol, 3));
+            geo2.computeVertexNormals();
+            var mat2 = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+            var mesh2 = new THREE.Mesh(geo2, mat2);
+            scene.add(mesh2);
+            terrain.visible = false;
+            realMat = mat2;
+            realMesh = mesh2; realHeights = heightsArr;
+            realMinH = minH; realMaxH = maxH;
+            realLoading = false; realReady = true;
+            apply();
+            t3dStatus('Real terrain loaded (Terrarium DEM + Sentinel-2 imagery). Drag to orbit, scroll to zoom.');
+            if (texBlob) {
+                var url = URL.createObjectURL(texBlob);
+                new THREE.TextureLoader().load(url, function (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    // 2026-08-29 DEFECT FIX. MeshStandardMaterial MULTIPLIES
+                    // vertexColors by map. Measured on shipped pilots: hypsometric
+                    // vertex luminance 0.39-0.48 x Sentinel-2 TCI 0.09-0.19 = 11-18/255,
+                    // i.e. black - this is the reported "renders bright, then switches
+                    // to dark" moment. Once real imagery is the colour source the
+                    // hypsometric bands must stop multiplying into it.
+                    realTex = tex;
+                    apply();
+                    URL.revokeObjectURL(url);
+                }, undefined, function () { URL.revokeObjectURL(url); });
+            }
+        }
+
+        function fetchPlacesAsset(file, mimeType, verKey) {
+            var key = verKey + ':' + file.file;
+            return t3dPlacesIdbGet(key).then(function (cached) {
+                if (cached) return cached;
+                return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+                    return r.arrayBuffer();
+                }).then(function (buf) {
+                    return t3dPlacesSha256Hex(buf).then(function (hex) {
+                        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+                        var blob = new Blob([buf], { type: mimeType });
+                        t3dPlacesIdbPut(key, blob);
+                        return blob;
+                    });
+                });
+            });
+        }
+
+        function loadRealTerrain() {
+            realLoading = true;
+            apply();
+            fetch(T3D_PLACES_CDN + '/manifest.json').then(function (r) { return r.json(); })
+                .then(function (manifest) {
+                    var asset = manifest && manifest.assets && manifest.assets['mount-kilimanjaro'];
+                    if (!asset) throw new Error('manifest missing the mount-kilimanjaro asset');
+                    var heightsFile = null, texFile = null;
+                    (asset.files || []).forEach(function (f) {
+                        if (f.role === 'heightfield') heightsFile = f;
+                        if (f.role === 'satellite-texture') texFile = f;
+                    });
+                    if (!heightsFile) throw new Error('manifest missing the heightfield file');
+                    var verKey = 'mount-kilimanjaro@' + manifest.version;
+                    var jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+                    if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+                    return Promise.all(jobs).then(function (blobs) {
+                        return blobs[0].arrayBuffer().then(function (buf) {
+                            buildRealMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    realLoading = false;
+                    apply();
+                    t3dStatus('Could not load real terrain data (' + (err && err.message ? err.message : err) + ') - showing the procedural relief instead.');
+                });
         }
 
         var store = t3dLoadStore();
         if (typeof store.snowCapOn === 'boolean') snowCapOn = store.snowCapOn;
         if (typeof store.bandsOn === 'boolean') bandsOn = store.bandsOn;
-        recolor();
         apply();
 
         var snowBtn = document.getElementById('t3dKmjSnowBtn');
-        if (snowBtn) snowBtn.addEventListener('click', function () { snowCapOn = !snowCapOn; recolor(); apply(); });
+        if (snowBtn) snowBtn.addEventListener('click', function () { snowCapOn = !snowCapOn; apply(); });
         var bandsBtn = document.getElementById('t3dKmjBandsBtn');
-        if (bandsBtn) bandsBtn.addEventListener('click', function () { bandsOn = !bandsOn; recolor(); apply(); });
+        if (bandsBtn) bandsBtn.addEventListener('click', function () { bandsOn = !bandsOn; apply(); });
 
         t3dStatus('Drag to orbit, scroll to zoom. Toggle the snow cap or the altitude bands.');
+        if ('requestIdleCallback' in window) { requestIdleCallback(loadRealTerrain, { timeout: 4000 }); }
+        else { setTimeout(loadRealTerrain, 800); }
         return function animate(dt) {
             scene.rotation.y += dt * 0.00004;
         };
