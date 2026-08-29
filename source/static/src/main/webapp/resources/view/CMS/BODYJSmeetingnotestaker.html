@@ -19,6 +19,37 @@
     // matching), so they never invent content that is not in the transcript. An
     // optional WebLLM pass can rewrite them as prose on machines with WebGPU.
     //
+    // 2026-08-29 ENGINE UPGRADE - silence is skipped before Whisper runs.
+    //   Whisper's cost is proportional to how much audio it is given, and a real
+    //   meeting is mostly nobody talking. A voice-activity pass now finds the spans
+    //   where somebody speaks, and only those are handed to the speech model; the
+    //   transcript timings are mapped back onto the ORIGINAL recording afterwards,
+    //   so every timecode still points at the real moment in the meeting.
+    //
+    //   VAD ENGINE: @jitsi/rnnoise-wasm@0.2.1 (EXACT pin per the lane's CDN ENGINE
+    //   PIN discipline). dist/rnnoise.wasm is 112,141 bytes with the weights baked
+    //   in, sha256-verified on every load path, and stored under the SAME
+    //   'ftol-ai-models' Cache-API name as the silence-remover and audio-denoiser
+    //   pages - so a visitor who used either of those pays no second download.
+    //   API: _rnnoise_create -> _rnnoise_process_frame (480 float32 samples at
+    //   48 kHz scaled to the int16 range; RETURNS a voice probability 0..1, which is
+    //   all this page consumes - the denoised samples are discarded, so the audio
+    //   Whisper hears is the reader's own, untouched) -> _rnnoise_destroy.
+    //
+    //   Gate-H probe (fire36, seo-reports/20260829-ailocal-fire36/): on a
+    //   meeting-shaped 28 s clip with four known speech segments, all four survive
+    //   compaction, 20.2 s of dead air is dropped (72.3%), and remapping a
+    //   compacted stamp back to the original recording round-trips with 0 s error
+    //   against a 10 ms tolerance. A dense-speech clip correctly SKIPS compaction.
+    //
+    //   HONEST BOUNDS, stated on the page too: this saves TIME, never improves
+    //   accuracy. A voice detector is not perfect, so the pass is deliberately
+    //   conservative (0.30 s kept either side of every detected span, gaps under
+    //   0.6 s bridged) and it is SKIPPED entirely when it would save less than 5%,
+    //   because there is no reason to remap timings for no gain. The reader can
+    //   switch the pass off, and any failure inside it falls back to transcribing
+    //   the whole recording - the previous behaviour, which stays the fallback tier.
+    //
     // Framework contract: doAfterPageRendered() (fires once jQuery + base script
     // load); no top-level DOM. Visible controls + status satisfy e2e G16.
 
@@ -27,6 +58,20 @@
     var MN_WHISPER_HOST = 'https://gh-static.freetool.online/whisper/';
     var MN_MODEL_ID = 'whisper-base';
     var MN_LS_KEY = 'ftol:meetingnotes:prefs';
+
+    // Voice-activity pass (see the ENGINE UPGRADE note above). Shared pin, digest
+    // and Cache-API entry with /video-tools/silence-remover.html.
+    var MN_VAD_JS = 'https://cdn.jsdelivr.net/npm/@jitsi/rnnoise-wasm@0.2.1/dist/rnnoise.js';
+    var MN_VAD_WASM = 'https://cdn.jsdelivr.net/npm/@jitsi/rnnoise-wasm@0.2.1/dist/rnnoise.wasm';
+    var MN_VAD_SHA256 = '677147b9248aedc0a00de79dc090d1ecead37c08c8bb773a790da16109d2c487';
+    var MN_CACHE_NAME = 'ftol-ai-models';
+    var MN_VAD_SR = 48000;          // RNNoise is fixed at 48 kHz
+    var MN_VAD_FRAME = 480;         // 10 ms frame
+    var MN_VAD_WARMUP = 30;         // ~0.3 s noise-estimate adaptation (probe-measured)
+    var MN_VAD_PAD_S = 0.30;        // kept either side of every detected span
+    var MN_VAD_BRIDGE_S = 0.60;     // gaps shorter than this are not cut
+    var MN_VAD_MIN_SPEECH_S = 0.20; // drop blips shorter than this
+    var MN_VAD_MIN_SAVING = 0.05;   // below this, skip compaction entirely
 
     var MN_LANGS = [
         ['auto', 'Detect automatically'], ['en', 'English'], ['vi', 'Vietnamese'], ['zh', 'Chinese'],
@@ -169,6 +214,162 @@
             }
             return out;
         });
+    }
+
+    // -------------------------------------------------------- voice activity
+    // Everything below only decides WHICH PARTS of the audio reach the speech
+    // model. It never alters the samples themselves, and every failure path
+    // returns the whole recording so transcription still runs.
+
+    function mnHex(buf) {
+        var arr = new Uint8Array(buf), hex = '';
+        for (var i = 0; i < arr.length; i++) hex += (arr[i] < 16 ? '0' : '') + arr[i].toString(16);
+        return hex;
+    }
+
+    // Engine bytes, cached across visits AND shared with the silence-remover and
+    // audio-denoiser pages, with a mandatory integrity check on every path.
+    function mnVadBytes(onStatus) {
+        return Promise.resolve().then(function () {
+            if (!window.caches) return null;
+            return caches.open(MN_CACHE_NAME).then(function (c) { return c.match(MN_VAD_WASM); }).catch(function () { return null; });
+        }).then(function (hit) {
+            if (hit) { onStatus('Loading the voice-detection engine from your browser cache...'); return { resp: hit, fromCache: true }; }
+            onStatus('Downloading the voice-detection engine (about 0.1 MB, one time - it is kept for next visit)...');
+            return fetch(MN_VAD_WASM).then(function (r) {
+                if (!r.ok) throw new Error('voice-detection engine download failed (HTTP ' + r.status + ')');
+                if (window.caches) {
+                    var clone = r.clone();
+                    caches.open(MN_CACHE_NAME).then(function (c) { return c.put(MN_VAD_WASM, clone); }).catch(function () { });
+                }
+                return { resp: r, fromCache: false };
+            });
+        }).then(function (got) {
+            return got.resp.arrayBuffer().then(function (buf) {
+                return crypto.subtle.digest('SHA-256', buf).then(function (d) {
+                    if (mnHex(d) !== MN_VAD_SHA256) {
+                        if (got.fromCache && window.caches) {
+                            caches.open(MN_CACHE_NAME).then(function (c) { return c.delete(MN_VAD_WASM); }).catch(function () { });
+                        }
+                        throw new Error('the voice-detection engine failed its integrity check');
+                    }
+                    return new Uint8Array(buf);
+                });
+            });
+        });
+    }
+
+    var mnVadModule = null;
+    function mnVadLoad(onStatus) {
+        if (mnVadModule) return mnVadModule;
+        mnVadModule = mnVadBytes(onStatus).then(function (bytes) {
+            return import(MN_VAD_JS).then(function (m) { return m.default({ wasmBinary: bytes }); });
+        });
+        mnVadModule.catch(function () { mnVadModule = null; });   // allow a retry
+        return mnVadModule;
+    }
+
+    // 16 kHz -> 48 kHz for the detector only; the samples the model transcribes
+    // are always the original 16 kHz ones.
+    function mnUp3x(pcm) {
+        var out = new Float32Array(pcm.length * 3);
+        for (var j = 0; j < out.length; j++) {
+            var src = j / 3, i0 = Math.floor(src), i1 = Math.min(pcm.length - 1, i0 + 1), f = src - i0;
+            out[j] = pcm[i0] * (1 - f) + pcm[i1] * f;
+        }
+        return out;
+    }
+
+    // Per-frame voice probability, yielding to the browser so the tab stays alive.
+    function mnVadProbs(mod, pcm48, onProgress) {
+        var state = mod._rnnoise_create(0);
+        if (!state) throw new Error('the voice detector could not start');
+        var inPtr = mod._malloc(MN_VAD_FRAME * 4), outPtr = mod._malloc(MN_VAD_FRAME * 4);
+        var frame = new Float32Array(MN_VAD_FRAME);
+        var nFrames = Math.floor(pcm48.length / MN_VAD_FRAME);
+        var vad = new Float32Array(nFrames);
+        var k, f = 0;
+
+        function feed(offset) {
+            for (k = 0; k < MN_VAD_FRAME; k++) frame[k] = pcm48[offset + k] * 32768;
+            mod.HEAPF32.set(frame, inPtr >> 2);
+            return mod._rnnoise_process_frame(state, outPtr, inPtr);
+        }
+        // Warm-up so the noise estimate has adapted before the real pass.
+        for (var w = 0; w < MN_VAD_WARMUP && (w + 1) * MN_VAD_FRAME <= pcm48.length; w++) feed(w * MN_VAD_FRAME);
+
+        function chunk() {
+            var until = Date.now() + 200;
+            while (f < nFrames && Date.now() < until) { vad[f] = feed(f * MN_VAD_FRAME); f++; }
+            if (f >= nFrames) {
+                mod._free(inPtr); mod._free(outPtr); mod._rnnoise_destroy(state);
+                return Promise.resolve(vad);
+            }
+            onProgress(Math.round(100 * f / nFrames));
+            return new Promise(function (r) { setTimeout(r, 0); }).then(chunk);
+        }
+        return Promise.resolve().then(chunk).catch(function (err) {
+            try { mod._free(inPtr); mod._free(outPtr); mod._rnnoise_destroy(state); } catch (e) { }
+            throw err;
+        });
+    }
+
+    // Probabilities -> padded, bridged speech spans in seconds.
+    function mnVadSpans(vad, durS) {
+        var i, voiced = new Array(vad.length);
+        for (i = 0; i < vad.length; i++) {          // moving max over 3 frames bridges
+            var v = vad[i];                          // the troughs inside a syllable
+            if (i >= 1 && vad[i - 1] > v) v = vad[i - 1];
+            if (i >= 2 && vad[i - 2] > v) v = vad[i - 2];
+            voiced[i] = v >= 0.5;
+        }
+        var FS = MN_VAD_FRAME / MN_VAD_SR, raw = [], run = -1;
+        for (i = 0; i <= voiced.length; i++) {
+            var on = i < voiced.length && voiced[i];
+            if (on && run < 0) run = i;
+            else if (!on && run >= 0) { raw.push([run * FS, i * FS]); run = -1; }
+        }
+        var merged = [];
+        for (i = 0; i < raw.length; i++) {
+            var a = Math.max(0, raw[i][0] - MN_VAD_PAD_S), b = Math.min(durS, raw[i][1] + MN_VAD_PAD_S);
+            if (b - a < MN_VAD_MIN_SPEECH_S) continue;
+            var last = merged[merged.length - 1];
+            if (last && a - last[1] <= MN_VAD_BRIDGE_S) last[1] = Math.max(last[1], b);
+            else merged.push([a, b]);
+        }
+        return merged;
+    }
+
+    // Keep only the speech spans, and remember where each one sat originally.
+    function mnCompact(pcm, spans) {
+        var durS = pcm.length / 16000;
+        var keptS = 0, i;
+        for (i = 0; i < spans.length; i++) keptS += spans[i][1] - spans[i][0];
+        if (!spans.length || keptS >= durS * (1 - MN_VAD_MIN_SAVING)) {
+            return { audio: pcm, map: null, savedS: 0, skipped: true, spanCount: spans.length };
+        }
+        var idx = spans.map(function (s) {
+            return [Math.max(0, Math.floor(s[0] * 16000)), Math.min(pcm.length, Math.ceil(s[1] * 16000))];
+        });
+        var total = 0;
+        for (i = 0; i < idx.length; i++) total += idx[i][1] - idx[i][0];
+        var out = new Float32Array(total), map = [], w = 0;
+        for (i = 0; i < idx.length; i++) {
+            map.push([w / 16000, idx[i][0] / 16000]);
+            out.set(pcm.subarray(idx[i][0], idx[i][1]), w);
+            w += idx[i][1] - idx[i][0];
+        }
+        return { audio: out, map: map, savedS: durS - total / 16000, skipped: false, spanCount: spans.length };
+    }
+
+    // Compacted-timeline seconds -> the real moment in the recording.
+    function mnUnmap(t, map) {
+        if (!map || !map.length || t == null || isNaN(t)) return t;
+        var entry = map[0];
+        for (var i = 0; i < map.length; i++) {
+            if (map[i][0] <= t + 1e-9) entry = map[i]; else break;
+        }
+        return entry[1] + (t - entry[0]);
     }
 
     // Recorder: microphone, optionally mixed with the audio of a shared tab.
@@ -490,6 +691,12 @@
             '<label><input id="mnTranslate" type="checkbox"> Write the transcript in English</label>' +
             '</div>' +
             '<div class="w3-row" style="margin:8px 0;">' +
+            '<label><input id="mnSkipSilence" type="checkbox" checked> Skip the silent parts before transcribing</label> ' +
+            '<span style="color:#666;font-size:0.9em;">- a 0.1 MB voice detector finds who is talking and only those parts go to the speech model, ' +
+            'which is the difference between waiting for the whole meeting and waiting for the parts with speech in them. ' +
+            'Timecodes still refer to the original recording. It saves time, not accuracy - untick it to transcribe every second.</span>' +
+            '</div>' +
+            '<div class="w3-row" style="margin:8px 0;">' +
             '<b>3. Record or pick a file</b><br>' +
             '<div id="mnRecRow">' +
             '<button id="mnStart" type="button" class="w3-button w3-green">Start recording</button> ' +
@@ -525,6 +732,8 @@
             '</div></div>' +
             '<p style="color:#666;font-size:0.9em;margin-top:10px;">Speech model: OpenAI Whisper base (Apache-2.0), ONNX export served from our asset server and run by ' +
             '<a href="https://github.com/huggingface/transformers.js" target="_blank" rel="nofollow noopener">transformers.js</a>. ' +
+            'Voice detection: <a href="https://github.com/jitsi/rnnoise-wasm" target="_blank" rel="nofollow noopener">rnnoise-wasm</a> (Apache-2.0) wrapping ' +
+            '<a href="https://github.com/xiph/rnnoise" target="_blank" rel="nofollow noopener">Xiph RNNoise</a> (BSD-3-Clause) - it only decides which parts of the audio the speech model hears. ' +
             'The idea follows the desktop app <a href="https://github.com/Zackriya-Solutions/meetily" target="_blank" rel="nofollow noopener">meetily</a> (MIT); this page is an independent browser build, not a port of it. ' +
             'Recording other people is your responsibility - ask for consent first.</p>';
         root.appendChild(wrap);
@@ -619,13 +828,36 @@
             if (busy) return;
             busy = true;
             var lang = q('#mnLang').value, translate = q('#mnTranslate').checked;
+            var skipSilence = q('#mnSkipSilence').checked;
             ensureEngine().then(function (asr) {
                 setStatus('Reading the audio...');
                 return (blobOrBuffer instanceof Blob ? blobOrBuffer.arrayBuffer() : Promise.resolve(blobOrBuffer))
                     .then(mnDecodeTo16k)
-                    .then(function (audio) {
+                    .then(function (full) {
+                        var origS = full.length / 16000;
+                        if (!skipSilence) return { audio: full, map: null, savedS: 0, skipped: true, spanCount: 0, origS: origS };
+                        // Any failure here is not fatal: transcribe the whole recording.
+                        return mnVadLoad(setStatus).then(function (mod) {
+                            setStatus('Finding the parts where somebody is talking (on your device)...');
+                            return mnVadProbs(mod, mnUp3x(full), function (pct) {
+                                setStatus('Finding the parts where somebody is talking... ' + pct + '%');
+                            });
+                        }).then(function (vad) {
+                            var res = mnCompact(full, mnVadSpans(vad, origS));
+                            res.origS = origS;
+                            return res;
+                        }).catch(function (err) {
+                            setStatus('The voice detector could not run (' + (err && err.message ? err.message : 'unknown error') + ') - transcribing the whole recording instead.');
+                            return { audio: full, map: null, savedS: 0, skipped: true, spanCount: 0, failed: true, origS: origS };
+                        });
+                    })
+                    .then(function (prep) {
+                        var audio = prep.audio;
                         var mins = (audio.length / 16000 / 60).toFixed(1);
-                        setStatus('Transcribing ' + mins + ' minutes of audio... on the CPU this takes roughly as long as the recording itself.');
+                        var saved = prep.savedS > 0
+                            ? ' Skipping ' + mnClock(prep.savedS) + ' of silence across ' + prep.spanCount + ' speech span' + (prep.spanCount === 1 ? '' : 's') + ' cut this down from ' + (prep.origS / 60).toFixed(1) + ' minutes.'
+                            : '';
+                        setStatus('Transcribing ' + mins + ' minutes of audio... on the CPU this takes roughly as long as the audio itself.' + saved);
                         var opts = {
                             chunk_length_s: 30, stride_length_s: 5, return_timestamps: true,
                             task: translate ? 'translate' : 'transcribe'
@@ -643,14 +875,23 @@
                             }).filter(function (s) { return String(s.text).trim(); });
                             if (!segs.length && out.text) segs = [{ start: 0, end: audio.length / 16000, text: out.text }];
                             if (!segs.length) throw new Error('no speech was recognised in this audio');
+                            // Put every timecode back on the original recording's timeline.
+                            if (prep.map) {
+                                segs = segs.map(function (s) {
+                                    return { start: mnUnmap(s.start, prep.map), end: mnUnmap(s.end, prep.map), text: s.text };
+                                });
+                            }
                             var meta = {
                                 date: new Date().toISOString().slice(0, 10),
-                                duration: seconds || audio.length / 16000,
+                                duration: seconds || prep.origS,
                                 language: lang === 'auto' ? 'detected automatically' : lang,
                                 device: mnEngine.device === 'webgpu' ? 'WebGPU' : 'CPU'
                             };
-                            render(mnBuildMinutes(segs, meta), segs);
-                            setStatus('Done: ' + segs.length + ' transcript segments, minutes built from ' + mnBuildMinutes(segs, meta).sentenceCount + ' sentences. Nothing left this browser.');
+                            var min = mnBuildMinutes(segs, meta);
+                            render(min, segs);
+                            setStatus('Done: ' + segs.length + ' transcript segments, minutes built from ' + min.sentenceCount + ' sentences.'
+                                + (prep.savedS > 0 ? ' ' + mnClock(prep.savedS) + ' of silence was skipped; the timecodes point at the original recording.' : '')
+                                + ' Nothing left this browser.');
                         });
                     });
             }).catch(function (err) {
