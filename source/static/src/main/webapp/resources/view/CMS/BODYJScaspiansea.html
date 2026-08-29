@@ -3,6 +3,19 @@
     // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
     // LEAN from the shared t3d* skeleton - ONE scene only (caspian-sea).
     // All geometry is procedural. places-3d cluster, authored 2026-07-27.
+    // DETAILED-TERRAIN migration 2026-08-30 (prompts/places-3d-detailed-terrain-runbook.md,
+    // Lake/inland-sea class per runbook 2b): the three-basin depth-band scene
+    // below is the ORIGINAL schematic scene, unchanged, and stays the first-paint
+    // default view (needs no network, can never render blank). A NEW Shoreline
+    // view fetches real Terrarium DEM elevation + Sentinel-2 true-color imagery
+    // of Beshbarmag Mountain (Five-Finger Mountain), Azerbaijan's Caspian coast
+    // north of Baku, from the ftol-vm-assets CDN, IndexedDB-caches it, and
+    // becomes selectable via the View button once ready. A CDN failure leaves
+    // the View button on "Depth-band basin" and the page works exactly as
+    // before - it never blocks on the network. Beshbarmag is a coastal ridge at
+    // sea level, so the real view shows real measured shoreline relief (the
+    // ridge rising steeply beside the sea) rather than the sea's own 1,025 m
+    // depth/three-basin story, which stays exclusively in the schematic view.
     //
     // EDUCATIONAL APPROXIMATION, not survey terrain.
     // Published figures (encyclopedic consensus, cross-checked 2026-07-27):
@@ -53,6 +66,51 @@
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSblacksea.html's
+    // t3dPlaces* pattern) - heights.bin (Int16 LE meters) + texture.jpg
+    // (Sentinel-2 true-color), sha256-verified, cached once per manifest version.
+    var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+    var T3D_PLACES_DB = 'ftol-places3d-assets';
+    function t3dPlacesIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(T3D_PLACES_DB, 1);
+            req.onupgradeneeded = function () {
+                if (!req.result.objectStoreNames.contains('assets')) {
+                    req.result.createObjectStore('assets', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function t3dPlacesIdbGet(key) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function t3dPlacesIdbPut(key, blob) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function t3dPlacesSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
     }
 
     function t3dShell(THREE, host, opts) {
@@ -205,8 +263,14 @@
             }
         }
         var bandOn = true;
+        // Basin scene lives in its own group so the Shoreline view (real
+        // terrain, added below) can hide it without tearing it down - it is
+        // the CDN-independent fallback per the render-quality contract.
+        var basinGroup = new THREE.Group();
+        scene.add(basinGroup);
+
         var terrainInfo = makeTerrain(16, 24, shell.low ? 100 : 160, shell.low ? 150 : 240, height, color);
-        scene.add(terrainInfo.mesh);
+        basinGroup.add(terrainInfo.mesh);
 
         // Water surface: a gently translucent plane at the lake level so the
         // shore-to-basin transition still reads as "water" over the deep pit.
@@ -216,7 +280,7 @@
         );
         water.rotation.x = -Math.PI / 2;
         water.position.y = LAKE_Y + 0.02;
-        scene.add(water);
+        basinGroup.add(water);
 
         // Sea-level datum plane at y=0 - world ocean level, about 28 m above
         // the actual Caspian surface.
@@ -226,13 +290,13 @@
         );
         datum.rotation.x = -Math.PI / 2;
         datum.position.y = 0;
-        scene.add(datum);
+        basinGroup.add(datum);
         var datumEdge = new THREE.Mesh(
             new THREE.TorusGeometry(9.6, 0.05, 8, 48),
             new THREE.MeshBasicMaterial({ color: 0x8fd6ff })
         );
         datumEdge.rotation.x = Math.PI / 2;
-        scene.add(datumEdge);
+        basinGroup.add(datumEdge);
 
         var datumOn = true;
 
@@ -245,7 +309,7 @@
             colors.needsUpdate = true;
         }
 
-        function panelHtml() {
+        function basinPanelHtml() {
             return '<h3>Caspian Sea: shallow north, deep south</h3>' +
                 '<p>Three connected basins in one lake: a broad shallow north shelf, a mid-depth middle basin, and a south basin plunging past 1,000 m - shown here as distinct color bands.</p>' +
                 '<table class="w3-table w3-bordered">' +
@@ -256,8 +320,43 @@
                 '<tr><td>South basin</td><td>deepest point about 1,025 m</td></tr>' +
                 '<tr><td>Borders</td><td>Russia, Kazakhstan, Turkmenistan, Iran, Azerbaijan</td></tr>' +
                 '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the basin profile, coastline, and vertical scale are schematic teaching cues, not survey data.</p>';
+                '<p class="t3d-note">Educational relief approximation - the basin profile, coastline, and vertical scale are schematic teaching cues, not survey data. Switch to the Shoreline view for real measured terrain at Beshbarmag Mountain.</p>';
         }
+
+        // ---- Shoreline view (real terrain, Beshbarmag Mountain - a coastal
+        // ridge on Azerbaijan's Caspian shore north of Baku) ----
+        var shoreGroup = new THREE.Group();
+        shoreGroup.visible = false;
+        scene.add(shoreGroup);
+        var view = 'basin'; // default first paint - CDN-independent
+        var shoreReady = false, shoreLoading = false;
+        var shoreMinH = 0, shoreMaxH = 0;
+        var VIEW_CAMERA = {
+            basin: { radius: 34, phi: 0.72, theta: 0.35, targetY: -1.5, minR: 9, maxR: 70 },
+            shore: { radius: 16, phi: 1.0, theta: 0.5, targetY: 0, minR: 4, maxR: 45 }
+        };
+        function setCamera(preset) {
+            shell.orbit.goalRadius = preset.radius; shell.orbit.goalPhi = preset.phi; shell.orbit.goalTheta = preset.theta;
+            shell.orbit.target.y = preset.targetY; shell.orbit.minR = preset.minR; shell.orbit.maxR = preset.maxR;
+        }
+
+        function shorePanelHtml() {
+            if (!shoreReady) {
+                return '<h3>Caspian Sea: Beshbarmag Mountain shore</h3>' +
+                    '<p>' + (shoreLoading ? 'Loading real elevation and satellite imagery of the Beshbarmag coast now (one time, then cached).' : 'Real terrain not loaded yet.') + '</p>';
+            }
+            return '<h3>Caspian Sea: Beshbarmag Mountain shore (real terrain)</h3>' +
+                '<p>This is Beshbarmag Mountain (Five-Finger Mountain), a limestone ridge on Azerbaijan\'s Caspian coast north of Baku that rises steeply right beside the sea - real measured elevation and satellite imagery, not a procedural surface. This coastal ridge sits at the sea\'s own surface level, so it does not show the Caspian\'s deep south basin or its three-basin depth contrast - that story stays in the Depth-band basin view.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Elevation in this view</td><td>' + Math.round(shoreMinH) + ' m to ' + Math.round(shoreMaxH) + ' m</td></tr>' +
+                '<tr><td>Signature feature</td><td>Beshbarmag Mountain - a coastal ridge rising beside the Caspian shore</td></tr>' +
+                '<tr><td>Sea surface here</td><td>about 28 m below world ocean level, same datum as the basin view</td></tr>' +
+                '<tr><td>Location</td><td>Azerbaijan, north of Baku</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs). Imagery: contains modified Copernicus Sentinel data 2022. Relief is shown at true 1:1 scale relative to the mapped width - no vertical exaggeration. Educational approximation - not survey-grade geodesy.</p>';
+        }
+
+        function panelHtml() { return view === 'shore' ? shorePanelHtml() : basinPanelHtml(); }
 
         function apply() {
             datum.visible = datumOn; datumEdge.visible = datumOn;
@@ -265,13 +364,143 @@
             if (db) db.textContent = 'Sea-level plane: ' + (datumOn ? 'On' : 'Off');
             var bb = document.getElementById('t3dPcsBandBtn');
             if (bb) bb.textContent = 'Depth bands: ' + (bandOn ? 'On' : 'Off');
+            var vb = document.getElementById('t3dPcsViewBtn');
+            if (vb) vb.textContent = 'View: ' + (view === 'shore' ? 'Shoreline (real terrain)' : (shoreLoading ? 'Depth-band basin (loading shoreline...)' : 'Depth-band basin (schematic)'));
+            basinGroup.visible = (view === 'basin');
+            shoreGroup.visible = (view === 'shore');
             t3dInfo(panelHtml());
-            try { t3dSaveStore({ datumOn: datumOn, bandOn: bandOn }); } catch (e) {}
+            try { t3dSaveStore({ datumOn: datumOn, bandOn: bandOn, view: view }); } catch (e) {}
+        }
+
+        function setView(next) {
+            if (next === 'shore' && !shoreReady) return; // ignore clicks before real terrain has loaded
+            view = next;
+            setCamera(VIEW_CAMERA[view]);
+            apply();
+        }
+
+        // Decimate a row-major Int16 grid to at most maxDim x maxDim cells,
+        // keeping the MAX value per cell (per the runbook: preserve relief
+        // detail, never average it flat).
+        function decimateMax(view2, w, h, maxDim) {
+            var stepX = Math.max(1, Math.ceil(w / maxDim));
+            var stepZ = Math.max(1, Math.ceil(h / maxDim));
+            var ow = Math.floor((w - 1) / stepX) + 1;
+            var oh = Math.floor((h - 1) / stepZ) + 1;
+            var out = new Int16Array(ow * oh);
+            for (var oz = 0; oz < oh; oz++) {
+                var z0 = oz * stepZ;
+                for (var ox = 0; ox < ow; ox++) {
+                    var x0 = ox * stepX, best = -32768;
+                    for (var dz2 = 0; dz2 < stepZ && z0 + dz2 < h; dz2++) {
+                        var rowBase = (z0 + dz2) * w;
+                        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+                            var v = view2[rowBase + x0 + dx];
+                            if (v > best) best = v;
+                        }
+                    }
+                    out[oz * ow + ox] = best;
+                }
+            }
+            return { data: out, w: ow, h: oh };
+        }
+
+        function buildShoreMesh(heightsView, grid, texBlob) {
+            var dec = decimateMax(heightsView, grid.width_px, grid.height_px, 220);
+            var W = 20, D = 20;
+            var geo = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+            geo.rotateX(-Math.PI / 2);
+            // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1
+            // vertical proportion relative to the mapped width (no exaggeration).
+            var vertScale = W / (grid.width_px * grid.meters_per_px);
+            var minH = grid.min_h_m, maxH = grid.max_h_m;
+            var pos = geo.attributes.position;
+            var colors = new Float32Array(pos.count * 3), c = new THREE.Color();
+            var seaLevel = new THREE.Color(0x123a52), shore = new THREE.Color(0xc7bd8f), high = new THREE.Color(0x8a9a6e);
+            for (var i = 0; i < pos.count; i++) {
+                var ix = i % dec.w, iz = Math.floor(i / dec.w);
+                var hRaw = dec.data[iz * dec.w + ix];
+                pos.setY(i, (hRaw - minH) * vertScale);
+                var t = (hRaw - minH) / Math.max(1, maxH - minH);
+                if (hRaw <= -10) { c.copy(seaLevel); } else { c.copy(shore).lerp(high, Math.min(1, t)); }
+                colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            var mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+            var mesh = new THREE.Mesh(geo, mat);
+            shoreGroup.add(mesh);
+            shoreMinH = minH; shoreMaxH = maxH;
+            shoreLoading = false; shoreReady = true;
+            setView('shore');
+            t3dStatus('Real Beshbarmag coastal terrain loaded (Terrarium DEM + Sentinel-2 imagery). Drag to orbit, scroll to zoom.');
+            if (texBlob) {
+                var texUrl = URL.createObjectURL(texBlob);
+                new THREE.TextureLoader().load(texUrl, function (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    // 2026-08-29 DEFECT FIX. MeshStandardMaterial MULTIPLIES
+                    // vertexColors by map. Once real imagery is the colour
+                    // source the hypsometric bands must stop multiplying into it.
+                    mat.map = tex;
+                    mat.vertexColors = false;
+                    mat.color.setScalar(1);
+                    mat.needsUpdate = true;
+                    URL.revokeObjectURL(texUrl);
+                }, undefined, function () { URL.revokeObjectURL(texUrl); });
+            }
+        }
+
+        function fetchPlacesAsset(file, mimeType, verKey) {
+            var key = verKey + ':' + file.file;
+            return t3dPlacesIdbGet(key).then(function (cached) {
+                if (cached) return cached;
+                return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+                    return r.arrayBuffer();
+                }).then(function (buf) {
+                    return t3dPlacesSha256Hex(buf).then(function (hex) {
+                        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+                        var blob = new Blob([buf], { type: mimeType });
+                        t3dPlacesIdbPut(key, blob);
+                        return blob;
+                    });
+                });
+            });
+        }
+
+        function loadRealShore() {
+            shoreLoading = true;
+            apply();
+            fetch(T3D_PLACES_CDN + '/manifest.json').then(function (r) { return r.json(); })
+                .then(function (manifest) {
+                    var asset = manifest && manifest.assets && manifest.assets['caspian-sea'];
+                    if (!asset) throw new Error('manifest missing the caspian-sea asset');
+                    var heightsFile = null, texFile = null;
+                    (asset.files || []).forEach(function (f) {
+                        if (f.role === 'heightfield') heightsFile = f;
+                        if (f.role === 'satellite-texture') texFile = f;
+                    });
+                    if (!heightsFile) throw new Error('manifest missing the heightfield file');
+                    var verKey = 'caspian-sea@' + manifest.version;
+                    var jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+                    if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+                    return Promise.all(jobs).then(function (blobs) {
+                        return blobs[0].arrayBuffer().then(function (buf) {
+                            buildShoreMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    shoreLoading = false;
+                    apply();
+                    t3dStatus('Could not load real Beshbarmag terrain (' + (err && err.message ? err.message : err) + ') - showing the depth-band basin view instead.');
+                });
         }
 
         var store = t3dLoadStore();
         if (typeof store.datumOn === 'boolean') datumOn = store.datumOn;
         if (typeof store.bandOn === 'boolean') bandOn = store.bandOn;
+        setCamera(VIEW_CAMERA.basin);
         recolor();
         apply();
 
@@ -279,8 +508,12 @@
         if (datumBtn) datumBtn.addEventListener('click', function () { datumOn = !datumOn; apply(); });
         var bandBtn = document.getElementById('t3dPcsBandBtn');
         if (bandBtn) bandBtn.addEventListener('click', function () { bandOn = !bandOn; recolor(); apply(); });
+        var viewBtn = document.getElementById('t3dPcsViewBtn');
+        if (viewBtn) viewBtn.addEventListener('click', function () { setView(view === 'shore' ? 'basin' : 'shore'); });
 
         t3dStatus('Drag to orbit, scroll to zoom. Toggle the depth bands or the sea-level plane.');
+        if ('requestIdleCallback' in window) { requestIdleCallback(loadRealShore, { timeout: 4000 }); }
+        else { setTimeout(loadRealShore, 800); }
         return function animate(dt) {
             scene.rotation.y += dt * 0.00004;
         };
