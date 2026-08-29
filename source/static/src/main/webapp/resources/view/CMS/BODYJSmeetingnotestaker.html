@@ -1,0 +1,758 @@
+<script>
+    // Meeting Notes Taker - record or upload a meeting, transcribe it with Whisper
+    // base running in this browser tab, then build minutes (summary, decisions,
+    // action items, questions, figures) from the transcript. Nothing is uploaded.
+    //
+    // 2026-08-29 operator request: "make a tool that does what meetily does".
+    //   Zackriya-Solutions/meetily (MIT) is a DESKTOP app - Tauri + Rust +
+    //   whisper.cpp submodule + Ollama - with no browser or WebAssembly build, so
+    //   this page is an independent browser implementation of the same job, not a
+    //   port: no meetily source or asset is served to readers. Credit + the
+    //   difference are stated in the page copy and in CREDITS.txt on the CDN.
+    //
+    // Engine: transformers.js 3.8.1 (Apache-2.0, vendored at /vendor/transformers/)
+    // running the q8 ONNX export of openai/whisper-base (Apache-2.0, ~78 MB) served
+    // from https://gh-static.freetool.online/whisper/ - pinned revision, checksummed
+    // at publish time, downloaded once and kept in the browser's cache.
+    //
+    // Minutes are built by deterministic text analysis (sentence ranking + cue-phrase
+    // matching), so they never invent content that is not in the transcript. An
+    // optional WebLLM pass can rewrite them as prose on machines with WebGPU.
+    //
+    // Framework contract: doAfterPageRendered() (fires once jQuery + base script
+    // load); no top-level DOM. Visible controls + status satisfy e2e G16.
+
+    web.localUpload = false;
+
+    var MN_WHISPER_HOST = 'https://gh-static.freetool.online/whisper/';
+    var MN_MODEL_ID = 'whisper-base';
+    var MN_LS_KEY = 'ftol:meetingnotes:prefs';
+
+    var MN_LANGS = [
+        ['auto', 'Detect automatically'], ['en', 'English'], ['vi', 'Vietnamese'], ['zh', 'Chinese'],
+        ['ja', 'Japanese'], ['ko', 'Korean'], ['es', 'Spanish'], ['pt', 'Portuguese'], ['fr', 'French'],
+        ['de', 'German'], ['it', 'Italian'], ['nl', 'Dutch'], ['ru', 'Russian'], ['hi', 'Hindi'],
+        ['id', 'Indonesian'], ['th', 'Thai'], ['ar', 'Arabic'], ['tr', 'Turkish'], ['pl', 'Polish']
+    ];
+
+    function mnEsc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+    function mnBase() { return (typeof BASE_PATH === 'string' ? BASE_PATH : ''); }
+    function mnMB(b) { return (b / 1048576).toFixed(b < 10485760 ? 1 : 0) + ' MB'; }
+    function mnClock(sec) {
+        if (sec == null || isNaN(sec)) return '0:00';
+        var s = Math.max(0, Math.floor(sec));
+        var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+        return (h ? h + ':' + ('0' + m).slice(-2) : m) + ':' + ('0' + r).slice(-2);
+    }
+    function mnStamp(sec) {
+        var s = Math.max(0, sec || 0);
+        var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s - h * 3600 - m * 60;
+        var ms = Math.floor((r % 1) * 1000);
+        return ('0' + h).slice(-2) + ':' + ('0' + m).slice(-2) + ':' + ('0' + Math.floor(r)).slice(-2) + ',' + ('00' + ms).slice(-3);
+    }
+
+    // ---------------------------------------------------------------- engine
+    var mnEngine = { lib: null, asr: null, loading: null, device: '', manifest: null, gpuOk: null };
+
+    function mnManifest() {
+        if (mnEngine.manifest) return Promise.resolve(mnEngine.manifest);
+        return fetch(MN_WHISPER_HOST + 'manifest.json', { mode: 'cors' }).then(function (r) {
+            if (!r.ok) throw new Error('the model index is unreachable (' + r.status + ')');
+            return r.json();
+        }).then(function (m) { mnEngine.manifest = m; return m; });
+    }
+
+    function mnModelBytes(manifest) {
+        var models = (manifest && manifest.models) || [];
+        for (var i = 0; i < models.length; i++) if (models[i].id === MN_MODEL_ID) return models[i].total_bytes || 0;
+        return 0;
+    }
+
+    function mnLoadLib() {
+        if (mnEngine.lib) return Promise.resolve(mnEngine.lib);
+        var dir = mnBase() + '/vendor/transformers/';
+        return import(dir + 'transformers.min.js').then(function (T) {
+            T.env.allowLocalModels = false;
+            T.env.remoteHost = MN_WHISPER_HOST;
+            T.env.remotePathTemplate = '{model}/';
+            try {
+                T.env.backends.onnx.wasm.wasmPaths = dir;
+                T.env.backends.onnx.wasm.numThreads = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1));
+            } catch (e) { }
+            mnEngine.lib = T;
+            return T;
+        });
+    }
+
+    // navigator.gpu can EXIST while requestAdapter() still returns nothing (headless
+    // Chrome, some Linux/older GPUs). Only an adapter proves WebGPU is usable, so the
+    // device is decided from the adapter, never from feature detection alone.
+    var mnGpuProbe = null;
+    function mnPickDevice() {
+        if (mnGpuProbe) return mnGpuProbe;
+        if (!navigator.gpu || !navigator.gpu.requestAdapter) {
+            mnEngine.gpuOk = false;
+            mnGpuProbe = Promise.resolve('wasm');
+            return mnGpuProbe;
+        }
+        mnGpuProbe = navigator.gpu.requestAdapter().then(function (a) {
+            mnEngine.gpuOk = !!a;
+            return a ? 'webgpu' : 'wasm';
+        }, function () { mnEngine.gpuOk = false; return 'wasm'; });
+        return mnGpuProbe;
+    }
+
+    // Loads the speech-recognition pipeline. onStatus gets human-readable progress.
+    function mnLoadAsr(onStatus) {
+        if (mnEngine.asr) return Promise.resolve(mnEngine.asr);
+        if (mnEngine.loading) return mnEngine.loading;
+        onStatus = onStatus || function () { };
+        mnEngine.loading = mnManifest().then(function (m) {
+            var total = mnModelBytes(m);
+            onStatus('Downloading the speech model (' + mnMB(total) + ', one time per browser)...');
+            return mnLoadLib();
+        }).then(function (T) {
+            var seen = {};
+            function progress(p) {
+                if (!p || p.status !== 'progress' || !p.file) return;
+                seen[p.file] = Math.round(p.progress || 0);
+                var names = Object.keys(seen), done = 0;
+                for (var i = 0; i < names.length; i++) done += seen[names[i]];
+                var pct = Math.min(99, Math.round(done / Math.max(1, names.length)));
+                onStatus('Downloading ' + p.file.split('/').pop() + ' - ' + pct + '% (kept in this browser afterwards)');
+            }
+            function build(device) {
+                return T.pipeline('automatic-speech-recognition', MN_MODEL_ID, {
+                    dtype: 'q8', device: device, progress_callback: progress
+                }).then(function (asr) { mnEngine.device = device; return asr; });
+            }
+            return mnPickDevice().then(function (device) {
+                if (device !== 'webgpu') return build('wasm');
+                return build('webgpu').catch(function () {
+                    onStatus('Your GPU refused the model; falling back to the CPU...');
+                    mnEngine.gpuOk = false;
+                    return build('wasm');
+                });
+            });
+        }).then(function (asr) {
+            mnEngine.asr = asr;
+            return asr;
+        }).catch(function (err) {
+            mnEngine.loading = null;
+            throw err;
+        });
+        return mnEngine.loading;
+    }
+
+    // ---------------------------------------------------------------- audio
+    // Decode any browser-readable audio (file or recording) to mono 16 kHz.
+    function mnDecodeTo16k(arrayBuffer) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return Promise.reject(new Error('this browser has no Web Audio support'));
+        var ctx = new AC();
+        return ctx.decodeAudioData(arrayBuffer).then(function (buf) {
+            var chans = buf.numberOfChannels, len = buf.length;
+            var mono = new Float32Array(len);
+            for (var c = 0; c < chans; c++) {
+                var data = buf.getChannelData(c);
+                for (var i = 0; i < len; i++) mono[i] += data[i] / chans;
+            }
+            try { ctx.close(); } catch (e) { }
+            if (buf.sampleRate === 16000) return mono;
+            // linear resample to 16 kHz (what the model expects)
+            var ratio = 16000 / buf.sampleRate;
+            var outLen = Math.floor(len * ratio);
+            var out = new Float32Array(outLen);
+            for (var j = 0; j < outLen; j++) {
+                var src = j / ratio, i0 = Math.floor(src), i1 = Math.min(len - 1, i0 + 1), f = src - i0;
+                out[j] = mono[i0] * (1 - f) + mono[i1] * f;
+            }
+            return out;
+        });
+    }
+
+    // Recorder: microphone, optionally mixed with the audio of a shared tab.
+    function mnRecorder() {
+        var self = { recording: false, paused: false, startedAt: 0, elapsed: 0, level: 0 };
+        var mic = null, share = null, ctx = null, dest = null, analyser = null, rec = null, parts = [];
+        var levelBuf = null, sharedAudio = false;
+
+        self.start = function (withTab) {
+            parts = [];
+            return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })
+                .then(function (m) {
+                    mic = m;
+                    if (!withTab) return null;
+                    // Most browsers only expose tab/system audio through a display capture
+                    // that also requests video; the video track is dropped immediately.
+                    return navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).catch(function () { return null; });
+                })
+                .then(function (s) {
+                    share = s;
+                    var AC = window.AudioContext || window.webkitAudioContext;
+                    ctx = new AC();
+                    dest = ctx.createMediaStreamDestination();
+                    ctx.createMediaStreamSource(mic).connect(dest);
+                    sharedAudio = false;
+                    if (share) {
+                        var at = share.getAudioTracks();
+                        if (at.length) {
+                            ctx.createMediaStreamSource(new MediaStream([at[0]])).connect(dest);
+                            sharedAudio = true;
+                        }
+                        var vt = share.getVideoTracks();
+                        for (var i = 0; i < vt.length; i++) vt[i].stop();
+                    }
+                    analyser = ctx.createAnalyser();
+                    analyser.fftSize = 512;
+                    ctx.createMediaStreamSource(dest.stream).connect(analyser);
+                    levelBuf = new Uint8Array(analyser.fftSize);
+                    var mime = '';
+                    var candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+                    for (var k = 0; k < candidates.length; k++) {
+                        if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(candidates[k])) { mime = candidates[k]; break; }
+                    }
+                    rec = mime ? new MediaRecorder(dest.stream, { mimeType: mime }) : new MediaRecorder(dest.stream);
+                    rec.ondataavailable = function (ev) { if (ev.data && ev.data.size) parts.push(ev.data); };
+                    rec.start(1000);
+                    self.recording = true; self.paused = false;
+                    self.startedAt = Date.now(); self.elapsed = 0;
+                    return { sharedAudio: sharedAudio, mime: rec.mimeType || mime };
+                });
+        };
+
+        self.readLevel = function () {
+            if (!analyser || !levelBuf) return 0;
+            analyser.getByteTimeDomainData(levelBuf);
+            var peak = 0;
+            for (var i = 0; i < levelBuf.length; i++) {
+                var v = Math.abs(levelBuf[i] - 128) / 128;
+                if (v > peak) peak = v;
+            }
+            self.level = peak;
+            return peak;
+        };
+
+        self.seconds = function () {
+            if (!self.recording) return self.elapsed;
+            if (self.paused) return self.elapsed;
+            return self.elapsed + (Date.now() - self.startedAt) / 1000;
+        };
+
+        self.pause = function () {
+            if (!rec || !self.recording || self.paused) return;
+            try { rec.pause(); } catch (e) { }
+            self.elapsed += (Date.now() - self.startedAt) / 1000;
+            self.paused = true;
+        };
+
+        self.resume = function () {
+            if (!rec || !self.recording || !self.paused) return;
+            try { rec.resume(); } catch (e) { }
+            self.startedAt = Date.now();
+            self.paused = false;
+        };
+
+        self.stop = function () {
+            return new Promise(function (resolve) {
+                if (!rec) return resolve(null);
+                if (!self.paused) self.elapsed += (Date.now() - self.startedAt) / 1000;
+                rec.onstop = function () {
+                    var blob = new Blob(parts, { type: rec.mimeType || 'audio/webm' });
+                    [mic, share].forEach(function (s) { if (s) s.getTracks().forEach(function (t) { t.stop(); }); });
+                    try { ctx.close(); } catch (e) { }
+                    self.recording = false; self.paused = false;
+                    resolve(blob);
+                };
+                try { rec.stop(); } catch (e) { resolve(null); }
+            });
+        };
+        return self;
+    }
+
+    // ---------------------------------------------------------------- minutes
+    var MN_STOP = ('a an the and or but if then than that this these those i you he she it we they me him her us them my your his its our their ' +
+        'is am are was were be been being do does did doing have has had having will would shall should can could may might must ' +
+        'of in on at to for with from by about into over after before between out up down off again further once here there all any both each ' +
+        'few more most other some such no nor not only own same so too very just now also as ok okay yeah yes right well like really actually ' +
+        'kind sort thing things going gonna wanna know think mean say said says one two three').split(' ');
+    var MN_STOPSET = {};
+    for (var mnI = 0; mnI < MN_STOP.length; mnI++) MN_STOPSET[MN_STOP[mnI]] = true;
+
+    var MN_ACTION_RE = /\b(?:i'?ll|we'?ll|you'?ll|he'?ll|she'?ll|they'?ll|i will|we will|you will|will (?:send|share|prepare|draft|review|check|update|schedule|book|follow|set up|write|fix|add|remove|confirm|contact|call|email|deliver|test|deploy|investigate)|let'?s|need to|needs to|have to|has to|should|must|going to|assign(?:ed)? to|action item|takeaway|follow up|follow-up|take care of|own(?:s|er) this|by (?:tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday|end of (?:day|week|month|quarter)|next week|next month))\b/i;
+    var MN_DECISION_RE = /\b(?:we (?:decided|agreed|concluded|settled on|will go with|are going with)|it'?s decided|decision(?: is)?|agreed(?: that| on)?|approved|sign(?:ed)? off|final(?:ised|ized)?(?: decision)?|consensus|we'?re going with|no[- ]go|green ?light)\b/i;
+    var MN_RISK_RE = /\b(?:risk|blocker|blocked|concern|issue|problem|delay(?:ed)?|bug|outage|dependency|depends on|waiting on|escalat(?:e|ion))\b/i;
+    var MN_DEADLINE_RE = /\b(?:by|before|due|on|until)\s+(?:the\s+)?(?:tomorrow|today|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|next month|end of (?:day|week|month|quarter)|q[1-4]|\d{1,2}(?:st|nd|rd|th)?(?:\s+(?:of\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december))?|(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2})\b/i;
+    var MN_FIGURE_RE = /(?:\$\s?\d[\d.,]*\s?(?:k|m|bn|billion|million|thousand)?|\d+(?:[.,]\d+)?\s?%|\b\d{1,3}(?:[.,]\d{3})+\b|\b\d+(?:[.,]\d+)?\s?(?:usd|eur|vnd|gbp|dollars?|euros?|hours?|days?|weeks?|months?|people|users|customers|tickets)\b)/i;
+
+    // Split a transcript segment list into sentences that keep their start time.
+    function mnSentences(segments) {
+        var out = [];
+        for (var i = 0; i < segments.length; i++) {
+            var seg = segments[i];
+            var text = String(seg.text || '').trim();
+            if (!text) continue;
+            var pieces = text.split(/(?<=[.!?])\s+/);
+            if (pieces.length === 1) pieces = text.split(/\s*[.!?]\s+/);
+            // Long run-on clauses hide a second commitment ("I will send X, and Mai
+            // needs to review Y"), so split anything long at a clause boundary too.
+            var split2 = [];
+            for (var z = 0; z < pieces.length; z++) {
+                var piece = pieces[z];
+                if (piece.length > 90) split2 = split2.concat(piece.split(/;\s+|,\s+(?=(?:and|then|also|plus)\s)/));
+                else split2.push(piece);
+            }
+            pieces = split2;
+            var span = Math.max(0.001, (seg.end || seg.start || 0) - (seg.start || 0));
+            var chars = text.length || 1, at = 0;
+            for (var p = 0; p < pieces.length; p++) {
+                var s = pieces[p].trim().replace(/^(?:and|then|also|plus)\s+/i, '');
+                if (!s) continue;
+                s = s.charAt(0).toUpperCase() + s.slice(1);
+                out.push({ text: s, start: (seg.start || 0) + span * (at / chars) });
+                at += pieces[p].length + 1;
+            }
+        }
+        return out;
+    }
+
+    function mnWords(s) {
+        return String(s).toLowerCase().replace(/[^a-z0-9\u00c0-\u024f\s']/g, ' ').split(/\s+/)
+            .filter(function (w) { return w.length > 2 && !MN_STOPSET[w]; });
+    }
+
+    // Ranks sentences by the frequency of their content words (a compact TF scorer),
+    // then returns the top N in the order they were spoken.
+    function mnSummary(sentences, want) {
+        var freq = {}, i, w;
+        for (i = 0; i < sentences.length; i++) {
+            var ws = mnWords(sentences[i].text);
+            for (var k = 0; k < ws.length; k++) { w = ws[k]; freq[w] = (freq[w] || 0) + 1; }
+        }
+        var scored = sentences.map(function (s, idx) {
+            var ws = mnWords(s.text), score = 0;
+            for (var k = 0; k < ws.length; k++) score += freq[ws[k]] || 0;
+            var len = Math.max(4, ws.length);
+            if (len < 5) score = 0;                 // skip "yeah", "sounds good"
+            if (len > 45) score *= 0.7;             // very long runs are usually rambling
+            return { idx: idx, s: s, score: score / Math.sqrt(len) };
+        }).filter(function (x) { return x.score > 0; });
+        scored.sort(function (a, b) { return b.score - a.score; });
+        var picked = scored.slice(0, want);
+        picked.sort(function (a, b) { return a.idx - b.idx; });
+        return picked.map(function (x) { return x.s; });
+    }
+
+    function mnMatches(sentences, re, cap) {
+        var out = [];
+        for (var i = 0; i < sentences.length && out.length < cap; i++) {
+            var s = sentences[i];
+            if (re.test(s.text) && mnWords(s.text).length >= 3) out.push(s);
+        }
+        return out;
+    }
+
+    function mnQuestions(sentences, cap) {
+        var out = [];
+        for (var i = 0; i < sentences.length && out.length < cap; i++) {
+            var t = sentences[i].text;
+            if (/\?\s*$/.test(t) || /^(?:what|why|how|when|where|who|which|do we|does|did|are we|is it|can we|should we|could we|shall we)\b/i.test(t)) {
+                if (mnWords(t).length >= 3) out.push(sentences[i]);
+            }
+        }
+        return out;
+    }
+
+    function mnFigures(sentences, cap) {
+        var out = [];
+        for (var i = 0; i < sentences.length && out.length < cap; i++) {
+            if (MN_FIGURE_RE.test(sentences[i].text)) out.push(sentences[i]);
+        }
+        return out;
+    }
+
+    // Builds the whole minutes object from the transcript segments.
+    function mnBuildMinutes(segments, meta) {
+        var sentences = mnSentences(segments);
+        var actions = mnMatches(sentences, MN_ACTION_RE, 12);
+        var deadlines = [];
+        for (var i = 0; i < actions.length; i++) {
+            var m = actions[i].text.match(MN_DEADLINE_RE);
+            deadlines.push(m ? m[0] : '');
+        }
+        return {
+            meta: meta,
+            summary: mnSummary(sentences, Math.max(3, Math.min(8, Math.round(sentences.length / 12)))),
+            decisions: mnMatches(sentences, MN_DECISION_RE, 8),
+            actions: actions,
+            deadlines: deadlines,
+            risks: mnMatches(sentences, MN_RISK_RE, 6),
+            questions: mnQuestions(sentences, 6),
+            figures: mnFigures(sentences, 6),
+            sentenceCount: sentences.length
+        };
+    }
+
+    function mnMinutesMarkdown(min, segments) {
+        var L = [];
+        L.push('# Meeting notes');
+        L.push('');
+        L.push('- Date: ' + min.meta.date);
+        L.push('- Length: ' + mnClock(min.meta.duration));
+        L.push('- Language: ' + min.meta.language);
+        L.push('- Transcribed in the browser with Whisper base (' + min.meta.device + '), ' + min.sentenceCount + ' sentences');
+        L.push('');
+        function block(title, rows, withDeadline) {
+            L.push('## ' + title);
+            L.push('');
+            if (!rows.length) { L.push('- (nothing detected in the transcript)'); L.push(''); return; }
+            for (var i = 0; i < rows.length; i++) {
+                var extra = withDeadline && min.deadlines[i] ? ' _(' + min.deadlines[i] + ')_' : '';
+                L.push('- [' + mnClock(rows[i].start) + '] ' + rows[i].text + extra);
+            }
+            L.push('');
+        }
+        block('Summary', min.summary);
+        block('Decisions', min.decisions);
+        block('Action items', min.actions, true);
+        block('Risks and blockers', min.risks);
+        block('Open questions', min.questions);
+        block('Figures mentioned', min.figures);
+        L.push('## Full transcript');
+        L.push('');
+        for (var s = 0; s < segments.length; s++) {
+            L.push('**[' + mnClock(segments[s].start) + ']** ' + segments[s].text.trim());
+            L.push('');
+        }
+        return L.join('\n');
+    }
+
+    function mnTranscriptText(segments) {
+        return segments.map(function (s) { return '[' + mnClock(s.start) + '] ' + String(s.text).trim(); }).join('\n');
+    }
+
+    function mnSrt(segments) {
+        return segments.map(function (s, i) {
+            return (i + 1) + '\n' + mnStamp(s.start) + ' --> ' + mnStamp(s.end != null ? s.end : (s.start + 3)) + '\n' + String(s.text).trim() + '\n';
+        }).join('\n');
+    }
+
+    function mnVtt(segments) {
+        return 'WEBVTT\n\n' + segments.map(function (s) {
+            return mnStamp(s.start).replace(',', '.') + ' --> ' + mnStamp(s.end != null ? s.end : (s.start + 3)).replace(',', '.') + '\n' + String(s.text).trim() + '\n';
+        }).join('\n');
+    }
+
+    // ---------------------------------------------------------------- optional WebLLM pass
+    var mnLlm = { promise: null, engine: null };
+    function mnLlmRewrite(min, onStatus) {
+        var prompt = 'You are writing the minutes of a meeting. Use ONLY the facts in the notes below. ' +
+            'Do not invent names, numbers, dates or decisions. Write: a short paragraph of context, ' +
+            'then "Decisions" and "Action items" as bullet lists. Keep it under 250 words.\n\nNOTES:\n' +
+            mnMinutesMarkdown(min, []).slice(0, 6000);
+        if (!mnLlm.promise) {
+            onStatus('Loading the optional language model (one-time download, several hundred MB to a few GB)...');
+            mnLlm.promise = import('https://esm.run/@mlc-ai/web-llm').then(function (webllm) {
+                var engine = new webllm.MLCEngine();
+                engine.setInitProgressCallback(function (p) { onStatus('Language model: ' + (p && p.text ? p.text : 'loading') + '...'); });
+                var list = (webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+                var wanted = 'Llama-3.2-1B-Instruct-q4f16_1-MLC', id = null;
+                for (var i = 0; i < list.length; i++) if (list[i].model_id === wanted) id = wanted;
+                if (!id) {
+                    for (var j = 0; j < list.length; j++) if (/1B|1_5B|1\.5B/i.test(list[j].model_id)) { id = list[j].model_id; break; }
+                }
+                if (!id && list.length) id = list[0].model_id;
+                return engine.reload(id).then(function () { mnLlm.engine = engine; return engine; });
+            });
+        }
+        return mnLlm.promise.then(function (engine) {
+            onStatus('Rewriting the minutes with the language model...');
+            return engine.chat.completions.create({ messages: [{ role: 'user', content: prompt }], temperature: 0.2, max_tokens: 600 });
+        }).then(function (res) {
+            return (res && res.choices && res.choices[0] && res.choices[0].message && res.choices[0].message.content) || '';
+        });
+    }
+
+    // ---------------------------------------------------------------- UI
+    function mnBuild(root) {
+        var wrap = document.createElement('div');
+        wrap.className = 'w3-container';
+        wrap.innerHTML =
+            '<h3 class="w3-text-blue-grey">Meeting notes taker</h3>' +
+            '<div class="w3-row" style="margin:6px 0;">' +
+            '<b>1. Where does the audio come from?</b><br>' +
+            '<label><input type="radio" name="mnSrc" value="mic" checked> Microphone only</label> &nbsp; ' +
+            '<label><input type="radio" name="mnSrc" value="mictab"> Microphone + the audio of a tab or window (Chrome or Edge on a computer)</label> &nbsp; ' +
+            '<label><input type="radio" name="mnSrc" value="file"> Upload a recording I already have</label>' +
+            '</div>' +
+            '<div class="w3-row" style="margin:8px 0;">' +
+            '<b>2. Language</b> <select id="mnLang" class="w3-select w3-border" style="width:auto;display:inline-block;"></select> ' +
+            '<label><input id="mnTranslate" type="checkbox"> Write the transcript in English</label>' +
+            '</div>' +
+            '<div class="w3-row" style="margin:8px 0;">' +
+            '<b>3. Record or pick a file</b><br>' +
+            '<div id="mnRecRow">' +
+            '<button id="mnStart" type="button" class="w3-button w3-green">Start recording</button> ' +
+            '<button id="mnPause" type="button" class="w3-button w3-amber" disabled>Pause</button> ' +
+            '<button id="mnStop" type="button" class="w3-button w3-red" disabled>Stop and transcribe</button> ' +
+            '<span id="mnTimer" style="font-family:monospace;font-size:1.1em;">0:00</span> ' +
+            '<span id="mnLevel" style="display:inline-block;width:120px;height:10px;border:1px solid #bbb;vertical-align:middle;">' +
+            '<span id="mnLevelBar" style="display:block;height:100%;width:0;background:#4caf50;"></span></span>' +
+            '</div>' +
+            '<div id="mnFileRow" style="display:none;">' +
+            '<label class="w3-button w3-light-grey" style="padding:6px 12px;">Choose an audio or video recording' +
+            '<input id="mnFile" type="file" accept="audio/*,video/*,.mp3,.m4a,.wav,.webm,.ogg,.mp4" style="display:none;"></label> ' +
+            '<span id="mnFileInfo" style="color:#555;"></span>' +
+            '</div>' +
+            '</div>' +
+            '<div style="margin:8px 0;">' +
+            '<button id="mnLoad" type="button" class="w3-button w3-blue">Load the speech engine</button> ' +
+            '<button id="mnLlmBtn" type="button" class="w3-button w3-light-grey" style="display:none;">Rewrite the minutes with a language model</button>' +
+            '</div>' +
+            '<div class="outputImgs" style="visibility:visible !important;">' +
+            '<div id="mnStatus" style="min-height:1.2em;color:#555;">Everything runs in this tab. The speech model (about 78 MB) downloads once and is kept in this browser, so later meetings start immediately and work offline.</div>' +
+            '<div id="mnResult" style="display:none;margin-top:10px;">' +
+            '<div style="margin-bottom:6px;">' +
+            '<a id="mnDlMinutes" class="w3-button w3-teal w3-small">Download minutes (.md)</a> ' +
+            '<a id="mnDlTxt" class="w3-button w3-teal w3-small">Transcript (.txt)</a> ' +
+            '<a id="mnDlSrt" class="w3-button w3-teal w3-small">Subtitles (.srt)</a> ' +
+            '<a id="mnDlVtt" class="w3-button w3-teal w3-small">Subtitles (.vtt)</a> ' +
+            '<button id="mnCopy" type="button" class="w3-button w3-light-grey w3-small">Copy minutes</button>' +
+            '</div>' +
+            '<div id="mnMinutes" style="background:#fafafa;border:1px solid #e0e0e0;padding:10px;max-height:420px;overflow:auto;"></div>' +
+            '<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:600;">Full transcript with timecodes</summary>' +
+            '<div id="mnTranscript" style="font-family:monospace;font-size:0.9em;max-height:320px;overflow:auto;padding:8px 0;"></div></details>' +
+            '</div></div>' +
+            '<p style="color:#666;font-size:0.9em;margin-top:10px;">Speech model: OpenAI Whisper base (Apache-2.0), ONNX export served from our asset server and run by ' +
+            '<a href="https://github.com/huggingface/transformers.js" target="_blank" rel="nofollow noopener">transformers.js</a>. ' +
+            'The idea follows the desktop app <a href="https://github.com/Zackriya-Solutions/meetily" target="_blank" rel="nofollow noopener">meetily</a> (MIT); this page is an independent browser build, not a port of it. ' +
+            'Recording other people is your responsibility - ask for consent first.</p>';
+        root.appendChild(wrap);
+
+        var q = function (sel) { return wrap.querySelector(sel); };
+        var status = q('#mnStatus');
+        var rec = null, timerId = null, busy = false, lastMinutes = null, lastSegments = null, urls = [];
+
+        function setStatus(m) { status.textContent = m; }
+        function source() {
+            var r = wrap.querySelector('input[name="mnSrc"]:checked');
+            return r ? r.value : 'mic';
+        }
+
+        q('#mnLang').innerHTML = MN_LANGS.map(function (l) { return '<option value="' + l[0] + '">' + mnEsc(l[1]) + '</option>'; }).join('');
+        try {
+            var prefs = JSON.parse(localStorage.getItem(MN_LS_KEY) || '{}');
+            if (prefs.lang) q('#mnLang').value = prefs.lang;
+        } catch (e) { }
+        q('#mnLang').addEventListener('change', function () {
+            try { localStorage.setItem(MN_LS_KEY, JSON.stringify({ lang: q('#mnLang').value })); } catch (e) { }
+        });
+
+        Array.prototype.forEach.call(wrap.querySelectorAll('input[name="mnSrc"]'), function (r) {
+            r.addEventListener('change', function () {
+                var isFile = source() === 'file';
+                q('#mnRecRow').style.display = isFile ? 'none' : '';
+                q('#mnFileRow').style.display = isFile ? '' : 'none';
+                setStatus(isFile
+                    ? 'Pick an audio or video file. It is read in this tab and never uploaded.'
+                    : (source() === 'mictab'
+                        ? 'When you press Start, the browser asks which tab or window to share - tick "Share tab audio" so the other participants are recorded too.'
+                        : 'When you press Start, the browser asks for microphone access.'));
+            });
+        });
+
+        function ensureEngine() {
+            q('#mnLoad').disabled = true;
+            return mnLoadAsr(setStatus).then(function (asr) {
+                q('#mnLoad').textContent = 'Speech engine ready (' + (mnEngine.device === 'webgpu' ? 'WebGPU' : 'CPU') + ')';
+                setStatus('Speech engine ready, running on ' + (mnEngine.device === 'webgpu' ? 'your GPU' : 'the CPU') + '. The model stays in this browser for next time.');
+                return asr;
+            }, function (err) {
+                q('#mnLoad').disabled = false;
+                setStatus('The speech engine could not start: ' + (err && err.message ? err.message : 'unknown error'));
+                throw err;
+            });
+        }
+        q('#mnLoad').addEventListener('click', function () { ensureEngine().catch(function () { }); });
+
+        function publish(id, text, name, type) {
+            var a = q(id);
+            var url = URL.createObjectURL(new Blob([text], { type: type }));
+            urls.push(url);
+            a.href = url; a.download = name;
+        }
+
+        function render(min, segments) {
+            lastMinutes = min; lastSegments = segments;
+            var md = mnMinutesMarkdown(min, segments);
+            var html = ['<h4 style="margin-top:0;">Meeting notes</h4>',
+                '<p style="color:#555;">' + mnEsc(min.meta.date) + ' &middot; ' + mnClock(min.meta.duration) + ' &middot; ' + mnEsc(min.meta.language) + '</p>'];
+            function sec(title, rows, withDeadline) {
+                html.push('<h5 style="margin-bottom:4px;">' + title + '</h5>');
+                if (!rows.length) { html.push('<p style="color:#888;margin:0 0 8px 0;">Nothing in the transcript matched this section.</p>'); return; }
+                html.push('<ul style="margin:0 0 8px 18px;">');
+                for (var i = 0; i < rows.length; i++) {
+                    var extra = withDeadline && min.deadlines[i] ? ' <i>(' + mnEsc(min.deadlines[i]) + ')</i>' : '';
+                    html.push('<li><span style="color:#777;font-family:monospace;">[' + mnClock(rows[i].start) + ']</span> ' + mnEsc(rows[i].text) + extra + '</li>');
+                }
+                html.push('</ul>');
+            }
+            sec('Summary', min.summary);
+            sec('Decisions', min.decisions);
+            sec('Action items', min.actions, true);
+            sec('Risks and blockers', min.risks);
+            sec('Open questions', min.questions);
+            sec('Figures mentioned', min.figures);
+            q('#mnMinutes').innerHTML = html.join('');
+            q('#mnTranscript').innerHTML = segments.map(function (s) {
+                return '<div><span style="color:#777;">[' + mnClock(s.start) + ']</span> ' + mnEsc(String(s.text).trim()) + '</div>';
+            }).join('');
+            publish('#mnDlMinutes', md, 'meeting-notes.md', 'text/markdown');
+            publish('#mnDlTxt', mnTranscriptText(segments), 'transcript.txt', 'text/plain');
+            publish('#mnDlSrt', mnSrt(segments), 'transcript.srt', 'text/plain');
+            publish('#mnDlVtt', mnVtt(segments), 'transcript.vtt', 'text/vtt');
+            q('#mnResult').style.display = '';
+            q('#mnLlmBtn').style.display = mnEngine.gpuOk ? '' : 'none';
+        }
+
+        function transcribe(blobOrBuffer, seconds) {
+            if (busy) return;
+            busy = true;
+            var lang = q('#mnLang').value, translate = q('#mnTranslate').checked;
+            ensureEngine().then(function (asr) {
+                setStatus('Reading the audio...');
+                return (blobOrBuffer instanceof Blob ? blobOrBuffer.arrayBuffer() : Promise.resolve(blobOrBuffer))
+                    .then(mnDecodeTo16k)
+                    .then(function (audio) {
+                        var mins = (audio.length / 16000 / 60).toFixed(1);
+                        setStatus('Transcribing ' + mins + ' minutes of audio... on the CPU this takes roughly as long as the recording itself.');
+                        var opts = {
+                            chunk_length_s: 30, stride_length_s: 5, return_timestamps: true,
+                            task: translate ? 'translate' : 'transcribe'
+                        };
+                        if (lang !== 'auto') opts.language = lang;
+                        var chunkSeen = 0;
+                        opts.chunk_callback = function () {
+                            chunkSeen++;
+                            var total = Math.max(1, Math.ceil((audio.length / 16000) / 25));
+                            setStatus('Transcribing - chunk ' + Math.min(chunkSeen, total) + ' of about ' + total + '...');
+                        };
+                        return asr(audio, opts).then(function (out) {
+                            var segs = (out.chunks || []).map(function (c) {
+                                return { start: (c.timestamp && c.timestamp[0]) || 0, end: (c.timestamp && c.timestamp[1]), text: c.text };
+                            }).filter(function (s) { return String(s.text).trim(); });
+                            if (!segs.length && out.text) segs = [{ start: 0, end: audio.length / 16000, text: out.text }];
+                            if (!segs.length) throw new Error('no speech was recognised in this audio');
+                            var meta = {
+                                date: new Date().toISOString().slice(0, 10),
+                                duration: seconds || audio.length / 16000,
+                                language: lang === 'auto' ? 'detected automatically' : lang,
+                                device: mnEngine.device === 'webgpu' ? 'WebGPU' : 'CPU'
+                            };
+                            render(mnBuildMinutes(segs, meta), segs);
+                            setStatus('Done: ' + segs.length + ' transcript segments, minutes built from ' + mnBuildMinutes(segs, meta).sentenceCount + ' sentences. Nothing left this browser.');
+                        });
+                    });
+            }).catch(function (err) {
+                if (err) setStatus('Could not finish: ' + (err.message || err));
+            }).then(function () { busy = false; });
+        }
+
+        // ----- recording -----
+        function tick() {
+            if (!rec) return;
+            q('#mnTimer').textContent = mnClock(rec.seconds());
+            var lvl = rec.readLevel();
+            q('#mnLevelBar').style.width = Math.min(100, Math.round(lvl * 140)) + '%';
+        }
+
+        q('#mnStart').addEventListener('click', function () {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                setStatus('This browser cannot record audio (no getUserMedia). Use the upload option instead.');
+                return;
+            }
+            var withTab = source() === 'mictab';
+            rec = mnRecorder();
+            setStatus('Asking for permission...');
+            rec.start(withTab).then(function (info) {
+                q('#mnStart').disabled = true; q('#mnPause').disabled = false; q('#mnStop').disabled = false;
+                timerId = setInterval(tick, 250);
+                setStatus(withTab
+                    ? (info.sharedAudio
+                        ? 'Recording your microphone and the shared tab audio. Press Stop when the meeting ends.'
+                        : 'Recording your microphone only - the share you picked had no audio track, so tick "Share tab audio" next time.')
+                    : 'Recording your microphone. Press Stop when the meeting ends.');
+            }, function (err) {
+                setStatus('Recording could not start: ' + (err && err.message ? err.message : 'permission denied'));
+                rec = null;
+            });
+        });
+
+        q('#mnPause').addEventListener('click', function () {
+            if (!rec) return;
+            if (rec.paused) { rec.resume(); this.textContent = 'Pause'; setStatus('Recording again.'); }
+            else { rec.pause(); this.textContent = 'Resume'; setStatus('Paused - the recording keeps what you already said.'); }
+        });
+
+        q('#mnStop').addEventListener('click', function () {
+            if (!rec) return;
+            var seconds = rec.seconds();
+            q('#mnStart').disabled = false; q('#mnPause').disabled = true; q('#mnStop').disabled = true;
+            q('#mnPause').textContent = 'Pause';
+            if (timerId) { clearInterval(timerId); timerId = null; }
+            setStatus('Finishing the recording...');
+            rec.stop().then(function (blob) {
+                rec = null;
+                if (!blob || !blob.size) { setStatus('The recording came back empty - nothing to transcribe.'); return; }
+                setStatus('Recorded ' + mnClock(seconds) + ' (' + mnMB(blob.size) + '). Transcribing in this tab...');
+                transcribe(blob, seconds);
+            });
+        });
+
+        q('#mnFile').addEventListener('change', function () {
+            var f = this.files && this.files[0];
+            if (!f) return;
+            q('#mnFileInfo').textContent = f.name + ' - ' + mnMB(f.size);
+            setStatus('Reading ' + f.name + ' in this tab...');
+            transcribe(f, null);
+        });
+
+        q('#mnCopy').addEventListener('click', function () {
+            if (!lastMinutes) return;
+            var md = mnMinutesMarkdown(lastMinutes, lastSegments || []);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(md).then(function () { setStatus('Minutes copied to the clipboard.'); },
+                    function () { setStatus('The browser blocked clipboard access - use the download button instead.'); });
+            } else setStatus('This browser has no clipboard API - use the download button instead.');
+        });
+
+        q('#mnLlmBtn').addEventListener('click', function () {
+            if (!lastMinutes) { setStatus('Transcribe a meeting first.'); return; }
+            var btn = this; btn.disabled = true;
+            mnLlmRewrite(lastMinutes, setStatus).then(function (text) {
+                btn.disabled = false;
+                if (!text) { setStatus('The language model returned nothing - the extracted minutes above still stand.'); return; }
+                var box = document.createElement('div');
+                box.style.cssText = 'margin-top:10px;padding:10px;border:1px solid #cfe2ff;background:#f4f8ff;';
+                box.innerHTML = '<h5 style="margin-top:0;">Language-model version</h5><div style="white-space:pre-wrap;">' + mnEsc(text) + '</div>' +
+                    '<p style="color:#777;margin:6px 0 0 0;font-size:0.9em;">Written by a small model running in this tab from the extracted notes. Check it against the transcript before sending it to anyone.</p>';
+                q('#mnMinutes').appendChild(box);
+                setStatus('The language model rewrote the notes. The extracted version above is unchanged.');
+            }, function (err) {
+                btn.disabled = false;
+                setStatus('The optional language model could not run: ' + (err && err.message ? err.message : 'unknown error'));
+            });
+        });
+
+        if (!window.MediaRecorder) {
+            setStatus('This browser cannot record audio (no MediaRecorder). Use the upload option - transcription still works.');
+        }
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('meetingNotesTool');
+        if (!root) return;
+        root.innerHTML = '';
+        mnBuild(root);
+    }
+</script>
