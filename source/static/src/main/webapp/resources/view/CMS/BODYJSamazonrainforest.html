@@ -1,11 +1,24 @@
 <script>
     // 3D scene archetype skeleton (amazon-rainforest) - vendored three.js
-    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
-    // LEAN from the shared t3d* skeleton - ONE scene only (amazon-rainforest).
-    // All geometry is procedural. places-3d cluster, 2026-07-28.
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. places-3d cluster, authored 2026-07-28. DETAILED-TERRAIN
+    // migration 2026-08-29 (prompts/places-3d-detailed-terrain-runbook.md,
+    // River-reach class per runbook 2b): the canopy-relief scene below is the
+    // ORIGINAL schematic scene, unchanged, and stays the first-paint default
+    // view (it needs no network, so it can never render blank). A NEW
+    // Confluence view fetches real Terrarium DEM elevation + Sentinel-2
+    // true-color imagery of the Encontro das Aguas (Meeting of Waters)
+    // confluence near Manaus from the ftol-vm-assets CDN, IndexedDB-caches
+    // it, and becomes selectable via the View button once ready. A CDN
+    // failure leaves the View button on "Canopy relief" and the page works
+    // exactly as before - it never blocks on the network. The 5.5 million sq
+    // km rainforest cannot fit in any single terrain window, so the real view
+    // frames one signature reach honestly (the confluence itself), not the
+    // whole basin - the canopy-relief story stays in the schematic view.
     //
-    // EDUCATIONAL APPROXIMATION, not survey ecology.
-    // Published figures (cross-checked 2026-07-28):
+    // EDUCATIONAL APPROXIMATION for the canopy-relief view, not survey
+    // ecology. The confluence view is real measured elevation + imagery.
+    // Published figures (cross-checked 2026-07-28 / 2026-08-29):
     //   - Rainforest core about 5.5 million sq km across 9 countries (about
     //     60% inside Brazil)
     //   - Main canopy typically 30-45 m tall; emergent trees break through
@@ -15,8 +28,13 @@
     //     209,000 cubic meters per second - roughly a fifth of all river
     //     water reaching the world's oceans
     //   - Home to an estimated one in ten of the world's known species
-    //   - Canopy bands, the emergent-tree markers, and the river channel
-    //     are schematic teaching cues, not a survey map
+    //   - Encontro das Aguas (Meeting of Waters): the black Rio Negro meets
+    //     the sediment-pale Solimoes/Amazon about 20 km from Manaus; the two
+    //     flow side by side for several km before fully mixing. Confluence
+    //     elevation about 7 m above sea level (GeoNames, via Wikidata
+    //     Q656597)
+    //   - Canopy bands, the emergent-tree markers, and the river channel in
+    //     the schematic view are teaching cues, not a survey map
     //
     // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
 
@@ -58,6 +76,52 @@
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSlakevictoria.html /
+    // BODYJSmammothcave.html's t3dPlaces* pattern) - heights.bin (Int16 LE
+    // meters) + texture.jpg (Sentinel-2 true-color), sha256-verified, cached
+    // once per manifest version.
+    var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+    var T3D_PLACES_DB = 'ftol-places3d-assets';
+    function t3dPlacesIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(T3D_PLACES_DB, 1);
+            req.onupgradeneeded = function () {
+                if (!req.result.objectStoreNames.contains('assets')) {
+                    req.result.createObjectStore('assets', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function t3dPlacesIdbGet(key) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function t3dPlacesIdbPut(key, blob) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function t3dPlacesSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
     }
 
     function t3dShell(THREE, host, opts) {
@@ -151,6 +215,12 @@
             return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 }));
         }
 
+        // Canopy view lives in its own group so the Confluence view (real
+        // terrain, added below) can hide it without tearing it down - it is
+        // the CDN-independent fallback per the render-quality contract.
+        var canopyGroup = new THREE.Group();
+        scene.add(canopyGroup);
+
         // Canopy-top relief seen from above: mostly flat basin with a
         // sinuous river light-gap and scattered emergent-tree hummocks
         // pushing above the general canopy ceiling.
@@ -190,7 +260,7 @@
             c.setHex(hex).multiplyScalar(n);
         }
         var terrain = makeTerrain(22, 20, shell.low ? 120 : 190, shell.low ? 110 : 175, height, bandColor);
-        scene.add(terrain);
+        canopyGroup.add(terrain);
 
         // Amazon River ribbon along the same meander used to carve the light-gap.
         var riverPts = [];
@@ -202,7 +272,7 @@
             new THREE.TubeGeometry(new THREE.CatmullRomCurve3(riverPts), 90, 0.16, 6, false),
             new THREE.MeshStandardMaterial({ color: 0x6b5230, roughness: 0.35 })
         );
-        scene.add(river);
+        canopyGroup.add(river);
 
         // Emergent-tree markers: thin cones over the height-bump centers,
         // representing trees that break through the main canopy ceiling.
@@ -215,11 +285,11 @@
             cone.position.set(p2[0], topY, p2[1]);
             emergentGroup.add(cone);
         }
-        scene.add(emergentGroup);
+        canopyGroup.add(emergentGroup);
 
         var emergentOn = true, riverOn = true;
 
-        function panelHtml() {
+        function canopyPanelHtml() {
             return '<h3>Amazon Rainforest: canopy bands from above</h3>' +
                 '<p>A canopy-top relief: understory-to-mid canopy green, denser upper canopy, and bright emergent trees breaking through, with the sediment-brown Amazon River cutting a light-gap across the basin.</p>' +
                 '<table class="w3-table w3-bordered">' +
@@ -231,31 +301,200 @@
                 '<tr><td>River discharge</td><td>about 209,000 cubic meters per second - roughly a fifth of all river water reaching the oceans</td></tr>' +
                 '<tr><td>Biodiversity</td><td>an estimated 1 in 10 of the world\'s known species</td></tr>' +
                 '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the canopy bands, emergent-tree markers, and river channel are procedural teaching cues, not a survey map.</p>';
+                '<p class="t3d-note">Educational relief approximation - the canopy bands, emergent-tree markers, and river channel are procedural teaching cues, not a survey map. Switch to the Confluence view for real measured terrain at the Meeting of Waters.</p>';
         }
 
+        // ---- Confluence view (real terrain, Encontro das Aguas / Meeting of Waters) ----
+        var confGroup = new THREE.Group();
+        confGroup.visible = false;
+        scene.add(confGroup);
+        var view = 'canopy'; // default first paint - CDN-independent
+        var confReady = false, confLoading = false;
+        var confMinH = 0, confMaxH = 0;
+        var VIEW_CAMERA = {
+            canopy: { radius: 22, phi: 1.0, theta: 0.7, targetY: 0.9, minR: 7, maxR: 50 },
+            confluence: { radius: 17, phi: 0.98, theta: 0.5, targetY: 0, minR: 5, maxR: 45 }
+        };
+        function setCamera(preset) {
+            shell.orbit.goalRadius = preset.radius; shell.orbit.goalPhi = preset.phi; shell.orbit.goalTheta = preset.theta;
+            shell.orbit.target.y = preset.targetY; shell.orbit.minR = preset.minR; shell.orbit.maxR = preset.maxR;
+        }
+
+        function confluencePanelHtml() {
+            if (!confReady) {
+                return '<h3>Amazon Rainforest: the Meeting of Waters</h3>' +
+                    '<p>' + (confLoading ? 'Loading real elevation and satellite imagery of the Encontro das Aguas confluence now (one time, then cached).' : 'Real terrain not loaded yet.') + '</p>';
+            }
+            return '<h3>Encontro das Aguas: the Meeting of Waters (real terrain)</h3>' +
+                '<p>This is the confluence near Manaus, Brazil, where the black-water Rio Negro meets the sediment-pale Solimoes (the Amazon\'s upper reach) - real measured elevation and satellite imagery, not a procedural surface. The two rivers run side by side for several km before fully mixing, visible here as a color contrast in the satellite texture, not in the terrain shape - this is a lowland river reach, so relief is gentle, unlike a canyon or peak.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Elevation in this view</td><td>' + Math.round(confMinH) + ' m to ' + Math.round(confMaxH) + ' m</td></tr>' +
+                '<tr><td>Confluence elevation (published)</td><td>about 7 m above sea level</td></tr>' +
+                '<tr><td>Signature feature</td><td>Rio Negro / Solimoes confluence, ~20 km from Manaus</td></tr>' +
+                '<tr><td>Location</td><td>Amazonas, Brazil</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs). Imagery: contains modified Copernicus Sentinel data 2026. Relief is shown at true 1:1 scale relative to the mapped width - no vertical exaggeration; this lowland reach has only tens of meters of true relief; the color contrast in the imagery, not the terrain shape, is what carries the story here. Educational approximation - not survey-grade geodesy.</p>';
+        }
+
+        function panelHtml() { return view === 'confluence' ? confluencePanelHtml() : canopyPanelHtml(); }
+
         function apply() {
+            canopyGroup.visible = (view === 'canopy');
+            confGroup.visible = (view === 'confluence');
             emergentGroup.visible = emergentOn;
             river.visible = riverOn;
             var eb = document.getElementById('t3dParEmergentBtn');
             if (eb) eb.textContent = 'Emergent trees: ' + (emergentOn ? 'On' : 'Off');
             var rb = document.getElementById('t3dParRiverBtn');
             if (rb) rb.textContent = 'River: ' + (riverOn ? 'On' : 'Off');
+            var vb = document.getElementById('t3dParViewBtn');
+            if (vb) vb.textContent = 'View: ' + (view === 'confluence' ? 'Meeting of Waters (real terrain)' : (confLoading ? 'Canopy relief (loading confluence...)' : 'Canopy relief (schematic)'));
             t3dInfo(panelHtml());
-            try { t3dSaveStore({ emergentOn: emergentOn, riverOn: riverOn }); } catch (e) {}
+            try { t3dSaveStore({ emergentOn: emergentOn, riverOn: riverOn, view: view }); } catch (e) {}
+        }
+
+        function setView(next) {
+            if (next === 'confluence' && !confReady) return; // ignore clicks before real terrain has loaded
+            view = next;
+            setCamera(VIEW_CAMERA[view]);
+            apply();
+        }
+
+        // Decimate a row-major Int16 grid to at most maxDim x maxDim cells,
+        // keeping the MAX value per cell (per the runbook: preserve relief
+        // detail, never average it flat).
+        function decimateMax(view2, w, h, maxDim) {
+            var stepX = Math.max(1, Math.ceil(w / maxDim));
+            var stepZ = Math.max(1, Math.ceil(h / maxDim));
+            var ow = Math.floor((w - 1) / stepX) + 1;
+            var oh = Math.floor((h - 1) / stepZ) + 1;
+            var out = new Int16Array(ow * oh);
+            for (var oz = 0; oz < oh; oz++) {
+                var z0 = oz * stepZ;
+                for (var ox = 0; ox < ow; ox++) {
+                    var x0 = ox * stepX, best = -32768;
+                    for (var dz2 = 0; dz2 < stepZ && z0 + dz2 < h; dz2++) {
+                        var rowBase = (z0 + dz2) * w;
+                        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+                            var v = view2[rowBase + x0 + dx];
+                            if (v > best) best = v;
+                        }
+                    }
+                    out[oz * ow + ox] = best;
+                }
+            }
+            return { data: out, w: ow, h: oh };
+        }
+
+        function buildConfluenceMesh(heightsView, grid, texBlob) {
+            var dec = decimateMax(heightsView, grid.width_px, grid.height_px, 220);
+            var W = 20, D = 20;
+            var geo = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+            geo.rotateX(-Math.PI / 2);
+            // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1
+            // vertical proportion relative to the mapped width (no exaggeration).
+            var vertScale = W / (grid.width_px * grid.meters_per_px);
+            var minH = grid.min_h_m, maxH = grid.max_h_m;
+            var pos = geo.attributes.position;
+            var colors = new Float32Array(pos.count * 3), c = new THREE.Color();
+            var low = new THREE.Color(0x6b5636), highc = new THREE.Color(0x3a6b3a);
+            for (var i = 0; i < pos.count; i++) {
+                var ix = i % dec.w, iz = Math.floor(i / dec.w);
+                var hRaw = dec.data[iz * dec.w + ix];
+                // River-void spikes in a lowland-water DEM occasionally decode
+                // far below the real basin range - clamp display height to the
+                // documented 0-100m band so a rare bad pixel cannot spike the
+                // mesh (guard 3: report the raw min/max in the panel, but never
+                // let an outlier distort the rendered relief).
+                var hClamped = Math.max(-5, Math.min(120, hRaw));
+                pos.setY(i, (hClamped - (-5)) * vertScale);
+                var t = Math.max(0, Math.min(1, (hClamped - (-5)) / 125));
+                c.copy(low).lerp(highc, t);
+                colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            var mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+            var mesh = new THREE.Mesh(geo, mat);
+            confGroup.add(mesh);
+            confMinH = minH; confMaxH = maxH;
+            confLoading = false; confReady = true;
+            setView('confluence');
+            t3dStatus('Real confluence terrain loaded (Terrarium DEM + Sentinel-2 imagery). Drag to orbit, scroll to zoom.');
+            if (texBlob) {
+                var texUrl = URL.createObjectURL(texBlob);
+                new THREE.TextureLoader().load(texUrl, function (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    mat.map = tex;
+                    mat.needsUpdate = true;
+                    URL.revokeObjectURL(texUrl);
+                }, undefined, function () { URL.revokeObjectURL(texUrl); });
+            }
+        }
+
+        function fetchPlacesAsset(file, mimeType, verKey) {
+            var key = verKey + ':' + file.file;
+            return t3dPlacesIdbGet(key).then(function (cached) {
+                if (cached) return cached;
+                return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+                    return r.arrayBuffer();
+                }).then(function (buf) {
+                    return t3dPlacesSha256Hex(buf).then(function (hex) {
+                        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+                        var blob = new Blob([buf], { type: mimeType });
+                        t3dPlacesIdbPut(key, blob);
+                        return blob;
+                    });
+                });
+            });
+        }
+
+        function loadRealConfluence() {
+            confLoading = true;
+            apply();
+            fetch(T3D_PLACES_CDN + '/manifest.json').then(function (r) { return r.json(); })
+                .then(function (manifest) {
+                    var asset = manifest && manifest.assets && manifest.assets['amazon-rainforest'];
+                    if (!asset) throw new Error('manifest missing the amazon-rainforest asset');
+                    var heightsFile = null, texFile = null;
+                    (asset.files || []).forEach(function (f) {
+                        if (f.role === 'heightfield') heightsFile = f;
+                        if (f.role === 'satellite-texture') texFile = f;
+                    });
+                    if (!heightsFile) throw new Error('manifest missing the heightfield file');
+                    var verKey = 'amazon-rainforest@' + manifest.version;
+                    var jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+                    if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+                    return Promise.all(jobs).then(function (blobs) {
+                        return blobs[0].arrayBuffer().then(function (buf) {
+                            buildConfluenceMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    confLoading = false;
+                    apply();
+                    t3dStatus('Could not load real confluence terrain (' + (err && err.message ? err.message : err) + ') - showing the canopy-relief view instead.');
+                });
         }
 
         var store = t3dLoadStore();
         if (typeof store.emergentOn === 'boolean') emergentOn = store.emergentOn;
         if (typeof store.riverOn === 'boolean') riverOn = store.riverOn;
+        setCamera(VIEW_CAMERA.canopy);
         apply();
 
         var emergentBtn = document.getElementById('t3dParEmergentBtn');
         if (emergentBtn) emergentBtn.addEventListener('click', function () { emergentOn = !emergentOn; apply(); });
         var riverBtn = document.getElementById('t3dParRiverBtn');
         if (riverBtn) riverBtn.addEventListener('click', function () { riverOn = !riverOn; apply(); });
+        var viewBtn = document.getElementById('t3dParViewBtn');
+        if (viewBtn) viewBtn.addEventListener('click', function () { setView(view === 'confluence' ? 'canopy' : 'confluence'); });
 
         t3dStatus('Drag to orbit, scroll to zoom. Toggle emergent trees or the river.');
+        if ('requestIdleCallback' in window) { requestIdleCallback(loadRealConfluence, { timeout: 4000 }); }
+        else { setTimeout(loadRealConfluence, 800); }
         return function animate(dt) {
             scene.rotation.y += dt * 0.00004;
         };
