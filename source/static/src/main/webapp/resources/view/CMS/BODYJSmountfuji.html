@@ -270,6 +270,11 @@
 
         // ---- Real-terrain progressive upgrade state (filled once loaded) ----
         var realMesh = null, realReady = false, realLoading = false;
+        // 2026-08-29: handles so apply() can switch the real mesh between the
+        // satellite view and the elevation-band view. Turning vertexColors off
+        // (the fix for the black-terrain multiplication) would otherwise make
+        // this page's colour toggle a silent no-op once the texture lands.
+        var realMat = null, realTex = null;
         var realSnowCol = null, realBareCol = null, realMinH = 0, realMaxH = 0;
         // Real snowline placed at the same fractional height (0.618 of the
         // base-to-summit rise) as the procedural SNOW_LINE/CONE_H ratio, so
@@ -311,12 +316,21 @@
             cloudGroup.visible = cloudOn;
             if (realReady && realMesh) {
                 realMesh.geometry.attributes.color.array.set(snowOn ? realSnowCol : realBareCol);
+                // With real imagery loaded the two views are mutually exclusive:
+                // multiplying bands into the texture is what produced black terrain.
+                if (realMat && realTex) {
+                    realMat.map = snowOn ? null : realTex;
+                    realMat.vertexColors = !!snowOn;
+                    realMat.needsUpdate = true;
+                }
                 realMesh.geometry.attributes.color.needsUpdate = true;
             } else {
                 recolor();
             }
             var sb = document.getElementById('t3dFujiSnowBtn');
-            if (sb) sb.textContent = 'Snow cover: ' + (snowOn ? 'On' : 'Off');
+            if (sb) sb.textContent = (realReady && realTex)
+                ? ('View: ' + (snowOn ? 'Elevation bands' : 'Satellite view'))
+                : ('Snow cover: ' + (snowOn ? 'On' : 'Off'));
             var cb = document.getElementById('t3dFujiCloudBtn');
             if (cb) cb.textContent = 'Cloud layer: ' + (cloudOn ? 'On' : 'Off');
             t3dInfo(panelHtml());
@@ -383,6 +397,7 @@
             var mesh2 = new THREE.Mesh(geo2, mat2);
             scene.add(mesh2);
             terrainInfo.mesh.visible = false;
+            realMat = mat2;
             realMesh = mesh2; realSnowCol = snowCol; realBareCol = bareCol;
             realMinH = minH; realMaxH = maxH;
             realLoading = false; realReady = true;
@@ -392,8 +407,18 @@
                 var url = URL.createObjectURL(texBlob);
                 new THREE.TextureLoader().load(url, function (tex) {
                     tex.colorSpace = THREE.SRGBColorSpace;
+                    // 2026-08-29 DEFECT FIX. MeshStandardMaterial MULTIPLIES
+                    // vertexColors by map. Measured on the shipped pages: hypsometric
+                    // vertex luminance 0.39-0.48 x Sentinel-2 TCI 0.09-0.19 = 11-18/255,
+                    // i.e. black - this is the reported "renders bright, then switches to
+                    // dark" moment. Once real imagery is the colour source the
+                    // hypsometric bands must stop multiplying into it.
                     mat2.map = tex;
+                    mat2.vertexColors = false;
+                    mat2.color.setScalar(1);
+                    realTex = tex;
                     mat2.needsUpdate = true;
+                    apply();
                     URL.revokeObjectURL(url);
                 }, undefined, function () { URL.revokeObjectURL(url); });
             }

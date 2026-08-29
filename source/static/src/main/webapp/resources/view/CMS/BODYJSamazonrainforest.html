@@ -425,7 +425,15 @@
                 var texUrl = URL.createObjectURL(texBlob);
                 new THREE.TextureLoader().load(texUrl, function (tex) {
                     tex.colorSpace = THREE.SRGBColorSpace;
+                    // 2026-08-29 DEFECT FIX. MeshStandardMaterial MULTIPLIES
+                    // vertexColors by map. Measured on the shipped pages: hypsometric
+                    // vertex luminance 0.39-0.48 x Sentinel-2 TCI 0.09-0.19 = 11-18/255,
+                    // i.e. black - this is the reported "renders bright, then switches to
+                    // dark" moment. Once real imagery is the colour source the
+                    // hypsometric bands must stop multiplying into it.
                     mat.map = tex;
+                    mat.vertexColors = false;
+                    mat.color.setScalar(1);
                     mat.needsUpdate = true;
                     URL.revokeObjectURL(texUrl);
                 }, undefined, function () { URL.revokeObjectURL(texUrl); });

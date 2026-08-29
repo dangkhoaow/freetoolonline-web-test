@@ -284,6 +284,11 @@
 
         // ---- Real-terrain progressive upgrade state (filled once loaded) ----
         var realMesh = null, realReady = false, realLoading = false;
+        // 2026-08-29: handles so apply() can switch the real mesh between the
+        // satellite view and the layer-accent view. Turning vertexColors off (the
+        // fix for the black-terrain multiplication) would otherwise make this
+        // page's colour toggle a silent no-op once the texture lands.
+        var realMat = null, realTex = null;
         var realWhiteCol = null, realTintCol = null, realMinH = 0, realMaxH = 0;
 
         function panelHtml() {
@@ -319,6 +324,13 @@
         function apply() {
             if (realReady && realMesh) {
                 realMesh.geometry.attributes.color.array.set(accentOn ? realTintCol : realWhiteCol);
+                // With real imagery loaded the two views are mutually exclusive:
+                // multiplying accents into the texture is what produced dark terrain.
+                if (realMat && realTex) {
+                    realMat.map = accentOn ? null : realTex;
+                    realMat.vertexColors = !!accentOn;
+                    realMat.needsUpdate = true;
+                }
                 realMesh.geometry.attributes.color.needsUpdate = true;
             } else {
                 terrain.geometry.attributes.color.array.set(accentOn ? accentColors : normColors);
@@ -326,7 +338,9 @@
                 river.visible = riverOn;
             }
             var lb = document.getElementById('t3dPgcLayersBtn');
-            if (lb) lb.textContent = 'Layer accents: ' + (accentOn ? 'On' : 'Off');
+            if (lb) lb.textContent = (realReady && realTex)
+                ? ('View: ' + (accentOn ? 'Layer accents' : 'Satellite view'))
+                : ('Layer accents: ' + (accentOn ? 'On' : 'Off'));
             var rb = document.getElementById('t3dPgcRiverBtn');
             if (rb) rb.textContent = 'River: ' + (riverOn ? 'On' : 'Off');
             t3dInfo(panelHtml());
@@ -388,6 +402,7 @@
             scene.add(mesh2);
             terrain.visible = false;
             river.visible = false;
+            realMat = mat2;
             realMesh = mesh2; realWhiteCol = whiteCol; realTintCol = tintCol;
             realMinH = minH; realMaxH = maxH;
             realLoading = false; realReady = true;
@@ -397,8 +412,18 @@
                 var url = URL.createObjectURL(texBlob);
                 new THREE.TextureLoader().load(url, function (tex) {
                     tex.colorSpace = THREE.SRGBColorSpace;
+                    // 2026-08-29 DEFECT FIX. MeshStandardMaterial MULTIPLIES
+                    // vertexColors by map. Measured on the shipped pages: hypsometric
+                    // vertex luminance 0.39-0.48 x Sentinel-2 TCI 0.09-0.19 = 11-18/255,
+                    // i.e. black - this is the reported "renders bright, then switches to
+                    // dark" moment. Once real imagery is the colour source the
+                    // hypsometric bands must stop multiplying into it.
                     mat2.map = tex;
+                    mat2.vertexColors = false;
+                    mat2.color.setScalar(1);
+                    realTex = tex;
                     mat2.needsUpdate = true;
+                    apply();
                     URL.revokeObjectURL(url);
                 }, undefined, function () { URL.revokeObjectURL(url); });
             }
