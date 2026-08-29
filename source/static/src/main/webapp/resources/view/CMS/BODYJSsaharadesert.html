@@ -1,5 +1,99 @@
 <script type="module">
+// DETAILED-TERRAIN migration 2026-08-30 (prompts/places-3d-detailed-terrain-runbook.md,
+// Desert/dunefield class per runbook 2b): the procedural dune-noise scene
+// below is the ORIGINAL schematic scene, unchanged, and stays the first-paint
+// default view (needs no network, can never render blank). A NEW "Real dune
+// terrain" view fetches real Terrarium DEM elevation + Sentinel-2 true-color
+// imagery of Erg Chebbi (the Sahara's most-visited dune sea, near Merzouga,
+// Morocco) from the ftol-vm-assets CDN, IndexedDB-caches it, and becomes
+// selectable via the View button once ready. A CDN failure leaves the View
+// button on "Procedural dunes" and the page works exactly as before - it
+// never blocks on the network.
 import * as THREE from '/vendor/three/three.module.min.js';
+
+var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+var T3D_PLACES_DB = 'ftol-places3d-assets';
+var T3D_PLACES_SLUG = 'sahara-desert';
+function t3dPlacesIdbOpen() {
+  return new Promise(function (resolve, reject) {
+    var req = indexedDB.open(T3D_PLACES_DB, 1);
+    req.onupgradeneeded = function () {
+      if (!req.result.objectStoreNames.contains('assets')) {
+        req.result.createObjectStore('assets', { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = function () { resolve(req.result); };
+    req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+  });
+}
+function t3dPlacesIdbGet(key) {
+  return t3dPlacesIdbOpen().then(function (db) {
+    return new Promise(function (resolve) {
+      var tx = db.transaction('assets', 'readonly');
+      var rq = tx.objectStore('assets').get(key);
+      rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+      rq.onerror = function () { resolve(null); };
+    });
+  }).catch(function () { return null; });
+}
+function t3dPlacesIdbPut(key, blob) {
+  return t3dPlacesIdbOpen().then(function (db) {
+    return new Promise(function (resolve) {
+      var tx = db.transaction('assets', 'readwrite');
+      tx.objectStore('assets').put({ key: key, blob: blob });
+      tx.oncomplete = function () { resolve(true); };
+      tx.onerror = function () { resolve(false); };
+    });
+  }).catch(function () { return false; });
+}
+function t3dPlacesSha256Hex(buf) {
+  return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+    var b = new Uint8Array(hash), hex = '';
+    for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+    return hex;
+  });
+}
+function t3dFetchPlacesAsset(file, mimeType, verKey) {
+  var key = verKey + ':' + file.file;
+  return t3dPlacesIdbGet(key).then(function (cached) {
+    if (cached) return cached;
+    return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+      return r.arrayBuffer();
+    }).then(function (buf) {
+      return t3dPlacesSha256Hex(buf).then(function (hex) {
+        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+        var blob = new Blob([buf], { type: mimeType });
+        t3dPlacesIdbPut(key, blob);
+        return blob;
+      });
+    });
+  });
+}
+// Decimate a row-major Int16 grid to at most maxDim x maxDim cells, keeping
+// the MAX value per cell (preserve relief - never average dune crests flat).
+function t3dDecimateMax(view, w, h, maxDim) {
+  var stepX = Math.max(1, Math.ceil(w / maxDim));
+  var stepZ = Math.max(1, Math.ceil(h / maxDim));
+  var ow = Math.floor((w - 1) / stepX) + 1;
+  var oh = Math.floor((h - 1) / stepZ) + 1;
+  var out = new Int16Array(ow * oh);
+  for (var oz = 0; oz < oh; oz++) {
+    var z0 = oz * stepZ;
+    for (var ox = 0; ox < ow; ox++) {
+      var x0 = ox * stepX, best = -32768;
+      for (var dz2 = 0; dz2 < stepZ && z0 + dz2 < h; dz2++) {
+        var rowBase = (z0 + dz2) * w;
+        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+          var v = view[rowBase + x0 + dx];
+          if (v > best) best = v;
+        }
+      }
+      out[oz * ow + ox] = best;
+    }
+  }
+  return { data: out, w: ow, h: oh };
+}
 
 const SCENE_CONFIG = {
   DUNE_SEA_SIZE: 80,
@@ -112,11 +206,16 @@ async function runScene() {
 
   const mat = new THREE.MeshPhongMaterial({ vertexColors: true, emissive: 0x000000 });
   const mesh = new THREE.Mesh(terrainGeo, mat);
-  scene.add(mesh);
 
   const meshAlt = new THREE.Mesh(terrainGeoAlt, mat);
   meshAlt.visible = false;
-  scene.add(meshAlt);
+
+  // Procedural scene lives in its own group so the "Real dune terrain" view
+  // (added below) can hide it without tearing it down - it is the
+  // CDN-independent fallback per the render-quality contract.
+  const proceduralGroup = new THREE.Group();
+  proceduralGroup.add(mesh, meshAlt);
+  scene.add(proceduralGroup);
 
   // Caravan markers
   const caravanGroup = new THREE.Group();
@@ -137,8 +236,121 @@ async function runScene() {
     ring.rotateX(Math.PI / 2.4);
     caravanGroup.add(ring);
   }
-  scene.add(caravanGroup);
+  proceduralGroup.add(caravanGroup);
   caravanGroup.visible = true;
+
+  // ---- Real dune terrain (Erg Chebbi, Merzouga, Morocco) ----
+  const realGroup = new THREE.Group();
+  realGroup.visible = false;
+  scene.add(realGroup);
+  let view = 'procedural'; // default first paint - CDN-independent
+  let realReady = false, realLoading = false;
+  let realMinH = 0, realMaxH = 0;
+
+  function infoPanelHtml() {
+    if (view === 'real') {
+      if (!realReady) {
+        return '<p class="w3-small"><i>' + (realLoading ? 'Loading real elevation and satellite imagery of Erg Chebbi now (one time, then cached).' : 'Real terrain not loaded yet.') + '</i></p>';
+      }
+      return '<p class="w3-small"><b>This is Erg Chebbi</b>, the Sahara\'s most-visited dune sea near Merzouga, Morocco - real measured elevation' + (window.__t3dSaharaHasTex ? ' and satellite imagery' : '') + ', not a procedural surface.</p>' +
+        '<p class="w3-small"><b>Elevation in this view:</b> ' + Math.round(realMinH) + ' m to ' + Math.round(realMaxH) + ' m ASL (dune crests roughly ' + Math.round(realMaxH - realMinH) + ' m above the surrounding base)</p>' +
+        '<p class="w3-small">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs).' + (window.__t3dSaharaHasTex ? ' Imagery: contains modified Copernicus Sentinel data.' : '') + ' Relief shown at true 1:1 scale relative to the mapped width - no vertical exaggeration.</p>' +
+        '<p class="w3-small"><i>Educational approximation - not survey-grade geodesy. Switch back to Procedural dunes for the temperature-color / caravan teaching view.</i></p>';
+    }
+    return '<p class="w3-small"><i>Educational approximation - schematic teaching cues, not survey topography.</i></p>' +
+      '<p class="w3-small"><b>This 3D explorer is a procedurally generated visualization</b> showing a representative sand-dune landscape of the Sahara Desert. All figures are rounded to commonly cited values.</p>';
+  }
+  function updateInfoPanel() {
+    const el = document.getElementById('t3dInfoPanel');
+    if (el) el.innerHTML = infoPanelHtml();
+    const vb = document.getElementById('t3dViewBtn');
+    if (vb) vb.textContent = 'View: ' + (view === 'real' ? 'Real dune terrain (Erg Chebbi)' : (realLoading ? 'Procedural dunes (loading real terrain...)' : 'Procedural dunes (schematic)'));
+  }
+  function setView(next) {
+    if (next === 'real' && !realReady) return; // ignore clicks before real terrain has loaded
+    view = next;
+    proceduralGroup.visible = (view === 'procedural');
+    realGroup.visible = (view === 'real');
+    updateInfoPanel();
+  }
+
+  function buildRealMesh(heightsView, grid, texBlob) {
+    const dec = t3dDecimateMax(heightsView, grid.width_px, grid.height_px, 220);
+    const W = SCENE_CONFIG.DUNE_SEA_SIZE, D = SCENE_CONFIG.DUNE_SEA_SIZE;
+    const geo = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+    // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1 vertical
+    // proportion relative to the mapped width (no exaggeration).
+    const vertScale = W / (grid.width_px * grid.meters_per_px);
+    const minH = grid.min_h_m, maxH = grid.max_h_m;
+    const pos = geo.attributes.position;
+    const colors = new Float32Array(pos.count * 3);
+    const base = new THREE.Color(0xd4a574), crest = new THREE.Color(0xf0c988);
+    const c = new THREE.Color();
+    for (let i = 0; i < pos.count; i++) {
+      const ix = i % dec.w, iz = Math.floor(i / dec.w);
+      const hRaw = dec.data[iz * dec.w + ix];
+      pos.setZ(i, (hRaw - minH) * vertScale);
+      const t = (hRaw - minH) / Math.max(1, maxH - minH);
+      c.copy(base).lerp(crest, t);
+      colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geo.computeVertexNormals();
+    const realMat = new THREE.MeshPhongMaterial({ vertexColors: true, emissive: 0x000000 });
+    const realMesh = new THREE.Mesh(geo, realMat);
+    realGroup.add(realMesh);
+    realMinH = minH; realMaxH = maxH;
+    realLoading = false; realReady = true;
+    window.__t3dSaharaHasTex = !!texBlob;
+    setView('real');
+    const status = document.getElementById('t3dStatus');
+    if (status) status.textContent = 'Real Erg Chebbi dune terrain loaded (Terrarium DEM' + (texBlob ? ' + Sentinel-2 imagery' : '') + '). Drag to orbit, scroll to zoom.';
+    if (texBlob) {
+      const texUrl = URL.createObjectURL(texBlob);
+      new THREE.TextureLoader().load(texUrl, function (tex) {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        // 2026-08-29 defect: MeshPhongMaterial/MeshStandardMaterial MULTIPLIES
+        // vertexColors by map - once real imagery is the colour source the
+        // hypsometric bands must stop multiplying into it.
+        realMat.map = tex;
+        realMat.vertexColors = false;
+        realMat.color.setScalar(1);
+        realMat.needsUpdate = true;
+        URL.revokeObjectURL(texUrl);
+        updateInfoPanel();
+      }, undefined, function () { URL.revokeObjectURL(texUrl); });
+    }
+  }
+
+  function loadRealDunes() {
+    realLoading = true;
+    updateInfoPanel();
+    fetch(T3D_PLACES_CDN + '/manifest.json').then((r) => r.json())
+      .then((manifest) => {
+        const asset = manifest && manifest.assets && manifest.assets[T3D_PLACES_SLUG];
+        if (!asset) throw new Error('manifest missing the ' + T3D_PLACES_SLUG + ' asset');
+        let heightsFile = null, texFile = null;
+        (asset.files || []).forEach((f) => {
+          if (f.role === 'heightfield') heightsFile = f;
+          if (f.role === 'satellite-texture') texFile = f;
+        });
+        if (!heightsFile) throw new Error('manifest missing the heightfield file');
+        const verKey = T3D_PLACES_SLUG + '@' + manifest.version;
+        const jobs = [t3dFetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+        if (texFile) jobs.push(t3dFetchPlacesAsset(texFile, 'image/jpeg', verKey));
+        return Promise.all(jobs).then((blobs) => {
+          return blobs[0].arrayBuffer().then((buf) => {
+            buildRealMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+          });
+        });
+      })
+      .catch((err) => {
+        realLoading = false;
+        updateInfoPanel();
+        const status = document.getElementById('t3dStatus');
+        if (status) status.textContent = 'Could not load real Erg Chebbi terrain (' + (err && err.message ? err.message : err) + ') - showing the procedural dunes instead.';
+      });
+  }
 
   // Event listeners
   document.getElementById('t3dToggleTempColor')?.addEventListener('change', (e) => {
@@ -149,6 +361,14 @@ async function runScene() {
   document.getElementById('t3dToggleCaravans')?.addEventListener('change', (e) => {
     caravanGroup.visible = e.target.checked;
   });
+
+  document.getElementById('t3dViewBtn')?.addEventListener('click', () => {
+    setView(view === 'real' ? 'procedural' : 'real');
+  });
+
+  updateInfoPanel();
+  if ('requestIdleCallback' in window) { requestIdleCallback(loadRealDunes, { timeout: 4000 }); }
+  else { setTimeout(loadRealDunes, 800); }
 
   // Camera orbit
   let targetY = 8, theta = 0.8, phi = 0.75, radius = 50;
