@@ -1,12 +1,21 @@
 <script>
     // 3D scene archetype skeleton (iguazu-falls) - vendored three.js
-    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
-    // LEAN from the shared t3d* skeleton - ONE scene only (iguazu-falls).
-    // All geometry is procedural. places-3d cluster fire 2026-07-27.
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (iguazu-falls). places-3d cluster fire 2026-07-27; DETAILED-TERRAIN
+    // migration 2026-08-29 (prompts/places-3d-detailed-terrain-runbook.md):
+    // the procedural escarpment below renders FIRST (unchanged, G16 render-only
+    // pass + CDN-outage fallback), then async fetches real Terrarium DEM
+    // elevation + Sentinel-2 true-color imagery from the ftol-vm-assets CDN,
+    // IndexedDB-caches it, and swaps it in in-place once ready. A CDN failure
+    // or slow network leaves the procedural relief on screen - it never blanks.
     //
-    // EDUCATIONAL APPROXIMATION, not survey hydrology. Vertical relief is
-    // exaggerated for visibility (the real drop is small relative to the
-    // 2.7 km crescent width).
+    // EDUCATIONAL APPROXIMATION, not survey hydrology. On the REAL mesh the
+    // relief is shown at true 1:1 scale relative to the mapped width: the
+    // falls' 60-82 m drop is genuinely small next to the ~12 km window, so the
+    // Sentinel-2 satellite texture (the two-tone river, the crescent falls
+    // line, the forest either side) carries the visual story - the terrain
+    // shape reads as gentle plateau + incised gorge, which is honest.
     // Published figures (UNESCO / Parques Nacionales Argentina / Cataratas do
     // Iguacu consensus, cross-checked 2026-07-27):
     //   - About 275 individual falls and cascades (roughly 150-300 with
@@ -20,7 +29,8 @@
     //     National Park (Argentina) and Iguacu National Park (Brazil) are
     //     both UNESCO World Heritage Sites (1984 / 1986); New7Wonders of
     //     Nature (2011)
-    //   - Formed on a basalt plateau, since carved back by the river
+    //   - Formed on a basalt plateau, since carved back by the river; the
+    //     falls sit at about 150 m ASL, the lower gorge below at about 90 m ASL
     //
     // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
 
@@ -62,6 +72,52 @@
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSmountfuji.html /
+    // BODYJSgrandcanyon.html's t3dPlaces* pattern) - heights.bin (Int16 LE
+    // meters) + texture.jpg (Sentinel-2 true-color), sha256-verified, cached
+    // once per manifest version.
+    var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+    var T3D_PLACES_DB = 'ftol-places3d-assets';
+    function t3dPlacesIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(T3D_PLACES_DB, 1);
+            req.onupgradeneeded = function () {
+                if (!req.result.objectStoreNames.contains('assets')) {
+                    req.result.createObjectStore('assets', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function t3dPlacesIdbGet(key) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function t3dPlacesIdbPut(key, blob) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function t3dPlacesSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
     }
 
     function t3dShell(THREE, host, opts) {
@@ -231,8 +287,14 @@
             c.multiplyScalar(n);
         }
 
+        // Procedural relief group (first paint + CDN-outage fallback). Wrapped
+        // so the whole schematic can be hidden in one call when the real mesh
+        // is ready.
+        var procGroup = new THREE.Group();
+        scene.add(procGroup);
+
         var terrain = makeTerrain(22, 20, shell.low ? 120 : 190, shell.low ? 110 : 175, height, function (c, h, x, z) { bandColor(c, h, x, z, false); });
-        scene.add(terrain);
+        procGroup.add(terrain);
         var normColors = terrain.geometry.attributes.color.array.slice();
         var throatColors = (function () {
             var pos = terrain.geometry.attributes.position, col = new THREE.Color();
@@ -254,7 +316,7 @@
             new THREE.TubeGeometry(new THREE.CatmullRomCurve3(riverPts), 60, 0.12, 6, false),
             new THREE.MeshStandardMaterial({ color: 0x2f8f7a, roughness: 0.3 })
         );
-        scene.add(river);
+        procGroup.add(river);
 
         // Gorge pool below the falls - two precomputed meshes swapped by
         // visibility for average vs flood flow (no geometry rebuild per click).
@@ -264,7 +326,7 @@
         );
         poolAvg.rotation.x = -Math.PI / 2;
         poolAvg.position.set(throatX * 1.35, RIM - DROP + 0.04, throatZ * 1.15 + 2.4);
-        scene.add(poolAvg);
+        procGroup.add(poolAvg);
         var poolFlood = new THREE.Mesh(
             new THREE.CircleGeometry(1.9, 36),
             new THREE.MeshStandardMaterial({ color: 0xa9d6cb, roughness: 0.25, transparent: true, opacity: 0.7 })
@@ -272,7 +334,7 @@
         poolFlood.rotation.x = -Math.PI / 2;
         poolFlood.position.set(throatX * 1.3, RIM - DROP + 0.10, throatZ * 1.1 + 2.2);
         poolFlood.visible = false;
-        scene.add(poolFlood);
+        procGroup.add(poolFlood);
 
         // Devil's Throat mist plume
         var mist = new THREE.Mesh(
@@ -281,10 +343,33 @@
         );
         mist.position.set(throatX * 1.1, RIM - DROP * 0.55, throatZ * 1.05 + 1.6);
         mist.visible = false;
-        scene.add(mist);
+        procGroup.add(mist);
+
+        // ---- Real-terrain progressive upgrade state (filled once loaded) ----
+        var realMesh = null, realReady = false, realLoading = false, realMat = null;
+        var realE = null;         // per-vertex normalized elevation [0..1]
+        var realMinH = 0, realMaxH = 0, realGorgeH = 0;
+        // Display floor for the height clamp: the lower gorge sits at ~79-90 m
+        // ASL; clamp below 60 m so a rare Terrarium void pixel (large-river
+        // artifact) cannot spike the mesh downward (mirrors amazon-rainforest).
+        var REAL_DISP_FLOOR_M = 60;
 
         var throatOn = true, floodOn = true;
+
         function panelHtml() {
+            if (realReady) {
+                return '<h3>Iguazu Falls: real elevation + satellite imagery</h3>' +
+                    '<p>This relief now shows the actual measured shape of the Iguazu River crossing the basalt Parana Plateau and dropping into the gorge - real elevation and Sentinel-2 satellite imagery, not a procedural escarpment. The drop is small next to the 12 km view, so the two-tone river and the crescent falls line in the imagery carry the scene; the Devil\'s Throat marker highlights the low gorge channel where the water plunges.</p>' +
+                    '<table class="w3-table w3-bordered">' +
+                    '<tr><td>Number of individual falls</td><td>about 275, varying from roughly 150 to 300 with water level</td></tr>' +
+                    '<tr><td>Total width</td><td>about 2.7 km, in a crescent shape</td></tr>' +
+                    '<tr><td>Maximum height</td><td>about 82 m, at the Devil\'s Throat</td></tr>' +
+                    '<tr><td>Falls crest / lower gorge (this view)</td><td>about ' + Math.round(realGorgeH) + ' m ASL in the gorge, up to ' + Math.round(realMaxH) + ' m on the plateau</td></tr>' +
+                    '<tr><td>Average flow rate</td><td>about 1,746 cubic m per second</td></tr>' +
+                    '<tr><td>Flow range</td><td>a few hundred cubic m per second (dry season) to over 12,000 (flood peaks)</td></tr>' +
+                    '</table>' +
+                    '<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs). Imagery: contains modified Copernicus Sentinel data 2026. Relief is shown at true 1:1 scale relative to the mapped width - no vertical exaggeration, so the falls\' 60-82 m drop reads as a subtle step. The falling water, mist, and pool are schematic teaching cues, not survey hydrology.</p>';
+            }
             return '<h3>Iguazu Falls: a crescent of about 275 cascades</h3>' +
                 '<p>A relief of the basalt plateau ending at a curved, scalloped escarpment - each notch stands in for a cluster of cascades - with the Devil\'s Throat cut back deepest where several channels converge, and the river pooling below.</p>' +
                 '<table class="w3-table w3-bordered">' +
@@ -295,21 +380,171 @@
                 '<tr><td>Average flow rate</td><td>about 1,746 cubic m per second</td></tr>' +
                 '<tr><td>Flow range</td><td>a few hundred cubic m per second (dry season) to over 12,000 (flood peaks)</td></tr>' +
                 '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the cliff profile, crescent shape, and vertical scale are schematic teaching cues, not survey data.</p>';
+                '<p class="t3d-note">' + (realLoading
+                    ? 'Loading real elevation and satellite imagery now (one time, then cached) - this procedural escarpment is a teaching placeholder while it downloads.'
+                    : 'Educational relief approximation - the cliff profile, crescent shape, and vertical scale are schematic teaching cues, not survey data.') + '</p>';
         }
+
+        // Recolor the REAL mesh from the precomputed normalized-elevation array
+        // (no geometry rebuild). The Devil's Throat marker tints the low gorge
+        // channel; the flow toggle widens + brightens that band for the flood
+        // season, dims + narrows it for the dry season. When the marker is off,
+        // vertex colors stay near-white so the Sentinel-2 texture shows plainly.
+        function recolorReal() {
+            if (!realMesh || !realE) return;
+            var colors = realMesh.geometry.attributes.color, c = new THREE.Color();
+            var band = floodOn ? 0.34 : 0.20;
+            var teal = new THREE.Color(floodOn ? 0x8fe0d6 : 0x3f9f92);
+            var strength = floodOn ? 0.85 : 0.6;
+            for (var i = 0; i < realE.length; i++) {
+                c.setRGB(1, 1, 1);
+                if (throatOn && realE[i] < band) {
+                    var k = (1 - realE[i] / band) * strength;
+                    c.lerp(teal, Math.max(0, Math.min(1, k)));
+                }
+                colors.setXYZ(i, c.r, c.g, c.b);
+            }
+            colors.needsUpdate = true;
+        }
+
         function apply() {
-            terrain.geometry.attributes.color.array.set(throatOn ? throatColors : normColors);
-            terrain.geometry.attributes.color.needsUpdate = true;
-            mist.visible = throatOn;
-            poolAvg.visible = !floodOn;
-            poolFlood.visible = floodOn;
-            river.material.color.set(floodOn ? 0x7fd6c4 : 0x2f8f7a);
+            if (realReady && realMesh) {
+                recolorReal();
+            } else {
+                terrain.geometry.attributes.color.array.set(throatOn ? throatColors : normColors);
+                terrain.geometry.attributes.color.needsUpdate = true;
+                mist.visible = throatOn;
+                poolAvg.visible = !floodOn;
+                poolFlood.visible = floodOn;
+                river.material.color.set(floodOn ? 0x7fd6c4 : 0x2f8f7a);
+            }
             var tb = document.getElementById('t3dPifThroatBtn');
             if (tb) tb.textContent = "Devil's Throat marker: " + (throatOn ? 'On' : 'Off');
             var fb = document.getElementById('t3dPifFlowBtn');
             if (fb) fb.textContent = 'Flow: ' + (floodOn ? 'Flood season' : 'Dry season');
             t3dInfo(panelHtml());
             try { t3dSaveStore({ throatOn: throatOn, floodOn: floodOn }); } catch (e) {}
+        }
+
+        // Decimate a row-major Int16 grid to at most maxDim x maxDim cells,
+        // keeping the MIN valid value per cell so the gorge/river channel (the
+        // signature drop) survives rather than being averaged away by the
+        // surrounding plateau. Void pixels (< -500 m) are ignored.
+        function decimateMin(view, w, h, maxDim) {
+            var stepX = Math.max(1, Math.ceil(w / maxDim));
+            var stepZ = Math.max(1, Math.ceil(h / maxDim));
+            var ow = Math.floor((w - 1) / stepX) + 1;
+            var oh = Math.floor((h - 1) / stepZ) + 1;
+            var out = new Int16Array(ow * oh);
+            for (var oz = 0; oz < oh; oz++) {
+                var z0 = oz * stepZ;
+                for (var ox = 0; ox < ow; ox++) {
+                    var x0 = ox * stepX, best = 32767, any = false;
+                    for (var dz2 = 0; dz2 < stepZ && z0 + dz2 < h; dz2++) {
+                        var rowBase = (z0 + dz2) * w;
+                        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+                            var v = view[rowBase + x0 + dx];
+                            if (v < -500) continue;
+                            if (v < best) best = v;
+                            any = true;
+                        }
+                    }
+                    out[oz * ow + ox] = any ? best : 0;
+                }
+            }
+            return { data: out, w: ow, h: oh };
+        }
+
+        function buildRealMesh(view, grid, texBlob) {
+            var dec = decimateMin(view, grid.width_px, grid.height_px, 220);
+            var W = 22, D = 20; // same footprint as the procedural escarpment above
+            var geo2 = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+            geo2.rotateX(-Math.PI / 2);
+            // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1
+            // vertical proportion relative to the mapped width (no exaggeration).
+            var vertScale = W / (grid.width_px * grid.meters_per_px);
+            var floor = REAL_DISP_FLOOR_M;
+            var maxH = grid.max_h_m;
+            var pos2 = geo2.attributes.position;
+            realE = new Float32Array(pos2.count);
+            var span = Math.max(1, maxH - floor);
+            var gorge = 32767;
+            for (var i = 0; i < pos2.count; i++) {
+                var ix = i % dec.w, iz = Math.floor(i / dec.w);
+                var hRaw = dec.data[iz * dec.w + ix];
+                var hClamped = Math.max(floor, hRaw);
+                pos2.setY(i, (hClamped - floor) * vertScale);
+                realE[i] = Math.max(0, Math.min(1, (hClamped - floor) / span));
+                if (hClamped < gorge) gorge = hClamped;
+            }
+            geo2.setAttribute('color', new THREE.BufferAttribute(new Float32Array(pos2.count * 3).fill(1), 3));
+            geo2.computeVertexNormals();
+            realMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+            realMesh = new THREE.Mesh(geo2, realMat);
+            scene.add(realMesh);
+            procGroup.visible = false;
+            realMinH = floor; realMaxH = maxH; realGorgeH = gorge;
+            realLoading = false; realReady = true;
+            // Nudge the orbit target up to the (all-positive) real mesh band.
+            if (shell.orbit) { shell.orbit.target.y = 0.15; }
+            apply();
+            t3dStatus('Real terrain loaded (Terrarium DEM + Sentinel-2 imagery). Drag to orbit, scroll to zoom.');
+            if (texBlob) {
+                var url = URL.createObjectURL(texBlob);
+                new THREE.TextureLoader().load(url, function (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    realMat.map = tex;
+                    realMat.needsUpdate = true;
+                    URL.revokeObjectURL(url);
+                }, undefined, function () { URL.revokeObjectURL(url); });
+            }
+        }
+
+        function fetchPlacesAsset(file, mimeType, verKey) {
+            var key = verKey + ':' + file.file;
+            return t3dPlacesIdbGet(key).then(function (cached) {
+                if (cached) return cached;
+                return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+                    return r.arrayBuffer();
+                }).then(function (buf) {
+                    return t3dPlacesSha256Hex(buf).then(function (hex) {
+                        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+                        var blob = new Blob([buf], { type: mimeType });
+                        t3dPlacesIdbPut(key, blob);
+                        return blob;
+                    });
+                });
+            });
+        }
+
+        function loadRealTerrain() {
+            realLoading = true;
+            apply();
+            fetch(T3D_PLACES_CDN + '/manifest.json').then(function (r) { return r.json(); })
+                .then(function (manifest) {
+                    var asset = manifest && manifest.assets && manifest.assets['iguazu-falls'];
+                    if (!asset) throw new Error('manifest missing the iguazu-falls asset');
+                    var heightsFile = null, texFile = null;
+                    (asset.files || []).forEach(function (f) {
+                        if (f.role === 'heightfield') heightsFile = f;
+                        if (f.role === 'satellite-texture') texFile = f;
+                    });
+                    if (!heightsFile) throw new Error('manifest missing the heightfield file');
+                    var verKey = 'iguazu-falls@' + manifest.version;
+                    var jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+                    if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+                    return Promise.all(jobs).then(function (blobs) {
+                        return blobs[0].arrayBuffer().then(function (buf) {
+                            buildRealMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    realLoading = false;
+                    apply();
+                    t3dStatus('Could not load real terrain data (' + (err && err.message ? err.message : err) + ') - showing the procedural escarpment instead.');
+                });
         }
 
         var store = t3dLoadStore();
@@ -323,6 +558,8 @@
         if (flowBtn) flowBtn.addEventListener('click', function () { floodOn = !floodOn; apply(); });
 
         t3dStatus('Drag to orbit, scroll to zoom. Toggle Devil\'s Throat or the flow.');
+        if ('requestIdleCallback' in window) { requestIdleCallback(loadRealTerrain, { timeout: 4000 }); }
+        else { setTimeout(loadRealTerrain, 800); }
         return function animate(dt) {
             scene.rotation.y += dt * 0.00004;
         };
