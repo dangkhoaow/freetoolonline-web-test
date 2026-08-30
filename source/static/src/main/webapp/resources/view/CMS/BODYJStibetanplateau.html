@@ -2,7 +2,12 @@
     // 3D scene archetype skeleton (tibetan-plateau) - vendored three.js
     // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
     // LEAN from the shared t3d* skeleton - ONE scene only (tibetan-plateau).
-    // All geometry is procedural. places-3d cluster, fresh author 2026-07-29.
+    // places-3d cluster, fresh author 2026-07-29. DETAILED-TERRAIN migration
+    // 2026-08-30 (prompts/places-3d-detailed-terrain-runbook.md): the plateau
+    // cannot fit any real-terrain window (2.5M sq km), so the globally
+    // recognized Mount Kailash massif is framed as a real-terrain "View" the
+    // reader can switch to; the procedural teaching relief below renders FIRST
+    // (unchanged, CDN-outage fallback) and stays the default.
     //
     // EDUCATIONAL APPROXIMATION, not survey terrain.
     // Published figures (encyclopedic consensus, cross-checked 2026-07-29):
@@ -54,6 +59,51 @@
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSgrandcanyon.html's
+    // t3dPlaces* pattern) - heights.bin (Int16 LE meters) + texture.jpg
+    // (Sentinel-2 true-color), sha256-verified, cached once per manifest version.
+    var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+    var T3D_PLACES_DB = 'ftol-places3d-assets';
+    function t3dPlacesIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(T3D_PLACES_DB, 1);
+            req.onupgradeneeded = function () {
+                if (!req.result.objectStoreNames.contains('assets')) {
+                    req.result.createObjectStore('assets', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function t3dPlacesIdbGet(key) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function t3dPlacesIdbPut(key, blob) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function t3dPlacesSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
     }
 
     function t3dShell(THREE, host, opts) {
@@ -210,8 +260,12 @@
         var terrainVeg = makeTerrain(18, 18, shell.low ? 100 : 160, shell.low ? 100 : 160, height, function(c, h, x, z) { color(c, h, x, z, true); });
         var terrainBare = makeTerrain(18, 18, shell.low ? 100 : 160, shell.low ? 100 : 160, height, function(c, h, x, z) { color(c, h, x, z, false); });
         var terrainCurrent = terrainVeg;
-        scene.add(terrainCurrent);
-        
+        // Procedural teaching relief lives in its own group so it can be
+        // swapped out (never destroyed) once real Mount Kailash terrain loads -
+        // a CDN failure or slow network leaves this on screen, it never blanks.
+        var procGroup = new THREE.Group();
+        procGroup.add(terrainCurrent);
+
         // Snow/glacier cap - white overlay geometry on highest peaks
         var snowCap = new THREE.Group();
         (function() {
@@ -228,8 +282,150 @@
                 snowCap.add(peaks);
             });
         })();
-        scene.add(snowCap);
-        
+        procGroup.add(snowCap);
+        scene.add(procGroup);
+
+        // ---- Real-terrain progressive upgrade (Mount Kailash massif) ----
+        var realGroup = new THREE.Group();
+        scene.add(realGroup);
+        realGroup.visible = false;
+        var realMat = null, realTex = null, realHeights = null;
+        var realMinH = 0, realMaxH = 0, realReady = false, realLoading = false;
+        var viewMode = 'procedural'; // 'procedural' | 'real'
+        var REAL_BASE_M = 4700; // Barkha-plain base band, scree color floor
+        var REAL_SNOWLINE_M = 5800; // approximate permanent-snow altitude, this massif
+
+        function realColorAt(c, hRaw) {
+            var t = Math.max(0, Math.min(1, (hRaw - REAL_BASE_M) / (REAL_SNOWLINE_M - REAL_BASE_M)));
+            if (hRaw >= REAL_SNOWLINE_M) { c.copy(colVeg.snow); }
+            else { c.copy(colVeg.scree).lerp(colVeg.grass, 0.35 * t); }
+        }
+        function recolorReal() {
+            if (!realGroup.children.length || !realHeights) return;
+            var mesh = realGroup.children[0];
+            var cols = mesh.geometry.attributes.color, c2 = new THREE.Color();
+            for (var i = 0; i < realHeights.length; i++) {
+                realColorAt(c2, realHeights[i]);
+                cols.setXYZ(i, c2.r, c2.g, c2.b);
+            }
+            cols.needsUpdate = true;
+        }
+        // Decimate a row-major Int16 grid to at most maxDim x maxDim cells,
+        // keeping the MAX value per cell (preserve the summit, never average
+        // it away into the surrounding plateau).
+        function decimateMax(view, w, h, maxDim) {
+            var stepX = Math.max(1, Math.ceil(w / maxDim));
+            var stepZ = Math.max(1, Math.ceil(h / maxDim));
+            var ow = Math.floor((w - 1) / stepX) + 1;
+            var oh = Math.floor((h - 1) / stepZ) + 1;
+            var out = new Int16Array(ow * oh);
+            for (var oz = 0; oz < oh; oz++) {
+                var z0 = oz * stepZ;
+                for (var ox = 0; ox < ow; ox++) {
+                    var x0 = ox * stepX, best = -32768;
+                    for (var dz = 0; dz < stepZ && z0 + dz < h; dz++) {
+                        var rowBase = (z0 + dz) * w;
+                        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+                            var v = view[rowBase + x0 + dx];
+                            if (v > best) best = v;
+                        }
+                    }
+                    out[oz * ow + ox] = best;
+                }
+            }
+            return { data: out, w: ow, h: oh };
+        }
+        function buildRealMesh(view, grid, texBlob) {
+            var dec = decimateMax(view, grid.width_px, grid.height_px, 220);
+            var W = 18, D = 18; // same footprint as the procedural terrain above
+            var geo2 = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+            geo2.rotateX(-Math.PI / 2);
+            // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1
+            // vertical proportion relative to the mapped width (no exaggeration).
+            var vertScale = W / (grid.width_px * grid.meters_per_px);
+            var minH = grid.min_h_m, maxH = grid.max_h_m;
+            var pos2 = geo2.attributes.position;
+            var heightsArr = new Float32Array(pos2.count);
+            var startCol = new Float32Array(pos2.count * 3);
+            var c = new THREE.Color();
+            for (var i = 0; i < pos2.count; i++) {
+                var ix = i % dec.w, iz = Math.floor(i / dec.w);
+                var hRaw = dec.data[iz * dec.w + ix];
+                pos2.setY(i, (hRaw - minH) * vertScale);
+                heightsArr[i] = hRaw;
+                realColorAt(c, hRaw);
+                startCol[i * 3] = c.r; startCol[i * 3 + 1] = c.g; startCol[i * 3 + 2] = c.b;
+            }
+            geo2.setAttribute('color', new THREE.BufferAttribute(startCol, 3));
+            geo2.computeVertexNormals();
+            var mat2 = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+            var mesh2 = new THREE.Mesh(geo2, mat2);
+            realGroup.add(mesh2);
+            realMat = mat2;
+            realHeights = heightsArr;
+            realMinH = minH; realMaxH = maxH;
+            realLoading = false; realReady = true;
+            apply();
+            t3dStatus('Real terrain loaded (Mount Kailash massif - Terrarium DEM + Sentinel-2 imagery). Drag to orbit, scroll to zoom.');
+            if (texBlob) {
+                var url = URL.createObjectURL(texBlob);
+                new THREE.TextureLoader().load(url, function (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    // MeshStandardMaterial MULTIPLIES vertexColors by map - once
+                    // real imagery is the colour source the hypsometric bands
+                    // must stop multiplying into it (2026-08-29 defect fix).
+                    realTex = tex;
+                    if (viewMode === 'real' && realMat) {
+                        realMat.map = realTex; realMat.vertexColors = false; realMat.color.setScalar(1); realMat.needsUpdate = true;
+                    }
+                    URL.revokeObjectURL(url);
+                }, undefined, function () { URL.revokeObjectURL(url); });
+            }
+        }
+        function fetchPlacesAsset(file, mimeType, verKey) {
+            var key = verKey + ':' + file.file;
+            return t3dPlacesIdbGet(key).then(function (cached) {
+                if (cached) return cached;
+                return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+                    return r.arrayBuffer();
+                }).then(function (buf) {
+                    return t3dPlacesSha256Hex(buf).then(function (hex) {
+                        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+                        var blob = new Blob([buf], { type: mimeType });
+                        t3dPlacesIdbPut(key, blob);
+                        return blob;
+                    });
+                });
+            });
+        }
+        function loadRealTerrain() {
+            realLoading = true;
+            fetch(T3D_PLACES_CDN + '/manifest.json').then(function (r) { return r.json(); })
+                .then(function (manifest) {
+                    var asset = manifest && manifest.assets && manifest.assets['tibetan-plateau'];
+                    if (!asset) throw new Error('manifest missing the tibetan-plateau asset');
+                    var heightsFile = null, texFile = null;
+                    (asset.files || []).forEach(function (f) {
+                        if (f.role === 'heightfield') heightsFile = f;
+                        if (f.role === 'satellite-texture') texFile = f;
+                    });
+                    if (!heightsFile) throw new Error('manifest missing the heightfield file');
+                    var verKey = 'tibetan-plateau@' + manifest.version;
+                    var jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+                    if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+                    return Promise.all(jobs).then(function (blobs) {
+                        return blobs[0].arrayBuffer().then(function (buf) {
+                            buildRealMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    realLoading = false;
+                    t3dStatus('Could not load real terrain data (' + (err && err.message ? err.message : err) + ') - showing the procedural relief instead.');
+                });
+        }
+
         // Store state for toggles
         var state = {
             vegetationOn: true,
@@ -242,24 +438,46 @@
         if (typeof saved.snowOn === 'boolean') state.snowOn = saved.snowOn;
         
         function updateInfoPanel() {
-            var info = '<h3>Tibetan Plateau</h3>';
-            info += '<p><b>Area:</b> ~2.5M sq km</p>';
-            info += '<p><b>Avg elev:</b> ~4,000 m</p>';
-            info += '<p><b>Climate:</b> -5°C avg, <500mm rain</p>';
-            info += '<p><b>Rivers:</b> Yangtze, Yellow, Mekong originate here</p>';
+            var info;
+            if (viewMode === 'real' && realReady) {
+                info = '<h3>Mount Kailash: real elevation + satellite imagery</h3>' +
+                    '<p>A globally recognized peak on the Tibetan Plateau, sacred to Hindus, Buddhists, Jains, and Bon practitioners - no one is permitted to climb it. This relief shows its actual measured terrain, not a procedural approximation.</p>' +
+                    '<p><b>Summit:</b> about 6,638 m ASL</p>' +
+                    '<p><b>Elevation in this view:</b> ' + Math.round(realMinH) + ' m to ' + Math.round(realMaxH) + ' m</p>' +
+                    '<p><b>Base (Barkha plain):</b> about 4,600-4,700 m</p>' +
+                    '<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs). Imagery: contains modified Copernicus Sentinel data 2026. True 1:1 scale, no vertical exaggeration. Educational approximation - not survey-grade geodesy.</p>';
+            } else {
+                info = '<h3>Tibetan Plateau</h3>';
+                info += '<p><b>Area:</b> ~2.5M sq km</p>';
+                info += '<p><b>Avg elev:</b> ~4,000 m</p>';
+                info += '<p><b>Climate:</b> -5°C avg, <500mm rain</p>';
+                info += '<p><b>Rivers:</b> Yangtze, Yellow, Mekong originate here</p>';
+                info += '<p class="t3d-note">' + (realLoading
+                    ? 'Loading real Mount Kailash terrain now (one time, then cached).'
+                    : 'This teaching relief is procedural - switch the View button to see real measured terrain for the Kailash massif.') + '</p>';
+            }
             t3dInfo(info);
         }
-        
+
         function updateTerrainVegetation() {
-            scene.remove(terrainCurrent);
+            procGroup.remove(terrainCurrent);
             terrainCurrent = state.vegetationOn ? terrainVeg : terrainBare;
-            scene.add(terrainCurrent);
+            procGroup.add(terrainCurrent);
         }
-        
+
         function updateSnowCap() {
             snowCap.visible = state.snowOn;
         }
-        
+
+        function apply() {
+            procGroup.visible = (viewMode !== 'real') || !realReady;
+            realGroup.visible = (viewMode === 'real') && realReady;
+            if (viewMode === 'real' && realReady) { recolorReal(); }
+            var vb = document.getElementById('t3dTpViewBtn');
+            if (vb) vb.textContent = 'View: ' + (viewMode === 'real' ? 'Real terrain (Kailash)' : 'Plateau relief') + (realReady ? ' (tap to switch)' : ' (loading real...)');
+            updateInfoPanel();
+        }
+
         // Attach event listeners
         window.addEventListener('t3d-toggle-vegetation', function() {
             state.vegetationOn = !state.vegetationOn;
@@ -271,13 +489,25 @@
             updateSnowCap();
             t3dSaveStore(state);
         });
-        
+        window.addEventListener('t3d-toggle-view', function() {
+            if (!realReady) { return; } // no-op until the CDN asset lands
+            viewMode = (viewMode === 'real') ? 'procedural' : 'real';
+            if (viewMode === 'real' && realMat) {
+                if (realTex) { realMat.map = realTex; realMat.vertexColors = false; realMat.color.setScalar(1); }
+                else { realMat.map = null; realMat.vertexColors = true; }
+                realMat.needsUpdate = true;
+            }
+            apply();
+        });
+
         // Initialize UI
         updateTerrainVegetation();
         updateSnowCap();
-        updateInfoPanel();
-        
-        return { scene: scene };
+        apply();
+        if ('requestIdleCallback' in window) { requestIdleCallback(loadRealTerrain, { timeout: 4000 }); }
+        else { setTimeout(loadRealTerrain, 800); }
+
+        return { scene: scene, state: state };
     }
 
     function t3dRender(shell, sceneObj) {
@@ -299,17 +529,26 @@
                 t3dRender(shell, sceneObj);
                 t3dStatus('Scene ready - drag to orbit');
                 
-                // Wire toggle buttons
+                // Wire toggle buttons. NOTE (2026-08-30 root-cause fix): these
+                // used to reference a bare `state` identifier that only exists
+                // inside t3dScene()'s own closure - out of scope here, so every
+                // click threw a ReferenceError before this fire (pre-existing
+                // defect, unrelated to the real-terrain migration; fixed while
+                // touching this file per the render-quality contract). Reading
+                // through sceneObj.state fixes it without changing behavior.
                 document.getElementById('t3dTpVegetationBtn')?.addEventListener('click', function() {
                     window.dispatchEvent(new Event('t3d-toggle-vegetation'));
-                    this.textContent = 'Vegetation: ' + (state.vegetationOn ? 'Off' : 'On');
+                    this.textContent = 'Vegetation: ' + (sceneObj.state.vegetationOn ? 'Off' : 'On');
                 });
                 document.getElementById('t3dTpSnowBtn')?.addEventListener('click', function() {
                     window.dispatchEvent(new Event('t3d-toggle-snow'));
-                    this.textContent = 'Snow/Glaciers: ' + (state.snowOn ? 'Off' : 'On');
+                    this.textContent = 'Snow/Glaciers: ' + (sceneObj.state.snowOn ? 'Off' : 'On');
+                });
+                document.getElementById('t3dTpViewBtn')?.addEventListener('click', function() {
+                    window.dispatchEvent(new Event('t3d-toggle-view'));
                 });
                 document.getElementById('t3dFullscreenBtn')?.addEventListener('click', function() {
-                    tft3dFullscreen(host.parentElement.parentElement);
+                    t3dFullscreen(host.parentElement.parentElement);
                 });
                 
                 // Show controls
