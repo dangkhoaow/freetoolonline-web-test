@@ -1002,6 +1002,7 @@ try {
     { title: "Text Anonymizer - Remove Names & Emails (Local, No Upload)", url: "https://freetoolonline.com/developer-tools/text-anonymizer.html", include: !1, tags: "developer" },
     { title: "AI Email Writer - Draft Emails in Your Browser", url: "https://freetoolonline.com/utility-tools/ai-email-writer.html", include: !1, tags: "utility" },
     { title: "Meeting Notes Taker", url: "https://freetoolonline.com/utility-tools/meeting-notes-taker.html", include: !1, tags: "utility" },
+    { title: "Cover Letter Generator - Private, CV Never Uploaded", url: "https://freetoolonline.com/utility-tools/cover-letter-generator.html", include: !1, tags: "utility" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

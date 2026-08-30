@@ -1,0 +1,659 @@
+<script>
+    // AI cover-letter skeleton (cover-letter-generator) - browser-local cover-letter drafting
+    // from TWO documents (the job description + the applicant's own highlights)
+    // plus role / company / contact fields. Registry entry:
+    // llm_cover_letter_webllm. Distinct from ai-email-writer (one-shot email
+    // with a subject line from a short brief): this page composes a formal
+    // LETTER (no subject line, salutation + three-paragraph body + sign-off)
+    // grounded in a pasted JOB DESCRIPTION and the reader's CV highlights -
+    // different input shape, different output artifact, different reader job.
+    // The privacy angle is load-bearing: the CV material and the job posting
+    // never leave the browser on any tier.
+    //
+    // THREE-TIER ENGINE LADDER (in order, each honestly labeled):
+    //   1. Chrome Built-in Writer API when ALREADY on-device (no download):
+    //      `Writer` global (2025+ spec) + legacy ai.writer probe. Feature-
+    //      detected + try/catch everywhere; only availability 'available'
+    //      activates the tier.
+    //   2. WebLLM - EXACT PIN https://esm.run/@mlc-ai/web-llm@0.2.84 (HARD
+    //      GUARD 5; pin re-probe-verified 2026-08-30 headless Chromium, fire39
+    //      gate-h artifact). Engine idioms from the email-writer skeleton:
+    //      lazy import + model load ONLY on the explicit "Load model" click,
+    //      new webllm.MLCEngine() + engine.reload(modelId), determinate
+    //      progress via setInitProgressCallback, streaming chat.completions,
+    //      WebGPU preflight, last model in localStorage 'webllm-last-model'
+    //      (SAME key as private-ai-chat / ai-email-writer - shared browser
+    //      weight cache), 'Clear cached models' via engine.clearCache(true),
+    //      model ids validated against webllm.prebuiltAppConfig.model_list and
+    //      every option's download size derived from that list.
+    //   3. No-AI fallback so the page is NEVER dead: a deterministic letter
+    //      assembler builds a complete cover letter (salutation from the
+    //      contact name, opening naming the role and company per tone, one
+    //      body paragraph from the highlights, a posting-emphasis line from a
+    //      deterministic keyword count of the pasted job description, closing
+    //      per tone, sign-off) labeled "Template letter (no AI model)". It is
+    //      a real zero-download tool on its own, and it renders the G16 sample
+    //      demo on load with zero interaction.
+    //
+    // STATUS LINE CONTRACT (ported from email-writer): "Output above: <engine>"
+    // names the engine that produced the visible output; "ready: <engine>" is
+    // availability only.
+    //
+    // 100% in-browser: no upload, no backend, nothing sent anywhere. This tool
+    // DRAFTS text only - it never applies to a job or sends anything. Framework
+    // contract: bootstrap in doAfterPageRendered(); no top-level DOM access.
+
+    web.localUpload = false;
+
+    var CLG_SLUG = 'cover-letter-generator';
+    var CLG_LS_MODEL = 'webllm-last-model'; // shared with private-ai-chat + ai-email-writer (shared cache)
+    var CLG_MAX_CHARS = 8000;               // combined JD + highlights cap (small-model context)
+    var CLG_WEBLLM_URL = 'https://esm.run/@mlc-ai/web-llm@0.2.84'; // EXACT pin - HARD GUARD 5
+    var CLG_SYSTEM_PROMPT = 'You are a careful cover-letter writing assistant running privately in the user browser. Write a complete one-page cover letter grounded ONLY in the job description and the highlights the user provides - never invent employers, dates, degrees, or achievements. No subject line. Start with the salutation, three short paragraphs, then a sign-off with the placeholder [Your name] unless a name is given. Output only the letter - no commentary.';
+
+    var CLG_WEBLLM_MODELS = [
+        { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 1B (default)' },
+        { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 3B' },
+        { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', label: 'Phi 3.5 mini' }
+    ];
+    var CLG_SIZE_UNKNOWN = 'size unknown - may be large';
+    var CLG_SIZE_PENDING = 'download size shown before the download starts';
+
+    var CLG_TONES = [
+        { value: 'professional', label: 'Professional' },
+        { value: 'enthusiastic', label: 'Enthusiastic' },
+        { value: 'concise', label: 'Short and direct' }
+    ];
+
+    // G16 sample - renders a complete tier-3 template letter on load.
+    var CLG_SAMPLE = {
+        role: 'Customer Support Specialist',
+        company: 'Brightpath Software',
+        contact: '',
+        jd: 'We are looking for a Customer Support Specialist to answer product questions by email and chat, keep our support articles up to date, and report common product issues to the product team. You will handle support tickets daily and turn recurring customer questions into help articles. Experience with ticketing systems and clear written English required.',
+        highlights: 'Three years answering email and chat tickets for a SaaS product\nWrote and maintained 40+ help-center articles\nCut average first-response time from 6 hours to 90 minutes',
+        tone: 'professional'
+    };
+
+    // Engine state.
+    var clgEngine = null;
+    var clgEngineHooked = false;
+    var clgLoadedModel = null;
+    var clgGenerating = false;
+    var clgProgressCb = null;
+    var clgBuiltinOk = false;     // tier-1 Writer API availability
+    var clgBuiltinKind = null;    // 'new' | 'legacy'
+    var clgModelSizes = null;
+    var clgSizesPromise = null;
+    var clgLastOutputEngine = null;
+
+    // ---- Tier 3: deterministic letter assembler -----------------------------------
+    function clgLinesList(raw) {
+        var lines = String(raw || '').split(/\n+/);
+        var out = [];
+        for (var i = 0; i < lines.length; i++) {
+            var t = lines[i].replace(/^\s*[-*]\s*/, '').replace(/^\s+|\s+$/g, '');
+            if (t) out.push(t);
+        }
+        return out;
+    }
+
+    function clgSentence(t) {
+        var s = String(t || '').replace(/^\s+|\s+$/g, '');
+        if (!s) return '';
+        s = s.charAt(0).toUpperCase() + s.slice(1);
+        if (!/[.!?]$/.test(s)) s += '.';
+        return s;
+    }
+
+    // Deterministic keyword pull from the pasted job description: lowercase
+    // word frequency, stopwords out, words shorter than 4 chars out, a word
+    // must appear at least twice; top 4 by count then alphabetically. No AI.
+    var CLG_STOPWORDS = { 'the': 1, 'and': 1, 'for': 1, 'with': 1, 'that': 1, 'this': 1, 'you': 1, 'your': 1, 'our': 1, 'are': 1, 'will': 1, 'have': 1, 'from': 1, 'their': 1, 'they': 1, 'them': 1, 'been': 1, 'into': 1, 'able': 1, 'well': 1, 'who': 1, 'what': 1, 'when': 1, 'where': 1, 'while': 1, 'about': 1, 'across': 1, 'after': 1, 'more': 1, 'most': 1, 'other': 1, 'over': 1, 'per': 1, 'plus': 1, 'such': 1, 'than': 1, 'then': 1, 'these': 1, 'those': 1, 'through': 1, 'under': 1, 'upon': 1, 'very': 1, 'within': 1, 'would': 1, 'should': 1, 'could': 1, 'must': 1, 'may': 1, 'might': 1, 'each': 1, 'every': 1, 'also': 1, 'both': 1, 'looking': 1, 'required': 1, 'preferred': 1, 'experience': 1, 'years': 1, 'work': 1, 'working': 1, 'role': 1, 'position': 1, 'team': 1, 'candidate': 1, 'ideal': 1, 'strong': 1, 'skills': 1, 'ability': 1, 'including': 1, 'etc': 1 };
+
+    function clgJdKeywords(jd) {
+        var words = String(jd || '').toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').split(/[\s]+/);
+        var freq = {};
+        for (var i = 0; i < words.length; i++) {
+            var w = words[i].replace(/^-+|-+$/g, '');
+            if (w.length < 4 || CLG_STOPWORDS[w]) continue;
+            freq[w] = (freq[w] || 0) + 1;
+        }
+        var keys = [];
+        for (var k in freq) { if (freq[k] >= 2) keys.push(k); }
+        keys.sort(function (a, b) { return freq[b] - freq[a] || (a < b ? -1 : 1); });
+        return keys.slice(0, 3);
+    }
+
+    function clgTemplateLetter(brief) {
+        var tone = brief.tone || 'professional';
+        var contact = String(brief.contact || '').replace(/^\s+|\s+$/g, '');
+        var role = String(brief.role || '').replace(/^\s+|\s+$/g, '');
+        var company = String(brief.company || '').replace(/^\s+|\s+$/g, '');
+        var highlights = clgLinesList(brief.highlights);
+        var yourName = String(brief.yourName || '').replace(/^\s+|\s+$/g, '');
+
+        var salutation = contact ? ('Dear ' + contact + ',') : 'Dear Hiring Manager,';
+
+        var roleText = role || 'the advertised position';
+        var companyText = company || 'your company';
+        var open;
+        if (tone === 'enthusiastic') {
+            open = 'I was excited to see the ' + roleText + ' opening at ' + companyText + ', and I would love to bring my experience to your team.';
+        } else if (tone === 'concise') {
+            open = 'Please consider my application for the ' + roleText + ' position at ' + companyText + '.';
+        } else {
+            open = 'I am writing to apply for the ' + roleText + ' position at ' + companyText + '.';
+        }
+
+        var bodyParts = [];
+        for (var i = 0; i < highlights.length; i++) bodyParts.push(clgSentence(highlights[i]));
+        var body = bodyParts.join(' ');
+
+        var kw = clgJdKeywords(brief.jd);
+        var emphasis = '';
+        if (kw.length >= 2) {
+            var kwText = kw.length === 2 ? (kw[0] + ' and ' + kw[1]) : (kw.slice(0, kw.length - 1).join(', ') + ' and ' + kw[kw.length - 1]);
+            emphasis = 'Your posting emphasizes ' + kwText + ' - the background above is where I can contribute to those from day one.';
+        }
+
+        var close;
+        if (tone === 'enthusiastic') close = 'I would be delighted to talk about how I can contribute. Thank you for considering my application.';
+        else if (tone === 'concise') close = 'I look forward to hearing from you. Thank you for your consideration.';
+        else close = 'I would welcome the chance to discuss how my experience fits this role. Thank you for your time and consideration.';
+
+        var signoff = 'Sincerely,\n' + (yourName || '[Your name]');
+
+        var paragraphs = [salutation, open];
+        if (body) paragraphs.push(body);
+        if (emphasis) paragraphs.push(emphasis);
+        paragraphs.push(close);
+        paragraphs.push(signoff);
+        return paragraphs.join('\n\n');
+    }
+
+    // ---- Tier 1: Chrome Built-in Writer API ---------------------------------------
+    function clgBuiltinApi() {
+        try {
+            if (typeof Writer !== 'undefined' && Writer && typeof Writer.availability === 'function') return Writer;
+        } catch (e) { void e; }
+        return null;
+    }
+
+    function clgProbeBuiltin(cb) {
+        var done = false;
+        function finish(ok, kind) { if (!done) { done = true; cb(!!ok, kind || null); } }
+        function legacyProbe() {
+            try {
+                if (typeof window !== 'undefined' && window.ai && window.ai.writer && typeof window.ai.writer.capabilities === 'function') {
+                    window.ai.writer.capabilities()
+                        .then(function (c) { finish(c && c.available === 'readily', 'legacy'); })
+                        .catch(function () { finish(false, null); });
+                    return;
+                }
+            } catch (e) { void e; }
+            finish(false, null);
+        }
+        var api = clgBuiltinApi();
+        if (!api) { legacyProbe(); return; }
+        try {
+            Promise.resolve(api.availability())
+                .then(function (a) { if (a === 'available') { finish(true, 'new'); } else { legacyProbe(); } })
+                .catch(legacyProbe);
+        } catch (e) { legacyProbe(); }
+    }
+
+    function clgRunBuiltin(task, onDone, onError) {
+        try {
+            if (clgBuiltinKind === 'legacy') {
+                window.ai.writer.create().then(function (w) { return w.write(task); })
+                    .then(function (out) { onDone(String(out == null ? '' : out)); }).catch(onError);
+                return;
+            }
+            var api = clgBuiltinApi();
+            if (!api) { onError(new Error('Built-in AI unavailable')); return; }
+            Promise.resolve(api.create({ format: 'plain-text' }))
+                .then(function (inst) { return inst.write(task); })
+                .then(function (res) { onDone(String(res == null ? '' : res)); })
+                .catch(onError);
+        } catch (e) { onError(e); }
+    }
+
+    // ---- Tier 2: WebLLM (lazy, click-gated, exact pin) ----------------------------
+    function clgWebGpuSupported() { return typeof navigator !== 'undefined' && 'gpu' in navigator; }
+    function clgWebGpuAdapter() {
+        if (!clgWebGpuSupported()) { return Promise.resolve(false); }
+        try { return navigator.gpu.requestAdapter().then(function (a) { return !!a; }).catch(function () { return false; }); }
+        catch (e) { return Promise.resolve(false); }
+    }
+
+    function clgLoadWebLLM() {
+        if (window.__clgWebLLM) { return Promise.resolve(window.__clgWebLLM); }
+        if (window.__clgWebLLMPromise) { return window.__clgWebLLMPromise; }
+        window.__clgWebLLMPromise = import(CLG_WEBLLM_URL)
+            .then(function (mod) { window.__clgWebLLM = mod; return mod; });
+        return window.__clgWebLLMPromise;
+    }
+
+    function clgValidateModelId(webllm, wanted) {
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            var ids = {}, i;
+            for (i = 0; i < list.length; i++) { if (list[i] && list[i].model_id) ids[list[i].model_id] = true; }
+            if (ids[wanted]) return wanted;
+            for (i = 0; i < CLG_WEBLLM_MODELS.length; i++) { if (ids[CLG_WEBLLM_MODELS[i].id]) return CLG_WEBLLM_MODELS[i].id; }
+            for (i = 0; i < list.length; i++) {
+                var id = list[i] && list[i].model_id;
+                if (id && /instruct|chat/i.test(id) && (/-(0\.5B|1B|1\.5B)-/i.test(id) || /TinyLlama/i.test(id))) return id;
+            }
+            return (list.length && list[0].model_id) ? list[0].model_id : wanted;
+        } catch (e) { return wanted; }
+    }
+
+    function clgFormatSizeMb(mb) {
+        var n = typeof mb === 'number' ? mb : parseFloat(mb);
+        if (!isFinite(n) || n <= 0) { return null; }
+        if (n >= 1024) { return (Math.round((n / 1024) * 10) / 10) + ' GB'; }
+        return Math.round(n) + ' MB';
+    }
+
+    function clgSizeMapFrom(webllm) {
+        var map = {};
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            for (var i = 0; i < list.length; i++) {
+                var e = list[i];
+                if (!e || !e.model_id) { continue; }
+                var s = clgFormatSizeMb(e.vram_required_MB);
+                if (s) { map[e.model_id] = s; }
+            }
+        } catch (e) { void e; }
+        return map;
+    }
+
+    function clgEnsureModelSizes() {
+        if (clgModelSizes) { return Promise.resolve(clgModelSizes); }
+        if (clgSizesPromise) { return clgSizesPromise; }
+        clgSizesPromise = clgLoadWebLLM()
+            .then(function (webllm) { clgModelSizes = clgSizeMapFrom(webllm); return clgModelSizes; })
+            .catch(function () { clgModelSizes = {}; return clgModelSizes; });
+        return clgSizesPromise;
+    }
+
+    function clgBaseLabelFor(id) {
+        for (var i = 0; i < CLG_WEBLLM_MODELS.length; i++) {
+            if (CLG_WEBLLM_MODELS[i].id === id) { return CLG_WEBLLM_MODELS[i].label; }
+        }
+        return id;
+    }
+
+    function clgOptionText(id) {
+        var base = clgBaseLabelFor(id);
+        if (!clgModelSizes) { return base + ' - ' + CLG_SIZE_PENDING; }
+        var size = clgModelSizes[id];
+        return base + ' - ' + (size ? 'about ' + size : CLG_SIZE_UNKNOWN);
+    }
+
+    function clgGetEngine(webllm) {
+        if (!clgEngine) { clgEngine = new webllm.MLCEngine(); }
+        if (!clgEngineHooked) {
+            clgEngineHooked = true;
+            try {
+                clgEngine.setInitProgressCallback(function (report) {
+                    if (clgProgressCb) { clgProgressCb(typeof report.progress === 'number' ? report.progress : 0, report.text || ''); }
+                });
+            } catch (e) { void e; }
+        }
+        return clgEngine;
+    }
+
+    function clgLoadModel(modelId, progressCb) {
+        clgProgressCb = progressCb || null;
+        return clgLoadWebLLM().then(function (webllm) {
+            var id = clgValidateModelId(webllm, modelId || CLG_WEBLLM_MODELS[0].id);
+            var engine = clgGetEngine(webllm);
+            if (clgLoadedModel === id) { return engine; }
+            return Promise.resolve(engine.reload(id)).then(function () {
+                clgLoadedModel = id;
+                try { localStorage.setItem(CLG_LS_MODEL, id); } catch (e) { void e; }
+                return engine;
+            });
+        });
+    }
+
+    function clgClearModelCache(onDone, onError) {
+        clgLoadWebLLM().then(function (webllm) {
+            var engine = clgGetEngine(webllm);
+            if (typeof engine.clearCache !== 'function') { throw new Error('clearCache is unavailable in this WebLLM build'); }
+            return Promise.resolve(engine.clearCache(true));
+        }).then(function () { clgLoadedModel = null; if (onDone) onDone(); })
+            .catch(function (err) { if (onError) onError(err); });
+    }
+
+    // Build the model/Writer task text from the brief. Same text serves tiers 1+2.
+    function clgBuildTask(brief) {
+        var toneWord = brief.tone === 'enthusiastic' ? 'warm, enthusiastic' : brief.tone === 'concise' ? 'short, direct' : 'professional';
+        var lines = ['Write a ' + toneWord + ' one-page cover letter. No subject line. Use ONLY the facts below - do not invent employers, dates, degrees, or achievements.'];
+        if (brief.role) lines.push('Role applied for: ' + brief.role);
+        if (brief.company) lines.push('Company: ' + brief.company);
+        if (brief.contact) lines.push('Address it to: ' + brief.contact);
+        if (brief.jd) lines.push('The job description:\n"""\n' + brief.jd + '\n"""');
+        var pts = clgLinesList(brief.highlights);
+        if (pts.length) lines.push('My experience highlights to draw from:\n- ' + pts.join('\n- '));
+        lines.push('Structure: salutation, an opening naming the role, one body paragraph connecting my highlights to the posting, a short closing. Sign off with ' + (brief.yourName ? ('the name "' + brief.yourName + '"') : 'the placeholder [Your name]') + '.');
+        return lines.join('\n\n');
+    }
+
+    function clgRunWebLLM(task, onToken, onDone, onError) {
+        if (!clgEngine || !clgLoadedModel) { if (onError) onError(new Error('Load a model first.')); return; }
+        if (clgGenerating) { return; }
+        clgGenerating = true;
+        var truncated = false;
+        if (task.length > CLG_MAX_CHARS) { task = task.slice(0, CLG_MAX_CHARS); truncated = true; }
+        var messages = [{ role: 'system', content: CLG_SYSTEM_PROMPT }, { role: 'user', content: task }];
+        var full = '';
+        clgEngine.chat.completions.create({ messages: messages, stream: true, temperature: 0.4 })
+            .then(function (stream) {
+                (async function () {
+                    try {
+                        for await (const chunk of stream) {
+                            var d = (chunk && chunk.choices && chunk.choices[0] && chunk.choices[0].delta && chunk.choices[0].delta.content) || '';
+                            if (d) { full += d; if (onToken) { onToken(full); } }
+                        }
+                        clgGenerating = false;
+                        if (onDone) { onDone(full, truncated); }
+                    } catch (err) { clgGenerating = false; if (onError) { onError(err); } }
+                })();
+            })
+            .catch(function (err) { clgGenerating = false; if (onError) { onError(err); } });
+    }
+
+    // ---- UI ------------------------------------------------------------------------
+    function clgOptionsHtml(options) {
+        var out = '';
+        for (var i = 0; i < options.length; i++) { out += '<option value="' + options[i].value + '">' + options[i].label + '</option>'; }
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('coverLetterTool');
+        if (!root) return; // not a cover-letter page
+
+        var modelOpts = [];
+        for (var mi = 0; mi < CLG_WEBLLM_MODELS.length; mi++) { modelOpts.push({ value: CLG_WEBLLM_MODELS[mi].id, label: clgOptionText(CLG_WEBLLM_MODELS[mi].id) }); }
+
+        root.innerHTML =
+            '<div style="max-width:720px;margin:0 auto;text-align:left;">' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<div class="w3-half" style="padding-right:6px;box-sizing:border-box;">' +
+            '<label for="clgRole"><b>Role you are applying for</b></label>' +
+            '<input id="clgRole" type="text" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin-top:4px;" placeholder="e.g. Customer Support Specialist">' +
+            '</div>' +
+            '<div class="w3-half" style="padding-left:6px;box-sizing:border-box;">' +
+            '<label for="clgCompany"><b>Company</b></label>' +
+            '<input id="clgCompany" type="text" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin-top:4px;" placeholder="e.g. Brightpath Software">' +
+            '</div>' +
+            '</div>' +
+            '<label for="clgJd"><b>Job description</b> <span class="w3-small w3-text-grey">(paste the posting or its key lines - it never leaves your browser)</span></label>' +
+            '<textarea id="clgJd" rows="5" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin:4px 0 8px 0;" placeholder="Paste the job posting here."></textarea>' +
+            '<label for="clgHighlights"><b>Your experience highlights</b> <span class="w3-small w3-text-grey">(one per line, from your CV)</span></label>' +
+            '<textarea id="clgHighlights" rows="4" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin:4px 0 8px 0;" placeholder="- three years in customer support&#10;- wrote 40+ help articles&#10;- cut response time from 6 hours to 90 minutes"></textarea>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<div class="w3-half" style="padding-right:6px;box-sizing:border-box;">' +
+            '<label for="clgContact"><b>Hiring contact</b> <span class="w3-small w3-text-grey">(optional)</span></label>' +
+            '<input id="clgContact" type="text" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin-top:4px;" placeholder="e.g. Ms. Alvarez">' +
+            '</div>' +
+            '<div class="w3-half" style="padding-left:6px;box-sizing:border-box;">' +
+            '<label for="clgYourName"><b>Your name</b> <span class="w3-small w3-text-grey">(optional, for the sign-off)</span></label>' +
+            '<input id="clgYourName" type="text" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin-top:4px;" placeholder="left blank = [Your name]">' +
+            '</div>' +
+            '</div>' +
+            '<div id="clgCount" class="w3-small w3-text-grey" style="text-align:right;">0 chars</div>' +
+            '<div class="w3-row" style="margin:8px 0;">' +
+            '<label for="clgTone">Tone </label>' +
+            '<select id="clgTone" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;margin-right:10px;">' + clgOptionsHtml(CLG_TONES) + '</select>' +
+            '<button id="clgRunBtn" type="button" class="w3-button w3-blue">Draft cover letter</button>' +
+            '</div>' +
+            '<div id="clgStatus" class="w3-small" role="status" style="color:#555;margin-bottom:6px;"></div>' +
+            '<div class="outputImgs" style="visibility:visible !important;background:#f7f7f7;border:1px solid #ddd;border-radius:4px;padding:12px;">' +
+            '<div id="clgOutputLabel" class="w3-small w3-text-grey" style="margin-bottom:6px;"></div>' +
+            '<div id="clgOutput" style="white-space:pre-wrap;min-height:2em;"></div>' +
+            '<div style="margin-top:8px;"><button id="clgCopyBtn" type="button" class="w3-button w3-light-grey w3-small">Copy letter</button>' +
+            '<span id="clgCopied" role="status" style="margin-left:8px;color:#2e7d32;font-size:0.9em;"></span></div>' +
+            '</div>' +
+            '<div class="w3-panel w3-light-grey w3-round" style="margin-top:16px;padding:10px;">' +
+            '<b>Optional: on-device AI model</b>' +
+            '<div class="w3-small" style="margin:4px 0;">Loads a small open model into your browser with WebLLM for more natural wording. One-time download, cached for later visits, runs fully on your device.</div>' +
+            '<div id="clgGpuNote" class="w3-small" style="display:none;color:#b00020;margin:4px 0;">This browser has no WebGPU (needed by WebLLM). Try the latest Chrome or Edge, or Safari 18+. The template letter above still works without it.</div>' +
+            '<label for="clgModelSel">Model </label>' +
+            '<select id="clgModelSel" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;">' + clgOptionsHtml(modelOpts) + '</select> ' +
+            '<button id="clgLoadBtn" type="button" class="w3-button w3-green">Load model</button> ' +
+            '<button id="clgClearCacheBtn" type="button" class="w3-button w3-light-grey w3-small">Clear cached models</button>' +
+            '<div><progress id="clgProgress" max="1" value="0" style="width:100%;max-width:420px;margin-top:8px;display:none;"></progress></div>' +
+            '<div id="clgLoadStatus" class="w3-small w3-text-grey" role="status"></div>' +
+            '</div>' +
+            // Honest-notes block: keep in sync with tool-<slug>/SKILL.md ## NOT implemented anti-claims.
+            '<div id="clgNotes" class="w3-small w3-text-grey" style="margin-top:14px;"><b>Honest notes</b><ul style="margin:4px 0 0 0;">' +
+            '<li>Everything runs in your browser - the job description and your CV highlights never leave this device.</li>' +
+            '<li>This tool drafts text only. It does not apply for the job or send anything - copy the letter into your own application.</li>' +
+            '<li>On-device drafts come from small 1-3B parameter models - a solid first draft, always review before sending.</li>' +
+            '<li>The draft uses only the facts you type in. Check every line - never send a generated letter unedited.</li>' +
+            '<li>On the on-device model path, input longer than ' + CLG_MAX_CHARS + ' characters is truncated to fit the model context.</li>' +
+            '<li>The first model load downloads hundreds of MB to a few GB; later loads come from the browser cache. Each size in the picker is read from the WebLLM model list and shown again before the download starts.</li>' +
+            '</ul></div>' +
+            '</div>';
+
+        var q = function (sel) { return root.querySelector(sel); };
+        var role = q('#clgRole'), company = q('#clgCompany'), contact = q('#clgContact'), yourName = q('#clgYourName');
+        var jd = q('#clgJd'), highlights = q('#clgHighlights');
+        var count = q('#clgCount'), toneSel = q('#clgTone'), runBtn = q('#clgRunBtn'), status = q('#clgStatus');
+        var output = q('#clgOutput'), outputLabel = q('#clgOutputLabel');
+        var copyBtn = q('#clgCopyBtn'), copied = q('#clgCopied');
+        var modelSel = q('#clgModelSel'), loadBtn = q('#clgLoadBtn'), clearBtn = q('#clgClearCacheBtn');
+        var progress = q('#clgProgress'), loadStatus = q('#clgLoadStatus'), gpuNote = q('#clgGpuNote');
+
+        function clgBrief() {
+            return {
+                role: role.value, company: company.value, contact: contact.value,
+                yourName: yourName.value, jd: (jd.value || '').replace(/^\s+|\s+$/g, ''),
+                highlights: highlights.value, tone: toneSel.value
+            };
+        }
+        function clgTotalChars() { return (jd.value || '').length + (highlights.value || '').length + (role.value || '').length + (company.value || '').length; }
+        function clgUpdateCount() { count.textContent = clgTotalChars() + ' chars'; }
+        function clgShowResult(label, text) { outputLabel.textContent = label; output.textContent = text; }
+        function clgActiveTier() { return clgBuiltinOk ? 1 : (clgEngine && clgLoadedModel ? 2 : 3); }
+
+        function clgReadyDescription() {
+            var t = clgActiveTier();
+            if (t === 1) { return 'built-in browser AI (no download)'; }
+            if (t === 2) { return 'on-device model ' + clgLoadedModel + ' via WebLLM'; }
+            return 'template letter (no AI model) - load a model below for more natural wording';
+        }
+
+        function clgRenderStatusLine() {
+            status.textContent = (clgLastOutputEngine
+                ? 'Output above: ' + clgLastOutputEngine
+                : 'Output above: none yet') + ' - ready: ' + clgReadyDescription() + '.';
+        }
+
+        function clgSetOutputEngine(name) { clgLastOutputEngine = name || null; clgRenderStatusLine(); }
+
+        function clgEnsureOption(sel, id) {
+            for (var i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].value === id) { sel.options[i].textContent = clgOptionText(id); return; }
+            }
+            var o = document.createElement('option');
+            o.value = id; o.textContent = clgOptionText(id); sel.appendChild(o);
+        }
+
+        function clgRefreshModelLabels() {
+            for (var i = 0; i < modelSel.options.length; i++) {
+                modelSel.options[i].textContent = clgOptionText(modelSel.options[i].value);
+            }
+        }
+
+        function clgHydrateModelSizes() { return clgEnsureModelSizes().then(clgRefreshModelLabels); }
+
+        function clgRunTemplate(brief, isDemo) {
+            var demoTag = isDemo ? 'Sample demo - ' : '';
+            clgShowResult(demoTag + 'Template letter (no AI model) - assembled from your inputs, fully editable', clgTemplateLetter(brief));
+            clgSetOutputEngine('template letter, no AI model' + (isDemo ? ' (sample demo)' : ''));
+        }
+
+        function clgRunNow() {
+            var brief = clgBrief();
+            if (!brief.role && !brief.jd && !clgLinesList(brief.highlights).length) {
+                clgShowResult('No input', 'Fill in the role, paste the job description, or add at least one highlight above, then press Draft cover letter.');
+                clgSetOutputEngine(null);
+                return;
+            }
+            runBtn.disabled = true;
+            function finish() { runBtn.disabled = false; }
+            var task = clgBuildTask(brief);
+            function tier2or3() {
+                if (clgEngine && clgLoadedModel) {
+                    var label = 'On-device AI model (' + clgLoadedModel + ') via WebLLM';
+                    var engineName = 'on-device model ' + clgLoadedModel + ' via WebLLM';
+                    clgShowResult(label, '');
+                    clgSetOutputEngine(engineName + ', working ...');
+                    clgRunWebLLM(task,
+                        function (partial) { output.textContent = partial; },
+                        function (full, truncated) {
+                            clgShowResult(label + (truncated ? ' - input truncated to ' + CLG_MAX_CHARS + ' chars to fit the model context' : ''), full);
+                            clgSetOutputEngine(engineName + (truncated ? ' (input truncated to ' + CLG_MAX_CHARS + ' chars)' : ''));
+                            finish();
+                        },
+                        function (err) {
+                            clgShowResult('Error', 'Generation failed: ' + (err && err.message ? err.message : 'unknown error') + '. The template letter still works below.');
+                            clgSetOutputEngine(engineName + ' - generation failed');
+                            finish();
+                        });
+                    return;
+                }
+                clgRunTemplate(brief, false);
+                finish();
+            }
+            if (clgBuiltinOk) {
+                clgShowResult('Built-in browser AI (no download)', 'Working ...');
+                clgSetOutputEngine('built-in browser AI (no download), working ...');
+                clgRunBuiltin(task,
+                    function (out) {
+                        clgShowResult('Built-in browser AI (no download)', out);
+                        clgSetOutputEngine('built-in browser AI (no download)');
+                        finish();
+                    },
+                    function () { clgBuiltinOk = false; clgRenderStatusLine(); tier2or3(); });
+                return;
+            }
+            tier2or3();
+        }
+
+        jd.addEventListener('input', clgUpdateCount);
+        highlights.addEventListener('input', clgUpdateCount);
+        role.addEventListener('input', clgUpdateCount);
+        company.addEventListener('input', clgUpdateCount);
+        runBtn.addEventListener('click', clgRunNow);
+
+        copyBtn.addEventListener('click', function () {
+            var text = output.textContent || '';
+            function ok() {
+                copied.textContent = 'Copied!';
+                setTimeout(function () { copied.textContent = ''; }, 1600);
+            }
+            function fallback() {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                var done = false;
+                try { done = document.execCommand('copy'); } catch (e) { done = false; }
+                document.body.removeChild(ta);
+                if (done) ok(); else copied.textContent = 'Copy failed - select the text and copy it manually.';
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok, fallback); }
+            else { fallback(); }
+        });
+
+        try {
+            var last = localStorage.getItem(CLG_LS_MODEL);
+            if (last) { clgEnsureOption(modelSel, last); modelSel.value = last; }
+        } catch (e) { void e; }
+
+        clgWebGpuAdapter().then(function (ok) {
+            if (!ok) { gpuNote.style.display = 'block'; loadBtn.disabled = true; }
+        });
+
+        var clgSizeHydrateOnce = function () {
+            modelSel.removeEventListener('pointerdown', clgSizeHydrateOnce);
+            modelSel.removeEventListener('focus', clgSizeHydrateOnce);
+            loadBtn.removeEventListener('pointerenter', clgSizeHydrateOnce);
+            loadBtn.removeEventListener('focus', clgSizeHydrateOnce);
+            clgHydrateModelSizes();
+        };
+        modelSel.addEventListener('pointerdown', clgSizeHydrateOnce);
+        modelSel.addEventListener('focus', clgSizeHydrateOnce);
+        loadBtn.addEventListener('pointerenter', clgSizeHydrateOnce);
+        loadBtn.addEventListener('focus', clgSizeHydrateOnce);
+
+        loadBtn.addEventListener('click', function () {
+            var wanted = modelSel.value || CLG_WEBLLM_MODELS[0].id;
+            loadBtn.disabled = true; modelSel.disabled = true;
+            loadStatus.textContent = 'Checking the download size for ' + wanted + ' ...';
+            clgHydrateModelSizes().then(function () {
+                var size = clgModelSizes[wanted];
+                progress.style.display = 'block';
+                loadStatus.textContent = 'Downloading ' + wanted + ' - ' +
+                    (size ? 'about ' + size : CLG_SIZE_UNKNOWN) +
+                    ' - one-time download, then cached in this browser ...';
+                return clgLoadModel(wanted, function (frac, msg) {
+                    progress.value = Math.max(0, Math.min(1, frac || 0));
+                    loadStatus.textContent = msg || ('Loading ... ' + Math.round((frac || 0) * 100) + '%');
+                });
+            }).then(function () {
+                progress.value = 1;
+                clgEnsureOption(modelSel, clgLoadedModel);
+                modelSel.value = clgLoadedModel;
+                clgRefreshModelLabels();
+                loadStatus.textContent = 'Model ready' +
+                    (clgLoadedModel === wanted ? '' : ' (requested id not in this WebLLM build; loaded ' + clgLoadedModel + ' instead)') +
+                    ' - drafting happens on your device.';
+                loadBtn.disabled = false; modelSel.disabled = false;
+                clgRenderStatusLine();
+            }).catch(function (err) {
+                loadBtn.disabled = false; modelSel.disabled = false;
+                loadStatus.textContent = 'Could not load the model: ' + (err && err.message ? err.message : 'unknown error') + '.';
+            });
+        });
+
+        clearBtn.addEventListener('click', function () {
+            clearBtn.disabled = true;
+            loadStatus.textContent = 'Clearing cached model files ...';
+            clgClearModelCache(function () {
+                clearBtn.disabled = false;
+                loadStatus.textContent = 'Cached model files cleared - the next load downloads again.';
+                clgRenderStatusLine();
+            }, function (err) {
+                clearBtn.disabled = false;
+                loadStatus.textContent = 'Could not clear the cache: ' + (err && err.message ? err.message : 'unknown error') + '.';
+            });
+        });
+
+        // Probe tier 1 (built-in Writer API) without downloading anything.
+        clgProbeBuiltin(function (ok, kind) { clgBuiltinOk = ok; clgBuiltinKind = kind; clgRenderStatusLine(); });
+
+        // Visible default output on load (e2e G16, zero interaction): the sample
+        // inputs and their tier-3 template letter render immediately, labeled demo.
+        role.value = CLG_SAMPLE.role;
+        company.value = CLG_SAMPLE.company;
+        contact.value = CLG_SAMPLE.contact;
+        jd.value = CLG_SAMPLE.jd;
+        highlights.value = CLG_SAMPLE.highlights;
+        toneSel.value = CLG_SAMPLE.tone;
+        clgUpdateCount();
+        clgRunTemplate({ role: CLG_SAMPLE.role, company: CLG_SAMPLE.company, contact: CLG_SAMPLE.contact, yourName: '', jd: CLG_SAMPLE.jd, highlights: CLG_SAMPLE.highlights, tone: CLG_SAMPLE.tone }, true);
+        clgRenderStatusLine();
+    }
+</script>
