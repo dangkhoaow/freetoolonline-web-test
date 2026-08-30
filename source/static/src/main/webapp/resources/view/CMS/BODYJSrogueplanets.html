@@ -1,0 +1,465 @@
+<script>
+    // 3D scene archetype skeleton (rogue-planets) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only. All geometry is
+    // procedural (starfield Points + spheres) - no model files, no textures
+    // fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this teaches how astronomers find
+    // free-floating ("rogue") planets: starless planet-mass objects detected
+    // ONLY through a brief gravitational-microlensing brightening of a
+    // background star, because there is no host star to see at all. The lens
+    // itself is NEVER directly visible in a real detection - the dark marker
+    // this scene can optionally reveal is a teaching aid, not something a
+    // telescope actually images. The brightness curve uses the real,
+    // standard single-lens (Paczynski) magnification formula; the mass-preset
+    // event-duration text is the real published figure for that mass class,
+    // not a computed physical simulation.
+    //
+    // Distinct from Gravitational Microlensing Exoplanet 3D Explorer: that
+    // page shows a planet ORBITING A VISIBLE LENS STAR, detected as a short
+    // secondary spike on the star's own multi-week lensing event. THIS page
+    // has NO host star at all - the planet-mass object itself is the entire
+    // lens, and the whole event (not a secondary spike) is short, which is
+    // the defining observational signature of a genuinely free-floating
+    // planet.
+    //
+    // Published figures / facts (WebSearch 2026-08-30 against Mroz et al.
+    // 2020 ApJL 903 L11 "A Terrestrial-mass Rogue Planet Candidate Detected
+    // in the Shortest-timescale Microlensing Event" (arXiv:2009.12377);
+    // Sumi, Kamiya, Bennett et al. 2011 Nature 473, 349 "Unbound or distant
+    // planetary mass population detected by gravitational microlensing";
+    // Mroz, Ryu, Skowron et al. 2017 AJ 154, 205 "No Large Population of
+    // Unbound or Wide-orbit Free-floating Planets" (OGLE-IV); Pearson &
+    // McCaughrean 2023 arXiv:2310.01231 / A&A "Jupiter Mass Binary Objects in
+    // the Trapezium Cluster"):
+    //   - Shortest microlensing event ever recorded: OGLE-2016-BLG-1928,
+    //     Einstein-radius crossing time tE = 41.5 minutes (Mroz et al. 2020).
+    //     Mass estimate 0.3-2 Earth masses depending on disk-vs-bulge
+    //     location (disk scenario preferred); no companion star detected
+    //     within a projected separation of 8 AU; toward Sagittarius.
+    //   - 2011 survey estimate (Sumi et al. 2011, MOA-II 2006-2007 data):
+    //     about 1.8 Jupiter-mass objects per main-sequence star, with about
+    //     75% estimated to be unbound/free-floating - roughly twice as many
+    //     free-floating Jupiter-mass planets as main-sequence stars, a
+    //     widely reported headline figure at the time.
+    //   - 2017 revision (Mroz et al. 2017, OGLE-IV 2010-2015, a much larger
+    //     sample): did NOT confirm that excess, placing a 95% upper limit of
+    //     about 0.25 Jupiter-mass free-floating planets per main-sequence
+    //     star in the Milky Way - presented here as a real scientific
+    //     revision, not a fabricated split-the-difference number.
+    //   - JWST direct-imaging evidence (Pearson & McCaughrean 2023,
+    //     Trapezium region, Orion Nebula): about 540 planet-mass objects
+    //     found, including 40 paired and 2 tripled Jupiter-mass binary
+    //     objects ("JuMBOs", 0.6-14 Jupiter masses, 28-384 AU separations) -
+    //     an entirely different detection method (direct imaging of young,
+    //     still-warm objects) that independently supports a large
+    //     free-floating population.
+    //   - Ground surveys: OGLE, MOA, KMTNet. Planned instrument: the Nancy
+    //     Grace Roman Space Telescope (launch no earlier than 2027) is
+    //     expected to find many more free-floating planets via microlensing.
+    //   - Magnification formula: A(u) = (u^2+2)/(u*sqrt(u^2+4)), the standard
+    //     single-lens (Paczynski) point-source magnification - the same
+    //     well-established formula used site-wide for microlensing pages.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'rogue-planets';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'rogueplanets'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { try { new ResizeObserver(resize).observe(host); } catch (e) {} }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // ---- Real published constants (see header comment for sources) ----
+    var T3D_RP_SHORTEST_EVENT = 'OGLE-2016-BLG-1928';
+    var T3D_RP_SHORTEST_EVENT_MIN = 41.5;
+    var T3D_RP_SHORTEST_MASS_NOTE = 'about 0.3-2 Earth masses (disk-population scenario preferred), no companion star within a projected separation of 8 AU';
+    var T3D_RP_SUMI_TEXT = 'about 1.8 Jupiter-mass objects per main-sequence star, roughly 75% estimated unbound - about twice as many free-floating Jupiter-mass planets as main-sequence stars (Sumi et al. 2011, Nature, MOA-II 2006-2007 survey)';
+    var T3D_RP_MROZ_TEXT = 'a 95% upper limit of about 0.25 Jupiter-mass free-floating planets per main-sequence star - a much larger follow-up survey did not confirm the 2011 excess (Mroz et al. 2017, OGLE-IV, 2010-2015 data)';
+    var T3D_RP_JUMBO_TEXT = 'a completely different method - direct imaging - found about 540 young, still-warm planet-mass objects in the Orion Nebula\'s Trapezium region, including 40 paired and 2 tripled "Jupiter-mass binary objects" of 0.6-14 Jupiter masses (Pearson and McCaughrean, 2023, JWST)';
+    var T3D_RP_SURVEYS = 'OGLE, MOA, KMTNet (ground-based); the Nancy Grace Roman Space Telescope (planned, launch no earlier than 2027) should find many more';
+
+    var T3D_RP_PRESETS = {
+        star: { label: 'Sun-like star (for comparison)', duration: 'about 20-40 days - a typical stellar-mass microlensing event', widthFactor: 1.0 },
+        jupiter: { label: 'Jupiter-mass rogue planet', duration: 'a few hours to about a day - the general scale for a planet-mass lens', widthFactor: 0.55 },
+        earth: { label: 'Earth-mass rogue planet (' + T3D_RP_SHORTEST_EVENT + ')', duration: T3D_RP_SHORTEST_EVENT_MIN + ' minutes - the shortest microlensing event ever recorded, from a lens of ' + T3D_RP_SHORTEST_MASS_NOTE, widthFactor: 0.3 }
+    };
+
+    // Small radial-gradient canvas texture, reused for the background vignette
+    // and the source-star glow sprite - a soft gradient reads far more
+    // clearly on screen (and in a screenshot) than a flat-color disc.
+    function t3dRadialTexture(THREE, stops) {
+        var size = 128;
+        var c = document.createElement('canvas');
+        c.width = size; c.height = size;
+        var ctx = c.getContext('2d');
+        var g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+        for (var i = 0; i < stops.length; i++) { g.addColorStop(stops[i][0], stops[i][1]); }
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, size, size);
+        var tex = new THREE.CanvasTexture(c);
+        tex.needsUpdate = true;
+        return tex;
+    }
+
+    function t3dRoguePlanets(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.background = t3dRadialTexture(THREE, [[0, '#0c1220'], [0.6, '#050810'], [1, '#020207']]);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+
+        // Background starfield - procedural, gives the "monitoring a field of
+        // stars" survey context (population framing, not a single event).
+        // Per-vertex color variation (pale white / pale blue / pale amber)
+        // gives real stars their natural color spread instead of one flat hue.
+        var starCount = 480;
+        var starPositions = new Float32Array(starCount * 3);
+        var starColors = new Float32Array(starCount * 3);
+        var starPalette = [[0.85, 0.89, 0.93], [0.72, 0.82, 0.96], [0.96, 0.88, 0.72], [1, 1, 1]];
+        for (var i = 0; i < starCount; i++) {
+            var r = 18 + Math.random() * 26;
+            var theta = Math.random() * Math.PI * 2;
+            var phi = Math.acos(2 * Math.random() - 1);
+            starPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            starPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+            starPositions[i * 3 + 2] = r * Math.cos(phi) - 6;
+            var col = starPalette[i % starPalette.length];
+            var tw = 0.6 + Math.random() * 0.4;
+            starColors[i * 3] = col[0] * tw;
+            starColors[i * 3 + 1] = col[1] * tw;
+            starColors[i * 3 + 2] = col[2] * tw;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+        var starMat = new THREE.PointsMaterial({ size: 0.18, sizeAttenuation: true, vertexColors: true });
+        scene.add(new THREE.Points(starGeo, starMat));
+
+        // The ONE monitored background source star - the only thing a
+        // telescope actually sees brighten.
+        var source = new THREE.Mesh(new THREE.SphereGeometry(0.55, 24, 16), new THREE.MeshBasicMaterial({ color: 0xfff3b0 }));
+        scene.add(source);
+
+        // Brightening glow halo around the source star - a soft radial
+        // sprite (not a flat-shaded sphere) so the brightening reads as a
+        // real glow, and grows/fades with the computed magnification.
+        var glowTex = t3dRadialTexture(THREE, [[0, 'rgba(255,224,130,0.9)'], [0.4, 'rgba(255,213,79,0.45)'], [1, 'rgba(255,213,79,0)']]);
+        var glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, opacity: 0.5 }));
+        glow.scale.set(2.2, 2.2, 1);
+        scene.add(glow);
+
+        // The rogue planet itself - the lens. In a real detection this is
+        // NEVER directly seen; it is hidden by default and only shown when
+        // the reveal toggle is on, as an explicit teaching aid.
+        var lens = new THREE.Mesh(new THREE.SphereGeometry(0.14, 14, 10), new THREE.MeshBasicMaterial({ color: 0x37474f, transparent: true, opacity: 0.9 }));
+        lens.visible = false;
+        scene.add(lens);
+
+        // Faint dashed path showing where the invisible lens travels -
+        // also reveal-only.
+        var pathPts = [];
+        for (var pI = 0; pI <= 40; pI++) {
+            var pf = (pI / 40) * 2 - 1;
+            pathPts.push(new THREE.Vector3(pf * 6, 0.25, 0.6));
+        }
+        var pathGeo = new THREE.BufferGeometry().setFromPoints(pathPts);
+        var pathMat = new THREE.LineDashedMaterial({ color: 0x546e7a, dashSize: 0.18, gapSize: 0.14, transparent: true, opacity: 0.55 });
+        var pathLine = new THREE.Line(pathGeo, pathMat);
+        pathLine.computeLineDistances();
+        pathLine.visible = false;
+        scene.add(pathLine);
+
+        var state = { progress: 0.5, playing: false, massPreset: 'earth', reveal: false, surveyView: 'sumi' };
+        var curveCanvas = document.getElementById('t3dRogueCurve');
+        var curveCtx = curveCanvas ? curveCanvas.getContext('2d') : null;
+
+        function magnification(u) {
+            var u2 = u * u;
+            return (u2 + 2) / (u * Math.sqrt(u2 + 4));
+        }
+        function timeAxisValue(p) {
+            var widthFactor = T3D_RP_PRESETS[state.massPreset].widthFactor;
+            return (p - 0.5) * 8 * widthFactor;
+        }
+        function currentMagnification() {
+            var u0 = 0.1;
+            var tE = timeAxisValue(state.progress);
+            var u = Math.sqrt(u0 * u0 + tE * tE);
+            return magnification(u);
+        }
+        function curveSeries() {
+            var pts = [];
+            var u0 = 0.1;
+            for (var i = 0; i <= 200; i++) {
+                var p = i / 200;
+                var tE = timeAxisValue(p);
+                var u = Math.sqrt(u0 * u0 + tE * tE);
+                pts.push(magnification(u));
+            }
+            return pts;
+        }
+        function drawCurve() {
+            if (!curveCtx || !curveCanvas) return;
+            var w = curveCanvas.width, h = curveCanvas.height;
+            curveCtx.clearRect(0, 0, w, h);
+            curveCtx.fillStyle = '#04060c';
+            curveCtx.fillRect(0, 0, w, h);
+            var pts = curveSeries();
+            var maxMag = 1;
+            for (var m = 0; m < pts.length; m++) { if (pts[m] > maxMag) maxMag = pts[m]; }
+            var pad = 18;
+            function xAt(i) { return pad + (i / (pts.length - 1)) * (w - pad * 2); }
+            function yAt(mag) { return h - pad - ((mag - 1) / (maxMag - 1 || 1)) * (h - pad * 2); }
+            curveCtx.strokeStyle = '#37474f';
+            curveCtx.lineWidth = 1;
+            curveCtx.beginPath();
+            curveCtx.moveTo(pad, yAt(1));
+            curveCtx.lineTo(w - pad, yAt(1));
+            curveCtx.stroke();
+            curveCtx.strokeStyle = '#ffd54f';
+            curveCtx.lineWidth = 2;
+            curveCtx.beginPath();
+            for (var i = 0; i < pts.length; i++) {
+                var x = xAt(i), y = yAt(pts[i]);
+                if (i === 0) curveCtx.moveTo(x, y); else curveCtx.lineTo(x, y);
+            }
+            curveCtx.stroke();
+            var markX = xAt(Math.round(state.progress * (pts.length - 1)));
+            curveCtx.strokeStyle = '#ef5350';
+            curveCtx.lineWidth = 1.5;
+            curveCtx.beginPath();
+            curveCtx.moveTo(markX, pad);
+            curveCtx.lineTo(markX, h - pad);
+            curveCtx.stroke();
+            curveCtx.fillStyle = '#90a4ae';
+            curveCtx.font = '11px sans-serif';
+            curveCtx.fillText('brightness (magnification)', pad, 12);
+            curveCtx.fillText('time (real duration in facts panel)', w - 190, h - 4);
+        }
+
+        function panelHtml() {
+            var preset = T3D_RP_PRESETS[state.massPreset];
+            var mag = currentMagnification();
+            var surveyLine = (state.surveyView === 'sumi') ? T3D_RP_SUMI_TEXT : T3D_RP_MROZ_TEXT;
+            var surveyLabel = (state.surveyView === 'sumi') ? '2011 estimate' : '2017 revision';
+            var html = '<h3>' + preset.label + '</h3>';
+            html += '<p>Brightness right now (relative to unlensed): about ' + mag.toFixed(2) + 'x. ' +
+                (state.reveal
+                    ? 'The dark marker shows where the invisible lens is passing - in a real detection it is never actually seen this way; only the brightness change below reveals it.'
+                    : 'Nothing marks the lens itself - there is no host star and the planet is far too dim to see directly. Only the brightening tells you something passed in front of the source star. Press "Show inferred path" to reveal a teaching-aid marker.') +
+                '</p>';
+            html += '<p><b>Typical event duration for this lens mass:</b> ' + preset.duration + '.</p>';
+            html += '<p><b>How common are these (' + surveyLabel + ')?</b> ' + surveyLine + '</p>';
+            html += '<p>' + T3D_RP_JUMBO_TEXT + '.</p>';
+            html += '<table class="w3-table w3-bordered">' +
+                '<tr><td>Shortest microlensing event recorded</td><td>' + T3D_RP_SHORTEST_EVENT + ', ' + T3D_RP_SHORTEST_EVENT_MIN + ' minutes</td></tr>' +
+                '<tr><td>That event\'s implied lens mass</td><td>' + T3D_RP_SHORTEST_MASS_NOTE + '</td></tr>' +
+                '<tr><td>2011 survey estimate</td><td>~1.8 Jupiter-mass objects per star (Sumi et al. 2011)</td></tr>' +
+                '<tr><td>2017 revision</td><td>upper limit ~0.25 per star (Mroz et al. 2017)</td></tr>' +
+                '<tr><td>JWST direct-imaging evidence (2023)</td><td>~540 planet-mass objects, 42 JuMBO pairs/triples</td></tr>' +
+                '<tr><td>Ground surveys</td><td>' + T3D_RP_SURVEYS + '</td></tr>' +
+                '</table>';
+            html += '<p class="t3d-note">Educational approximation of the geometry and the real light-curve shape - not a lensing simulation and not a specific observed event. The curve uses the standard single-lens (Paczynski) magnification formula; the width shown for each mass preset is illustrative, not a computed physical timescale - the real duration for each mass class is the cited figure in the text above.</p>';
+            return html;
+        }
+
+        function apply() {
+            var tE = timeAxisValue(state.progress);
+            var mag = currentMagnification();
+            source.position.set(0, 0, 0);
+            lens.position.set(tE * 0.85, 0.25, 0.6);
+            lens.visible = state.reveal;
+            pathLine.visible = state.reveal;
+            var closeness = Math.max(0, 1 - Math.min(1, Math.abs(tE) / 1.4));
+            glow.material.opacity = 0.12 + closeness * 0.55;
+            glow.scale.setScalar(1 + Math.min(1.4, (mag - 1) * 0.28));
+            var slider = document.getElementById('t3dRogueProgress');
+            var label = document.getElementById('t3dRogueProgressLabel');
+            if (slider) slider.value = String(Math.round(state.progress * 100));
+            if (label) label.textContent = Math.round(state.progress * 100) + '%';
+            var revealBtn = document.getElementById('t3dRogueRevealBtn');
+            if (revealBtn) revealBtn.textContent = state.reveal ? 'Hide inferred path' : 'Show inferred path';
+            var surveyBtn = document.getElementById('t3dRogueSurveyBtn');
+            if (surveyBtn) surveyBtn.textContent = (state.surveyView === 'sumi') ? 'Showing: 2011 estimate (switch to 2017 revision)' : 'Showing: 2017 revision (switch to 2011 estimate)';
+            for (var key in T3D_RP_PRESETS) {
+                var btn = document.getElementById('t3dRogueMassBtn-' + key);
+                if (btn) btn.className = 'w3-button w3-small ' + (key === state.massPreset ? 'w3-amber' : 'w3-light-grey');
+            }
+            drawCurve();
+            t3dInfo(panelHtml());
+            t3dStatus('Event progress ' + Math.round(state.progress * 100) + '% - drag to orbit, scroll to zoom.');
+            try { t3dSaveStore({ massPreset: state.massPreset, reveal: state.reveal, surveyView: state.surveyView }); } catch (e) {}
+        }
+
+        function setProgress(p) { state.progress = Math.max(0, Math.min(1, p)); apply(); }
+        function setPreset(key) { if (T3D_RP_PRESETS[key]) { state.massPreset = key; apply(); } }
+        function toggleReveal() { state.reveal = !state.reveal; apply(); }
+        function toggleSurvey() { state.surveyView = (state.surveyView === 'sumi') ? 'mroz' : 'sumi'; apply(); }
+
+        for (var presetKey in T3D_RP_PRESETS) {
+            (function (key) {
+                var btn = document.getElementById('t3dRogueMassBtn-' + key);
+                if (btn) btn.addEventListener('click', function () { setPreset(key); });
+            })(presetKey);
+        }
+        var revealBtnEl = document.getElementById('t3dRogueRevealBtn');
+        if (revealBtnEl) revealBtnEl.addEventListener('click', toggleReveal);
+        var surveyBtnEl = document.getElementById('t3dRogueSurveyBtn');
+        if (surveyBtnEl) surveyBtnEl.addEventListener('click', toggleSurvey);
+        var playBtn = document.getElementById('t3dRoguePlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            state.playing = !state.playing;
+            playBtn.textContent = state.playing ? 'Pause event' : 'Play event';
+        });
+        var progressSlider = document.getElementById('t3dRogueProgress');
+        if (progressSlider) progressSlider.addEventListener('input', function () {
+            state.playing = false;
+            if (playBtn) playBtn.textContent = 'Play event';
+            setProgress(parseFloat(progressSlider.value || '50') / 100);
+        });
+
+        var stored = t3dLoadStore();
+        if (stored.massPreset && T3D_RP_PRESETS[stored.massPreset]) state.massPreset = stored.massPreset;
+        if (typeof stored.reveal === 'boolean') state.reveal = stored.reveal;
+        if (stored.surveyView === 'sumi' || stored.surveyView === 'mroz') state.surveyView = stored.surveyView;
+        apply();
+
+        return function animate(dt) {
+            if (state.playing) {
+                var next = state.progress + (dt / 1000) * 0.09;
+                if (next > 1) next = 0;
+                setProgress(next);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { rogueplanets: 't3dRogueControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { rogueplanets: { radius: 12, maxR: 60, minR: 3, phi: 1.1, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dRoguePlanets(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
