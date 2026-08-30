@@ -41,11 +41,11 @@
 	 * common.css sets `.ad-section.top-ad { display: none }` as the initial
 	 * state; upload-style.css (loaded only via <freetoolonline:upload>) then
 	 * overrides with `display: block !important` for upload tools. Non-upload
-	 * tools (md5-converter, camera-test, …) and guides never loaded that
+	 * tools (md5-converter, camera-test, ...) and guides never loaded that
 	 * stylesheet, so their top-ad stayed display:none. The runtime gate at
 	 * extended-body-content.html:198 requires `.adsbygoogle:visible.length
 	 * > 0` before invoking `loadAds()`; without a visible slot it never
-	 * fires and the ad chain dies — chicken-and-egg.
+	 * fires and the ad chain dies - chicken-and-egg.
 	 *
 	 * Promoting this rule from upload-style.css to the sitewide top-ad
 	 * fragment fixes the gate for every page that emits the top-ad slot,
@@ -62,7 +62,7 @@
 	}
 
 	/* When ads are disabled (staging, ad blocker, or user toggle), collapse the
-	 * top-ad slot so it doesn't reserve 90–100px and push first-fold content down.
+	 * top-ad slot so it doesn't reserve 90-100px and push first-fold content down.
 	 */
 	html.ads-disabled .ad-section.top-ad {
 		display: none !important;
@@ -70,7 +70,20 @@
 </style>
 <div class='w3-row ad-section top-ad' align="center">
 	<!-- responsive-bottom-ad -->
+	<!-- 2026-08-30 fill-rate fix (open item B5, safe half). This is the highest
+	 * inventory slot on the site: it renders on EVERY page (the display:block
+	 * platform fix above) at 970x90 / 728x90 / 320x100. Without data-ad-format
+	 * the request asks for exactly ONE size, so a viewport with no matching
+	 * creative returns unfilled. auto lets AdSense fill with any creative that
+	 * fits the declared width.
+	 * NO CLS RISK: .adslot_0 above reserves width AND height per breakpoint
+	 * BEFORE fill, and data-full-width-responsive is pinned FALSE so AdSense
+	 * cannot widen past 970px and invalidate that reservation. Leaving it TRUE
+	 * is what turns a responsive banner into a layout-shift source.
+	 -->
 	<ins class="adsbygoogle adslot_0"
 	     data-ad-client="ca-pub-2317460280557760"
-	     data-ad-slot="8788466333"></ins>
+	     data-ad-slot="8788466333"
+	     data-ad-format="auto"
+	     data-full-width-responsive="false"></ins>
 </div>
