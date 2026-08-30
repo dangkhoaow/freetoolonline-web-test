@@ -2,16 +2,24 @@
     // 3D scene archetype (perito-moreno-glacier) - vendored three.js (ESM,
     // dynamic import from /vendor/three/, NO CDN engine), fully client-side.
     // places-3d cluster, places-3d-discovery-loop-runbook, 2026-08-01.
+    // DETAILED-TERRAIN migration 2026-08-30 (prompts/places-3d-detailed-terrain-runbook.md):
+    // the procedural cross-section scene below renders FIRST (unchanged, CDN-outage
+    // fallback), then async fetches real Terrarium DEM elevation + Sentinel-2
+    // true-color imagery from the ftol-vm-assets CDN, IndexedDB-caches it, and
+    // swaps it in in-place once ready. A CDN failure or slow network leaves the
+    // procedural scene on screen - it never blanks.
     //
     // EDUCATIONAL APPROXIMATION, not survey glaciology.
-    // Published figures (cross-checked 2026-08-01):
+    // Published figures (cross-checked 2026-08-01, re-verified 2026-08-30):
     //   - Length about 30 km, part of the Southern Patagonian Ice Field
     //   - Area about 250 sq km
     //   - Terminus (ice-face) width about 5 km at Lago Argentino
-    //   - Ice-face height above water about 60-70 m
+    //   - Ice-face height above water about 60-70 m (Wikipedia: 74 m average)
     //   - One of the few glaciers on Earth considered relatively stable
     //     rather than retreating (commonly cited)
     //   - Los Glaciares National Park, Santa Cruz, Argentina - UNESCO 1981
+    //   - Lago Argentino surface elevation about 178-187 m ASL (websearch-
+    //     verified during this fire: Wikipedia 178 m, argentina.travel 187 m)
     //
     // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
 
@@ -53,6 +61,52 @@
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSniagarafalls.html /
+    // BODYJSmountfuji.html's t3dPlaces* pattern) - heights.bin (Int16 LE
+    // meters) + texture.jpg (Sentinel-2 true-color), sha256-verified, cached
+    // once per manifest version.
+    var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+    var T3D_PLACES_DB = 'ftol-places3d-assets';
+    function t3dPlacesIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(T3D_PLACES_DB, 1);
+            req.onupgradeneeded = function () {
+                if (!req.result.objectStoreNames.contains('assets')) {
+                    req.result.createObjectStore('assets', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function t3dPlacesIdbGet(key) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function t3dPlacesIdbPut(key, blob) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function t3dPlacesSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
     }
 
     function t3dShell(THREE, host, opts) {
@@ -232,7 +286,27 @@
 
         var crevasseOn = true, damOn = true;
 
+        // ---- Real-terrain progressive upgrade state (filled once loaded) ----
+        var realMesh = null, realReady = false, realLoading = false;
+        var realMat = null, realTex = null;
+        var realNormCol = null, realCrevasseCol = null, realMinH = 0, realMaxH = 0;
+        var realDamGroup = null;
+
         function panelHtml() {
+            if (realReady) {
+                return '<h3>Perito Moreno: real elevation' + (realTex ? ' + satellite imagery' : '') + '</h3>' +
+                    '<p>This relief now shows the actual measured shape of the glacier: the ice tongue descending from the Southern Patagonian Ice Field, the calving front, and the real pinch point where the snout can reach the Peninsula de Magallanes and dam the Brazo Rico arm of Lago Argentino.</p>' +
+                    '<table class="w3-table w3-bordered">' +
+                    '<tr><td>Length</td><td>about 30 km, part of the Southern Patagonian Ice Field</td></tr>' +
+                    '<tr><td>Area</td><td>about 250 sq km</td></tr>' +
+                    '<tr><td>Terminus width</td><td>about 5 km at Lago Argentino</td></tr>' +
+                    '<tr><td>Ice-face height</td><td>about 60-70 m above the water</td></tr>' +
+                    '<tr><td>Lake elevation</td><td>about 178-187 m above sea level</td></tr>' +
+                    '<tr><td>Behavior</td><td>relatively stable rather than retreating (commonly cited)</td></tr>' +
+                    '<tr><td>Location</td><td>Los Glaciares National Park, Santa Cruz, Argentina - UNESCO 1981</td></tr>' +
+                    '</table>' +
+                    '<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs). Imagery: contains modified Copernicus Sentinel data 2026. Relief is shown at true 1:1 scale relative to the mapped width - no vertical exaggeration. Educational approximation - the ice-dam marker and crevasse tinting are teaching cues layered on the real relief (the marker is placed at the documented contact point near the Peninsula de Magallanes), not a survey-grade glaciological model.</p>';
+            }
             return '<h3>Perito Moreno: the advancing ice wall</h3>' +
                 '<p>A cross-section of the glacier flowing off the Southern Patagonian Ice Field, the fractured crevasse band near the front, and the calving wall meeting Lago Argentino.</p>' +
                 '<table class="w3-table w3-bordered">' +
@@ -243,19 +317,223 @@
                 '<tr><td>Behavior</td><td>relatively stable rather than retreating (commonly cited)</td></tr>' +
                 '<tr><td>Location</td><td>Los Glaciares National Park, Santa Cruz, Argentina - UNESCO 1981</td></tr>' +
                 '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the ice surface, crevasse pattern, and vertical scale are procedural teaching cues, not survey glaciology.</p>';
+                '<p class="t3d-note">' + (realLoading
+                    ? 'Loading real elevation and satellite imagery now (one time, then cached) - this cross-section is a teaching placeholder while it downloads.'
+                    : 'Educational relief approximation - the ice surface, crevasse pattern, and vertical scale are procedural teaching cues, not survey glaciology.') + '</p>';
         }
 
         function apply() {
-            terrain.geometry.attributes.color.array.set(crevasseOn ? accentColors : normColors);
-            terrain.geometry.attributes.color.needsUpdate = true;
-            damGroup.visible = damOn;
+            if (realReady && realMesh) {
+                realMesh.geometry.attributes.color.array.set(crevasseOn ? realCrevasseCol : realNormCol);
+                // With real imagery loaded the two views are mutually exclusive:
+                // multiplying vertex colors into the texture is what produces
+                // black terrain (2026-08-29 defect fix - see mount-fuji/niagara-falls).
+                if (realMat && realTex) {
+                    realMat.map = crevasseOn ? null : realTex;
+                    realMat.vertexColors = !!crevasseOn;
+                    realMat.needsUpdate = true;
+                }
+                realMesh.geometry.attributes.color.needsUpdate = true;
+                if (realDamGroup) realDamGroup.visible = damOn;
+            } else {
+                terrain.geometry.attributes.color.array.set(crevasseOn ? accentColors : normColors);
+                terrain.geometry.attributes.color.needsUpdate = true;
+                damGroup.visible = damOn;
+            }
             var cb = document.getElementById('t3dPpmCrevasseBtn');
-            if (cb) cb.textContent = 'Crevasse bands: ' + (crevasseOn ? 'On' : 'Off');
+            if (cb) cb.textContent = (realReady && realTex)
+                ? ('View: ' + (crevasseOn ? 'Crevasse-tint colors' : 'Satellite view'))
+                : ('Crevasse bands: ' + (crevasseOn ? 'On' : 'Off'));
             var db = document.getElementById('t3dPpmDamBtn');
             if (db) db.textContent = 'Ice-dam marker: ' + (damOn ? 'On' : 'Off');
             t3dInfo(panelHtml());
             try { t3dSaveStore({ crevasseOn: crevasseOn, damOn: damOn }); } catch (e) {}
+        }
+
+        // Decimate a row-major Int16 grid to at most maxDim x maxDim cells,
+        // keeping the MAX value per cell (per the runbook: preserve sharp
+        // features like the calving front, never average them away).
+        function decimateMax(view, w, h, maxDim) {
+            var stepX = Math.max(1, Math.ceil(w / maxDim));
+            var stepZ = Math.max(1, Math.ceil(h / maxDim));
+            var ow = Math.floor((w - 1) / stepX) + 1;
+            var oh = Math.floor((h - 1) / stepZ) + 1;
+            var out = new Int16Array(ow * oh);
+            for (var oz = 0; oz < oh; oz++) {
+                var z0 = oz * stepZ;
+                for (var ox = 0; ox < ow; ox++) {
+                    var x0 = ox * stepX, best = -32768;
+                    for (var dz2 = 0; dz2 < stepZ && z0 + dz2 < h; dz2++) {
+                        var rowBase = (z0 + dz2) * w;
+                        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+                            var v = view[rowBase + x0 + dx];
+                            if (v > best) best = v;
+                        }
+                    }
+                    out[oz * ow + ox] = best;
+                }
+            }
+            return { data: out, w: ow, h: oh };
+        }
+
+        // Real-world fractional position (0..1 across the DEM window,
+        // west-to-east / north-to-south) of the glacier's ice-dam contact
+        // point - where the snout narrows to lake level against the
+        // Peninsula de Magallanes - precomputed offline during this fire from
+        // this asset's own bbox, not guessed at runtime. Method: (1) NASA
+        // Earth Observatory's published focal coordinate for this feature
+        // (50.4767S 73.0399W), (2) an independent satellite-mosaic pixel-pick
+        // on the same feature (50.4735S 73.0412W, about 350 m from #1), (3) a
+        // fine elevation scan along that latitude confirming a lake-level dip
+        // (about 182 m, matching the lake datum below) exactly there. All
+        // three agree within one DEM cell at this zoom.
+        var DAM_FX = 0.652, DAM_FZ = 0.414;
+        // Elevation bands (absolute meters ASL, not min/max-relative - the
+        // grid's own min/max include an unrelated low corner pixel and a
+        // distant peak). WATER_MAX_M matches the lake datum confirmed by
+        // ground-truth check #1 below (mode 179 m; published 178-187 m).
+        var WATER_MAX_M = 215, ICE_MID_M = 500, ROCK_MID_M = 1200;
+        var colWater = null, colIceEdge = null, colIceHigh = null, colRock = null, colSnow = null, colCrevasse = null;
+
+        function realBandColor(c, hRaw, maxH, accent) {
+            if (hRaw <= WATER_MAX_M) { c.setHex(0x2e7f9c); return; }
+            var t, base;
+            if (hRaw <= ICE_MID_M) {
+                t = (hRaw - WATER_MAX_M) / (ICE_MID_M - WATER_MAX_M);
+                base = colIceEdge.clone().lerp(colIceHigh, Math.min(1, t));
+                if (accent) { base.lerp(colCrevasse, (1 - t) * 0.85); } // crevasses concentrate near the (lower) front
+            } else if (hRaw <= ROCK_MID_M) {
+                t = (hRaw - ICE_MID_M) / (ROCK_MID_M - ICE_MID_M);
+                base = colIceHigh.clone().lerp(colRock, Math.min(1, t));
+            } else {
+                t = Math.min(1, (hRaw - ROCK_MID_M) / Math.max(1, maxH - ROCK_MID_M));
+                base = colRock.clone().lerp(colSnow, t);
+            }
+            c.copy(base);
+        }
+
+        function buildRealMesh(view, grid, texBlob) {
+            colWater = new THREE.Color(0x2e7f9c); colIceEdge = new THREE.Color(0xd7e8ea);
+            colIceHigh = new THREE.Color(0xeaf3f7); colRock = new THREE.Color(0x8f8378);
+            colSnow = new THREE.Color(0xffffff); colCrevasse = new THREE.Color(0x1e6fb0);
+            var dec = decimateMax(view, grid.width_px, grid.height_px, 220);
+            // Aspect-correct footprint: the window is not quite square (about
+            // 17.7 x 20 km), so size D to the taller (north-south) axis and
+            // derive W from the real pixel aspect ratio.
+            var D = 20, W = D * (grid.width_px / grid.height_px);
+            var geo2 = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+            geo2.rotateX(-Math.PI / 2);
+            // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1
+            // vertical proportion relative to the mapped extent (no exaggeration).
+            var vertScale = D / (grid.height_px * grid.meters_per_px);
+            var minH = grid.min_h_m, maxH = grid.max_h_m;
+            var pos2 = geo2.attributes.position;
+            var normCol = new Float32Array(pos2.count * 3);
+            var crevCol = new Float32Array(pos2.count * 3);
+            var c = new THREE.Color();
+            for (var i = 0; i < pos2.count; i++) {
+                var ix = i % dec.w, iz = Math.floor(i / dec.w);
+                var hRaw = dec.data[iz * dec.w + ix];
+                pos2.setY(i, (hRaw - minH) * vertScale);
+                realBandColor(c, hRaw, maxH, false);
+                normCol[i * 3] = c.r; normCol[i * 3 + 1] = c.g; normCol[i * 3 + 2] = c.b;
+                realBandColor(c, hRaw, maxH, true);
+                crevCol[i * 3] = c.r; crevCol[i * 3 + 1] = c.g; crevCol[i * 3 + 2] = c.b;
+            }
+            geo2.setAttribute('color', new THREE.BufferAttribute(crevasseOn ? crevCol : normCol, 3));
+            geo2.computeVertexNormals();
+            var mat2 = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 });
+            var mesh2 = new THREE.Mesh(geo2, mat2);
+            scene.add(mesh2);
+            terrain.visible = false;
+            damGroup.visible = false;
+            realMat = mat2;
+            realMesh = mesh2; realNormCol = normCol; realCrevasseCol = crevCol;
+            realMinH = minH; realMaxH = maxH;
+
+            // Real ice-dam marker: same cone+ring visual as the procedural
+            // scene, repositioned to the verified real-world contact point
+            // and scaled to this mesh's footprint (never rebuilt per click).
+            var markerScale = D / 24;
+            var dix = Math.round(DAM_FX * (dec.w - 1)), diz = Math.round(DAM_FZ * (dec.h - 1));
+            var dH = dec.data[Math.max(0, Math.min(dec.h - 1, diz)) * dec.w + Math.max(0, Math.min(dec.w - 1, dix))];
+            var worldX = (DAM_FX - 0.5) * W, worldZ = (DAM_FZ - 0.5) * D;
+            var worldY = (dH - minH) * vertScale + 0.28 * markerScale;
+            var dg = new THREE.Group();
+            var cone = new THREE.Mesh(new THREE.ConeGeometry(0.28 * markerScale, 0.55 * markerScale, 10), new THREE.MeshStandardMaterial({ color: 0xd94f3a }));
+            cone.position.y = 0.28 * markerScale * 0.5;
+            dg.add(cone);
+            var ring = new THREE.Mesh(new THREE.RingGeometry(0.45 * markerScale, 0.6 * markerScale, 24), new THREE.MeshBasicMaterial({ color: 0xd94f3a, side: THREE.DoubleSide, transparent: true, opacity: 0.85 }));
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.y = -0.26 * markerScale * 0.5;
+            dg.add(ring);
+            dg.position.set(worldX, worldY, worldZ);
+            scene.add(dg);
+            realDamGroup = dg;
+
+            realLoading = false; realReady = true;
+            apply();
+            t3dStatus('Real terrain loaded (Terrarium DEM + Sentinel-2 imagery). Drag to orbit, scroll to zoom.');
+            if (texBlob) {
+                var url = URL.createObjectURL(texBlob);
+                new THREE.TextureLoader().load(url, function (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    mat2.map = tex;
+                    mat2.vertexColors = false;
+                    mat2.color.setScalar(1);
+                    realTex = tex;
+                    mat2.needsUpdate = true;
+                    apply();
+                    URL.revokeObjectURL(url);
+                }, undefined, function () { URL.revokeObjectURL(url); });
+            }
+        }
+
+        function fetchPlacesAsset(file, mimeType, verKey) {
+            var key = verKey + ':' + file.file;
+            return t3dPlacesIdbGet(key).then(function (cached) {
+                if (cached) return cached;
+                return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+                    return r.arrayBuffer();
+                }).then(function (buf) {
+                    return t3dPlacesSha256Hex(buf).then(function (hex) {
+                        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+                        var blob = new Blob([buf], { type: mimeType });
+                        t3dPlacesIdbPut(key, blob);
+                        return blob;
+                    });
+                });
+            });
+        }
+
+        function loadRealTerrain() {
+            realLoading = true;
+            apply();
+            fetch(T3D_PLACES_CDN + '/manifest.json').then(function (r) { return r.json(); })
+                .then(function (manifest) {
+                    var asset = manifest && manifest.assets && manifest.assets['perito-moreno-glacier'];
+                    if (!asset) throw new Error('manifest missing the perito-moreno-glacier asset');
+                    var heightsFile = null, texFile = null;
+                    (asset.files || []).forEach(function (f) {
+                        if (f.role === 'heightfield') heightsFile = f;
+                        if (f.role === 'satellite-texture') texFile = f;
+                    });
+                    if (!heightsFile) throw new Error('manifest missing the heightfield file');
+                    var verKey = 'perito-moreno-glacier@' + manifest.version;
+                    var jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+                    if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+                    return Promise.all(jobs).then(function (blobs) {
+                        return blobs[0].arrayBuffer().then(function (buf) {
+                            buildRealMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    realLoading = false;
+                    apply();
+                    t3dStatus('Could not load real terrain data (' + (err && err.message ? err.message : err) + ') - showing the cross-section placeholder instead.');
+                });
         }
 
         var store = t3dLoadStore();
@@ -269,6 +547,8 @@
         if (damBtn) damBtn.addEventListener('click', function () { damOn = !damOn; apply(); });
 
         t3dStatus('Drag to orbit, scroll to zoom. Toggle crevasse bands or the ice-dam marker.');
+        if ('requestIdleCallback' in window) { requestIdleCallback(loadRealTerrain, { timeout: 4000 }); }
+        else { setTimeout(loadRealTerrain, 800); }
         return function animate(dt) {
             scene.rotation.y += dt * 0.00004;
         };
