@@ -124,6 +124,8 @@ export const INFO_ROUTES = new Set([
   '/guides/es/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
   // pdf-xchange-editor-browser-plugin-edge-vs-alternatives vi locale (create_new_guide_page 20260830-7)
   '/guides/vi/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
+  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives id locale (create_new_guide_page 20260830-11)
+  '/guides/id/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   '/guides/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
@@ -7344,6 +7346,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
   // pdf-xchange-editor-browser-plugin-edge-vs-alternatives vi locale (create_new_guide_page 20260830-7)
   '/guides/vi/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
+  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives id locale (create_new_guide_page 20260830-11)
+  '/guides/id/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
   // adobe-pdf-editor-browser-vs-alternatives pt locale (create_new_guide_page 20260820-937)
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html',
   // adobe-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260820-939)
@@ -29141,6 +29145,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/pt/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
   '/guides/es/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/es/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
   '/guides/vi/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/vi/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
+  '/guides/id/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/id/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
   '/image-converter-tools/client-side-pdf-editor-toolkit.html': 'convert/client-side-pdf-editor-toolkit.jsp',
   '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/pt/client-side-pdf-editor-toolkit-when.html': 'guide/pt/client-side-pdf-editor-toolkit-when.jsp',
