@@ -1,5 +1,13 @@
 <script type="module">
-import * as THREE from '/vendor/three/three.module.min.js';
+// Root-cause fix (2026-08-30): the ORIGINAL version of this file used a
+// static `import ... from '/vendor/three/...'` - an absolute path that only
+// resolves at the domain root. Staging serves under a basePath
+// (dangkhoaow.github.io/freetoolonline-web-test/...), so that import 404'd
+// on staging and the whole module failed before initScene() ever ran - the
+// canvas never booted. Every sibling t3d* page loads three.js via a dynamic
+// import prefixed with BASE_PATH; this file now does the same.
+const T3D_THREE_BASE = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three/three.module.min.js';
+let THREE;
 
 // DETAILED-TERRAIN migration 2026-08-30 (prompts/places-3d-detailed-terrain-runbook.md,
 // River-reach class per runbook 2b): the schematic floodplain/river/plume scene
@@ -394,10 +402,16 @@ window.addEventListener('beforeunload', () => {
   if (renderer) renderer.dispose();
 });
 
-try {
-  initScene();
-} catch (e) {
-  statusDiv.textContent = 'Error: ' + e.message;
+import(T3D_THREE_BASE).then((mod) => {
+  THREE = mod;
+  try {
+    initScene();
+  } catch (e) {
+    statusDiv.textContent = 'Error: ' + e.message;
+    console.error(e);
+  }
+}).catch((e) => {
+  statusDiv.textContent = 'Could not load the 3D engine: ' + (e && e.message ? e.message : e);
   console.error(e);
-}
+});
 </script>
