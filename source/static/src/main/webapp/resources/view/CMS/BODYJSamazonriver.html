@@ -206,6 +206,16 @@ function loadRealMouth() {
     });
 }
 
+// The schematic scene is built at a ~200-unit scale (camera at (0,80,60));
+// the real-terrain mesh is a ~22-unit window (per §1 step 2, decimated real
+// heights, meters-per-px scale). Same scene, two very different scales - the
+// camera MUST move when the view swaps, or the real mesh renders as a tiny
+// speck against empty background (measured: near-zero canvas pixel variance
+// at the schematic camera distance).
+const VIEW_CAMERA = {
+  basin: { pos: [0, 80, 60], look: [0, 0, 0] },
+  mouth: { pos: [0, 16, 13], look: [0, 0, 0] },
+};
 function setView(next) {
   if (next === 'mouth' && !confReady) return; // ignore clicks before real terrain has loaded
   view = next;
@@ -215,6 +225,9 @@ function setView(next) {
   if (atlanticMesh) atlanticMesh.visible = showBasin;
   if (plumeMesh) plumeMesh.visible = showBasin && showPlume;
   if (confGroup) confGroup.visible = !showBasin;
+  const cam = VIEW_CAMERA[view];
+  camera.position.set(cam.pos[0], cam.pos[1], cam.pos[2]);
+  camera.lookAt(cam.look[0], cam.look[1], cam.look[2]);
   if (viewBtn) viewBtn.textContent = 'View: ' + (view === 'mouth' ? 'Belem river mouth (real terrain)' : (confLoading ? 'Amazon basin (loading river mouth...)' : 'Amazon basin (schematic)'));
   updatePanel();
 }
