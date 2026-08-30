@@ -2,6 +2,12 @@
     // 3D scene archetype (niagara-falls) - vendored three.js (ESM,
     // dynamic import from /vendor/three/, NO CDN engine), fully client-side.
     // places-3d cluster, places-3d-discovery-loop-runbook, 2026-08-01.
+    // DETAILED-TERRAIN migration 2026-08-30 (prompts/places-3d-detailed-terrain-runbook.md):
+    // the procedural crestline scene below renders FIRST (unchanged, CDN-outage
+    // fallback), then async fetches real Terrarium DEM elevation + Sentinel-2
+    // true-color imagery from the ftol-vm-assets CDN, IndexedDB-caches it, and
+    // swaps it in in-place once ready. A CDN failure or slow network leaves the
+    // procedural scene on screen - it never blanks.
     //
     // EDUCATIONAL APPROXIMATION, not a survey-grade hydrological model.
     // Published figures (cross-checked 2026-08-01):
@@ -58,6 +64,52 @@
         else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
         else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSgrandcanyon.html /
+    // BODYJSmountfuji.html's t3dPlaces* pattern) - heights.bin (Int16 LE
+    // meters) + texture.jpg (Sentinel-2 true-color), sha256-verified, cached
+    // once per manifest version.
+    var T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+    var T3D_PLACES_DB = 'ftol-places3d-assets';
+    function t3dPlacesIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(T3D_PLACES_DB, 1);
+            req.onupgradeneeded = function () {
+                if (!req.result.objectStoreNames.contains('assets')) {
+                    req.result.createObjectStore('assets', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function t3dPlacesIdbGet(key) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function t3dPlacesIdbPut(key, blob) {
+        return t3dPlacesIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function t3dPlacesSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
     }
 
     function t3dShell(THREE, host, opts) {
@@ -247,7 +299,26 @@
 
         var flowOn = true, whirlOn = true;
 
+        // ---- Real-terrain progressive upgrade state (filled once loaded) ----
+        var realMesh = null, realReady = false, realLoading = false;
+        var realMat = null, realTex = null;
+        var realNormCol = null, realFlowCol = null, realMinH = 0, realMaxH = 0;
+        var realWhirlGroup = null;
+
         function panelHtml() {
+            if (realReady) {
+                return '<h3>Niagara Falls: real elevation' + (realTex ? ' + satellite imagery' : '') + '</h3>' +
+                    '<p>This relief now shows the actual measured shape of the Niagara Escarpment: the plateau on both banks, the gorge the river has cut below the falls, and the real bend in the river at the Whirlpool downstream.</p>' +
+                    '<table class="w3-table w3-bordered">' +
+                    '<tr><td>Combined flow</td><td>about 2,832 m3/s (168,000 m3/min)</td></tr>' +
+                    '<tr><td>Flow split</td><td>Horseshoe about 90%, American about 10%</td></tr>' +
+                    '<tr><td>Horseshoe height</td><td>about 57 m (188 ft)</td></tr>' +
+                    '<tr><td>American height</td><td>about 21-34 m (70-110 ft)</td></tr>' +
+                    '<tr><td>Whirlpool</td><td>about 4.5 km (2.8 mi) downstream</td></tr>' +
+                    '<tr><td>Location</td><td>Ontario, Canada / New York, USA border</td></tr>' +
+                    '</table>' +
+                    '<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs). Imagery: contains modified Copernicus Sentinel data 2026. Relief is shown at true 1:1 scale relative to the mapped width - no vertical exaggeration. Educational approximation - the whirlpool marker and flow-split tinting are teaching cues layered on the real relief, not a survey-grade hydrological model.</p>';
+            }
             return '<h3>Niagara Falls: two falls, one crestline</h3>' +
                 '<p>A view of the shared crestline: the curved Horseshoe Falls, Goat Island splitting the flow, and the straighter American Falls, dropping into the gorge below.</p>' +
                 '<table class="w3-table w3-bordered">' +
@@ -258,19 +329,209 @@
                 '<tr><td>Whirlpool</td><td>about 4.5 km (2.8 mi) downstream</td></tr>' +
                 '<tr><td>Location</td><td>Ontario, Canada / New York, USA border</td></tr>' +
                 '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the crestline curve, gorge profile, and whirlpool placement are procedural teaching cues, not a survey-grade hydrological model.</p>';
+                '<p class="t3d-note">' + (realLoading
+                    ? 'Loading real elevation and satellite imagery now (one time, then cached) - this procedural crestline is a teaching placeholder while it downloads.'
+                    : 'Educational relief approximation - the crestline curve, gorge profile, and whirlpool placement are procedural teaching cues, not a survey-grade hydrological model.') + '</p>';
         }
 
         function apply() {
-            terrain.geometry.attributes.color.array.set(flowOn ? flowColors : normColors);
-            terrain.geometry.attributes.color.needsUpdate = true;
-            whirlGroup.visible = whirlOn;
+            if (realReady && realMesh) {
+                realMesh.geometry.attributes.color.array.set(flowOn ? realFlowCol : realNormCol);
+                // With real imagery loaded the two views are mutually exclusive:
+                // multiplying vertex colors into the texture is what produces
+                // black terrain (2026-08-29 defect fix - see mount-fuji/mount-everest).
+                if (realMat && realTex) {
+                    realMat.map = flowOn ? null : realTex;
+                    realMat.vertexColors = !!flowOn;
+                    realMat.needsUpdate = true;
+                }
+                realMesh.geometry.attributes.color.needsUpdate = true;
+                if (realWhirlGroup) realWhirlGroup.visible = whirlOn;
+            } else {
+                terrain.geometry.attributes.color.array.set(flowOn ? flowColors : normColors);
+                terrain.geometry.attributes.color.needsUpdate = true;
+                whirlGroup.visible = whirlOn;
+            }
             var fb = document.getElementById('t3dNiaFlowBtn');
-            if (fb) fb.textContent = 'Flow split: ' + (flowOn ? 'On' : 'Off');
+            if (fb) fb.textContent = (realReady && realTex)
+                ? ('View: ' + (flowOn ? 'Flow-split colors' : 'Satellite view'))
+                : ('Flow split: ' + (flowOn ? 'On' : 'Off'));
             var wb = document.getElementById('t3dNiaWhirlBtn');
             if (wb) wb.textContent = 'Whirlpool marker: ' + (whirlOn ? 'On' : 'Off');
             t3dInfo(panelHtml());
             try { t3dSaveStore({ flowOn: flowOn, whirlOn: whirlOn }); } catch (e) {}
+        }
+
+        // Decimate a row-major Int16 grid to at most maxDim x maxDim cells,
+        // keeping the MAX value per cell (per the runbook: preserve sharp
+        // features like the falls brink, never average them away).
+        function decimateMax(view, w, h, maxDim) {
+            var stepX = Math.max(1, Math.ceil(w / maxDim));
+            var stepZ = Math.max(1, Math.ceil(h / maxDim));
+            var ow = Math.floor((w - 1) / stepX) + 1;
+            var oh = Math.floor((h - 1) / stepZ) + 1;
+            var out = new Int16Array(ow * oh);
+            for (var oz = 0; oz < oh; oz++) {
+                var z0 = oz * stepZ;
+                for (var ox = 0; ox < ow; ox++) {
+                    var x0 = ox * stepX, best = -32768;
+                    for (var dz2 = 0; dz2 < stepZ && z0 + dz2 < h; dz2++) {
+                        var rowBase = (z0 + dz2) * w;
+                        for (var dx = 0; dx < stepX && x0 + dx < w; dx++) {
+                            var v = view[rowBase + x0 + dx];
+                            if (v > best) best = v;
+                        }
+                    }
+                    out[oz * ow + ox] = best;
+                }
+            }
+            return { data: out, w: ow, h: oh };
+        }
+
+        // Real-world fractional position of the Niagara Whirlpool (0..1 across
+        // the DEM window, west-to-east / north-to-south) and of the Goat Island
+        // longitude that separates the two cataracts - precomputed offline from
+        // this asset's own bbox/mercator window (ftol-vm-assets/places-3d/out/
+        // niagara-falls/fractions_niagara.mjs), not guessed at runtime.
+        var WHIRL_FX = 0.507, WHIRL_FZ = 0.576;
+        var GOAT_ISLAND_FX = 0.42;
+        var FALLS_FZ_MIN = 0.74, FALLS_FZ_MAX = 0.94;
+        var GORGE_MAX_M = 115; // real elevation below this = river/gorge channel, not plateau
+
+        function buildRealMesh(view, grid, texBlob) {
+            var dec = decimateMax(view, grid.width_px, grid.height_px, 220);
+            // Aspect-correct footprint: this window is not square (elongated
+            // north-south to cover the falls + gorge down to the Whirlpool and
+            // the Queenston/Lewiston escarpment mouth), so size D to the taller
+            // (north-south) axis and derive W from the real pixel aspect ratio.
+            var D = 20, W = D * (grid.width_px / grid.height_px);
+            var geo2 = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+            geo2.rotateX(-Math.PI / 2);
+            // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1
+            // vertical proportion relative to the mapped extent (no exaggeration).
+            var vertScale = D / (grid.height_px * grid.meters_per_px);
+            var minH = grid.min_h_m, maxH = grid.max_h_m;
+            var pos2 = geo2.attributes.position;
+            var normCol = new Float32Array(pos2.count * 3);
+            var flowCol = new Float32Array(pos2.count * 3);
+            var c = new THREE.Color(), band = new THREE.Color();
+            var colPlateauLow = new THREE.Color(0x6b8e5a), colPlateauHigh = new THREE.Color(0x8a7256);
+            var colGorge = new THREE.Color(0x2a5a78);
+            var tintHorseshoe = new THREE.Color(0x0d3f7a), tintAmerican = new THREE.Color(0x4fa8c9);
+            for (var i = 0; i < pos2.count; i++) {
+                var ix = i % dec.w, iz = Math.floor(i / dec.w);
+                var hRaw = dec.data[iz * dec.w + ix];
+                pos2.setY(i, (hRaw - minH) * vertScale);
+                var fx = ix / (dec.w - 1), fz = iz / (dec.h - 1);
+                var isGorge = hRaw < GORGE_MAX_M;
+                if (isGorge) { band.copy(colGorge); }
+                else {
+                    var t = Math.max(0, Math.min(1, (hRaw - GORGE_MAX_M) / Math.max(1, maxH - GORGE_MAX_M)));
+                    band.copy(colPlateauLow).lerp(colPlateauHigh, t);
+                }
+                normCol[i * 3] = band.r; normCol[i * 3 + 1] = band.g; normCol[i * 3 + 2] = band.b;
+                if (isGorge && fz >= FALLS_FZ_MIN && fz <= FALLS_FZ_MAX) {
+                    c.copy(colGorge).lerp(fx < GOAT_ISLAND_FX ? tintHorseshoe : tintAmerican, 0.75);
+                } else { c.copy(band); }
+                flowCol[i * 3] = c.r; flowCol[i * 3 + 1] = c.g; flowCol[i * 3 + 2] = c.b;
+            }
+            geo2.setAttribute('color', new THREE.BufferAttribute(flowOn ? flowCol : normCol, 3));
+            geo2.computeVertexNormals();
+            var mat2 = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 });
+            var mesh2 = new THREE.Mesh(geo2, mat2);
+            scene.add(mesh2);
+            terrain.visible = false;
+            whirlGroup.visible = false;
+            realMat = mat2;
+            realMesh = mesh2; realNormCol = normCol; realFlowCol = flowCol;
+            realMinH = minH; realMaxH = maxH;
+
+            // Real whirlpool marker: same spiral+ring visual as the procedural
+            // scene, repositioned to the Whirlpool's real-world location and
+            // scaled to this mesh's footprint (never rebuilt per click).
+            var markerScale = D / 26;
+            var wix = Math.round(WHIRL_FX * (dec.w - 1)), wiz = Math.round(WHIRL_FZ * (dec.h - 1));
+            var wH = dec.data[Math.max(0, Math.min(dec.h - 1, wiz)) * dec.w + Math.max(0, Math.min(dec.w - 1, wix))];
+            var worldX = (WHIRL_FX - 0.5) * W, worldZ = (WHIRL_FZ - 0.5) * D;
+            var worldY = (wH - minH) * vertScale + 0.25 * markerScale;
+            var wg = new THREE.Group();
+            var spiralPts = [];
+            for (var si = 0; si <= 60; si++) {
+                var a = si * 0.55, r = (0.15 + si * 0.028) * markerScale;
+                spiralPts.push(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r));
+            }
+            var spiralGeo = new THREE.BufferGeometry().setFromPoints(spiralPts);
+            wg.add(new THREE.Line(spiralGeo, new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 })));
+            var ring = new THREE.Mesh(new THREE.TorusGeometry(1.9 * markerScale, 0.06 * markerScale, 8, 40), new THREE.MeshStandardMaterial({ color: 0xffe08a }));
+            ring.rotation.x = Math.PI / 2;
+            wg.add(ring);
+            wg.position.set(worldX, worldY, worldZ);
+            scene.add(wg);
+            realWhirlGroup = wg;
+
+            realLoading = false; realReady = true;
+            apply();
+            t3dStatus('Real terrain loaded (Terrarium DEM + Sentinel-2 imagery). Drag to orbit, scroll to zoom.');
+            if (texBlob) {
+                var url = URL.createObjectURL(texBlob);
+                new THREE.TextureLoader().load(url, function (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    mat2.map = tex;
+                    mat2.vertexColors = false;
+                    mat2.color.setScalar(1);
+                    realTex = tex;
+                    mat2.needsUpdate = true;
+                    apply();
+                    URL.revokeObjectURL(url);
+                }, undefined, function () { URL.revokeObjectURL(url); });
+            }
+        }
+
+        function fetchPlacesAsset(file, mimeType, verKey) {
+            var key = verKey + ':' + file.file;
+            return t3dPlacesIdbGet(key).then(function (cached) {
+                if (cached) return cached;
+                return fetch(T3D_PLACES_CDN + '/' + file.file).then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+                    return r.arrayBuffer();
+                }).then(function (buf) {
+                    return t3dPlacesSha256Hex(buf).then(function (hex) {
+                        if (file.sha256 && hex !== file.sha256) { throw new Error('sha256 mismatch on ' + file.file); }
+                        var blob = new Blob([buf], { type: mimeType });
+                        t3dPlacesIdbPut(key, blob);
+                        return blob;
+                    });
+                });
+            });
+        }
+
+        function loadRealTerrain() {
+            realLoading = true;
+            apply();
+            fetch(T3D_PLACES_CDN + '/manifest.json').then(function (r) { return r.json(); })
+                .then(function (manifest) {
+                    var asset = manifest && manifest.assets && manifest.assets['niagara-falls'];
+                    if (!asset) throw new Error('manifest missing the niagara-falls asset');
+                    var heightsFile = null, texFile = null;
+                    (asset.files || []).forEach(function (f) {
+                        if (f.role === 'heightfield') heightsFile = f;
+                        if (f.role === 'satellite-texture') texFile = f;
+                    });
+                    if (!heightsFile) throw new Error('manifest missing the heightfield file');
+                    var verKey = 'niagara-falls@' + manifest.version;
+                    var jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+                    if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+                    return Promise.all(jobs).then(function (blobs) {
+                        return blobs[0].arrayBuffer().then(function (buf) {
+                            buildRealMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    realLoading = false;
+                    apply();
+                    t3dStatus('Could not load real terrain data (' + (err && err.message ? err.message : err) + ') - showing the procedural crestline instead.');
+                });
         }
 
         var store = t3dLoadStore();
@@ -284,8 +545,11 @@
         if (whirlBtn) whirlBtn.addEventListener('click', function () { whirlOn = !whirlOn; apply(); });
 
         t3dStatus('Drag to orbit, scroll to zoom. Toggle the flow split or the whirlpool marker.');
+        if ('requestIdleCallback' in window) { requestIdleCallback(loadRealTerrain, { timeout: 4000 }); }
+        else { setTimeout(loadRealTerrain, 800); }
         return function animate(dt) {
             whirlGroup.rotation.y += dt * 0.0006;
+            if (realWhirlGroup) realWhirlGroup.rotation.y += dt * 0.0006;
         };
     }
 
