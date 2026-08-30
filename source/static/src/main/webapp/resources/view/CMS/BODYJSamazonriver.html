@@ -1,6 +1,18 @@
 <script type="module">
 import * as THREE from '/vendor/three/three.module.min.js';
 
+// DETAILED-TERRAIN migration 2026-08-30 (prompts/places-3d-detailed-terrain-runbook.md,
+// River-reach class per runbook 2b): the schematic floodplain/river/plume scene
+// below is the ORIGINAL scene, unchanged, and stays the first-paint default view
+// (it needs no network, so it can never render blank). A NEW Mouth view fetches
+// real Terrarium DEM elevation of the Belem / Guajara Bay reach - where the
+// Amazon/Para river system actually meets the Atlantic - from the
+// ftol-vm-assets CDN, IndexedDB-caches it, and becomes selectable via the View
+// button once ready. A CDN failure leaves the View button on the schematic
+// basin and the page works exactly as before - it never blocks on the network.
+// amazon-rainforest already migrated the upstream Meeting-of-Waters confluence
+// near Manaus, so this reach is deliberately different - it is the mouth/plume
+// signature this page's own copy already names.
 const MOBILE = window.innerWidth < 768;
 const canvasHost = document.getElementById('t3dCanvasHost');
 const statusDiv = document.getElementById('t3dStatus');
@@ -9,11 +21,223 @@ const controlsSpan = document.getElementById('t3dAmazonControls');
 const fullscreenBtn = document.getElementById('t3dFullscreenBtn');
 const seasonBtn = document.getElementById('t3dAmazonSeasonBtn');
 const plumeBtn = document.getElementById('t3dAmazonPlumeBtn');
+const viewBtn = document.getElementById('t3dAmazonViewBtn');
 
-let scene, camera, renderer, controls;
+let scene, camera, renderer;
 let riverMesh, floodplainMesh, plumeMesh, atlanticMesh;
 let isDryMode = true;
 let showPlume = true;
+let view = 'basin'; // 'basin' (schematic, CDN-independent default) | 'mouth' (real terrain)
+
+// ---- Real-terrain CDN + IndexedDB cache (mirrors BODYJSamazonrainforest.html /
+// BODYJSlakevictoria.html's t3dPlaces* pattern) - heights.bin (Int16 LE
+// meters) + texture.jpg (Sentinel-2 true-color, when available), sha256-
+// verified, cached once per manifest version.
+const T3D_PLACES_CDN = 'https://gh-static.freetool.online/places-3d';
+const T3D_PLACES_DB = 'ftol-places3d-assets';
+const T3D_SLUG = 'amazon-river';
+let confReady = false, confLoading = false;
+let confMinH = 0, confMaxH = 0, confTexUsed = false;
+let confGroup;
+
+function t3dPlacesIdbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(T3D_PLACES_DB, 1);
+    req.onupgradeneeded = () => {
+      if (!req.result.objectStoreNames.contains('assets')) {
+        req.result.createObjectStore('assets', { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error || new Error('IndexedDB open failed'));
+  });
+}
+function t3dPlacesIdbGet(key) {
+  return t3dPlacesIdbOpen().then((db) => new Promise((resolve) => {
+    const tx = db.transaction('assets', 'readonly');
+    const rq = tx.objectStore('assets').get(key);
+    rq.onsuccess = () => resolve(rq.result ? rq.result.blob : null);
+    rq.onerror = () => resolve(null);
+  })).catch(() => null);
+}
+function t3dPlacesIdbPut(key, blob) {
+  return t3dPlacesIdbOpen().then((db) => new Promise((resolve) => {
+    const tx = db.transaction('assets', 'readwrite');
+    tx.objectStore('assets').put({ key, blob });
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => resolve(false);
+  })).catch(() => false);
+}
+function t3dPlacesSha256Hex(buf) {
+  return crypto.subtle.digest('SHA-256', buf).then((hash) => {
+    const b = new Uint8Array(hash);
+    let hex = '';
+    for (let i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+    return hex;
+  });
+}
+function fetchPlacesAsset(file, mimeType, verKey) {
+  const key = verKey + ':' + file.file;
+  return t3dPlacesIdbGet(key).then((cached) => {
+    if (cached) return cached;
+    return fetch(T3D_PLACES_CDN + '/' + file.file).then((r) => {
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + file.file);
+      return r.arrayBuffer();
+    }).then((buf) => t3dPlacesSha256Hex(buf).then((hex) => {
+      if (file.sha256 && hex !== file.sha256) throw new Error('sha256 mismatch on ' + file.file);
+      const blob = new Blob([buf], { type: mimeType });
+      t3dPlacesIdbPut(key, blob);
+      return blob;
+    }));
+  });
+}
+
+// Decimate a row-major Int16 grid to at most maxDim x maxDim cells, keeping
+// the MAX value per cell (preserve relief detail, never average it flat).
+function decimateMax(dataView, w, h, maxDim) {
+  const stepX = Math.max(1, Math.ceil(w / maxDim));
+  const stepZ = Math.max(1, Math.ceil(h / maxDim));
+  const ow = Math.floor((w - 1) / stepX) + 1;
+  const oh = Math.floor((h - 1) / stepZ) + 1;
+  const out = new Int16Array(ow * oh);
+  for (let oz = 0; oz < oh; oz++) {
+    const z0 = oz * stepZ;
+    for (let ox = 0; ox < ow; ox++) {
+      const x0 = ox * stepX;
+      let best = -32768;
+      for (let dz = 0; dz < stepZ && z0 + dz < h; dz++) {
+        const rowBase = (z0 + dz) * w;
+        for (let dx = 0; dx < stepX && x0 + dx < w; dx++) {
+          const v = dataView[rowBase + x0 + dx];
+          if (v > best) best = v;
+        }
+      }
+      out[oz * ow + ox] = best;
+    }
+  }
+  return { data: out, w: ow, h: oh };
+}
+
+function buildMouthMesh(heightsView, grid, texBlob) {
+  const dec = decimateMax(heightsView, grid.width_px, grid.height_px, 220);
+  const W = 22, D = 22;
+  const geo = new THREE.PlaneGeometry(W, D, dec.w - 1, dec.h - 1);
+  geo.rotateX(-Math.PI / 2);
+  // Isotropic meters -> scene-unit scale so relief keeps TRUE 1:1 vertical
+  // proportion relative to the mapped width (no exaggeration).
+  const vertScale = W / (grid.width_px * grid.meters_per_px);
+  const minH = grid.min_h_m, maxH = grid.max_h_m;
+  const pos = geo.attributes.position;
+  const colors = new Float32Array(pos.count * 3);
+  const c = new THREE.Color();
+  const low = new THREE.Color(0x2b4a63), highc = new THREE.Color(0x7a9a5b);
+  // Clamp display height to a generous documented band (0-60m) so a rare void
+  // pixel over water cannot spike the mesh - the range recorded in the panel
+  // stays the raw min/max for honesty.
+  for (let i = 0; i < pos.count; i++) {
+    const ix = i % dec.w, iz = Math.floor(i / dec.w);
+    const hRaw = dec.data[iz * dec.w + ix];
+    const hClamped = Math.max(-3, Math.min(60, hRaw));
+    pos.setY(i, (hClamped - -3) * vertScale);
+    const t = Math.max(0, Math.min(1, (hClamped - -3) / 63));
+    c.copy(low).lerp(highc, t);
+    colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+  const mesh = new THREE.Mesh(geo, mat);
+  confGroup.add(mesh);
+  confMinH = minH; confMaxH = maxH;
+  confLoading = false; confReady = true;
+  setView('mouth');
+  statusDiv.textContent = 'Real river-mouth terrain loaded (Terrarium DEM' + (texBlob ? ' + Sentinel-2 imagery' : '') + '). Drag to orbit, scroll to zoom.';
+  if (texBlob) {
+    const texUrl = URL.createObjectURL(texBlob);
+    new THREE.TextureLoader().load(texUrl, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      // MeshStandardMaterial MULTIPLIES vertexColors by map - once real
+      // imagery is the colour source the hypsometric bands must stop
+      // multiplying into it (render-quality contract, 2026-08-29 defect).
+      mat.map = tex;
+      mat.vertexColors = false;
+      mat.color.setScalar(1);
+      mat.needsUpdate = true;
+      confTexUsed = true;
+      updatePanel();
+      URL.revokeObjectURL(texUrl);
+    }, undefined, () => URL.revokeObjectURL(texUrl));
+  }
+  updatePanel();
+}
+
+function loadRealMouth() {
+  confLoading = true;
+  updatePanel();
+  fetch(T3D_PLACES_CDN + '/manifest.json').then((r) => r.json())
+    .then((manifest) => {
+      const asset = manifest && manifest.assets && manifest.assets[T3D_SLUG];
+      if (!asset) throw new Error('manifest missing the ' + T3D_SLUG + ' asset');
+      let heightsFile = null, texFile = null;
+      (asset.files || []).forEach((f) => {
+        if (f.role === 'heightfield') heightsFile = f;
+        if (f.role === 'satellite-texture') texFile = f;
+      });
+      if (!heightsFile) throw new Error('manifest missing the heightfield file');
+      const verKey = T3D_SLUG + '@' + manifest.version;
+      const jobs = [fetchPlacesAsset(heightsFile, 'application/octet-stream', verKey)];
+      if (texFile) jobs.push(fetchPlacesAsset(texFile, 'image/jpeg', verKey));
+      return Promise.all(jobs).then((blobs) => blobs[0].arrayBuffer().then((buf) => {
+        buildMouthMesh(new Int16Array(buf), asset.grid, blobs[1] || null);
+      }));
+    })
+    .catch((err) => {
+      confLoading = false;
+      updatePanel();
+      statusDiv.textContent = 'Could not load real river-mouth terrain (' + (err && err.message ? err.message : err) + ') - showing the schematic basin view instead.';
+    });
+}
+
+function setView(next) {
+  if (next === 'mouth' && !confReady) return; // ignore clicks before real terrain has loaded
+  view = next;
+  const showBasin = view === 'basin';
+  if (floodplainMesh) floodplainMesh.visible = showBasin;
+  if (riverMesh) riverMesh.visible = showBasin;
+  if (atlanticMesh) atlanticMesh.visible = showBasin;
+  if (plumeMesh) plumeMesh.visible = showBasin && showPlume;
+  if (confGroup) confGroup.visible = !showBasin;
+  if (viewBtn) viewBtn.textContent = 'View: ' + (view === 'mouth' ? 'Belem river mouth (real terrain)' : (confLoading ? 'Amazon basin (loading river mouth...)' : 'Amazon basin (schematic)'));
+  updatePanel();
+}
+
+function basinPanelHtml() {
+  return `<h3>Amazon River</h3>
+<p><b>Length:</b> about 6,400 km</p>
+<p><b>Discharge:</b> about 209,000 m3/s (1/5 of world discharge)</p>
+<p><b>Basin area:</b> about 7,050,000 km2</p>
+<p><b>Flood inundation:</b> up to 40 m (wet season)</p>
+<p><b>Plume extent:</b> 100+ km into Atlantic</p>
+<p class="t3d-note">Educational relief approximation - the floodplain relief, channel meanders, and plume cone are procedural teaching cues, not a survey map. Switch to the Mouth view for real measured terrain at Belem.</p>`;
+}
+function mouthPanelHtml() {
+  if (!confReady) {
+    return '<h3>Amazon River: the Belem river mouth</h3><p>' +
+      (confLoading ? 'Loading real elevation of the Belem / Guajara Bay reach now (one time, then cached).' : 'Real terrain not loaded yet.') + '</p>';
+  }
+  return `<h3>Belem / Guajara Bay: where the river meets the Atlantic (real terrain)</h3>
+<p>This is the reach around Belem, Para, where the Para/Amazon river system widens into Guajara Bay on its way to the Atlantic - real measured elevation` + (confTexUsed ? ' and satellite imagery' : '') + `, not a procedural surface. The silt plume this page's basin view teaches as a cone offshore is a genuinely huge feature (100+ km into the Atlantic) far larger than this ~22 km window, so it stays a schematic cue in the basin view; this view instead shows the actual river-to-ocean transition on the ground at true 1:1 vertical scale.</p>
+<table class="w3-table w3-bordered">
+<tr><td>Elevation in this view</td><td>${Math.round(confMinH)} m to ${Math.round(confMaxH)} m</td></tr>
+<tr><td>Belem city center (published)</td><td>about 10 m above sea level</td></tr>
+<tr><td>Bay/tidal water surface</td><td>near sea level, 0-3 m</td></tr>
+<tr><td>Signature feature</td><td>Para river / Guajara Bay mouth, Belem, Brazil</td></tr>
+</table>
+<p class="t3d-note">Terrain: Mapzen/AWS Open Data terrain tiles (NASA/USGS DEMs).` + (confTexUsed ? ' Imagery: contains modified Copernicus Sentinel data 2026.' : ' Imagery not available for this window; shown with hypsometric shading instead.') + ` Relief is shown at true 1:1 scale relative to the mapped width - no vertical exaggeration; this lowland tidal reach has only tens of meters of true relief. Educational approximation - not survey-grade geodesy.</p>`;
+}
+function updatePanel() {
+  infoPanel.innerHTML = view === 'mouth' ? mouthPanelHtml() : basinPanelHtml();
+}
 
 function initScene() {
   const width = canvasHost.clientWidth;
@@ -31,15 +255,22 @@ function initScene() {
   renderer.setPixelRatio(window.devicePixelRatio);
   canvasHost.appendChild(renderer.domElement);
 
+  confGroup = new THREE.Group();
+  confGroup.visible = false;
+  scene.add(confGroup);
+
   initLights();
   buildTerrain();
   buildRiver();
   buildPlume();
 
   controlsSpan.style.display = 'inline';
-  statusDiv.textContent = '';
+  updatePanel();
 
   animate();
+
+  if ('requestIdleCallback' in window) { requestIdleCallback(loadRealMouth, { timeout: 4000 }); }
+  else { setTimeout(loadRealMouth, 800); }
 }
 
 function initLights() {
@@ -55,7 +286,7 @@ function initLights() {
 function buildTerrain() {
   const geometry = new THREE.PlaneGeometry(200, 200, 40, 40);
   const positions = geometry.attributes.position;
-  
+
   for (let i = 0; i < positions.count; i++) {
     const x = positions.getX(i);
     const y = positions.getY(i);
@@ -90,14 +321,6 @@ function buildRiver() {
     new THREE.Vector3(20, -80, 1), new THREE.Vector3(-10, -110, 1)
   ]);
 
-  const points = curve.getPoints(80);
-  const geometry = new THREE.BufferGeometry();
-  const widths = [];
-  for (let i = 0; i < points.length; i++) {
-    const t = i / points.length;
-    widths.push(3 + Math.sin(t * Math.PI * 4) * 1.5);
-  }
-
   const tubeGeo = new THREE.TubeGeometry(curve, 60, 2, 4);
   const riverMat = new THREE.MeshStandardMaterial({ color: 0x5a8f7b, roughness: 0.4 });
   riverMesh = new THREE.Mesh(tubeGeo, riverMat);
@@ -112,12 +335,14 @@ function buildPlume() {
   plumeMesh = new THREE.Mesh(plumeGeo, plumeMat);
   plumeMesh.position.set(10, -130, 0.5);
   plumeMesh.rotation.x = Math.PI / 2;
-  if (showPlume) scene.add(plumeMesh);
+  plumeMesh.visible = showPlume && view === 'basin';
+  scene.add(plumeMesh);
 }
 
 function updateFloodplain() {
   if (floodplainMesh) scene.remove(floodplainMesh);
   buildTerrain();
+  if (view !== 'basin') { floodplainMesh.visible = false; if (riverMesh) riverMesh.visible = false; if (atlanticMesh) atlanticMesh.visible = false; }
 }
 
 seasonBtn.addEventListener('click', () => {
@@ -129,12 +354,12 @@ seasonBtn.addEventListener('click', () => {
 plumeBtn.addEventListener('click', () => {
   showPlume = !showPlume;
   plumeBtn.textContent = showPlume ? 'Plume: On' : 'Plume: Off';
-  if (showPlume && plumeMesh && !scene.children.includes(plumeMesh)) {
-    scene.add(plumeMesh);
-  } else if (!showPlume && plumeMesh && scene.children.includes(plumeMesh)) {
-    scene.remove(plumeMesh);
-  }
+  if (plumeMesh) plumeMesh.visible = showPlume && view === 'basin';
 });
+
+if (viewBtn) {
+  viewBtn.addEventListener('click', () => setView(view === 'mouth' ? 'basin' : 'mouth'));
+}
 
 fullscreenBtn.addEventListener('click', () => {
   document.getElementById('t3dWrapper').requestFullscreen();
@@ -153,20 +378,21 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
 });
+if (typeof ResizeObserver === 'function') {
+  new ResizeObserver(() => {
+    const width = canvasHost.clientWidth;
+    const height = canvasHost.clientHeight;
+    if (!width || !height) return;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+  }).observe(canvasHost);
+}
 
 window.addEventListener('beforeunload', () => {
   cancelAnimationFrame(rafId);
   if (renderer) renderer.dispose();
 });
-
-infoPanel.innerHTML = `
-<h3>Amazon River</h3>
-<p><b>Length:</b> about 6,400 km</p>
-<p><b>Discharge:</b> about 209,000 m3/s (1/5 of world discharge)</p>
-<p><b>Basin area:</b> about 7,050,000 km2</p>
-<p><b>Flood inundation:</b> up to 40 m (wet season)</p>
-<p><b>Plume extent:</b> 100+ km into Atlantic</p>
-`;
 
 try {
   initScene();
