@@ -1,0 +1,625 @@
+<script>
+    // Architecture Diagram Maker - turn a JSON description, a few typed lines, a
+    // plain-English description or an uploaded project folder into an interactive
+    // system diagram (architecture / workflow / sequence / data flow / lifecycle),
+    // rendered entirely in this browser tab. Nothing is uploaded anywhere.
+    //
+    // 2026-08-31 operator request: "make a new tool under /utility-tools/ that
+    // uses tt-a1i/archify" + "support all 3 authoring options, and uploading a
+    // project folder/file so a local WebLLM can analyse it and feed the engine".
+    //
+    // Engine: the archify diagram renderers (MIT, https://github.com/tt-a1i/archify
+    // pinned at 5de7275fe87a66a19d52a4d9b0b3a4f2a5a90115), compiled for the browser
+    // by .agent/skills/_lib/build-archify-vendor.mjs and vendored at
+    // /vendor/archify/. Upstream is a Node CLI whose node APIs sit only at the
+    // file-in/file-out edges, so the bundles alias fs/path/url to an in-memory
+    // map: the page puts the diagram JSON and the viewer template into
+    // globalThis.__archifyVfs, imports the type's bundle (each import performs
+    // exactly ONE render because the upstream scripts run at module top level -
+    // re-renders re-import through a cache-busting query), and reads the finished
+    // self-contained HTML from globalThis.__archifyOut.
+    //
+    // Four ways in, one pipeline out. Every mode ends as JSON in the same editor,
+    // is checked by archify's OWN schema validators (compiled into
+    // /vendor/archify/validator.js), and rendered by the same engine:
+    //   1. examples + JSON editor (deterministic, works everywhere)
+    //   2. quick builder - typed lines become a workflow or architecture IR
+    //   3. describe it - a local WebLLM (vendored /vendor/web-llm, WebGPU only)
+    //      writes the IR from an English description, with a validate-and-retry
+    //      loop feeding schema errors back to the model
+    //   4. analyse my project - a folder or files are read LOCALLY, a
+    //      deterministic detector (package.json / requirements / docker-compose /
+    //      folder names) drafts the architecture IR immediately, and the same
+    //      WebLLM can optionally refine that draft
+    //
+    // WebGPU is decided by an awaited requestAdapter() probe, never by
+    // feature-detecting navigator.gpu (runbook rule 9: headless/older machines
+    // expose the object but return no adapter).
+    //
+    // Framework contract: doAfterPageRendered() (fires once jQuery + base script
+    // load); no top-level DOM. Visible controls + auto-rendered example satisfy G16.
+
+    web.localUpload = false;
+
+    var AD_TYPES = [
+        ['architecture', 'Architecture', 'web-app.architecture.json'],
+        ['workflow', 'Workflow', 'agent-tool-call.workflow.json'],
+        ['sequence', 'Sequence', 'cache-miss-request.sequence.json'],
+        ['dataflow', 'Data flow', 'product-analytics.dataflow.json'],
+        ['lifecycle', 'Lifecycle', 'agent-run.lifecycle.json']
+    ];
+    var AD_LLM_MODEL = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
+
+    function adBase() { return (typeof BASE_PATH === 'string' ? BASE_PATH : ''); }
+    function adVendor() { return adBase() + '/vendor/archify/'; }
+    function adEsc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+    function q(sel) { return document.querySelector(sel); }
+
+    var adState = { template: null, validator: null, renderN: 0, chain: Promise.resolve(), lastHtml: null, lastType: null, gpuOk: null, llm: null, llmLoading: null, digest: null, heuristicIr: null };
+
+    // ---------------------------------------------------------------- engine
+    function adTemplate() {
+        if (adState.template) return Promise.resolve(adState.template);
+        return fetch(adVendor() + 'template.html').then(function (r) {
+            if (!r.ok) throw new Error('the diagram viewer template did not load (' + r.status + ')');
+            return r.text();
+        }).then(function (t) { adState.template = t; return t; });
+    }
+
+    function adValidator() {
+        if (adState.validator) return Promise.resolve(adState.validator);
+        return import(adVendor() + 'validator.js').then(function (m) { adState.validator = m; return m; });
+    }
+
+    // Returns a Promise<string|null> - null means valid, otherwise the
+    // engine's own diagnostics text (path-by-path messages).
+    function adValidate(type, ir) {
+        return adValidator().then(function (m) {
+            try { m.validateSchema(type, ir); return null; }
+            catch (e) { return String((e && e.message) || e); }
+        });
+    }
+
+    // One render = one import of the type bundle against the in-memory map.
+    // Renders are chained so two clicks can never interleave their globals.
+    function adRender(type, ir) {
+        var run = adState.chain.then(function () { return adTemplate(); }).then(function (template) {
+            globalThis.__archifyVfs = new Map([
+                ['/vfs/input.json', JSON.stringify(ir)],
+                ['/vfs/assets/template.html', template]
+            ]);
+            globalThis.__archifyOut = null;
+            adState.renderN++;
+            return import(adVendor() + 'render-' + type + '.js?r=' + adState.renderN).then(function () {
+                var out = globalThis.__archifyOut;
+                if (!out || !out.html) throw new Error('the engine finished without producing a diagram');
+                return out.html;
+            });
+        });
+        adState.chain = run.catch(function () { });
+        return run;
+    }
+
+    // ---------------------------------------------------------------- output
+    function adShowResult(html, type) {
+        adState.lastHtml = html;
+        adState.lastType = type;
+        var frame = q('#adFrame');
+        frame.srcdoc = html;
+        q('#adResult').style.display = '';
+        var stem = 'diagram-' + type;
+        var dlH = q('#adDlHtml');
+        if (dlH.href) try { URL.revokeObjectURL(dlH.href); } catch (e) { }
+        dlH.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+        dlH.download = stem + '.html';
+        var svg = adExtractSvg(html);
+        var dlS = q('#adDlSvg');
+        dlS.style.display = svg ? '' : 'none';
+        if (svg) {
+            if (dlS.href) try { URL.revokeObjectURL(dlS.href); } catch (e) { }
+            dlS.href = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+            dlS.download = stem + '.svg';
+        }
+        q('#adDlPng').style.display = svg ? '' : 'none';
+    }
+
+    function adExtractSvg(html) {
+        try {
+            var doc = new DOMParser().parseFromString(html, 'text/html');
+            var svg = doc.querySelector('svg');
+            if (!svg) return null;
+            if (!svg.getAttribute('xmlns')) svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            return new XMLSerializer().serializeToString(svg);
+        } catch (e) { return null; }
+    }
+
+    function adPngExport() {
+        var svg = adState.lastHtml && adExtractSvg(adState.lastHtml);
+        if (!svg) return;
+        adStatus('Drawing the PNG...');
+        var img = new Image();
+        var url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+        img.onload = function () {
+            try {
+                var scale = 2;
+                var canvas = document.createElement('canvas');
+                canvas.width = (img.naturalWidth || 1200) * scale;
+                canvas.height = (img.naturalHeight || 700) * scale;
+                var ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.scale(scale, scale);
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob(function (blob) {
+                    URL.revokeObjectURL(url);
+                    if (!blob) { adStatus('PNG export failed on this browser - use the SVG download instead.', true); return; }
+                    var a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'diagram-' + (adState.lastType || 'export') + '.png';
+                    a.click();
+                    adStatus('PNG downloaded.');
+                }, 'image/png');
+            } catch (e) { URL.revokeObjectURL(url); adStatus('PNG export failed: ' + e.message + ' - use the SVG download instead.', true); }
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); adStatus('PNG export failed on this browser - use the SVG download instead.', true); };
+        img.src = url;
+    }
+
+    function adStatus(text, isError) {
+        var el = q('#adStatus');
+        el.textContent = text || '';
+        el.style.color = isError ? '#b71c1c' : '#555';
+    }
+
+    function adDiagOut(text) {
+        var el = q('#adDiag');
+        if (!text) { el.style.display = 'none'; el.textContent = ''; return; }
+        el.style.display = '';
+        el.textContent = text;
+    }
+
+    // ---------------------------------------------------------------- editor
+    var adDebounce = null;
+    function adEditorChanged() {
+        clearTimeout(adDebounce);
+        adDebounce = setTimeout(function () {
+            var text = q('#adJson').value;
+            var ir;
+            try { ir = JSON.parse(text); }
+            catch (e) { adDiagOut('Not valid JSON yet: ' + e.message); return; }
+            var type = (ir && ir.diagram_type) || adType();
+            adValidate(type, ir).then(function (err) { adDiagOut(err ? err : ''); if (!err) adStatus('Valid ' + type + ' diagram - press Render.'); });
+        }, 400);
+    }
+
+    function adType() {
+        var el = document.querySelector('input[name="adType"]:checked');
+        return el ? el.value : 'architecture';
+    }
+
+    function adLoadExample(type) {
+        var meta = null;
+        for (var i = 0; i < AD_TYPES.length; i++) if (AD_TYPES[i][0] === type) meta = AD_TYPES[i];
+        if (!meta) return Promise.reject(new Error('unknown type'));
+        return fetch(adVendor() + 'examples/' + meta[2]).then(function (r) { return r.text(); }).then(function (t) {
+            q('#adJson').value = t;
+            adDiagOut('');
+            return JSON.parse(t);
+        });
+    }
+
+    function adRenderFromEditor() {
+        var ir;
+        try { ir = JSON.parse(q('#adJson').value); }
+        catch (e) { adDiagOut('Not valid JSON: ' + e.message); return; }
+        var type = (ir && ir.diagram_type) || adType();
+        adStatus('Checking the diagram against the schema...');
+        adValidate(type, ir).then(function (err) {
+            if (err) { adDiagOut(err); adStatus('The diagram does not pass the schema yet - the messages below say which fields.', true); return null; }
+            adDiagOut('');
+            adStatus('Rendering...');
+            return adRender(type, ir).then(function (html) {
+                adShowResult(html, type);
+                adStatus('Done. The diagram below is interactive - and the HTML download is the same thing as a single file.');
+            });
+        }).catch(function (e) { adStatus('Render failed: ' + e.message, true); });
+    }
+
+    // ---------------------------------------------------------------- quick builder
+    // One typed line per box: "Label | type | -> Target label, Other label".
+    // Types: frontend backend database cloud security messagebus external.
+    var AD_TIER = { external: 0, security: 0, frontend: 1, cloud: 1, backend: 2, messagebus: 2, database: 3 };
+
+    function adSlug(label, used) {
+        var s = String(label).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24) || 'node';
+        var base = s, n = 2;
+        while (used[s]) { s = base + '-' + (n++); }
+        used[s] = true;
+        return s;
+    }
+
+    function adParseBuilderLines(text) {
+        var rows = [];
+        String(text).split('\n').forEach(function (line) {
+            line = line.trim();
+            if (!line) return;
+            var arrow = line.split('->');
+            var head = arrow[0].split('|');
+            var label = head[0].trim();
+            if (!label) return;
+            var type = (head[1] || '').trim().toLowerCase() || null;
+            var targets = (arrow[1] || '').split(',').map(function (t) { return t.trim(); }).filter(Boolean);
+            rows.push({ label: label, type: type, targets: targets });
+        });
+        return rows;
+    }
+
+    function adBuilderToArchitecture(title, rows) {
+        var used = {}, byLabel = {};
+        var comps = rows.map(function (r) {
+            var type = AD_TIER.hasOwnProperty(r.type) ? r.type : 'backend';
+            var c = { id: adSlug(r.label, used), type: type, label: r.label };
+            byLabel[r.label.toLowerCase()] = c.id;
+            return c;
+        });
+        var colByRow = {};
+        comps.forEach(function (c) {
+            var row = AD_TIER[c.type];
+            c.row = row;
+            c.col = (colByRow[row] = (colByRow[row] || 0) + 1) - 1;
+        });
+        var conns = [];
+        rows.forEach(function (r, i) {
+            r.targets.forEach(function (t) {
+                var to = byLabel[t.toLowerCase()];
+                if (to) conns.push({ from: comps[i].id, to: to });
+            });
+        });
+        var ir = { schema_version: 1, diagram_type: 'architecture', meta: { title: title || 'My system' }, layout: { mode: 'grid' }, components: comps };
+        if (conns.length) ir.connections = conns;
+        return ir;
+    }
+
+    function adBuilderToWorkflow(title, rows) {
+        var used = {}, byLabel = {};
+        var laneIds = {}, lanes = [];
+        rows.forEach(function (r) {
+            var laneLabel = r.type || 'Main';
+            var key = laneLabel.toLowerCase();
+            if (!laneIds[key]) { laneIds[key] = adSlug(laneLabel, used); lanes.push({ id: laneIds[key], label: laneLabel }); }
+        });
+        var nodes = rows.map(function (r, i) {
+            var id = adSlug(r.label, used);
+            byLabel[r.label.toLowerCase()] = id;
+            return { id: id, lane: laneIds[(r.type || 'Main').toLowerCase()], col: i, type: 'backend', label: r.label };
+        });
+        var edges = [];
+        rows.forEach(function (r, i) {
+            var targets = r.targets.length ? r.targets : (rows[i + 1] ? [rows[i + 1].label] : []);
+            targets.forEach(function (t) {
+                var to = byLabel[t.toLowerCase()];
+                if (to && to !== nodes[i].id) edges.push({ from: nodes[i].id, to: to });
+            });
+        });
+        return { schema_version: 2, diagram_type: 'workflow', meta: { title: title || 'My workflow' }, lanes: lanes, nodes: nodes, edges: edges };
+    }
+
+    function adBuildFromLines() {
+        var rows = adParseBuilderLines(q('#adLines').value);
+        if (!rows.length) { adStatus('Type at least one line first - one box per line.', true); return; }
+        var type = adType() === 'workflow' ? 'workflow' : 'architecture';
+        var ir = type === 'workflow' ? adBuilderToWorkflow(q('#adTitle').value.trim(), rows) : adBuilderToArchitecture(q('#adTitle').value.trim(), rows);
+        q('#adJson').value = JSON.stringify(ir, null, 2);
+        adRenderFromEditor();
+    }
+
+    // ---------------------------------------------------------------- WebGPU probe + WebLLM
+    function adGpuProbe() {
+        if (adState.gpuOk !== null) return Promise.resolve(adState.gpuOk);
+        if (!navigator.gpu || !navigator.gpu.requestAdapter) { adState.gpuOk = false; return Promise.resolve(false); }
+        return navigator.gpu.requestAdapter().then(function (a) { adState.gpuOk = !!a; return adState.gpuOk; })
+            .catch(function () { adState.gpuOk = false; return false; });
+    }
+
+    function adLlmEngine(onStatus) {
+        if (adState.llm) return Promise.resolve(adState.llm);
+        if (!adState.llmLoading) {
+            onStatus('Loading the local language model (one-time download of roughly 700 MB, kept by the browser)...');
+            adState.llmLoading = import(adBase() + '/vendor/web-llm/web-llm.js').then(function (webllm) {
+                var engine = new webllm.MLCEngine();
+                engine.setInitProgressCallback(function (p) { onStatus('Language model: ' + ((p && p.text) || 'loading') + '...'); });
+                var list = (webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+                var id = null;
+                for (var i = 0; i < list.length; i++) if (list[i].model_id === AD_LLM_MODEL) id = AD_LLM_MODEL;
+                if (!id) for (var j = 0; j < list.length; j++) if (/1B|1_5B|1\.5B/i.test(list[j].model_id)) { id = list[j].model_id; break; }
+                if (!id && list.length) id = list[0].model_id;
+                return engine.reload(id).then(function () { adState.llm = engine; return engine; });
+            });
+        }
+        return adState.llmLoading;
+    }
+
+    // The contract the model has to hit. Kept deliberately small: row/col grid,
+    // no pixel positions, only fields the schema accepts everywhere.
+    function adLlmSpec() {
+        return 'Output ONLY a JSON object, no prose, no markdown fences. Exact shape:\n' +
+            '{"schema_version":1,"diagram_type":"architecture","meta":{"title":"..."},"layout":{"mode":"grid"},\n' +
+            ' "components":[{"id":"kebab-id","type":"frontend|backend|database|cloud|security|messagebus|external","label":"Short name","sublabel":"optional detail","row":0,"col":0}],\n' +
+            ' "connections":[{"from":"id","to":"id","label":"optional protocol"}]}\n' +
+            'Rules: 4 to 12 components. Every from/to must be an existing id. ' +
+            'row 0 = users/edge, row 1 = frontend, row 2 = services, row 3 = data stores; col counts from 0 left to right within a row, never reuse a row+col pair. ' +
+            'No other fields.';
+    }
+
+    function adLlmToIr(userContent, onStatus) {
+        return adLlmEngine(onStatus).then(function (engine) {
+            var messages = [
+                { role: 'system', content: 'You convert system descriptions into diagram JSON. ' + adLlmSpec() },
+                { role: 'user', content: userContent }
+            ];
+            var attempt = 0;
+            function once() {
+                attempt++;
+                onStatus('Writing the diagram JSON (attempt ' + attempt + ' of 3)...');
+                return engine.chat.completions.create({ messages: messages, temperature: 0.2, max_tokens: 1400 }).then(function (res) {
+                    var text = (res && res.choices && res.choices[0] && res.choices[0].message && res.choices[0].message.content) || '';
+                    var raw = text.replace(/^[\s\S]*?(\{)/, '$1').replace(/\}[^}]*$/, '}');
+                    var ir;
+                    try { ir = JSON.parse(raw); }
+                    catch (e) { return retry(text, 'That was not parseable JSON (' + e.message + '). Send ONLY the JSON object.'); }
+                    if (ir && !ir.layout) ir.layout = { mode: 'grid' };
+                    if (ir && Array.isArray(ir.connections)) ir.connections.forEach(function (c) {
+                        if (c && c.label && c.labelDy == null) c.labelDy = 24;
+                    });
+                    return adValidate('architecture', ir).then(function (err) {
+                        if (!err) return ir;
+                        return retry(text, 'That JSON failed the schema. Fix EXACTLY these problems and resend the full object:\n' + err.slice(0, 1200));
+                    });
+                });
+            }
+            function retry(prev, complaint) {
+                if (attempt >= 3) throw new Error('the model could not produce a valid diagram in 3 attempts - use the editor or the quick builder instead');
+                messages.push({ role: 'assistant', content: prev.slice(0, 2000) });
+                messages.push({ role: 'user', content: complaint });
+                return once();
+            }
+            return once();
+        });
+    }
+
+    function adDescribeGo() {
+        var text = q('#adDescribe').value.trim();
+        if (!text) { adStatus('Describe the system first - a sentence or two is enough.', true); return; }
+        adDiagOut('');
+        adLlmToIr('Draw this system:\n' + text, adStatus).then(function (ir) {
+            q('#adJson').value = JSON.stringify(ir, null, 2);
+            adStatus('The model wrote a valid diagram - rendering it.');
+            return adRender('architecture', ir).then(function (html) { adShowResult(html, 'architecture'); adStatus('Done. Edit the JSON to adjust anything the model got wrong.'); });
+        }).catch(function (e) { adStatus('Language model: ' + e.message, true); });
+    }
+
+    // ---------------------------------------------------------------- project analyser
+    var AD_KEY_FILES = /(^|\/)(package\.json|requirements\.txt|pyproject\.toml|go\.mod|cargo\.toml|pom\.xml|build\.gradle(\.kts)?|composer\.json|gemfile|docker-compose[^\/]*\.ya?ml|dockerfile|schema\.prisma|nginx[^\/]*\.conf|readme\.md)$/i;
+
+    function adReadFiles(fileList) {
+        var files = Array.prototype.slice.call(fileList);
+        var names = files.map(function (f) { return f.webkitRelativePath || f.name; });
+        var keyFiles = files.filter(function (f) { return AD_KEY_FILES.test(f.webkitRelativePath || f.name) && f.size < 512 * 1024; }).slice(0, 30);
+        return Promise.all(keyFiles.map(function (f) {
+            return f.text().then(function (t) { return { path: f.webkitRelativePath || f.name, text: t.slice(0, 16384) }; })
+                .catch(function () { return null; });
+        })).then(function (read) {
+            return { names: names, key: read.filter(Boolean) };
+        });
+    }
+
+    function adDetect(digest) {
+        var texts = {};
+        digest.key.forEach(function (k) { texts[k.path.toLowerCase()] = k.text; });
+        var all = digest.key.map(function (k) { return k.text; }).join('\n').toLowerCase();
+        var tree = digest.names.map(function (n) { return n.toLowerCase(); });
+        function inTree(re) { return tree.some(function (n) { return re.test(n); }); }
+        function dep(re) { return re.test(all); }
+        var found = { frontend: null, backend: null, db: [], cache: false, queue: false, worker: false, external: [] };
+        if (dep(/"(react|next|vue|nuxt|svelte|@angular\/core|vite)"/)) found.frontend = dep(/"next"/) ? 'Next.js' : dep(/"react"/) ? 'React' : dep(/"(vue|nuxt)"/) ? 'Vue' : dep(/"svelte"/) ? 'Svelte' : 'Web frontend';
+        else if (inTree(/(^|\/)(frontend|client|web|ui)\//) || inTree(/index\.html?$/)) found.frontend = 'Web frontend';
+        if (dep(/"(express|koa|fastify|@nestjs\/core|hapi)"/)) found.backend = dep(/"@nestjs\/core"/) ? 'NestJS API' : 'Node.js API';
+        else if (dep(/\b(django|flask|fastapi)\b/)) found.backend = dep(/fastapi/) ? 'FastAPI' : dep(/django/) ? 'Django' : 'Flask API';
+        else if (dep(/spring-boot|springframework/)) found.backend = 'Spring Boot API';
+        else if (dep(/gin-gonic|net\/http|echo\b/) && texts['go.mod']) found.backend = 'Go API';
+        else if (dep(/\brails\b/)) found.backend = 'Rails API';
+        else if (inTree(/(^|\/)(server|api|backend)\//)) found.backend = 'API server';
+        if (dep(/"(pg|postgres[^"]*|typeorm|prisma|sequelize)"|psycopg|postgresql/)) found.db.push(['PostgreSQL', 'db-postgres']);
+        if (dep(/"(mysql2?)"|pymysql/)) found.db.push(['MySQL', 'db-mysql']);
+        if (dep(/"(mongoose|mongodb)"|pymongo/)) found.db.push(['MongoDB', 'db-mongo']);
+        if (!found.db.length && dep(/sqlite/)) found.db.push(['SQLite', 'db-sqlite']);
+        if (dep(/"(redis|ioredis)"|\bredis\b/)) found.cache = true;
+        if (dep(/kafka|amqplib|rabbitmq|bullmq|celery|\bsqs\b/)) found.queue = true;
+        if (found.queue || inTree(/(^|\/)(worker|jobs|tasks)\//)) found.worker = found.queue;
+        if (dep(/"stripe"|\bstripe\b/)) found.external.push(['Stripe', 'payments']);
+        if (dep(/"(openai|anthropic|@anthropic-ai\/sdk)"/)) found.external.push(['LLM API', 'OpenAI / Anthropic']);
+        if (dep(/"(nodemailer|@sendgrid|mailgun)"|sendgrid/)) found.external.push(['Email service', 'SMTP / API']);
+        if (dep(/"(aws-sdk|@aws-sdk|boto3)"|\bs3\b/)) found.external.push(['Object storage', 'S3-compatible']);
+        // docker-compose services add anything declared but not detected above
+        Object.keys(texts).forEach(function (p) {
+            if (!/docker-compose/.test(p)) return;
+            var svc = texts[p].match(/^\s{2}([a-z0-9_-]+):\s*$/gmi) || [];
+            if (svc.length && !found.backend) found.backend = 'App service';
+        });
+        return found;
+    }
+
+    function adHeuristicArch(digest, projectName) {
+        var f = adDetect(digest);
+        var comps = [{ id: 'users', type: 'external', label: 'Users', sublabel: 'Browser / client', row: 0, col: 0 }];
+        var conns = [];
+        var col = { 1: 0, 2: 0, 3: 0 };
+        function add(id, type, label, sub, row) { comps.push({ id: id, type: type, label: label, sublabel: sub || undefined, row: row, col: col[row]++ }); }
+        // labelDy pushes edge labels off the vertically-adjacent boxes; the engine's
+        // clean-flow lint rejects overlapping labels and grid-crossing diagonals, so
+        // generated edges stay axis-neighbourly (no worker->db shortcut across rows).
+        if (f.frontend) { add('frontend', 'frontend', f.frontend, 'serves the UI', 1); conns.push({ from: 'users', to: 'frontend', label: 'HTTPS', labelDy: 24 }); }
+        if (f.backend) {
+            add('api', 'backend', f.backend, 'application logic', 2);
+            conns.push({ from: f.frontend ? 'frontend' : 'users', to: 'api', label: f.frontend ? 'REST / JSON' : 'HTTPS', labelDy: 24 });
+        }
+        var apiOrFront = f.backend ? 'api' : (f.frontend ? 'frontend' : null);
+        f.db.forEach(function (d) { add(d[1], 'database', d[0], 'primary data', 3); if (apiOrFront) conns.push({ from: apiOrFront, to: d[1], label: 'queries', labelDy: 24 }); });
+        if (f.cache) { add('cache', 'database', 'Redis', 'cache', 3); if (apiOrFront) conns.push({ from: apiOrFront, to: 'cache', label: 'cache', labelDy: 24 }); }
+        if (f.queue) {
+            add('queue', 'messagebus', 'Message queue', 'async jobs', 2);
+            if (apiOrFront) conns.push({ from: apiOrFront, to: 'queue', label: 'enqueue', labelDy: 24 });
+            if (f.worker) {
+                add('worker', 'backend', 'Worker', 'background jobs', 2);
+                conns.push({ from: 'queue', to: 'worker' });
+            }
+        }
+        f.external.forEach(function (x, i) { var id = 'ext-' + i; add(id, 'external', x[0], x[1], 1); if (apiOrFront) conns.push({ from: apiOrFront, to: id, label: 'API', labelDy: 24 }); });
+        if (comps.length === 1) add('app', 'backend', projectName || 'Application', 'no framework markers found - edit me', 2);
+        var ir = { schema_version: 1, diagram_type: 'architecture', meta: { title: projectName || 'Project architecture' }, layout: { mode: 'grid' }, components: comps };
+        if (conns.length) ir.connections = conns;
+        return ir;
+    }
+
+    function adAnalyzeFiles(fileList) {
+        if (!fileList || !fileList.length) return;
+        var first = fileList[0].webkitRelativePath || '';
+        var projectName = first.indexOf('/') > 0 ? first.split('/')[0] : (fileList[0].name || 'Project');
+        adDiagOut('');
+        adStatus('Reading ' + fileList.length + ' file names and the marker files locally - nothing is uploaded...');
+        adReadFiles(fileList).then(function (digest) {
+            adState.digest = digest;
+            var ir = adHeuristicArch(digest, projectName);
+            adState.heuristicIr = ir;
+            q('#adJson').value = JSON.stringify(ir, null, 2);
+            adStatus('Drafted the architecture from ' + digest.key.length + ' marker files (package/requirements/compose). Rendering...');
+            return adValidate('architecture', ir).then(function (err) {
+                if (err) { adDiagOut(err); throw new Error('the drafted diagram failed its own schema - please report this'); }
+                return adRender('architecture', ir);
+            }).then(function (html) {
+                adShowResult(html, 'architecture');
+                adStatus('Done - this draft is a deterministic reading of the project markers. Edit the JSON, or refine it with the local language model.');
+                adGpuProbe().then(function (ok) { q('#adRefineBtn').style.display = ok ? '' : 'none'; });
+            });
+        }).catch(function (e) { adStatus('Analysis failed: ' + e.message, true); });
+    }
+
+    function adRefineGo() {
+        if (!adState.digest || !adState.heuristicIr) return;
+        var keyList = adState.digest.key.map(function (k) { return '--- ' + k.path + '\n' + k.text.slice(0, 2500); }).join('\n').slice(0, 9000);
+        var content = 'Here is a draft diagram of a project:\n' + JSON.stringify(adState.heuristicIr) +
+            '\n\nAnd the project marker files:\n' + keyList +
+            '\n\nImprove the draft: better labels and sublabels from what the files actually say, add clearly-evidenced components or connections, remove anything not evidenced. Keep the same JSON shape.';
+        adLlmToIr(content, adStatus).then(function (ir) {
+            q('#adJson').value = JSON.stringify(ir, null, 2);
+            return adRender('architecture', ir).then(function (html) { adShowResult(html, 'architecture'); adStatus('Refined by the local model - the deterministic draft is still in your undo history (Ctrl+Z in the editor).'); });
+        }).catch(function (e) { adStatus('Language model: ' + e.message, true); });
+    }
+
+    // ---------------------------------------------------------------- UI
+    function adBuild(root) {
+        var wrap = document.createElement('div');
+        wrap.className = 'w3-container';
+        var typeRadios = AD_TYPES.map(function (t, i) {
+            return '<label style="margin-right:12px;"><input type="radio" name="adType" value="' + t[0] + '"' + (i === 0 ? ' checked' : '') + '> ' + t[1] + '</label>';
+        }).join('');
+        wrap.innerHTML =
+            '<h3 class="w3-text-blue-grey">Architecture diagram maker</h3>' +
+            '<div class="w3-row" style="margin:6px 0;"><b>1. Diagram type</b><br>' + typeRadios + '</div>' +
+            '<div class="w3-row" style="margin:10px 0 4px 0;"><b>2. Start from</b><br>' +
+            '<div class="w3-bar w3-light-grey" style="margin-top:4px;">' +
+            '<button type="button" class="w3-bar-item w3-button ad-tab w3-white" data-tab="editor">Example and JSON editor</button>' +
+            '<button type="button" class="w3-bar-item w3-button ad-tab" data-tab="lines">Quick builder</button>' +
+            '<button type="button" class="w3-bar-item w3-button ad-tab" data-tab="describe">Describe it (local AI)</button>' +
+            '<button type="button" class="w3-bar-item w3-button ad-tab" data-tab="project">Analyse my project</button>' +
+            '</div></div>' +
+
+            '<div id="adPaneLines" class="ad-pane" style="display:none;margin:8px 0;">' +
+            '<input id="adTitle" class="w3-input w3-border" type="text" placeholder="Diagram title" style="max-width:420px;margin-bottom:6px;">' +
+            '<p style="margin:4px 0;color:#555;">One box per line: <code>Label | type | -&gt; Target label</code>. Types: frontend, backend, database, cloud, security, messagebus, external. For a workflow diagram the middle field is the lane name instead.</p>' +
+            '<textarea id="adLines" class="w3-input w3-border" rows="7" style="font-family:monospace;" placeholder="Users | external | -> Web app&#10;Web app | frontend | -> API&#10;API | backend | -> Database, Cache&#10;Database | database&#10;Cache | database"></textarea>' +
+            '<button id="adLinesBtn" type="button" class="w3-button w3-blue" style="margin-top:6px;">Build and render</button>' +
+            '</div>' +
+
+            '<div id="adPaneDescribe" class="ad-pane" style="display:none;margin:8px 0;">' +
+            '<p style="margin:4px 0;color:#555;">A small language model runs in this tab (WebGPU needed, roughly 700 MB downloaded once) and writes the diagram JSON from your description. Its output is checked against the real schema and retried with the errors up to three times. This mode drafts architecture diagrams; switch type and edit the JSON for the other shapes.</p>' +
+            '<textarea id="adDescribe" class="w3-input w3-border" rows="4" placeholder="A mobile app talks to a Go API behind a load balancer; the API stores orders in PostgreSQL, caches sessions in Redis and sends receipts through an email service."></textarea>' +
+            '<button id="adDescribeBtn" type="button" class="w3-button w3-blue" style="margin-top:6px;">Generate with the local model</button>' +
+            '<span id="adDescribeNoGpu" style="display:none;color:#b71c1c;margin-left:8px;">This browser has no usable WebGPU adapter, so the model cannot run here - the other three modes all work.</span>' +
+            '</div>' +
+
+            '<div id="adPaneProject" class="ad-pane" style="display:none;margin:8px 0;">' +
+            '<p style="margin:4px 0;color:#555;">Pick a project folder (or a few files like package.json, requirements.txt, docker-compose.yml). They are read in this tab only. A deterministic detector drafts the architecture immediately; the local model can then refine that draft.</p>' +
+            '<input id="adFolder" type="file" webkitdirectory multiple style="margin:4px 0;"> ' +
+            '<label style="margin-left:8px;"><input id="adFilesOnly" type="checkbox"> pick individual files instead</label><br>' +
+            '<button id="adRefineBtn" type="button" class="w3-button w3-light-grey" style="display:none;margin-top:6px;">Refine the draft with the local model</button>' +
+            '</div>' +
+
+            '<div id="adPaneEditor" class="ad-pane" style="margin:8px 0;">' +
+            '<button id="adExampleBtn" type="button" class="w3-button w3-light-grey" style="margin-bottom:6px;">Load the example for this type</button>' +
+            '</div>' +
+
+            '<div class="w3-row" style="margin:8px 0;"><b>3. The diagram JSON</b> <span style="color:#777;">(every mode ends up here - edit freely, it is validated as you type)</span><br>' +
+            '<textarea id="adJson" class="w3-input w3-border" rows="12" spellcheck="false" style="font-family:monospace;font-size:0.85em;"></textarea>' +
+            '<pre id="adDiag" style="display:none;background:#fff3f3;border:1px solid #e0b4b4;padding:8px;white-space:pre-wrap;max-height:180px;overflow:auto;"></pre>' +
+            '<button id="adRenderBtn" type="button" class="w3-button w3-blue" style="margin-top:6px;">Render the diagram</button>' +
+            '</div>' +
+
+            '<div id="adStatus" role="status" style="margin:8px 0;color:#555;"></div>' +
+
+            '<div id="adResult" style="display:none;">' +
+            '<b>4. Your diagram</b> - pan, search and play it below, or take it with you:<br>' +
+            '<div style="margin:6px 0;">' +
+            '<a id="adDlHtml" class="w3-button w3-green" style="margin-right:6px;">Download interactive HTML</a>' +
+            '<a id="adDlSvg" class="w3-button w3-light-grey" style="margin-right:6px;">Download SVG</a>' +
+            '<button id="adDlPng" type="button" class="w3-button w3-light-grey">Download PNG</button>' +
+            '</div>' +
+            '<iframe id="adFrame" sandbox="allow-scripts" style="width:100%;height:620px;border:1px solid #ccc;background:#fff;" title="Rendered diagram"></iframe>' +
+            '</div>';
+        root.appendChild(wrap);
+
+        Array.prototype.forEach.call(wrap.querySelectorAll('.ad-tab'), function (btn) {
+            btn.addEventListener('click', function () {
+                Array.prototype.forEach.call(wrap.querySelectorAll('.ad-tab'), function (b) { b.classList.remove('w3-white'); });
+                btn.classList.add('w3-white');
+                var tab = btn.getAttribute('data-tab');
+                ['Editor', 'Lines', 'Describe', 'Project'].forEach(function (p) {
+                    q('#adPane' + p).style.display = (p.toLowerCase() === tab) ? '' : 'none';
+                });
+                if (tab === 'describe') adGpuProbe().then(function (ok) {
+                    q('#adDescribeBtn').disabled = !ok;
+                    q('#adDescribeNoGpu').style.display = ok ? 'none' : '';
+                });
+            });
+        });
+        Array.prototype.forEach.call(wrap.querySelectorAll('input[name="adType"]'), function (r) {
+            r.addEventListener('change', function () { adLoadExample(adType()); });
+        });
+        q('#adExampleBtn').addEventListener('click', function () { adLoadExample(adType()).then(adRenderFromEditor); });
+        q('#adJson').addEventListener('input', adEditorChanged);
+        q('#adRenderBtn').addEventListener('click', adRenderFromEditor);
+        q('#adLinesBtn').addEventListener('click', adBuildFromLines);
+        q('#adDescribeBtn').addEventListener('click', adDescribeGo);
+        q('#adRefineBtn').addEventListener('click', adRefineGo);
+        q('#adDlPng').addEventListener('click', adPngExport);
+        q('#adFilesOnly').addEventListener('change', function (e) {
+            var inp = q('#adFolder');
+            if (e.target.checked) inp.removeAttribute('webkitdirectory'); else inp.setAttribute('webkitdirectory', '');
+            inp.value = '';
+        });
+        q('#adFolder').addEventListener('change', function (e) { adAnalyzeFiles(e.target.files); });
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('architectureDiagramTool');
+        if (!root) return;
+        adBuild(root);
+        adStatus('Loading the engine and the example...');
+        adLoadExample('architecture').then(function (ir) {
+            return adRender('architecture', ir).then(function (html) {
+                adShowResult(html, 'architecture');
+                adStatus('This is the built-in example - replace it with any of the four modes above.');
+            });
+        }).catch(function (e) { adStatus('The engine did not load: ' + e.message, true); });
+    }
+</script>

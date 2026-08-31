@@ -16928,6 +16928,9 @@ export const ALIAS_ROUTES = {
   '/meeting-minutes-generator.html': '/utility-tools/meeting-notes-taker.html',
   '/ai-meeting-notes.html': '/utility-tools/meeting-notes-taker.html',
   '/cover-letter-generator.html': '/utility-tools/cover-letter-generator.html',
+  '/architecture-diagram-maker.html': '/utility-tools/architecture-diagram-maker.html',
+  '/system-diagram-maker.html': '/utility-tools/architecture-diagram-maker.html',
+  '/diagram-generator.html': '/utility-tools/architecture-diagram-maker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29234,6 +29237,7 @@ export const JSP_BY_ROUTE = {
   '/utility-tools/ai-email-writer.html': 'utility/ai-email-writer.jsp',
   '/utility-tools/meeting-notes-taker.html': 'utility/meeting-notes-taker.jsp',
   '/utility-tools/cover-letter-generator.html': 'utility/cover-letter-generator.jsp',
+  '/utility-tools/architecture-diagram-maker.html': 'utility/architecture-diagram-maker.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
