@@ -12284,12 +12284,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/floor-thirteen-horror-vs-alternatives.html',
   '/guides/id/floor-thirteen-horror-vs-alternatives.html',
   '/guides/de/floor-thirteen-horror-vs-alternatives.html',
-  // fire104 voxel-fps-arena
-  '/guides/how-to-play-voxel-fps-arena.html',
-  '/guides/pt/how-to-play-voxel-fps-arena.html',
-  '/guides/es/how-to-play-voxel-fps-arena.html',
-  '/guides/id/how-to-play-voxel-fps-arena.html',
-  '/guides/de/how-to-play-voxel-fps-arena.html',
+  // fire104 voxel-fps-arena (how-to-play family retired to /games/voxel-fps-arena.html, consolidation-fire89 2026-08-31)
   '/guides/voxel-fps-arena-when.html',
   '/guides/pt/voxel-fps-arena-when.html',
   '/guides/es/voxel-fps-arena-when.html',
@@ -16722,7 +16717,12 @@ export const ALIAS_ROUTES = {
   '/guides/vi/how-to-play-vim-motion-academy.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
   '/guides/vi/how-to-play-violence-town.html': '/guides/how-to-play-violence-town.html',
   '/guides/vi/how-to-play-void-trader.html': '/guides/how-to-play-void-trader.html',
-  '/guides/vi/how-to-play-voxel-fps-arena.html': '/guides/how-to-play-voxel-fps-arena.html',
+  '/guides/vi/how-to-play-voxel-fps-arena.html': '/games/voxel-fps-arena.html', // consolidation-fire89 2026-08-31: how-to-play excess guide family merged into canonical
+  '/guides/how-to-play-voxel-fps-arena.html': '/games/voxel-fps-arena.html', // consolidation-fire89 2026-08-31: how-to-play excess guide family merged into canonical
+  '/guides/pt/how-to-play-voxel-fps-arena.html': '/games/voxel-fps-arena.html', // consolidation-fire89 2026-08-31: how-to-play excess guide family merged into canonical
+  '/guides/es/how-to-play-voxel-fps-arena.html': '/games/voxel-fps-arena.html', // consolidation-fire89 2026-08-31: how-to-play excess guide family merged into canonical
+  '/guides/id/how-to-play-voxel-fps-arena.html': '/games/voxel-fps-arena.html', // consolidation-fire89 2026-08-31: how-to-play excess guide family merged into canonical
+  '/guides/de/how-to-play-voxel-fps-arena.html': '/games/voxel-fps-arena.html', // consolidation-fire89 2026-08-31: how-to-play excess guide family merged into canonical
   '/guides/vi/how-to-play-wash-the-cat.html': '/guides/how-to-play-wash-the-cat.html',
   '/guides/vi/how-to-record-your-screen-online.html': '/guides/how-to-record-your-screen-online.html',
   '/guides/vi/how-to-reduce-zip-file-size-online.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
@@ -20277,12 +20277,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/floor-thirteen-horror-vs-alternatives.html': 'guide/id/floor-thirteen-horror-vs-alternatives.jsp',
   '/guides/de/floor-thirteen-horror-vs-alternatives.html': 'guide/de/floor-thirteen-horror-vs-alternatives.jsp',
   '/games/floor-thirteen-horror.html': 'games/floor-thirteen-horror.jsp',
-  // fire104 voxel-fps-arena guides
-  '/guides/how-to-play-voxel-fps-arena.html': 'guide/how-to-play-voxel-fps-arena.jsp',
-  '/guides/pt/how-to-play-voxel-fps-arena.html': 'guide/pt/how-to-play-voxel-fps-arena.jsp',
-  '/guides/es/how-to-play-voxel-fps-arena.html': 'guide/es/how-to-play-voxel-fps-arena.jsp',
-  '/guides/id/how-to-play-voxel-fps-arena.html': 'guide/id/how-to-play-voxel-fps-arena.jsp',
-  '/guides/de/how-to-play-voxel-fps-arena.html': 'guide/de/how-to-play-voxel-fps-arena.jsp',
+  // fire104 voxel-fps-arena guides (how-to-play family retired to /games/voxel-fps-arena.html, consolidation-fire89 2026-08-31)
   '/guides/voxel-fps-arena-when.html': 'guide/voxel-fps-arena-when.jsp',
   '/guides/pt/voxel-fps-arena-when.html': 'guide/pt/voxel-fps-arena-when.jsp',
   '/guides/es/voxel-fps-arena-when.html': 'guide/es/voxel-fps-arena-when.jsp',
