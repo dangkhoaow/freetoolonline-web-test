@@ -1,8 +1,16 @@
 <h1 class="text-uppercase"><b>Image Metadata (EXIF) Remover</b></h1>
-<time itemprop="dateUpdated" datetime="2026-07-21T00:00:00"><b>Last reviewed: 2026-07-21</b></time>
+<time itemprop="dateUpdated" datetime="2026-08-31T00:00:00"><b>Last reviewed: 2026-08-31</b></time>
 <hr/>
 <p>Strip EXIF / IPTC / XMP from a photo and download a JPEG that no longer carries those tags.</p>
 <p>If GPS is present, a privacy warning and OpenStreetMap link show the leak before you remove it. To inspect everything that is embedded first, use the <a href="/image-tools/image-exif-viewer.html">image EXIF viewer</a>.</p>
 <p>All stripping happens in the browser - the photo is never uploaded and no account is required.</p>
+
+<h2>Why Read Metadata can work on a file that Download Without Metadata cannot process</h2>
+<p>Image Metadata (EXIF) Remover uses two different techniques for its two buttons. Read Metadata hands the file's raw bytes to the exifr library, which can pull tags out of any accepted format - including HEIC, HEIF, TIF, and TIFF - without ever needing the browser to render the picture. Download Without Metadata works differently: it loads the same file into a real image element and draws it onto an HTML5 canvas before saving a clean copy, and that step only works if the browser itself can decode the format as an image.</p>
+<p>When a browser cannot decode a particular file that way, Image Metadata (EXIF) Remover reports "Could not decode this image for canvas strip" - even on a file that Read Metadata just parsed successfully a moment earlier. If that happens, converting the photo to JPEG, PNG, or WebP first (or opening it in an app that already supports the original format) lets the canvas re-encode run normally. Whatever format goes in, the file that comes back out of Download Without Metadata is always a JPEG, since the canvas step re-encodes rather than repairing the original.</p>
+
+<h2>What the metadata tables leave out, and why removal still covers it</h2>
+<p>After Read Metadata groups tags into Camera, Date / Time, and GPS tables, anything left over goes into an Other table - but that table stops at 40 entries so the page stays readable, and two tag types never appear in any table at all: the photo's embedded thumbnail image and camera-maker MakerNote data, both left out because they are binary and not useful to read on a web page.</p>
+<p>None of that limits what Download Without Metadata actually removes. That button never reads the tables; it re-draws the whole photo onto a canvas and re-encodes it, which drops every tag the file carried, including the thumbnail, the MakerNote data, and anything past the Other table's 40-row display cap.</p>
 
 <p><a href="/image-tools.html">&larr; Back to Image Tools</a></p>
