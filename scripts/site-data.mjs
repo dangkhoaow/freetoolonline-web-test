@@ -137,6 +137,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pdf-xchange-editor-browser-plugin-edge-when.html',
   // pdf-xchange-editor-browser-plugin-edge-when pt locale (create_new_guide_page 20260831-5)
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-when.html',
+  // pdf-xchange-editor-browser-plugin-edge-when es locale (create_new_guide_page 20260831-6)
+  '/guides/es/pdf-xchange-editor-browser-plugin-edge-when.html',
   '/guides/adobe-pdf-editor-browser-vs-alternatives.html',
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html',
   '/guides/es/adobe-pdf-editor-browser-vs-alternatives.html',
@@ -7334,6 +7336,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   // pdf-xchange-editor-browser-plugin-edge-when pt locale (create_new_guide_page 20260831-5)
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-when.html',
+  // pdf-xchange-editor-browser-plugin-edge-when es locale (create_new_guide_page 20260831-6)
+  '/guides/es/pdf-xchange-editor-browser-plugin-edge-when.html',
   // pdf-xchange-editor-browser-plugin-edge-vs-alternatives pt locale (create_new_guide_page 20260830-5)
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
   // pdf-xchange-editor-browser-plugin-edge-vs-alternatives es locale (create_new_guide_page 20260830-6)
@@ -29122,6 +29126,7 @@ export const JSP_BY_ROUTE = {
   '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html': 'convert/pdf-xchange-editor-browser-plugin-edge.jsp',
   '/guides/pdf-xchange-editor-browser-plugin-edge-when.html': 'guide/pdf-xchange-editor-browser-plugin-edge-when.jsp',
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-when.html': 'guide/pt/pdf-xchange-editor-browser-plugin-edge-when.jsp',
+  '/guides/es/pdf-xchange-editor-browser-plugin-edge-when.html': 'guide/es/pdf-xchange-editor-browser-plugin-edge-when.jsp',
   '/guides/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
   '/guides/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
