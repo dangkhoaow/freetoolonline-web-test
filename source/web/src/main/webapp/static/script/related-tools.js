@@ -313,6 +313,7 @@ try {
     { title: "Reverse Text", url: "https://freetoolonline.com/developer-tools/reverse-text.html", include: !1, tags: "developer" },
     { title: "Password Generator", url: "https://freetoolonline.com/utility-tools/password-generator.html", include: !1, tags: "utility" },
     { title: "Online Video Trimmer", url: "https://freetoolonline.com/video-tools/video-trimmer.html", include: !1, tags: "video" },
+    { title: "Video Editor", url: "https://freetoolonline.com/video-tools/video-editor.html", include: !1, tags: "video" },
     { title: "Online Voice Recorder", url: "https://freetoolonline.com/utility-tools/voice-recorder.html", include: !1, tags: "utility" },
     { title: "Text to Speech", url: "https://freetoolonline.com/utility-tools/text-to-speech.html", include: !1, tags: "utility" },
     { title: "Speech to Text", url: "https://freetoolonline.com/utility-tools/speech-to-text.html", include: !1, tags: "utility" },
