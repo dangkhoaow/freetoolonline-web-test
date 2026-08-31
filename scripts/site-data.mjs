@@ -4389,7 +4389,6 @@ export const INFO_ROUTES = new Set([
   '/guides/de/cepheid-variable-vs-alternatives.html',
   '/guides/de/expanding-universe-vs-alternatives.html',
   '/guides/de/doppler-radial-velocity-vs-alternatives.html',
-  '/guides/de/star-trails-vs-alternatives.html',
   '/guides/de/tidal-heating-vs-alternatives.html',
   '/guides/de/planetary-rings-comparison-vs-alternatives.html',
   '/guides/de/coordinate-systems-sky-vs-alternatives.html',
@@ -4456,7 +4455,6 @@ export const INFO_ROUTES = new Set([
   '/guides/id/cepheid-variable-vs-alternatives.html',
   '/guides/id/expanding-universe-vs-alternatives.html',
   '/guides/id/doppler-radial-velocity-vs-alternatives.html',
-  '/guides/id/star-trails-vs-alternatives.html',
   '/guides/id/tidal-heating-vs-alternatives.html',
   '/guides/id/planetary-rings-comparison-vs-alternatives.html',
   '/guides/id/coordinate-systems-sky-vs-alternatives.html',
@@ -4736,7 +4734,6 @@ export const INFO_ROUTES = new Set([
   '/guides/de/io-plasma-torus-vs-alternatives.html',
   '/guides/vi/cepheid-variable-vs-alternatives.html',
   '/guides/vi/doppler-radial-velocity-vs-alternatives.html',
-  '/guides/vi/star-trails-vs-alternatives.html',
   '/guides/vi/tidal-heating-vs-alternatives.html',
   '/guides/vi/planetary-rings-comparison-vs-alternatives.html',
   '/guides/vi/coordinate-systems-sky-vs-alternatives.html',
@@ -4792,7 +4789,6 @@ export const INFO_ROUTES = new Set([
   '/guides/es/cepheid-variable-vs-alternatives.html',
   '/guides/es/expanding-universe-vs-alternatives.html',
   '/guides/es/doppler-radial-velocity-vs-alternatives.html',
-  '/guides/es/star-trails-vs-alternatives.html',
   '/guides/es/tidal-heating-vs-alternatives.html',
   '/guides/es/planetary-rings-comparison-vs-alternatives.html',
   '/guides/es/coordinate-systems-sky-vs-alternatives.html',
@@ -4859,7 +4855,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/cepheid-variable-vs-alternatives.html',
   '/guides/pt/expanding-universe-vs-alternatives.html',
   '/guides/pt/doppler-radial-velocity-vs-alternatives.html',
-  '/guides/pt/star-trails-vs-alternatives.html',
   '/guides/pt/tidal-heating-vs-alternatives.html',
   '/guides/pt/planetary-rings-comparison-vs-alternatives.html',
   '/guides/pt/coordinate-systems-sky-vs-alternatives.html',
@@ -4926,7 +4921,6 @@ export const INFO_ROUTES = new Set([
   '/guides/cepheid-variable-vs-alternatives.html',
   '/guides/expanding-universe-vs-alternatives.html',
   '/guides/doppler-radial-velocity-vs-alternatives.html',
-  '/guides/star-trails-vs-alternatives.html',
   '/guides/tidal-heating-vs-alternatives.html',
   '/guides/planetary-rings-comparison-vs-alternatives.html',
   '/guides/coordinate-systems-sky-vs-alternatives.html',
@@ -5413,7 +5407,6 @@ export const INFO_ROUTES = new Set([
   '/guides/de/cepheid-variable-step-by-step.html',
   '/guides/de/expanding-universe-step-by-step.html',
   '/guides/de/doppler-radial-velocity-step-by-step.html',
-  '/guides/de/star-trails-step-by-step.html',
   '/guides/de/tidal-heating-step-by-step.html',
   '/guides/de/planetary-rings-comparison-step-by-step.html',
   '/guides/de/coordinate-systems-sky-step-by-step.html',
@@ -5480,7 +5473,6 @@ export const INFO_ROUTES = new Set([
   '/guides/id/cepheid-variable-step-by-step.html',
   '/guides/id/expanding-universe-step-by-step.html',
   '/guides/id/doppler-radial-velocity-step-by-step.html',
-  '/guides/id/star-trails-step-by-step.html',
   '/guides/id/tidal-heating-step-by-step.html',
   '/guides/id/planetary-rings-comparison-step-by-step.html',
   '/guides/id/coordinate-systems-sky-step-by-step.html',
@@ -5544,7 +5536,6 @@ export const INFO_ROUTES = new Set([
   '/guides/id/haumea-elongated-step-by-step.html',
   '/guides/vi/cepheid-variable-step-by-step.html',
   '/guides/vi/doppler-radial-velocity-step-by-step.html',
-  '/guides/vi/star-trails-step-by-step.html',
   '/guides/vi/tidal-heating-step-by-step.html',
   '/guides/vi/planetary-rings-comparison-step-by-step.html',
   '/guides/vi/coordinate-systems-sky-step-by-step.html',
@@ -5599,7 +5590,6 @@ export const INFO_ROUTES = new Set([
   '/guides/es/cepheid-variable-step-by-step.html',
   '/guides/es/expanding-universe-step-by-step.html',
   '/guides/es/doppler-radial-velocity-step-by-step.html',
-  '/guides/es/star-trails-step-by-step.html',
   '/guides/es/tidal-heating-step-by-step.html',
   '/guides/es/planetary-rings-comparison-step-by-step.html',
   '/guides/es/coordinate-systems-sky-step-by-step.html',
@@ -5666,7 +5656,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/cepheid-variable-step-by-step.html',
   '/guides/pt/expanding-universe-step-by-step.html',
   '/guides/pt/doppler-radial-velocity-step-by-step.html',
-  '/guides/pt/star-trails-step-by-step.html',
   '/guides/pt/tidal-heating-step-by-step.html',
   '/guides/pt/planetary-rings-comparison-step-by-step.html',
   '/guides/pt/coordinate-systems-sky-step-by-step.html',
@@ -5733,7 +5722,6 @@ export const INFO_ROUTES = new Set([
   '/guides/cepheid-variable-step-by-step.html',
   '/guides/expanding-universe-step-by-step.html',
   '/guides/doppler-radial-velocity-step-by-step.html',
-  '/guides/star-trails-step-by-step.html',
   '/guides/tidal-heating-step-by-step.html',
   '/guides/planetary-rings-comparison-step-by-step.html',
   '/guides/coordinate-systems-sky-step-by-step.html',
@@ -12339,23 +12327,12 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/precision-bounce-loop-vs-alternatives.html',
   '/guides/de/precision-bounce-loop-vs-alternatives.html',
   // fire107 vim-motion-academy
-  '/guides/how-to-play-vim-motion-academy.html',
-  '/guides/pt/how-to-play-vim-motion-academy.html',
-  '/guides/es/how-to-play-vim-motion-academy.html',
-  '/guides/id/how-to-play-vim-motion-academy.html',
-  '/guides/de/how-to-play-vim-motion-academy.html',
   '/guides/vim-motion-academy-when.html',
   '/guides/pt/vim-motion-academy-when.html',
   '/guides/es/vim-motion-academy-when.html',
   '/guides/vi/vim-motion-academy-when.html',
   '/guides/id/vim-motion-academy-when.html',
   '/guides/de/vim-motion-academy-when.html',
-  '/guides/vim-motion-academy-vs-alternatives.html',
-  '/guides/pt/vim-motion-academy-vs-alternatives.html',
-  '/guides/es/vim-motion-academy-vs-alternatives.html',
-  '/guides/vi/vim-motion-academy-vs-alternatives.html',
-  '/guides/id/vim-motion-academy-vs-alternatives.html',
-  '/guides/de/vim-motion-academy-vs-alternatives.html',
 
   '/guides/de/gravity-orbit-golf-vs-alternatives.html',
 
@@ -14158,6 +14135,29 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  '/guides/id/vim-motion-academy-vs-alternatives.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/vi/vim-motion-academy-vs-alternatives.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/de/vim-motion-academy-vs-alternatives.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/es/vim-motion-academy-vs-alternatives.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/pt/vim-motion-academy-vs-alternatives.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/vim-motion-academy-vs-alternatives.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/id/how-to-play-vim-motion-academy.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/de/how-to-play-vim-motion-academy.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/es/how-to-play-vim-motion-academy.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/pt/how-to-play-vim-motion-academy.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/how-to-play-vim-motion-academy.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/id/star-trails-vs-alternatives.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/vi/star-trails-vs-alternatives.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/de/star-trails-vs-alternatives.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/es/star-trails-vs-alternatives.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/pt/star-trails-vs-alternatives.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/star-trails-vs-alternatives.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/id/star-trails-step-by-step.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/vi/star-trails-step-by-step.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/de/star-trails-step-by-step.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/es/star-trails-step-by-step.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/pt/star-trails-step-by-step.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
+  '/guides/star-trails-step-by-step.html': '/space-3d/star-trails.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
   '/guides/text-case-converter-step-by-step.html': '/developer-tools/case-converter.html', // consolidation-fire87 2026-08-30: excess guide family merged into canonical
   '/guides/pt/text-case-converter-step-by-step.html': '/developer-tools/case-converter.html', // consolidation-fire87 2026-08-30: excess guide family merged into canonical
   '/guides/es/text-case-converter-step-by-step.html': '/developer-tools/case-converter.html', // consolidation-fire87 2026-08-30: excess guide family merged into canonical
@@ -16719,7 +16719,7 @@ export const ALIAS_ROUTES = {
   '/guides/vi/how-to-play-thirteen-step-escape.html': '/guides/how-to-play-thirteen-step-escape.html',
   '/guides/vi/how-to-play-unlucky-crossing.html': '/guides/how-to-play-unlucky-crossing.html',
   '/guides/vi/how-to-play-vim-master.html': '/guides/how-to-play-vim-master.html',
-  '/guides/vi/how-to-play-vim-motion-academy.html': '/guides/how-to-play-vim-motion-academy.html',
+  '/guides/vi/how-to-play-vim-motion-academy.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
   '/guides/vi/how-to-play-violence-town.html': '/guides/how-to-play-violence-town.html',
   '/guides/vi/how-to-play-void-trader.html': '/guides/how-to-play-void-trader.html',
   '/guides/vi/how-to-play-voxel-fps-arena.html': '/guides/how-to-play-voxel-fps-arena.html',
@@ -20317,23 +20317,12 @@ export const JSP_BY_ROUTE = {
   '/guides/de/precision-bounce-loop-vs-alternatives.html': 'guide/de/precision-bounce-loop-vs-alternatives.jsp',
   '/games/precision-bounce-loop.html': 'games/precision-bounce-loop.jsp',
   // fire107 vim-motion-academy guides
-  '/guides/how-to-play-vim-motion-academy.html': 'guide/how-to-play-vim-motion-academy.jsp',
-  '/guides/pt/how-to-play-vim-motion-academy.html': 'guide/pt/how-to-play-vim-motion-academy.jsp',
-  '/guides/es/how-to-play-vim-motion-academy.html': 'guide/es/how-to-play-vim-motion-academy.jsp',
-  '/guides/id/how-to-play-vim-motion-academy.html': 'guide/id/how-to-play-vim-motion-academy.jsp',
-  '/guides/de/how-to-play-vim-motion-academy.html': 'guide/de/how-to-play-vim-motion-academy.jsp',
   '/guides/vim-motion-academy-when.html': 'guide/vim-motion-academy-when.jsp',
   '/guides/pt/vim-motion-academy-when.html': 'guide/pt/vim-motion-academy-when.jsp',
   '/guides/es/vim-motion-academy-when.html': 'guide/es/vim-motion-academy-when.jsp',
   '/guides/vi/vim-motion-academy-when.html': 'guide/vi/vim-motion-academy-when.jsp',
   '/guides/id/vim-motion-academy-when.html': 'guide/id/vim-motion-academy-when.jsp',
   '/guides/de/vim-motion-academy-when.html': 'guide/de/vim-motion-academy-when.jsp',
-  '/guides/vim-motion-academy-vs-alternatives.html': 'guide/vim-motion-academy-vs-alternatives.jsp',
-  '/guides/pt/vim-motion-academy-vs-alternatives.html': 'guide/pt/vim-motion-academy-vs-alternatives.jsp',
-  '/guides/es/vim-motion-academy-vs-alternatives.html': 'guide/es/vim-motion-academy-vs-alternatives.jsp',
-  '/guides/vi/vim-motion-academy-vs-alternatives.html': 'guide/vi/vim-motion-academy-vs-alternatives.jsp',
-  '/guides/id/vim-motion-academy-vs-alternatives.html': 'guide/id/vim-motion-academy-vs-alternatives.jsp',
-  '/guides/de/vim-motion-academy-vs-alternatives.html': 'guide/de/vim-motion-academy-vs-alternatives.jsp',
   '/games/vim-motion-academy.html': 'games/vim-motion-academy.jsp',
 
   '/guides/de/gravity-orbit-golf-vs-alternatives.html': 'guide/de/gravity-orbit-golf-vs-alternatives.jsp',
@@ -23379,7 +23368,6 @@ export const JSP_BY_ROUTE = {
   '/guides/cepheid-variable-vs-alternatives.html': 'guide/cepheid-variable-vs-alternatives.jsp',
   '/guides/expanding-universe-vs-alternatives.html': 'guide/expanding-universe-vs-alternatives.jsp',
   '/guides/doppler-radial-velocity-vs-alternatives.html': 'guide/doppler-radial-velocity-vs-alternatives.jsp',
-  '/guides/star-trails-vs-alternatives.html': 'guide/star-trails-vs-alternatives.jsp',
   '/guides/tidal-heating-vs-alternatives.html': 'guide/tidal-heating-vs-alternatives.jsp',
   '/guides/planetary-rings-comparison-vs-alternatives.html': 'guide/planetary-rings-comparison-vs-alternatives.jsp',
   '/guides/coordinate-systems-sky-vs-alternatives.html': 'guide/coordinate-systems-sky-vs-alternatives.jsp',
@@ -23565,7 +23553,6 @@ export const JSP_BY_ROUTE = {
   '/guides/tidal-heating-when.html': 'guide/tidal-heating-when.jsp',
   '/guides/tidal-heating-step-by-step.html': 'guide/tidal-heating-step-by-step.jsp',
   '/guides/star-trails-when.html': 'guide/star-trails-when.jsp',
-  '/guides/star-trails-step-by-step.html': 'guide/star-trails-step-by-step.jsp',
   '/guides/doppler-radial-velocity-when.html': 'guide/doppler-radial-velocity-when.jsp',
   '/guides/doppler-radial-velocity-step-by-step.html': 'guide/doppler-radial-velocity-step-by-step.jsp',
   '/guides/expanding-universe-when.html': 'guide/expanding-universe-when.jsp',
@@ -23614,7 +23601,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/cepheid-variable-vs-alternatives.html': 'guide/pt/cepheid-variable-vs-alternatives.jsp',
   '/guides/pt/expanding-universe-vs-alternatives.html': 'guide/pt/expanding-universe-vs-alternatives.jsp',
   '/guides/pt/doppler-radial-velocity-vs-alternatives.html': 'guide/pt/doppler-radial-velocity-vs-alternatives.jsp',
-  '/guides/pt/star-trails-vs-alternatives.html': 'guide/pt/star-trails-vs-alternatives.jsp',
   '/guides/pt/tidal-heating-vs-alternatives.html': 'guide/pt/tidal-heating-vs-alternatives.jsp',
   '/guides/pt/planetary-rings-comparison-vs-alternatives.html': 'guide/pt/planetary-rings-comparison-vs-alternatives.jsp',
   '/guides/pt/coordinate-systems-sky-vs-alternatives.html': 'guide/pt/coordinate-systems-sky-vs-alternatives.jsp',
@@ -23754,7 +23740,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/cepheid-variable-step-by-step.html': 'guide/pt/cepheid-variable-step-by-step.jsp',
   '/guides/pt/expanding-universe-step-by-step.html': 'guide/pt/expanding-universe-step-by-step.jsp',
   '/guides/pt/doppler-radial-velocity-step-by-step.html': 'guide/pt/doppler-radial-velocity-step-by-step.jsp',
-  '/guides/pt/star-trails-step-by-step.html': 'guide/pt/star-trails-step-by-step.jsp',
   '/guides/pt/tidal-heating-step-by-step.html': 'guide/pt/tidal-heating-step-by-step.jsp',
   '/guides/pt/planetary-rings-comparison-step-by-step.html': 'guide/pt/planetary-rings-comparison-step-by-step.jsp',
   '/guides/pt/coordinate-systems-sky-step-by-step.html': 'guide/pt/coordinate-systems-sky-step-by-step.jsp',
@@ -23849,7 +23834,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/cepheid-variable-vs-alternatives.html': 'guide/es/cepheid-variable-vs-alternatives.jsp',
   '/guides/es/expanding-universe-vs-alternatives.html': 'guide/es/expanding-universe-vs-alternatives.jsp',
   '/guides/es/doppler-radial-velocity-vs-alternatives.html': 'guide/es/doppler-radial-velocity-vs-alternatives.jsp',
-  '/guides/es/star-trails-vs-alternatives.html': 'guide/es/star-trails-vs-alternatives.jsp',
   '/guides/es/tidal-heating-vs-alternatives.html': 'guide/es/tidal-heating-vs-alternatives.jsp',
   '/guides/es/planetary-rings-comparison-vs-alternatives.html': 'guide/es/planetary-rings-comparison-vs-alternatives.jsp',
   '/guides/es/coordinate-systems-sky-vs-alternatives.html': 'guide/es/coordinate-systems-sky-vs-alternatives.jsp',
@@ -23989,7 +23973,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/cepheid-variable-step-by-step.html': 'guide/es/cepheid-variable-step-by-step.jsp',
   '/guides/es/expanding-universe-step-by-step.html': 'guide/es/expanding-universe-step-by-step.jsp',
   '/guides/es/doppler-radial-velocity-step-by-step.html': 'guide/es/doppler-radial-velocity-step-by-step.jsp',
-  '/guides/es/star-trails-step-by-step.html': 'guide/es/star-trails-step-by-step.jsp',
   '/guides/es/tidal-heating-step-by-step.html': 'guide/es/tidal-heating-step-by-step.jsp',
   '/guides/es/planetary-rings-comparison-step-by-step.html': 'guide/es/planetary-rings-comparison-step-by-step.jsp',
   '/guides/es/coordinate-systems-sky-step-by-step.html': 'guide/es/coordinate-systems-sky-step-by-step.jsp',
@@ -24084,7 +24067,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/cepheid-variable-vs-alternatives.html': 'guide/de/cepheid-variable-vs-alternatives.jsp',
   '/guides/de/expanding-universe-vs-alternatives.html': 'guide/de/expanding-universe-vs-alternatives.jsp',
   '/guides/de/doppler-radial-velocity-vs-alternatives.html': 'guide/de/doppler-radial-velocity-vs-alternatives.jsp',
-  '/guides/de/star-trails-vs-alternatives.html': 'guide/de/star-trails-vs-alternatives.jsp',
   '/guides/de/tidal-heating-vs-alternatives.html': 'guide/de/tidal-heating-vs-alternatives.jsp',
   '/guides/de/planetary-rings-comparison-vs-alternatives.html': 'guide/de/planetary-rings-comparison-vs-alternatives.jsp',
   '/guides/de/coordinate-systems-sky-vs-alternatives.html': 'guide/de/coordinate-systems-sky-vs-alternatives.jsp',
@@ -24224,7 +24206,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/cepheid-variable-step-by-step.html': 'guide/de/cepheid-variable-step-by-step.jsp',
   '/guides/de/expanding-universe-step-by-step.html': 'guide/de/expanding-universe-step-by-step.jsp',
   '/guides/de/doppler-radial-velocity-step-by-step.html': 'guide/de/doppler-radial-velocity-step-by-step.jsp',
-  '/guides/de/star-trails-step-by-step.html': 'guide/de/star-trails-step-by-step.jsp',
   '/guides/de/tidal-heating-step-by-step.html': 'guide/de/tidal-heating-step-by-step.jsp',
   '/guides/de/planetary-rings-comparison-step-by-step.html': 'guide/de/planetary-rings-comparison-step-by-step.jsp',
   '/guides/de/coordinate-systems-sky-step-by-step.html': 'guide/de/coordinate-systems-sky-step-by-step.jsp',
@@ -24314,7 +24295,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/venus-retrograde-rotation-vs-alternatives.html': 'guide/vi/venus-retrograde-rotation-vs-alternatives.jsp',
   '/guides/vi/three-body-problem-vs-alternatives.html': 'guide/vi/three-body-problem-vs-alternatives.jsp',
   '/guides/vi/cepheid-variable-vs-alternatives.html': 'guide/vi/cepheid-variable-vs-alternatives.jsp',
-  '/guides/vi/star-trails-vs-alternatives.html': 'guide/vi/star-trails-vs-alternatives.jsp',
   '/guides/vi/tidal-heating-vs-alternatives.html': 'guide/vi/tidal-heating-vs-alternatives.jsp',
   '/guides/vi/planetary-rings-comparison-vs-alternatives.html': 'guide/vi/planetary-rings-comparison-vs-alternatives.jsp',
   '/guides/vi/coordinate-systems-sky-vs-alternatives.html': 'guide/vi/coordinate-systems-sky-vs-alternatives.jsp',
@@ -24414,7 +24394,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/triton-cantaloupe-when.html': 'guide/vi/triton-cantaloupe-when.jsp',
   '/guides/vi/haumea-elongated-when.html': 'guide/vi/haumea-elongated-when.jsp',
   '/guides/vi/cepheid-variable-step-by-step.html': 'guide/vi/cepheid-variable-step-by-step.jsp',
-  '/guides/vi/star-trails-step-by-step.html': 'guide/vi/star-trails-step-by-step.jsp',
   '/guides/vi/tidal-heating-step-by-step.html': 'guide/vi/tidal-heating-step-by-step.jsp',
   '/guides/vi/planetary-rings-comparison-step-by-step.html': 'guide/vi/planetary-rings-comparison-step-by-step.jsp',
   '/guides/vi/coordinate-systems-sky-step-by-step.html': 'guide/vi/coordinate-systems-sky-step-by-step.jsp',
@@ -24492,7 +24471,6 @@ export const JSP_BY_ROUTE = {
   '/guides/id/cepheid-variable-vs-alternatives.html': 'guide/id/cepheid-variable-vs-alternatives.jsp',
   '/guides/id/expanding-universe-vs-alternatives.html': 'guide/id/expanding-universe-vs-alternatives.jsp',
   '/guides/id/doppler-radial-velocity-vs-alternatives.html': 'guide/id/doppler-radial-velocity-vs-alternatives.jsp',
-  '/guides/id/star-trails-vs-alternatives.html': 'guide/id/star-trails-vs-alternatives.jsp',
   '/guides/id/tidal-heating-vs-alternatives.html': 'guide/id/tidal-heating-vs-alternatives.jsp',
   '/guides/id/planetary-rings-comparison-vs-alternatives.html': 'guide/id/planetary-rings-comparison-vs-alternatives.jsp',
   '/guides/id/coordinate-systems-sky-vs-alternatives.html': 'guide/id/coordinate-systems-sky-vs-alternatives.jsp',
@@ -24683,7 +24661,6 @@ export const JSP_BY_ROUTE = {
   '/guides/id/cepheid-variable-step-by-step.html': 'guide/id/cepheid-variable-step-by-step.jsp',
   '/guides/id/expanding-universe-step-by-step.html': 'guide/id/expanding-universe-step-by-step.jsp',
   '/guides/id/doppler-radial-velocity-step-by-step.html': 'guide/id/doppler-radial-velocity-step-by-step.jsp',
-  '/guides/id/star-trails-step-by-step.html': 'guide/id/star-trails-step-by-step.jsp',
   '/guides/id/tidal-heating-step-by-step.html': 'guide/id/tidal-heating-step-by-step.jsp',
   '/guides/id/planetary-rings-comparison-step-by-step.html': 'guide/id/planetary-rings-comparison-step-by-step.jsp',
   '/guides/id/coordinate-systems-sky-step-by-step.html': 'guide/id/coordinate-systems-sky-step-by-step.jsp',
