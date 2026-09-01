@@ -1005,6 +1005,7 @@ try {
     { title: "Meeting Notes Taker", url: "https://freetoolonline.com/utility-tools/meeting-notes-taker.html", include: !1, tags: "utility" },
     { title: "Architecture Diagram Maker", url: "https://freetoolonline.com/utility-tools/architecture-diagram-maker.html", include: !1, tags: "utility" },
     { title: "Cover Letter Generator - Private, CV Never Uploaded", url: "https://freetoolonline.com/utility-tools/cover-letter-generator.html", include: !1, tags: "utility" },
+    { title: "Zstd Extractor", url: "https://freetoolonline.com/zip-tools/zstd-extractor.html", include: !1, tags: "zip" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

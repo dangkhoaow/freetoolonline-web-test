@@ -1,0 +1,143 @@
+<script>
+    // Zstandard (.zst) extractor archetype (zstd-extractor) - REAL in-browser
+    // Zstd DECOMPRESSION via the vendored pure-JS fzstd library
+    // (/vendor/fzstd/fzstd.mjs, MIT, ~8-24 KB, NO WASM binary, NO worker,
+    // NO network). 100% client-side: the .zst file is read with FileReader
+    // and decompressed with fzstd.decompress() - the bytes never leave the
+    // browser. Registry Gate-H entry: archive_js_zstd (engineering seed,
+    // 2026-08-31 - unblocks the zstd-extractor Gate-H starvation card
+    // gate_h_starvation-zstd-extractor-20260831-7). Framework contract:
+    // doAfterPageRendered(); no top-level DOM. Plain <input type=file>,
+    // no server upload widget.
+    //
+    // G16 (visible output, zero interaction): on load the skeleton decodes an
+    // EMBEDDED tiny .zst frame and renders the decompressed text + a working
+    // download link inside .outputImgs - proving the decompressor runs before
+    // the reader touches anything.
+
+    web.localUpload = false;
+
+    // Small embedded .zst frame (zstd -19); decompresses to a 171-byte demo
+    // message. Used only to render a visible on-load result. Verified byte-for-
+    // byte round-trip under Node against this exact fzstd build.
+    var ZSTD_DEMO_B64 = 'KLUv/SSr1QMA0sgZFoBNGwj8vYsS/oHHKcoMaoIIGL6hqnsAwZpqv6mTyNNR9yZRBUBg4qnzQAtTTCv78Fy3yo+JmMjKs/vSVb7JTRf5QiqdqWMy5z5Lk8TztXeUfVaMAehK/Gontx3lheaJCI57yK75CAUAZgywMCRpmosSvRy1BjMCCuyu';
+
+    var _fzstdPromise = null;
+    // Lazy-load the vendored pure-JS zstd decompressor. Try the ESM module
+    // first (dynamic import of a same-origin static file); fall back to the
+    // UMD build injected as a <script> that defines the global `fzstd`.
+    function loadFzstd() {
+        if (_fzstdPromise) return _fzstdPromise;
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '');
+        _fzstdPromise = import(/* webpackIgnore: true */ base + '/vendor/fzstd/fzstd.mjs')
+            .then(function (mod) { return mod; })
+            .catch(function () {
+                return new Promise(function (resolve, reject) {
+                    if (typeof window !== 'undefined' && window.fzstd) { resolve(window.fzstd); return; }
+                    var s = document.createElement('script');
+                    s.src = base + '/vendor/fzstd/fzstd.min.js';
+                    s.onload = function () {
+                        if (window.fzstd) resolve(window.fzstd);
+                        else reject(new Error('fzstd global not defined after load'));
+                    };
+                    s.onerror = function () { reject(new Error('could not load the zstd decompressor')); };
+                    document.head.appendChild(s);
+                });
+            });
+        return _fzstdPromise;
+    }
+
+    function b64ToBytes(b64) {
+        var bin = atob(b64);
+        var out = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+        return out;
+    }
+
+    function fmtBytes(n) {
+        if (n < 1024) return n + ' B';
+        if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+        return (n / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    // Strip a trailing .zst / .zstd (or .tar.zst -> .tar) to name the output.
+    function outputNameFor(inputName) {
+        var n = String(inputName || '').replace(/\.(zst|zstd)$/i, '');
+        if (!n || n === inputName) n = (n || 'extracted') || 'extracted';
+        if (n === inputName) n = 'extracted.bin';
+        return n || 'extracted.bin';
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('zstdExtractorTool');
+        if (!root) return; // not a zstd-extractor page
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="zstFile" accept=".zst,.zstd,application/zstd" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div id="zstStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Loading the in-browser Zstandard decompressor...</div>' +
+            '<div class="w3-row outputImgs" id="zstOut" style="visibility:visible !important;text-align:left;max-width:640px;margin:0 auto;"></div>';
+
+        var fileEl = root.querySelector('#zstFile');
+        var statusEl = root.querySelector('#zstStatus');
+        var outEl = root.querySelector('#zstOut');
+        var lastUrl = null;
+
+        function setStatus(m) { statusEl.textContent = m; }
+
+        function renderResult(bytes, outName, note) {
+            if (lastUrl) { URL.revokeObjectURL(lastUrl); lastUrl = null; }
+            var blob = new Blob([bytes], { type: 'application/octet-stream' });
+            lastUrl = URL.createObjectURL(blob);
+            // A short readable preview if the content is text-ish.
+            var previewHtml = '';
+            try {
+                var txt = new TextDecoder('utf-8', { fatal: false }).decode(bytes.subarray(0, 400));
+                if (/[\x09\x0a\x0d\x20-\x7e]/.test(txt)) {
+                    var esc = txt.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    previewHtml = '<pre style="white-space:pre-wrap;background:#f6f8fa;border:1px solid #e0e0e0;padding:8px;border-radius:4px;max-height:180px;overflow:auto;margin:8px 0;">' + esc + (bytes.length > 400 ? '…' : '') + '</pre>';
+                }
+            } catch (e) { previewHtml = ''; }
+            outEl.innerHTML =
+                '<div style="margin:8px 0;"><b>Extracted:</b> ' + outName + ' (' + fmtBytes(bytes.length) + ')</div>' +
+                previewHtml +
+                '<a id="zstDl" class="w3-button w3-blue" href="' + lastUrl + '" download="' + outName + '">Download ' + outName + '</a>';
+            setStatus(note || 'Extracted in your browser - nothing was uploaded.');
+        }
+
+        function extractBytes(zstBytes, outName, note, onErr) {
+            loadFzstd().then(function (fzstd) {
+                var original = fzstd.decompress(zstBytes);
+                renderResult(original, outName, note);
+            }).catch(function (e) {
+                var msg = (e && e.message) ? e.message : String(e);
+                if (onErr) onErr(msg); else setStatus('Could not extract this file (' + msg + ').');
+            });
+        }
+
+        // On-load visible demo (G16): decompress the embedded frame.
+        extractBytes(
+            b64ToBytes(ZSTD_DEMO_B64),
+            'zstd-demo.txt',
+            'Demo extracted locally from an embedded .zst frame. Pick your own .zst file above.',
+            function (msg) { setStatus('Zstandard decompressor could not start (' + msg + ').'); }
+        );
+
+        fileEl.addEventListener('change', function () {
+            var f = fileEl.files && fileEl.files[0];
+            if (!f) return;
+            setStatus('Reading ' + f.name + '...');
+            var reader = new FileReader();
+            reader.onload = function () {
+                var zstBytes = new Uint8Array(reader.result);
+                setStatus('Extracting ' + f.name + ' (' + fmtBytes(zstBytes.length) + ')...');
+                extractBytes(
+                    zstBytes,
+                    outputNameFor(f.name),
+                    'Extracted ' + f.name + ' locally - nothing was uploaded.',
+                    function (msg) { setStatus('Could not extract ' + f.name + ' - is it a valid .zst file? (' + msg + ')'); }
+                );
+            };
+            reader.onerror = function () { setStatus('Could not read that file.'); };
+            reader.readAsArrayBuffer(f);
+        });
+    }
+</script>

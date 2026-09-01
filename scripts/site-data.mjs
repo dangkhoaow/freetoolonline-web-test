@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/zstd-extractor-vs-alternatives.html',
+  '/guides/zstd-extractor-step-by-step.html',
+  '/guides/zstd-extractor-when.html',
+  '/guides/pt/zstd-extractor-step-by-step.html',
+  '/guides/pt/zstd-extractor-when.html',
+  '/guides/pt/zstd-extractor-vs-alternatives.html',
+  '/guides/es/zstd-extractor-step-by-step.html',
+  '/guides/es/zstd-extractor-when.html',
+  '/guides/es/zstd-extractor-vs-alternatives.html',
+  '/guides/vi/zstd-extractor-step-by-step.html',
+  '/guides/vi/zstd-extractor-when.html',
+  '/guides/vi/zstd-extractor-vs-alternatives.html',
+  '/guides/id/zstd-extractor-step-by-step.html',
+  '/guides/id/zstd-extractor-when.html',
+  '/guides/id/zstd-extractor-vs-alternatives.html',
+  '/guides/de/zstd-extractor-step-by-step.html',
+  '/guides/de/zstd-extractor-when.html',
+  '/guides/de/zstd-extractor-vs-alternatives.html',
   '/guides/file-viewer-vs-alternatives.html',
   // file-viewer-vs-alternatives pt locale (create_new_guide_page 20260827-3)
   '/guides/pt/file-viewer-vs-alternatives.html',
@@ -7230,6 +7248,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // zstd-extractor companion guides EN + 5 locales (new-tool-discovery-loop fire 739, 20260901-2)
+  '/guides/zstd-extractor-step-by-step.html',
+  '/guides/zstd-extractor-when.html',
+  '/guides/zstd-extractor-vs-alternatives.html',
+  '/guides/pt/zstd-extractor-step-by-step.html',
+  '/guides/pt/zstd-extractor-when.html',
+  '/guides/pt/zstd-extractor-vs-alternatives.html',
+  '/guides/es/zstd-extractor-step-by-step.html',
+  '/guides/es/zstd-extractor-when.html',
+  '/guides/es/zstd-extractor-vs-alternatives.html',
+  '/guides/vi/zstd-extractor-step-by-step.html',
+  '/guides/vi/zstd-extractor-when.html',
+  '/guides/vi/zstd-extractor-vs-alternatives.html',
+  '/guides/id/zstd-extractor-step-by-step.html',
+  '/guides/id/zstd-extractor-when.html',
+  '/guides/id/zstd-extractor-vs-alternatives.html',
+  '/guides/de/zstd-extractor-step-by-step.html',
+  '/guides/de/zstd-extractor-when.html',
+  '/guides/de/zstd-extractor-vs-alternatives.html',
   // file-viewer-vs-alternatives pt locale (create_new_guide_page 20260827-3)
   '/guides/pt/file-viewer-vs-alternatives.html',
   // file-viewer-vs-alternatives es locale (create_new_guide_page 20260827-4)
@@ -16958,6 +16995,7 @@ export const ALIAS_ROUTES = {
   '/video-editor.html': '/video-tools/video-editor.html',
   '/online-video-editor.html': '/video-tools/video-editor.html',
   '/capcut-alternative.html': '/video-tools/video-editor.html',
+  '/zstd-extractor.html': '/zip-tools/zstd-extractor.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29267,6 +29305,25 @@ export const JSP_BY_ROUTE = {
   '/utility-tools/cover-letter-generator.html': 'utility/cover-letter-generator.jsp',
   '/utility-tools/architecture-diagram-maker.html': 'utility/architecture-diagram-maker.jsp',
   '/video-tools/video-editor.html': 'convert/video-editor.jsp',
+  '/zip-tools/zstd-extractor.html': 'file/zstd-extractor.jsp',
+  '/guides/zstd-extractor-when.html': 'guide/zstd-extractor-when.jsp',
+  '/guides/zstd-extractor-step-by-step.html': 'guide/zstd-extractor-step-by-step.jsp',
+  '/guides/zstd-extractor-vs-alternatives.html': 'guide/zstd-extractor-vs-alternatives.jsp',
+  '/guides/pt/zstd-extractor-step-by-step.html': 'guide/pt/zstd-extractor-step-by-step.jsp',
+  '/guides/pt/zstd-extractor-when.html': 'guide/pt/zstd-extractor-when.jsp',
+  '/guides/pt/zstd-extractor-vs-alternatives.html': 'guide/pt/zstd-extractor-vs-alternatives.jsp',
+  '/guides/es/zstd-extractor-step-by-step.html': 'guide/es/zstd-extractor-step-by-step.jsp',
+  '/guides/es/zstd-extractor-when.html': 'guide/es/zstd-extractor-when.jsp',
+  '/guides/es/zstd-extractor-vs-alternatives.html': 'guide/es/zstd-extractor-vs-alternatives.jsp',
+  '/guides/vi/zstd-extractor-step-by-step.html': 'guide/vi/zstd-extractor-step-by-step.jsp',
+  '/guides/vi/zstd-extractor-when.html': 'guide/vi/zstd-extractor-when.jsp',
+  '/guides/vi/zstd-extractor-vs-alternatives.html': 'guide/vi/zstd-extractor-vs-alternatives.jsp',
+  '/guides/id/zstd-extractor-step-by-step.html': 'guide/id/zstd-extractor-step-by-step.jsp',
+  '/guides/id/zstd-extractor-when.html': 'guide/id/zstd-extractor-when.jsp',
+  '/guides/id/zstd-extractor-vs-alternatives.html': 'guide/id/zstd-extractor-vs-alternatives.jsp',
+  '/guides/de/zstd-extractor-step-by-step.html': 'guide/de/zstd-extractor-step-by-step.jsp',
+  '/guides/de/zstd-extractor-when.html': 'guide/de/zstd-extractor-when.jsp',
+  '/guides/de/zstd-extractor-vs-alternatives.html': 'guide/de/zstd-extractor-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

@@ -3,7 +3,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'zip',
     hubRoute: '/zip-tools.html',
     hubLabel: 'Back to ZIP Tools',
-    routes: ['/zip-file.html', '/unzip-file.html', '/remove-zip-password.html'],
+    routes: ['/zip-file.html', '/unzip-file.html', '/remove-zip-password.html', '/zip-tools/zstd-extractor.html'],
   },
   {
     cluster: 'image-editing',
