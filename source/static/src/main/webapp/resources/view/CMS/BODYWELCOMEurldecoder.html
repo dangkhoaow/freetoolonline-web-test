@@ -1,5 +1,5 @@
 <h1 class="text-uppercase"><b>URL Decoder</b></h1>
-<time itemprop="dateUpdated" datetime="2026-07-03T00:00:00"><b>Last reviewed: 2026-07-03</b></time>
+<time itemprop="dateUpdated" datetime="2026-09-02T00:00:00"><b>Last reviewed: 2026-09-02</b></time>
 <hr/>
 <p>Encode text for safe use in a URL, or decode a percent-encoded URL string back to plain text.</p>
 <p>Use it to build a query-string value, decode a shared link, or inspect a percent-encoded parameter. Nothing you type is saved; refreshing the page clears the box.</p>
@@ -11,3 +11,22 @@
   <h3>What the percent codes stand for</h3>
   <p>Percent codes are placeholders that keep special characters from breaking a link. Decoding a string turns a sequence like %20 back into a space and %2F back into a slash, along with every other escaped character; running it the other way puts those percent codes back so the text can sit safely inside a URL.</p>
 </section>
+
+<h2>Which characters URL Decoder's Encode button leaves untouched</h2>
+<p>URL Decoder's Encode button does not touch every character in the box. Letters (A-Z, a-z), digits (0-9), and eight punctuation marks - hyphen, underscore, period, exclamation mark, tilde, asterisk, and both parentheses - pass through Encode unchanged; every other character becomes a percent code, including a few you might expect to survive:</p>
+<table style="border-collapse:collapse;margin-top:8px;font-size:0.95em;">
+<thead><tr><th style="text-align:left;padding:4px 8px;border-bottom:1px solid #ccc;">Character you type</th><th style="text-align:left;padding:4px 8px;border-bottom:1px solid #ccc;">What Encode writes</th></tr></thead>
+<tbody>
+<tr><td style="padding:4px 8px;">+</td><td style="padding:4px 8px;">%2B</td></tr>
+<tr><td style="padding:4px 8px;">&amp;</td><td style="padding:4px 8px;">%26</td></tr>
+<tr><td style="padding:4px 8px;">?</td><td style="padding:4px 8px;">%3F</td></tr>
+<tr><td style="padding:4px 8px;">@</td><td style="padding:4px 8px;">%40</td></tr>
+</tbody>
+</table>
+<p>The plus sign is the one that trips people up: a literal + you type is percent-encoded to %2B, never left as-is, because Encode has no way to tell a "plus means space" convention from a real plus character in your input.</p>
+
+<h2>Encode one value, not a whole address</h2>
+<p>URL Decoder's Encode button is built to turn a single value - a search phrase, a filename, one query-string parameter - into something safe to paste inside a URL. It is not built to encode an entire web address. Run a full URL like https://example.com/a b?x=1&amp;y=2 through Encode and it also escapes the :// and every path slash, turning it into https%3A%2F%2Fexample.com%2Fa%20b%3Fx%3D1%26y%3D2 - a string no browser will follow as a link. The fix is to encode the value on its own first (a b?x=1&amp;y=2 in that example), then paste the encoded result into the URL you already have, after its existing ? or &amp;. That behavior is deliberate: JavaScript actually has two related encoding functions, one built for a whole address (it leaves `:`, `/`, `?`, `#`, `[`, `]`, and `@` alone) and one built for a single value inside an address (it escapes those characters too); URL Decoder's Encode button always uses the second, one-value form, which is why it escapes those structural characters even when your input happens to look like a complete URL.</p>
+
+<h2>What exactly triggers the inline error</h2>
+<p>URL Decoder's Decode button does not fail silently. It shows the inline message "Invalid URL encoding" only when the text you paste breaks the percent-encoding format itself, not when the decoded result happens to be unusual text. Two things reliably trigger it: a lone percent sign that is not followed by two valid hex digits (typing 100% off instead of 100%20off, for example), and a percent-encoded sequence that is cut short partway through a multi-byte character - pasting %E4%BD without the third byte that completes it is a case that can happen if a link gets truncated when it is copied. Both cases show as an error instead of a wrong or garbled result, so a failed decode always tells you the input was broken rather than guessing at an answer.</p>
