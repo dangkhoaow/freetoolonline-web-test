@@ -1,6 +1,20 @@
 <h1 class="text-uppercase"><b>JSON to TypeScript Interface Generator</b></h1>
-<time itemprop="dateUpdated" datetime="2026-07-20T00:00:00"><b>Last reviewed: 2026-07-20</b></time>
+<time itemprop="dateUpdated" datetime="2026-09-02T00:00:00"><b>Last reviewed: 2026-09-02</b></time>
+<address class="author"><a rel="author" href="/editorial-team.html">FreetoolOnline Editorial Team</a></address>
 <hr/>
 <p>Convert a JSON input into a TYPESCRIPT output - one step, in the browser.</p>
 <p>Typical use: when your downstream platform accepts TYPESCRIPT but not JSON.</p>
-<p>Output sizing and quality are controlled by the option fields above the file picker; defaults match the most common downstream use.</p>
+
+<br/><h2 class="text-uppercase"><b>How the generator types each JSON value</b></h2>
+<p>The JSON to TypeScript Interface Generator walks the pasted value field by field and picks a type for each one, instead of typing the whole object as <code>any</code>. A string becomes <code>string</code>, a number becomes <code>number</code>, and a boolean becomes <code>boolean</code>. A nested object gets its own <code>export interface</code>, named after the property that held it - an <code>address</code> field inside the root object produces a separate <code>RootAddress</code> interface. If two different nested objects would end up generating the same name, the generator appends a number so the second one becomes <code>RootAddress2</code> instead of silently overwriting the first.</p>
+<table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+<tr><th>JSON value</th><th>Generated TypeScript</th></tr>
+<tr><td>Nested object</td><td>Its own <code>export interface</code>, named after the property</td></tr>
+<tr><td>Empty array <code>[]</code></td><td><code>unknown[]</code></td></tr>
+<tr><td>Array mixing types</td><td>Union, e.g. <code>(string | number)[]</code></td></tr>
+<tr><td><code>null</code></td><td>Optional field, <code>unknown | null</code></td></tr>
+</table>
+<p>Arrays are typed by scanning every item rather than guessing from the first one: an empty array becomes <code>unknown[]</code>, an array where every item is the same type becomes that type followed by <code>[]</code>, and an array mixing types becomes a union such as <code>(string | number)[]</code>. A property key that is not a valid TypeScript identifier - one containing a space or hyphen, or starting with a digit - is quoted with <code>JSON.stringify()</code> in the output, for example <code>"first-name": string;</code>, so the generated interface still compiles even when the source JSON key could not be written as a plain property name.</p>
+
+<br/><h2 class="text-uppercase"><b>One output every plain object shares: export type Root = Root;</b></h2>
+<p>Paste any JSON object as the top-level input - the most common case, since most API responses start with a <code>{</code> - and the generator's root interface is always named <code>Root</code>, because the tool starts from that literal name with no field to change it. That produces an <code>export interface Root { ... }</code> block, and the output always closes with <code>export type Root = Root;</code>, a type alias sharing the exact same name as the interface above it. TypeScript treats an interface and a type alias as the same kind of identifier, so pasting that output straight into a <code>.ts</code> file raises a duplicate identifier error on the last line. The fix takes one edit: rename either the interface or the type alias before you paste it in - changing the last line to <code>export type RootType = Root;</code> keeps every generated interface working with a single find-and-replace. This only affects a JSON object at the top level; a JSON array such as <code>[{"id":1}]</code> produces <code>export type Root = RootItem[];</code> instead, with no name clash, because the array's item interface is named <code>RootItem</code>, not <code>Root</code>.</p>
