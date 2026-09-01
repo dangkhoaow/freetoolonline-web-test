@@ -1,7 +1,32 @@
 <h1 class="text-uppercase"><b>Cron Expression Parser</b></h1>
-<time itemprop="dateUpdated" datetime="2026-07-24T00:00:00"><b>Last reviewed: 2026-07-24</b></time>
+<time itemprop="dateUpdated" datetime="2026-09-01T00:00:00"><b>Last reviewed: 2026-09-01</b></time>
 <hr/>
 <p>Paste a standard 5-field cron expression (minute hour day-of-month month day-of-week) and get a plain-English description of the schedule plus the next 5 times it will run.</p>
 <p>Parsing happens entirely in your browser - the expression never leaves this device, and nothing is uploaded.</p>
 <p>Supports ranges (1-5), lists (1,3,5), step values (*/15), and the wildcard character across all five fields.</p>
 <p>An unsupported field, such as a named month or weekday alias, returns an inline explanatory error instead of a silent misparse. No account or signup is required, and nothing you paste here is stored beyond this page session.</p>
+
+<section class="reader-task-extension" data-task-statement="how day-of-month and day-of-week combine when both are restricted">
+  <h3><b>How day-of-month and day-of-week combine when both are restricted</b></h3>
+  <p>Cron Expression Parser follows the standard cron rule for the two day fields, and it is the part of cron syntax that surprises the most people. When only ONE of day-of-month or day-of-week is restricted (not a wildcard), only that field decides which days match. When BOTH fields are restricted at the same time, the tool switches to a union: a day matches if it satisfies EITHER field, not only when it satisfies both together.</p>
+  <table class="w3-table w3-bordered">
+    <tr><th>Day-of-month field</th><th>Day-of-week field</th><th>Which days match</th></tr>
+    <tr><td><code>*</code></td><td><code>*</code></td><td>Every day</td></tr>
+    <tr><td><code>15</code></td><td><code>*</code></td><td>Only the 15th of each month</td></tr>
+    <tr><td><code>*</code></td><td><code>1</code></td><td>Only Mondays</td></tr>
+    <tr><td><code>15</code></td><td><code>1</code></td><td>The 15th OR any Monday - not only a 15th that happens to land on a Monday</td></tr>
+  </table>
+  <p>Paste <code>0 9 15 * 1</code> into Cron Expression Parser and the next-run list includes 9am on the 15th of the month AND 9am on every Monday in between, because the two day fields combine with OR once both are restricted. That matches standard cron behavior; it is not an ambiguity the parser invented.</p>
+</section>
+
+<section class="reader-task-extension" data-task-statement="exact inline error text for common mistakes">
+  <h3><b>The exact inline error for three common mistakes</b></h3>
+  <p>Cron Expression Parser never fails silently - every unparseable field produces a specific inline message naming what went wrong, so you see the exact reason instead of a generic failure.</p>
+  <table class="w3-table w3-bordered">
+    <tr><th>What you paste</th><th>Inline error shown</th></tr>
+    <tr><td><code>* * * *</code> (4 fields)</td><td>"Expected 5 space-separated fields (minute hour day-of-month month day-of-week); got 4. Named aliases (@daily, @hourly) and 6-field seconds cron are not supported."</td></tr>
+    <tr><td><code>0 25 * * *</code> (hour out of range)</td><td>"Could not parse the hour field ("25"). Supported syntax: * , */N , N , N-M , N-M/N (comma-separated). Month/weekday NAME aliases (JAN, MON) are not supported - use numbers."</td></tr>
+    <tr><td><code>0 9 * JAN *</code> (named month)</td><td>The same "Could not parse the month field" message, because JAN is treated as an unsupported alias rather than a valid token.</td></tr>
+  </table>
+  <p>Each message names the specific field that failed, so a five-field expression with one bad token still tells you which of the five is wrong instead of a blanket "invalid cron string" response.</p>
+</section>
