@@ -1006,6 +1006,7 @@ try {
     { title: "Architecture Diagram Maker", url: "https://freetoolonline.com/utility-tools/architecture-diagram-maker.html", include: !1, tags: "utility" },
     { title: "Cover Letter Generator - Private, CV Never Uploaded", url: "https://freetoolonline.com/utility-tools/cover-letter-generator.html", include: !1, tags: "utility" },
     { title: "Zstd Extractor", url: "https://freetoolonline.com/zip-tools/zstd-extractor.html", include: !1, tags: "zip" },
+    { title: "AI Code Explainer - Understand Code Without Uploading It", url: "https://freetoolonline.com/developer-tools/ai-code-explainer.html", include: !1, tags: "developer" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

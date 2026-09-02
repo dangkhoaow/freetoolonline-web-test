@@ -16996,6 +16996,7 @@ export const ALIAS_ROUTES = {
   '/online-video-editor.html': '/video-tools/video-editor.html',
   '/capcut-alternative.html': '/video-tools/video-editor.html',
   '/zstd-extractor.html': '/zip-tools/zstd-extractor.html',
+  '/ai-code-explainer.html': '/developer-tools/ai-code-explainer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29324,6 +29325,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/zstd-extractor-step-by-step.html': 'guide/de/zstd-extractor-step-by-step.jsp',
   '/guides/de/zstd-extractor-when.html': 'guide/de/zstd-extractor-when.jsp',
   '/guides/de/zstd-extractor-vs-alternatives.html': 'guide/de/zstd-extractor-vs-alternatives.jsp',
+  '/developer-tools/ai-code-explainer.html': 'utility/ai-code-explainer.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
