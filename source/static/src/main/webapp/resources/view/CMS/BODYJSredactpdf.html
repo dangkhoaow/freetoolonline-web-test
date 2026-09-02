@@ -1,0 +1,383 @@
+<script>
+    // In-browser PDF redaction (redact-pdf) - TRUE content removal, not a black
+    // rectangle drawn on top of live text. 100% client-side: the PDF never
+    // leaves the browser. pdf.js renders each page to a canvas, the reader
+    // draws (or accepts suggested) boxes, and pdf-lib rebuilds a NEW PDF that
+    // embeds the flattened page images at the original page dimensions. The
+    // original content streams, fonts and document metadata are NOT copied,
+    // so nothing under a box - and no text at all - survives in the output.
+    // Registry Gate-H entry: pdf_redact_rasterize_pdflib (probe artifacts at
+    // seo-reports/20260902-ailocal-fire41/qa/gate-h_probe_redact-pdf_rasterize.json
+    // PASS 11/11 + gate-h_probe_redact-pdf_ner-smoke.json PASS).
+    //
+    // ENGINES:
+    //   pdf.js 3.11.174   /vendor/pdfjs (render + text items for suggestions) - self-hosted
+    //   pdf-lib 1.17.1    /vendor/pdf-lib (rebuild image-based output PDF) - self-hosted
+    //   OPTIONAL AI suggestions: @huggingface/transformers@4.2.0 EXACT pin +
+    //   Xenova/bert-base-NER q8 (~105 MB, HF CDN, explicit click only, size
+    //   stated first, SHARED browser cache with the text anonymizer page).
+    //   Deterministic baseline needs NO download: manual boxes + regex
+    //   suggestions (emails / intl phones / Luhn-verified cards / IBANs).
+    var RPD_VENDOR = '/vendor';
+    var RPD_TF_PIN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
+    var RPD_NER_MODEL = 'Xenova/bert-base-NER';
+    var RPD_NER_SIZE = 'about 105 MB';
+    var RPD_MIN_SCORE = 0.60;
+    var RPD_OUT_SCALE = 2;      // output raster scale (print-quality)
+    var RPD_MAX_PAGES = 50;     // memory bound; refuse larger files honestly
+
+    var rpdState = { bytes: null, pages: [], ner: null, busy: false, fileName: 'document.pdf' };
+
+    function rpdEl(id) { return document.getElementById(id); }
+    function rpdStatus(msg) { var s = rpdEl('rpdStatus'); if (s) s.textContent = msg || ''; }
+    function rpdErr(msg) { var e = rpdEl('rpdError'); if (e) e.textContent = msg || ''; }
+    function rpdBusy(b) {
+        rpdState.busy = b;
+        ['rpdRunBtn', 'rpdSuggestBtn', 'rpdAiBtn', 'rpdFile'].forEach(function (id) {
+            var el = rpdEl(id); if (el) el.disabled = !!b;
+        });
+    }
+
+    var rpdScriptCache = {};
+    function rpdLoadScript(src) {
+        if (!rpdScriptCache[src]) {
+            rpdScriptCache[src] = new Promise(function (resolve, reject) {
+                var s = document.createElement('script');
+                s.src = src; s.async = true;
+                s.onload = resolve;
+                s.onerror = function () { delete rpdScriptCache[src]; reject(new Error('Could not load ' + src)); };
+                document.head.appendChild(s);
+            });
+        }
+        return rpdScriptCache[src];
+    }
+    function rpdPdfjs() {
+        return rpdLoadScript(RPD_VENDOR + '/pdfjs/pdf.min.js').then(function () {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = RPD_VENDOR + '/pdfjs/pdf.worker.min.js';
+            return window.pdfjsLib;
+        });
+    }
+    function rpdPdfLib() {
+        return rpdLoadScript(RPD_VENDOR + '/pdf-lib/pdf-lib.min.js').then(function () { return window.PDFLib; });
+    }
+
+    // ---------- load + render ----------
+    function rpdOnFile(file) {
+        if (!file) return;
+        rpdErr(''); rpdStatus('Opening the PDF on this device (nothing is uploaded)...');
+        rpdState.fileName = (file.name || 'document.pdf').replace(/\.pdf$/i, '') + '-redacted.pdf';
+        var out = rpdEl('rpdOutput'); if (out) out.style.display = 'none';
+        rpdBusy(true);
+        file.arrayBuffer().then(function (buf) {
+            rpdState.bytes = new Uint8Array(buf);
+            return rpdPdfjs();
+        }).then(function (pdfjsLib) {
+            return pdfjsLib.getDocument({ data: rpdState.bytes.slice() }).promise;
+        }).then(function (doc) {
+            if (doc.numPages > RPD_MAX_PAGES) {
+                throw new Error('This PDF has ' + doc.numPages + ' pages; this tool handles up to ' + RPD_MAX_PAGES + ' at a time so a box is never silently missed. Split it first (see the PDF splitter on this site), then redact each part.');
+            }
+            return rpdRenderAll(doc);
+        }).then(function () {
+            rpdStatus('Drag on a page to draw a box over anything to remove. Click a box to delete it. Then press the red button.');
+        }).catch(function (e) {
+            var m = String(e && e.message || e);
+            if (/password/i.test(m)) m = 'This PDF is password-protected. Remove the password first (this site has a PDF password remover), then redact.';
+            rpdErr(m); rpdStatus('');
+        }).then(function () { rpdBusy(false); });
+    }
+
+    function rpdRenderAll(doc) {
+        var host = rpdEl('rpdPages'); host.innerHTML = '';
+        rpdState.pages = [];
+        var chain = Promise.resolve();
+        var n;
+        for (n = 1; n <= doc.numPages; n++) {
+            (function (num) {
+                chain = chain.then(function () { return rpdRenderPage(doc, num, host); });
+            })(n);
+        }
+        return chain;
+    }
+
+    function rpdRenderPage(doc, num, host) {
+        return doc.getPage(num).then(function (pg) {
+            var vp1 = pg.getViewport({ scale: 1 });
+            var dispScale = Math.min(1.5, 980 / vp1.width);
+            var vp = pg.getViewport({ scale: dispScale });
+            var wrap = document.createElement('div');
+            wrap.className = 'rpd-page';
+            wrap.style.position = 'relative';
+            wrap.style.margin = '0 auto 14px auto';
+            wrap.style.maxWidth = '100%';
+            wrap.style.width = Math.ceil(vp.width) + 'px';
+            wrap.style.touchAction = 'none';
+            var cv = document.createElement('canvas');
+            cv.width = Math.ceil(vp.width); cv.height = Math.ceil(vp.height);
+            cv.style.width = '100%'; cv.style.display = 'block';
+            cv.style.border = '1px solid #ccc';
+            wrap.appendChild(cv);
+            var cap = document.createElement('div');
+            cap.style.cssText = 'font-size:.8em;color:#666;text-align:center;';
+            cap.textContent = 'Page ' + num;
+            host.appendChild(wrap); host.appendChild(cap);
+            var rec = { num: num, page: pg, vp1w: vp1.width, vp1h: vp1.height, items: [], wrap: wrap, canvas: cv, boxes: [] };
+            rpdState.pages.push(rec);
+            rpdBindDraw(rec);
+            return pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise.then(function () {
+                return pg.getTextContent();
+            }).then(function (tc) {
+                rec.items = tc.items.map(function (it) {
+                    return { str: it.str, x: it.transform[4], y: it.transform[5], w: it.width, h: it.height };
+                });
+            });
+        });
+    }
+
+    // ---------- boxes (stored in PDF units, y-up, y = bottom edge) ----------
+    function rpdAddBox(rec, box, kind) {
+        box.kind = kind || 'manual';
+        rec.boxes.push(box);
+        var el = document.createElement('div');
+        el.className = 'rpd-box';
+        el.title = 'Click to remove this box';
+        if (kind === 'pattern') el.style.background = 'rgba(230,120,0,0.45)';
+        if (kind === 'ai') el.style.background = 'rgba(160,0,200,0.40)';
+        rpdPlaceBoxEl(rec, box, el);
+        el.addEventListener('click', function (ev) {
+            ev.stopPropagation();
+            var i = rec.boxes.indexOf(box);
+            if (i >= 0) rec.boxes.splice(i, 1);
+            el.remove();
+            rpdCount();
+        });
+        rec.wrap.appendChild(el);
+        rpdCount();
+    }
+    function rpdPlaceBoxEl(rec, box, el) {
+        // percentage placement keeps boxes aligned when the canvas scales responsively
+        var L = box.x / rec.vp1w * 100, T = (rec.vp1h - box.y - box.h) / rec.vp1h * 100;
+        var W = box.w / rec.vp1w * 100, H = box.h / rec.vp1h * 100;
+        el.style.cssText += ';position:absolute;left:' + L + '%;top:' + T + '%;width:' + W + '%;height:' + H + '%;';
+    }
+    function rpdCount() {
+        var t = 0;
+        rpdState.pages.forEach(function (p) { t += p.boxes.length; });
+        var c = rpdEl('rpdBoxCount');
+        if (c) c.textContent = t === 0 ? '' : (t + ' box' + (t === 1 ? '' : 'es') + ' marked - click any box to remove it before redacting.');
+        return t;
+    }
+
+    function rpdBindDraw(rec) {
+        var start = null, ghost = null;
+        function pos(ev) {
+            var r = rec.wrap.getBoundingClientRect();
+            return { x: (ev.clientX - r.left) / r.width, y: (ev.clientY - r.top) / r.height };
+        }
+        rec.wrap.addEventListener('pointerdown', function (ev) {
+            if (rpdState.busy || ev.target.className === 'rpd-box') return;
+            ev.preventDefault();
+            start = pos(ev);
+            ghost = document.createElement('div');
+            ghost.style.cssText = 'position:absolute;background:rgba(200,0,0,0.35);border:1px dashed #900;pointer-events:none;';
+            rec.wrap.appendChild(ghost);
+            try { rec.wrap.setPointerCapture(ev.pointerId); } catch (e) {}
+        });
+        rec.wrap.addEventListener('pointermove', function (ev) {
+            if (!start || !ghost) return;
+            var p = pos(ev);
+            var L = Math.min(start.x, p.x), T = Math.min(start.y, p.y);
+            var W = Math.abs(p.x - start.x), H = Math.abs(p.y - start.y);
+            ghost.style.left = L * 100 + '%'; ghost.style.top = T * 100 + '%';
+            ghost.style.width = W * 100 + '%'; ghost.style.height = H * 100 + '%';
+        });
+        function up(ev) {
+            if (!start) return;
+            var p = pos(ev);
+            var L = Math.min(start.x, p.x), T = Math.min(start.y, p.y);
+            var W = Math.abs(p.x - start.x), H = Math.abs(p.y - start.y);
+            start = null;
+            if (ghost) { ghost.remove(); ghost = null; }
+            if (W * rec.vp1w < 3 || H * rec.vp1h < 3) return; // ignore clicks
+            rpdAddBox(rec, {
+                x: L * rec.vp1w,
+                y: rec.vp1h - (T + H) * rec.vp1h,
+                w: W * rec.vp1w,
+                h: H * rec.vp1h,
+            }, 'manual');
+        }
+        rec.wrap.addEventListener('pointerup', up);
+        rec.wrap.addEventListener('pointercancel', function () { start = null; if (ghost) { ghost.remove(); ghost = null; } });
+    }
+
+    // ---------- suggestions: deterministic regex layer (no download) ----------
+    var RPD_RX = {
+        email: /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,
+        phone: /(?:\+|00)[1-9]\d{0,2}[\s.-]?(?:\(?\d{1,4}\)?[\s.-]?)?\d{2,4}[\s.-]?\d{2,4}(?:[\s.-]?\d{2,4})?/g,
+        card: /\b(?:\d[ -]?){13,19}\b/g,
+        iban: /\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]{3,5}){3,8}\b/g,
+    };
+    function rpdLuhnOk(s) {
+        var d = s.replace(/\D/g, ''); if (d.length < 13 || d.length > 19) return false;
+        var sum = 0, alt = false, i, n;
+        for (i = d.length - 1; i >= 0; i--) { n = +d[i]; if (alt) { n *= 2; if (n > 9) n -= 9; } sum += n; alt = !alt; }
+        return sum % 10 === 0;
+    }
+    // Proportional slice of a text item's bbox (probe-verified mapping):
+    // the matched substring's char range maps to a horizontal fraction of the item.
+    function rpdSliceBox(it, idx, len) {
+        var sf = idx / it.str.length, ef = (idx + len) / it.str.length;
+        return { x: it.x + it.w * sf, y: it.y - it.h * 0.25, w: it.w * (ef - sf), h: it.h * 1.5 };
+    }
+    function rpdSuggestPatterns() {
+        if (!rpdState.pages.length) { rpdErr('Choose a PDF first.'); return; }
+        rpdErr('');
+        var added = 0;
+        rpdState.pages.forEach(function (rec) {
+            rec.items.forEach(function (it) {
+                if (!it.str) return;
+                var m;
+                for (m of it.str.matchAll(RPD_RX.email)) { rpdAddBox(rec, rpdSliceBox(it, m.index, m[0].length), 'pattern'); added++; }
+                for (m of it.str.matchAll(RPD_RX.iban)) { rpdAddBox(rec, rpdSliceBox(it, m.index, m[0].length), 'pattern'); added++; }
+                for (m of it.str.matchAll(RPD_RX.card)) { if (rpdLuhnOk(m[0])) { rpdAddBox(rec, rpdSliceBox(it, m.index, m[0].length), 'pattern'); added++; } }
+                for (m of it.str.matchAll(RPD_RX.phone)) { if (m[0].replace(/\D/g, '').length >= 8) { rpdAddBox(rec, rpdSliceBox(it, m.index, m[0].length), 'pattern'); added++; } }
+            });
+        });
+        rpdStatus(added
+            ? added + ' suggested box' + (added === 1 ? '' : 'es') + ' added (orange) for emails, phone numbers, card numbers and IBANs. Review each one - click to remove, drag to add more - before redacting.'
+            : 'No emails, phone numbers, card numbers or IBANs found in this PDF's embedded text. Scanned pages have no embedded text - draw the boxes by hand.');
+    }
+
+    // ---------- suggestions: optional on-device NER (explicit click, ~105 MB) ----------
+    function rpdSuggestAi() {
+        if (!rpdState.pages.length) { rpdErr('Choose a PDF first.'); return; }
+        rpdErr(''); rpdBusy(true);
+        var p = Promise.resolve();
+        if (!rpdState.ner) {
+            rpdStatus('Downloading the name-detection model (' + RPD_NER_SIZE + ') - one time only, cached for next visit. The PDF itself never leaves this device...');
+            p = import(RPD_TF_PIN).then(function (tf) {
+                // capability probe, not feature detection: requestAdapter can return null
+                var dev = Promise.resolve('wasm');
+                if (navigator.gpu && navigator.gpu.requestAdapter) {
+                    dev = navigator.gpu.requestAdapter().then(function (a) { return a ? 'webgpu' : 'wasm'; }).catch(function () { return 'wasm'; });
+                }
+                return dev.then(function (device) {
+                    return tf.pipeline('token-classification', RPD_NER_MODEL, { dtype: 'q8', device: device })
+                        .catch(function () { return tf.pipeline('token-classification', RPD_NER_MODEL, { dtype: 'q8', device: 'wasm' }); });
+                });
+            }).then(function (ner) { rpdState.ner = ner; });
+        }
+        p.then(function () {
+            rpdStatus('Scanning the text for names, organizations and places on this device...');
+            var chain = Promise.resolve(0);
+            rpdState.pages.forEach(function (rec) {
+                chain = chain.then(function (added) { return rpdNerPage(rec).then(function (n) { return added + n; }); });
+            });
+            return chain;
+        }).then(function (added) {
+            rpdStatus(added
+                ? added + ' suggested box' + (added === 1 ? '' : 'es') + ' added (purple) for likely names, organizations and places. Suggestions are approximate and can miss unusual spellings - review every page before redacting.'
+                : 'The model found no names, organizations or places in this PDF's embedded text. Scanned pages have no embedded text - draw the boxes by hand.');
+        }).catch(function (e) {
+            rpdErr('The AI model could not load (' + String(e && e.message || e).slice(0, 140) + '). The pattern suggestions and manual boxes above work without it.');
+            rpdStatus('');
+        }).then(function () { rpdBusy(false); });
+    }
+    function rpdNerPage(rec) {
+        var text = rec.items.map(function (it) { return it.str; }).join('\n');
+        if (!text.trim()) return Promise.resolve(0);
+        return rpdState.ner(text, { ignore_labels: [] }).then(function (toks) {
+            var spans = [], cur = null, i, tk, ent, type, isCont, piece;
+            for (i = 0; i < toks.length; i++) {
+                tk = toks[i]; ent = tk.entity || 'O';
+                if (!/^[BI]-/.test(ent)) { if (cur) { spans.push(cur); cur = null; } continue; }
+                type = ent.slice(2);
+                isCont = tk.word.indexOf('##') === 0;
+                piece = isCont ? tk.word.slice(2) : tk.word;
+                if (cur && (ent.indexOf('I-') === 0 || isCont) && cur.type === type) {
+                    cur.text += isCont ? piece : ' ' + piece;
+                    cur.scores.push(tk.score);
+                } else {
+                    if (cur) spans.push(cur);
+                    cur = { type: type, text: piece, scores: [tk.score] };
+                }
+            }
+            if (cur) spans.push(cur);
+            var added = 0;
+            spans.forEach(function (s) {
+                var avg = s.scores.reduce(function (a, b) { return a + b; }, 0) / s.scores.length;
+                if (avg < RPD_MIN_SCORE || s.text.length < 3) return;
+                rec.items.forEach(function (it) {
+                    var idx = it.str.indexOf(s.text);
+                    while (idx >= 0) {
+                        rpdAddBox(rec, rpdSliceBox(it, idx, s.text.length), 'ai');
+                        added++;
+                        idx = it.str.indexOf(s.text, idx + s.text.length);
+                    }
+                });
+            });
+            return added;
+        });
+    }
+
+    // ---------- redact: rasterize + rebuild ----------
+    function rpdRedact() {
+        if (!rpdState.pages.length) { rpdErr('Choose a PDF first.'); return; }
+        if (rpdCount() === 0) { rpdErr('Draw at least one box first - drag over the text to remove, or use a Suggest button.'); return; }
+        rpdErr(''); rpdBusy(true);
+        rpdStatus('Rebuilding the PDF on this device - every page becomes an image, so nothing under a box survives...');
+        rpdPdfLib().then(function (PDFLib) {
+            return PDFLib.PDFDocument.create().then(function (outDoc) {
+                var chain = Promise.resolve();
+                rpdState.pages.forEach(function (rec) {
+                    chain = chain.then(function () { return rpdFlattenPage(rec, outDoc); });
+                });
+                return chain.then(function () { return outDoc.save(); });
+            });
+        }).then(function (bytes) {
+            var blob = new Blob([bytes], { type: 'application/pdf' });
+            var a = rpdEl('rpdDownload');
+            if (a.href && a.href.indexOf('blob:') === 0) { try { URL.revokeObjectURL(a.href); } catch (e) {} }
+            a.href = URL.createObjectURL(blob);
+            a.download = rpdState.fileName;
+            rpdEl('rpdOutput').style.display = 'block';
+            var mb = (bytes.length / 1048576).toFixed(1);
+            rpdStatus('Done (' + mb + ' MB). The marked content is deleted, not covered: the output is a rebuilt PDF where each page is an image, the original text, fonts and document properties are not copied over, and no text on any page can be selected or searched. Run it through the OCR PDF tool on this site if you need the remaining text searchable again.');
+        }).catch(function (e) {
+            rpdErr('Could not rebuild the PDF: ' + String(e && e.message || e).slice(0, 160));
+            rpdStatus('');
+        }).then(function () { rpdBusy(false); });
+    }
+    function rpdFlattenPage(rec, outDoc) {
+        var vpOut = rec.page.getViewport({ scale: RPD_OUT_SCALE });
+        var cv = document.createElement('canvas');
+        cv.width = Math.ceil(vpOut.width); cv.height = Math.ceil(vpOut.height);
+        var ctx = cv.getContext('2d');
+        return rec.page.render({ canvasContext: ctx, viewport: vpOut }).promise.then(function () {
+            ctx.fillStyle = '#000';
+            rec.boxes.forEach(function (b) {
+                var x = b.x * RPD_OUT_SCALE, y = (rec.vp1h - b.y - b.h) * RPD_OUT_SCALE;
+                ctx.fillRect(x - 2, y - 2, b.w * RPD_OUT_SCALE + 4, b.h * RPD_OUT_SCALE + 4);
+            });
+            return new Promise(function (res) { cv.toBlob(res, 'image/png'); });
+        }).then(function (blob) {
+            return blob.arrayBuffer();
+        }).then(function (buf) {
+            return outDoc.embedPng(new Uint8Array(buf));
+        }).then(function (img) {
+            var pg = outDoc.addPage([rec.vp1w, rec.vp1h]);
+            pg.drawImage(img, { x: 0, y: 0, width: rec.vp1w, height: rec.vp1h });
+            cv.width = 1; cv.height = 1; // release backing store
+        });
+    }
+
+    // ---------- bind ----------
+    (function rpdInit() {
+        var f = rpdEl('rpdFile');
+        if (!f) return;
+        f.addEventListener('change', function () { rpdOnFile(f.files && f.files[0]); });
+        rpdEl('rpdSuggestBtn').addEventListener('click', rpdSuggestPatterns);
+        rpdEl('rpdAiBtn').addEventListener('click', rpdSuggestAi);
+        rpdEl('rpdRunBtn').addEventListener('click', rpdRedact);
+    })();
+</script>

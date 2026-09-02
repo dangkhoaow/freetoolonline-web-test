@@ -1,0 +1,74 @@
+<div class="w3-container">
+    <p>Choose a PDF, drag boxes over anything to remove (or use the suggestion buttons), then press the red button: the tool rebuilds the file on this device so whatever a box covers no longer exists anywhere in it.</p>
+</div>
+
+<style>
+    #rpdTool .rpd-row { margin-bottom: 12px; }
+    #rpdTool label.rpd-label { font-weight: bold; display: block; margin-bottom: 4px; }
+    #rpdStatus { margin-top: 8px; min-height: 1em; }
+    #rpdError { color: #b00020; font-weight: bold; min-height: 1em; }
+    #rpdBoxCount { font-size: .9em; color: #444; min-height: 1em; margin-top: 4px; }
+    #rpdOutput { margin-top: 10px; }
+    #rpdPages { margin-top: 10px; }
+    #rpdTool .rpd-box { background: rgba(200, 0, 0, 0.40); border: 1px solid #900; cursor: pointer; }
+    #rpdTool .rpd-hint { font-size: .85em; color: #666; margin-top: 4px; }
+    #rpdDemo .rpd-demo-cols { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+    #rpdDemo .rpd-demo-col { flex: 1 1 260px; min-width: 240px; }
+    #rpdDemo .rpd-demo-cap { font-size: .85em; color: #666; margin-bottom: 4px; }
+    #rpdDemo svg { max-width: 100%; height: auto; border: 1px solid #ddd; background: #fff; }
+</style>
+
+<div id="rpdTool" class="w3-container outputImgs" style="text-align:left; visibility:visible !important;">
+    <noscript>This tool runs in your browser and needs JavaScript enabled.</noscript>
+    <div class="rpd-row">
+        <label class="rpd-label" for="rpdFile">Choose a PDF (up to 50 pages)</label>
+        <input type="file" id="rpdFile" accept=".pdf,application/pdf" class="w3-input w3-border" />
+        <div class="rpd-hint">The file opens on this device only - it is never uploaded. Password-protected PDFs must be unlocked first.</div>
+    </div>
+    <div class="rpd-row">
+        <button type="button" id="rpdSuggestBtn" class="w3-button w3-blue">Suggest boxes: emails, phones, cards, IBANs (instant)</button>
+        <button type="button" id="rpdAiBtn" class="w3-button w3-blue">Suggest names &amp; places with on-device AI (downloads about 105 MB once)</button>
+        <div class="rpd-hint">Suggestions only DRAW boxes for you to review - nothing is removed until you press the red button. Drag on any page to add a box by hand; click a box to delete it. Scanned pages have no embedded text, so suggestions cannot see them - use hand-drawn boxes there.</div>
+    </div>
+    <div id="rpdBoxCount"></div>
+    <div class="rpd-row">
+        <button type="button" id="rpdRunBtn" class="w3-button w3-red">Redact and download (deletes the content, on this device)</button>
+        <div class="rpd-hint">The output is a rebuilt PDF where every page is an image: whatever a box covers is gone from the file - not hidden under a rectangle - and no text on any page can be selected or searched afterwards. The original file on your disk is not touched.</div>
+    </div>
+    <div id="rpdError"></div>
+    <div id="rpdStatus"></div>
+    <div id="rpdOutput" class="w3-row" style="display:none;">
+        <p><a id="rpdDownload" class="w3-button w3-blue" href="#" download="redacted.pdf">Download the redacted PDF</a></p>
+    </div>
+    <div id="rpdPages"></div>
+</div>
+
+<div id="rpdDemo" class="w3-container" style="padding:8px 0;">
+    <figure style="margin:0;">
+        <div class="rpd-demo-cols">
+            <div class="rpd-demo-col">
+                <div class="rpd-demo-cap">Before: the page still contains the account line and the email as live, copyable text</div>
+                <svg viewBox="0 0 280 120" width="280" height="120" role="img" aria-label="Sample document page before redaction: every line readable">
+                    <rect x="0" y="0" width="280" height="120" fill="#ffffff"/>
+                    <text x="14" y="24" font-family="Georgia,serif" font-size="12" fill="#111">Payment confirmation</text>
+                    <text x="14" y="48" font-family="monospace" font-size="9" fill="#333">Customer: Maria Fernandez</text>
+                    <text x="14" y="66" font-family="monospace" font-size="9" fill="#333">Email: maria.f@example.com</text>
+                    <text x="14" y="84" font-family="monospace" font-size="9" fill="#333">Account: NL91 ABNA 0417 1643 00</text>
+                    <text x="14" y="106" font-family="monospace" font-size="9" fill="#333">Amount due: 250.00 USD</text>
+                </svg>
+            </div>
+            <div class="rpd-demo-col">
+                <div class="rpd-demo-cap">After: the page is an image, the covered lines no longer exist anywhere in the file</div>
+                <svg viewBox="0 0 280 120" width="280" height="120" role="img" aria-label="Same page after redaction: three lines replaced by black bars, rest intact">
+                    <rect x="0" y="0" width="280" height="120" fill="#ffffff"/>
+                    <text x="14" y="24" font-family="Georgia,serif" font-size="12" fill="#111">Payment confirmation</text>
+                    <rect x="12" y="38" width="172" height="14" fill="#000"/>
+                    <rect x="12" y="56" width="188" height="14" fill="#000"/>
+                    <rect x="12" y="74" width="204" height="14" fill="#000"/>
+                    <text x="14" y="106" font-family="monospace" font-size="9" fill="#333">Amount due: 250.00 USD</text>
+                </svg>
+            </div>
+        </div>
+        <figcaption style="font-size:.85em;color:#666;margin-top:6px;">What the rebuild does, prepared ahead of time: the black bars are not rectangles sitting on top of text - the output file is rebuilt from page images, so a copy-paste, Ctrl+F, or a PDF text extractor finds nothing under them. The unmarked lines stay readable on the page.</figcaption>
+    </figure>
+</div>
