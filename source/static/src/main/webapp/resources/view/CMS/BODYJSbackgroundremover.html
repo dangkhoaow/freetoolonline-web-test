@@ -1,99 +1,369 @@
 <script>
-    // In-browser AI image archetype (background-remover) - Transformers.js v4 + ONNX Runtime
-    // Web. Flagship mode: BACKGROUND REMOVER (briaai/RMBG-1.4). 100% client-side:
-    // the IMAGE never leaves the browser; only the model weights download once from
-    // the Hugging Face hub and are cached in IndexedDB (offline afterwards). WebGPU
-    // is used when available, else the WASM CPU backend. Registry Gate-H entry:
-    // ai_image_transformersjs.
-    //
-    // HONEST NOTES (operator): (1) first run downloads ~40MB of model weights; (2)
-    // Transformers.js is loaded via ESM dynamic import from a CDN - if the site CSP
-    // blocks it, self-host @huggingface/transformers under /vendor/transformers/ and
-    // point TF_CDN at it; (3) headless e2e may not exercise the model run (the input
-    // preview still renders visible output for G16). Framework contract:
-    // doAfterPageRendered(); no top-level DOM. Plain <input type=file>, no upload widget.
+    // In-browser background remover - two-tier engine ladder (fire42 2026-09-03).
+    // Tier 1 INSTANT (no download): deterministic color-key for solid backgrounds -
+    //   corner-sampled seed colors + border flood fill. Works offline, no model.
+    // Tier 2 AI (~26 MB): Xenova/modnet (Apache-2.0) portrait matting - tuned for
+    //   people; pets/objects can come out patchy (probe: corgi center_mean 112/255).
+    // REJECTED alternative (rule-8 record, probed 2026-09-03 on the vendored 3.8.1
+    //   runtime): onnx-community/BiRefNet_lite-ONNX (MIT, general-purpose) fails at
+    //   EXECUTION on single-thread WASM in BOTH dtypes (fp16 abort 33390176, fp32
+    //   abort 18689584 - the OOM class at its FIXED 1024x1024 input; a 512 processor
+    //   override is refused: "Got: 512 Expected: 1024"). Do not re-add it without a
+    //   dynamic-shape or quantized export that actually loads.
+    // Runtime: VENDORED transformers.js 3.8.1 bundle (/vendor/transformers/) with
+    //   wasmPaths repointed at the same dir - no third-party CDN dependency (HARD
+    //   GUARD 5). Model weights load once from the Hugging Face hub (rule 2) and
+    //   are cached by the browser; sizes are stated in the UI BEFORE any download.
+    // Device: rule 9 CAPABILITY probe - navigator.gpu.requestAdapter() is awaited
+    //   and the device chosen from the RESULT; session-creation failure on webgpu
+    //   retries on wasm. numThreads = 1 (GitHub Pages cannot send COOP/COEP).
+    // Replaces briaai/RMBG-1.4 (BRIA non-commercial licence - not usable on an
+    //   ad-supported site) and the floating @huggingface/transformers@4 CDN import.
+    // Framework contract: doAfterPageRendered(); no top-level DOM work.
 
     web.localUpload = false;
 
-    // ESM entry for Transformers.js v4 (WebGPU rewrite). Self-host + repoint here to
-    // remove the CDN dependency: '/vendor/transformers/transformers.min.js'.
-    var TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4';
+    var BR_VENDOR = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/transformers/';
+    var BR_MODELS = {
+        fast: { id: 'Xenova/modnet', dtype: 'fp32', mb: 26, note: 'people and portraits' }
+    };
+    var BR_MAX_EDGE = 4096;   // very large photos are downscaled to this long edge
+    var BR_BATCH_MAX = 12;    // per-run file cap (memory)
+    var BR_KEY_TOL = 34;      // instant color-key tolerance (RGB distance)
 
-    var aiModelPromise = null;
-    function aiLoadModel(setStatus) {
-        if (aiModelPromise) return aiModelPromise;
-        aiModelPromise = (async function () {
-            setStatus('Loading the AI model (first run downloads ~40MB once, then cached offline) ...');
-            var tf = await import(/* webpackIgnore: true */ TF_CDN);
-            var AutoModel = tf.AutoModel, AutoProcessor = tf.AutoProcessor, env = tf.env;
-            // Prefer WebGPU; fall back to WASM automatically inside ORT.
-            var device = ('gpu' in navigator) ? 'webgpu' : 'wasm';
-            var model = await AutoModel.from_pretrained('briaai/RMBG-1.4', { device: device, dtype: 'fp32' });
-            var processor = await AutoProcessor.from_pretrained('briaai/RMBG-1.4');
-            return { tf: tf, model: model, processor: processor, RawImage: tf.RawImage };
-        })();
-        return aiModelPromise;
+    // ---- rule 9: capability probe, never feature detection --------------------
+    var brGpuProbe = null;
+    function brPickDevice() {
+        if (!navigator.gpu || !navigator.gpu.requestAdapter) return Promise.resolve('wasm');
+        if (!brGpuProbe) {
+            brGpuProbe = navigator.gpu.requestAdapter().then(function (a) {
+                return a ? 'webgpu' : 'wasm';
+            }).catch(function () { return 'wasm'; });
+        }
+        return brGpuProbe;
     }
 
+    // ---- shared engine loader (per-model promise cache) -----------------------
+    var brLib = null;
+    function brLoadLib() {
+        if (!brLib) {
+            brLib = import(/* webpackIgnore: true */ BR_VENDOR + 'transformers.min.js').then(function (tf) {
+                tf.env.allowLocalModels = false;
+                tf.env.backends.onnx.wasm.wasmPaths = BR_VENDOR;
+                tf.env.backends.onnx.wasm.numThreads = 1;
+                return tf;
+            });
+        }
+        return brLib;
+    }
+    var brEngines = {};
+    function brLoadEngine(key, setStatus) {
+        if (brEngines[key]) return brEngines[key];
+        var spec = BR_MODELS[key];
+        brEngines[key] = brLoadLib().then(function (tf) {
+            return brPickDevice().then(function (device) {
+                setStatus('Loading the ' + key + ' model (first run downloads ~' + spec.mb + ' MB once, then it stays cached in this browser) ...');
+                var seen = {};
+                function progress(ev) {
+                    if (ev && ev.status === 'progress' && ev.total > 1000000) {
+                        var pct = ev.total ? Math.round(ev.loaded / ev.total * 100) : 0;
+                        if (seen[ev.file] !== pct && pct % 5 === 0) { seen[ev.file] = pct; setStatus('Downloading the ' + key + ' model: ' + pct + '% of ~' + spec.mb + ' MB ...'); }
+                    }
+                }
+                function build(dev) {
+                    return tf.AutoModel.from_pretrained(spec.id, { device: dev, dtype: spec.dtype, progress_callback: progress }).then(function (model) {
+                        return tf.AutoProcessor.from_pretrained(spec.id).then(function (processor) {
+                            return { tf: tf, model: model, processor: processor, device: dev };
+                        });
+                    });
+                }
+                return build(device).catch(function (e) {
+                    if (device === 'webgpu') { setStatus('WebGPU failed here - retrying on the CPU backend ...'); return build('wasm'); }
+                    throw e;
+                });
+            });
+        }).catch(function (e) { brEngines[key] = null; throw e; });
+        return brEngines[key];
+    }
+
+    // ---- masks ----------------------------------------------------------------
+    // AI mask: run the picked model, normalize (sigmoid when the output is logits),
+    // scale the model-resolution mask to image resolution via canvas smoothing.
+    async function brAiMask(key, canvas, setStatus) {
+        var m = await brLoadEngine(key, setStatus);
+        setStatus('Separating the subject in your browser (' + (m.device === 'webgpu' ? 'GPU' : 'CPU') + ') ...');
+        var image = await m.tf.RawImage.fromCanvas(canvas);
+        var inputs = await m.processor(image);
+        var out;
+        try { out = await m.model(inputs); }
+        catch (e1) {
+            try { out = await m.model({ input: inputs.pixel_values }); }
+            catch (e2) { out = await m.model({ input_image: inputs.pixel_values }); }
+        }
+        var t = out[Object.keys(out)[0]][0];
+        var data = t.data, mn = Infinity, mx = -Infinity, i, v;
+        for (i = 0; i < data.length; i++) { v = Number(data[i]); if (v < mn) mn = v; if (v > mx) mx = v; }
+        var sig = mn < -0.01 || mx > 1.01;
+        var H = t.dims[t.dims.length - 2], W = t.dims[t.dims.length - 1];
+        var mc = document.createElement('canvas'); mc.width = W; mc.height = H;
+        var mctx = mc.getContext('2d');
+        var mid = mctx.createImageData(W, H);
+        for (i = 0; i < W * H; i++) {
+            v = Number(data[i]);
+            if (sig) v = 1 / (1 + Math.exp(-v));
+            var g = Math.max(0, Math.min(255, Math.round(v * 255)));
+            mid.data[i * 4] = g; mid.data[i * 4 + 1] = g; mid.data[i * 4 + 2] = g; mid.data[i * 4 + 3] = 255;
+        }
+        mctx.putImageData(mid, 0, 0);
+        var sc = document.createElement('canvas'); sc.width = canvas.width; sc.height = canvas.height;
+        var sctx = sc.getContext('2d');
+        sctx.imageSmoothingEnabled = true; sctx.imageSmoothingQuality = 'high';
+        sctx.drawImage(mc, 0, 0, canvas.width, canvas.height);
+        var sid = sctx.getImageData(0, 0, canvas.width, canvas.height);
+        var alpha = new Uint8ClampedArray(canvas.width * canvas.height);
+        for (i = 0; i < alpha.length; i++) alpha[i] = sid.data[i * 4];
+        return { alpha: alpha, engine: key, device: m.device };
+    }
+
+    // Instant mask: sample the four corner patches for seed background colors, then
+    // flood-fill from every border pixel that matches a seed within tolerance.
+    // Deterministic, offline, no model - honest scope: solid, even backgrounds.
+    function brInstantMask(canvas) {
+        var W = canvas.width, H = canvas.height;
+        var ctx = canvas.getContext('2d');
+        var id = ctx.getImageData(0, 0, W, H), d = id.data;
+        function avgPatch(x0, y0) {
+            var r = 0, g = 0, b = 0, n = 0, x, y;
+            for (y = y0; y < Math.min(H, y0 + 6); y++) for (x = x0; x < Math.min(W, x0 + 6); x++) {
+                var o = (y * W + x) * 4; r += d[o]; g += d[o + 1]; b += d[o + 2]; n++;
+            }
+            return [r / n, g / n, b / n];
+        }
+        var seeds = [avgPatch(0, 0), avgPatch(W - 6, 0), avgPatch(0, H - 6), avgPatch(W - 6, H - 6)];
+        function isBg(o) {
+            for (var s = 0; s < seeds.length; s++) {
+                var dr = d[o] - seeds[s][0], dg = d[o + 1] - seeds[s][1], db = d[o + 2] - seeds[s][2];
+                if (Math.sqrt(dr * dr + dg * dg + db * db) <= BR_KEY_TOL) return true;
+            }
+            return false;
+        }
+        var alpha = new Uint8ClampedArray(W * H); for (var i = 0; i < alpha.length; i++) alpha[i] = 255;
+        var visited = new Uint8Array(W * H);
+        var queue = [], x, y, p;
+        var borderMatched = 0, borderTotal = 0;
+        for (x = 0; x < W; x++) { queue.push(x); queue.push((H - 1) * W + x); }
+        for (y = 0; y < H; y++) { queue.push(y * W); queue.push(y * W + W - 1); }
+        borderTotal = queue.length;
+        var head = 0, seedQ = queue.slice();
+        queue = [];
+        for (i = 0; i < seedQ.length; i++) { p = seedQ[i]; if (!visited[p] && isBg(p * 4)) { visited[p] = 1; queue.push(p); borderMatched++; } }
+        while (head < queue.length) {
+            p = queue[head++]; alpha[p] = 0;
+            x = p % W; y = (p - x) / W;
+            var nb = [p - 1, p + 1, p - W, p + W];
+            for (i = 0; i < 4; i++) {
+                var q = nb[i];
+                if (q < 0 || q >= W * H) continue;
+                if (i === 0 && x === 0) continue;
+                if (i === 1 && x === W - 1) continue;
+                if (!visited[q] && isBg(q * 4)) { visited[q] = 1; queue.push(q); }
+            }
+        }
+        return { alpha: alpha, engine: 'instant', solidBg: borderMatched / Math.max(1, borderTotal) >= 0.5 };
+    }
+
+    // Optional edge soften: one 3x3 box-blur pass over the alpha channel.
+    function brSoften(alpha, W, H) {
+        var outA = new Uint8ClampedArray(alpha.length);
+        for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+            var s = 0, n = 0;
+            for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+                var yy = y + dy, xx = x + dx;
+                if (yy < 0 || yy >= H || xx < 0 || xx >= W) continue;
+                s += alpha[yy * W + xx]; n++;
+            }
+            outA[y * W + x] = Math.round(s / n);
+        }
+        return outA;
+    }
+
+    // ---- compositing ----------------------------------------------------------
+    function brCompose(srcCanvas, alpha, mode, color) {
+        var W = srcCanvas.width, H = srcCanvas.height, i;
+        var subj = document.createElement('canvas'); subj.width = W; subj.height = H;
+        var sctx = subj.getContext('2d');
+        sctx.drawImage(srcCanvas, 0, 0);
+        var sid = sctx.getImageData(0, 0, W, H);
+        for (i = 0; i < alpha.length; i++) sid.data[i * 4 + 3] = alpha[i];
+        sctx.putImageData(sid, 0, 0);
+        if (mode === 'transparent') return subj;
+        var outC = document.createElement('canvas'); outC.width = W; outC.height = H;
+        var octx = outC.getContext('2d');
+        if (mode === 'blur') {
+            octx.filter = 'blur(' + Math.max(6, Math.round(Math.min(W, H) / 60)) + 'px)';
+            octx.drawImage(srcCanvas, 0, 0);
+            octx.filter = 'none';
+        } else {
+            octx.fillStyle = color || '#ffffff';
+            octx.fillRect(0, 0, W, H);
+        }
+        octx.drawImage(subj, 0, 0);
+        return outC;
+    }
+
+    function brDrawScaled(img) {
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        var scale = Math.min(1, BR_MAX_EDGE / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(w * scale)); c.height = Math.max(1, Math.round(h * scale));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        return { canvas: c, resized: scale < 1 };
+    }
+
+    function brOutName(fileName, mode) {
+        var base = (fileName || 'image').replace(/\.[^.]+$/, '');
+        return base + (mode === 'transparent' ? '-no-background' : mode === 'blur' ? '-blurred-background' : '-new-background') + '.png';
+    }
+
+    // ---- page ----------------------------------------------------------------
     function doAfterPageRendered() {
         var root = document.getElementById('aiImageTool');
-        if (!root) return; // not an ai-image page
+        if (!root) return;
         root.innerHTML =
-            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="aiFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
-            '<div id="aiStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Choose an image. Your image never leaves your browser - it is processed locally.</div>' +
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="aiFile" accept="image/*" multiple class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div class="w3-row" style="margin:6px 0;">' +
+            '<label for="aiEngine" style="margin-right:4px;">Engine:</label>' +
+            '<select id="aiEngine" class="w3-select w3-border" style="width:auto;max-width:90vw;display:inline-block;padding:4px;">' +
+            '<option value="fast" selected>AI - people and portraits (~26 MB one-time download)</option>' +
+            '<option value="instant">Instant - solid backgrounds only (no download)</option>' +
+            '</select> ' +
+            '<label for="aiOutMode" style="margin:0 4px 0 12px;">Output:</label>' +
+            '<select id="aiOutMode" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;">' +
+            '<option value="transparent" selected>Transparent PNG</option>' +
+            '<option value="blur">Blur the background</option>' +
+            '<option value="color">Solid color background</option>' +
+            '</select> ' +
+            '<input type="color" id="aiBgColor" value="#ffffff" style="display:none;vertical-align:middle;width:36px;height:28px;padding:0;border:1px solid #ccc;" title="Background color"> ' +
+            '<label style="margin-left:12px;white-space:nowrap;"><input type="checkbox" id="aiSoften"> Soften edges</label>' +
+            '</div>' +
+            '<div id="aiStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Choose one or more images (up to ' + BR_BATCH_MAX + '). They never leave your browser - everything runs locally.</div>' +
             '<div class="w3-row"><canvas id="aiCanvas" class="outputImgs" style="visibility:visible !important;max-width:90vw;border:1px solid #ddd;background:repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 50%/20px 20px;"></canvas></div>' +
             '<div style="margin-top:8px;"><button id="aiRun" type="button" class="w3-button w3-green w3-large" disabled>Remove background</button> ' +
             '<a id="aiDownload" class="w3-button w3-blue" style="display:none;">Download PNG</a></div>' +
+            '<div id="aiResults" class="w3-row" style="margin-top:10px;text-align:left;"></div>' +
             '<div id="aiErr" style="color:#b00020;margin-top:6px;min-height:1em;"></div>';
         var fileEl = root.querySelector('#aiFile'), canvas = root.querySelector('#aiCanvas'), ctx = canvas.getContext('2d');
         var runBtn = root.querySelector('#aiRun'), dl = root.querySelector('#aiDownload');
         var statusEl = root.querySelector('#aiStatus'), errEl = root.querySelector('#aiErr');
-        var currentURL = null;
+        var engineEl = root.querySelector('#aiEngine'), modeEl = root.querySelector('#aiOutMode');
+        var colorEl = root.querySelector('#aiBgColor'), softenEl = root.querySelector('#aiSoften');
+        var resultsEl = root.querySelector('#aiResults');
+        var files = [];
         function setStatus(m) { statusEl.textContent = m; }
         function setErr(m) { errEl.textContent = m || ''; }
+        modeEl.addEventListener('change', function () { colorEl.style.display = modeEl.value === 'color' ? 'inline-block' : 'none'; });
 
-        // Preview on select (immediate visible output; no model needed yet -> G16).
+        // Preview the first pick immediately (visible output before any model - G16).
         fileEl.addEventListener('change', function () {
-            setErr(''); if (dl) { dl.style.display = 'none'; }
-            var f = fileEl.files && fileEl.files[0]; if (!f) return;
-            if (currentURL) URL.revokeObjectURL(currentURL);
-            currentURL = URL.createObjectURL(f);
+            setErr(''); dl.style.display = 'none'; resultsEl.innerHTML = '';
+            files = Array.prototype.slice.call(fileEl.files || []).slice(0, BR_BATCH_MAX);
+            if (fileEl.files && fileEl.files.length > BR_BATCH_MAX) setErr('Processing the first ' + BR_BATCH_MAX + ' images of ' + fileEl.files.length + ' picked.');
+            if (!files.length) return;
+            var u = URL.createObjectURL(files[0]);
             var img = new Image();
-            img.onload = function () { canvas.width = img.naturalWidth; canvas.height = img.naturalHeight; ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0); runBtn.disabled = false; setStatus('Preview ready. Click Remove background to process it locally.'); };
+            img.onload = function () {
+                URL.revokeObjectURL(u);
+                canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+                ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0);
+                runBtn.disabled = false;
+                setStatus(files.length === 1 ? 'Preview ready. Pick an engine and click Remove background - it all runs locally.' : files.length + ' images queued (previewing the first). Click Remove background to process all of them locally.');
+            };
             img.onerror = function () { setErr('Could not read that image.'); };
-            img.src = currentURL;
+            img.src = u;
         });
 
+        function loadFile(f) {
+            return new Promise(function (resolve, reject) {
+                var u = URL.createObjectURL(f);
+                var img = new Image();
+                img.onload = function () { URL.revokeObjectURL(u); resolve(img); };
+                img.onerror = function () { URL.revokeObjectURL(u); reject(new Error('Could not read ' + f.name)); };
+                img.src = u;
+            });
+        }
+
+        async function processOne(f, engine, mode, color, soften) {
+            var img = await loadFile(f);
+            var scaled = brDrawScaled(img);
+            var src = scaled.canvas;
+            var masked = engine === 'instant' ? brInstantMask(src) : await brAiMask(engine, src, setStatus);
+            var alpha = masked.alpha;
+            if (soften) alpha = brSoften(alpha, src.width, src.height);
+            var outC = brCompose(src, alpha, mode, color);
+            return { canvas: outC, resized: scaled.resized, solidBg: masked.solidBg !== false, device: masked.device || '' };
+        }
+
         runBtn.addEventListener('click', async function () {
-            if (!currentURL) { setErr('Choose an image first.'); return; }
-            setErr(''); runBtn.disabled = true;
+            if (!files.length) { setErr('Choose an image first.'); return; }
+            setErr(''); runBtn.disabled = true; dl.style.display = 'none'; resultsEl.innerHTML = '';
+            var engine = engineEl.value, mode = modeEl.value, color = colorEl.value, soften = softenEl.checked;
+            var warns = [];
             try {
-                var m = await aiLoadModel(setStatus);
-                setStatus('Removing background in your browser ...');
-                var image = await m.RawImage.fromURL(currentURL);
-                var inputs = await m.processor(image);
-                var out = await m.model({ input: inputs.pixel_values });
-                // The model returns an alpha mask in [0,1]; resize to the image + composite.
-                var maskTensor = (out.output || out.alphas || out.logits);
-                var mask = await m.RawImage.fromTensor(maskTensor[0].mul(255).to('uint8')).resize(image.width, image.height);
-                canvas.width = image.width; canvas.height = image.height;
-                var pin = ctx.createImageData(image.width, image.height);
-                var src = image.rgba ? image.rgba().data : null;
-                // Draw the original then apply mask alpha.
-                var tmp = new Image(); tmp.src = currentURL;
-                await new Promise(function (r) { tmp.onload = r; });
-                ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
-                var id = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                var md = mask.data;
-                for (var i = 0; i < md.length; i++) { id.data[i * 4 + 3] = md[i]; }
-                ctx.putImageData(id, 0, 0);
-                canvas.toBlob(function (blob) {
-                    var u = URL.createObjectURL(blob);
-                    dl.href = u; dl.download = 'no-background.png'; dl.style.display = '';
-                }, 'image/png');
-                setStatus('Done - background removed locally, no upload.');
+                if (files.length === 1) {
+                    var r = await processOne(files[0], engine, mode, color, soften);
+                    canvas.width = r.canvas.width; canvas.height = r.canvas.height;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(r.canvas, 0, 0);
+                    if (!r.solidBg) warns.push('This photo does not look like a solid background - the Instant engine only handles even, plain backdrops. Try the AI Fast or AI Precise engine.');
+                    if (r.resized) warns.push('Very large photo - it was resized to ' + BR_MAX_EDGE + 'px on the long edge before processing.');
+                    await new Promise(function (resolve) {
+                        r.canvas.toBlob(function (blob) {
+                            var u = URL.createObjectURL(blob);
+                            dl.href = u; dl.download = brOutName(files[0].name, mode); dl.style.display = '';
+                            resolve();
+                        }, 'image/png');
+                    });
+                    setStatus('Done - processed locally, nothing uploaded.');
+                } else {
+                    for (var i = 0; i < files.length; i++) {
+                        setStatus('Processing image ' + (i + 1) + ' of ' + files.length + ' locally ...');
+                        var card = document.createElement('div');
+                        card.className = 'w3-col s6 m4 l3';
+                        card.style.padding = '4px';
+                        resultsEl.appendChild(card);
+                        try {
+                            var rr = await processOne(files[i], engine, mode, color, soften);
+                            var small = document.createElement('canvas');
+                            var sscale = Math.min(1, 280 / Math.max(rr.canvas.width, rr.canvas.height));
+                            small.width = Math.round(rr.canvas.width * sscale); small.height = Math.round(rr.canvas.height * sscale);
+                            small.style.maxWidth = '100%';
+                            small.style.background = 'repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 50%/16px 16px';
+                            small.getContext('2d').drawImage(rr.canvas, 0, 0, small.width, small.height);
+                            card.appendChild(small);
+                            var a = document.createElement('a');
+                            a.className = 'w3-button w3-blue w3-small';
+                            a.style.display = 'block';
+                            a.textContent = 'Download ' + brOutName(files[i].name, mode);
+                            // Await the blob BEFORE appending the link so a fast click
+                            // can never hit an href-less anchor.
+                            await new Promise(function (resolve) {
+                                rr.canvas.toBlob(function (blob) {
+                                    a.href = URL.createObjectURL(blob);
+                                    a.download = brOutName(files[i].name, mode);
+                                    resolve();
+                                }, 'image/png');
+                            });
+                            card.appendChild(a);
+                            if (!rr.solidBg && warns.length === 0) warns.push('Some photos do not look like solid backgrounds - the Instant engine only handles even, plain backdrops. Try an AI engine for those.');
+                        } catch (ef) {
+                            card.textContent = files[i].name + ': ' + (ef && ef.message ? ef.message : 'failed');
+                            card.style.color = '#b00020';
+                        }
+                    }
+                    setStatus('Done - ' + files.length + ' images processed locally. Download each result below.');
+                }
+                if (warns.length) setErr(warns.join(' '));
             } catch (e) {
-                setErr('Could not run the AI model: ' + (e && e.message ? e.message : String(e)) + '. (If the model failed to load, the site may need Transformers.js self-hosted under /vendor/transformers/.)');
+                setErr('Could not run the ' + engine + ' engine: ' + (e && e.message ? e.message : String(e)) + (engine === 'instant' ? '' : '. If the model download failed, check the connection and try again - the image itself never leaves this browser.'));
             } finally { runBtn.disabled = false; }
         });
     }
