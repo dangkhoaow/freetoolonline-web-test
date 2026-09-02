@@ -1,6 +1,6 @@
 <div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>EXIF Metadata and Image Compression: What Gets Stripped</b></h1>
-    <time itemprop="dateReviewed" datetime="2026-06-30">Last reviewed: 2026-06-30</time>
+    <time itemprop="dateReviewed" datetime="2026-09-02">Last reviewed: 2026-09-02</time>
     <address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
     <p>Most image compressors strip EXIF metadata - camera model, GPS coordinates, and capture timestamp - when re-encoding a JPEG. Use the free <a href="/image-tools/compress-image.html">Compress Image</a> tool here for in-browser compression. If you need metadata kept, pick a tool with an explicit preserve-metadata option.</p>
     <div class="w3-responsive">
@@ -14,7 +14,7 @@
     </div>
 
     <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
-        <p style="margin-bottom: 0;"><b>30-second answer.</b> Most image compressors that re-encode a JPEG strip <b>EXIF metadata</b> by default - that includes camera make and model, lens, exposure settings, the original capture timestamp, and (for phone photos) GPS coordinates. This happens because re-encoding rebuilds the JPEG from decoded pixel data, and the encoder has to be told explicitly to copy the metadata block back in. If you want the metadata gone (privacy, sharing photos publicly), the default behaviour is what you want. If you want the metadata kept (archival, copyright, photography portfolio), pick a tool or library setting that preserves EXIF, or recompress with an explicit "preserve metadata" flag.</p>
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Most image compressors that re-encode a JPEG strip <b>EXIF metadata</b> by default - camera make and model, lens, exposure settings, capture timestamp, and on phone photos GPS coordinates. Re-encoding rebuilds the file from decoded pixels, so the encoder has to be told explicitly to copy the metadata block back in. Want it gone (privacy, public sharing)? The default already does that. Want it kept (archival, copyright, portfolio)? Pick a tool with an explicit preserve-metadata option.</p>
     </div>
 
     <h2 class="text-uppercase"><b>What is EXIF metadata, in concrete terms?</b></h2>
@@ -44,7 +44,6 @@
     <p>The takeaway: EXIF stripping during compression is a <i>side-effect</i> of how re-encoding works, not a deliberate privacy feature. The encoder does not "choose" to remove metadata - it simply does not copy it across unless told to. Whether your tool keeps or drops EXIF therefore depends on a single line of code (or a single CLI flag) at the encoding step.</p>
 
     <h2 class="text-uppercase"><b>What is in EXIF that matters</b></h2>
-    <p>What is in EXIF that matters on Image compression and EXIF metadata is GPS, camera model, timestamps, and orientation - Image Compressor may strip those fields when you recompress a JPEG.</p>
 <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesexif-fields__086daf9a.svg" alt="Review the EXIF fields that matter most: GPS coordinates reveal home address, capture timestamp, camera and lens ID, and exposure settings" loading="lazy" width="640" height="360"><figcaption>Review four EXIF fields - GPS location is the main privacy risk</figcaption></figure>
     <p>Different fields in the EXIF block have very different stakes for different readers. The four fields most readers ask about:</p>
     <ul>
@@ -64,7 +63,8 @@
     <ul>
         <li><b>Personal archival</b> - the photo is moving from a phone to a long-term photo library (a NAS, a synced folder, an external drive) and the date and GPS are part of the value: this is when and where the moment happened. Stripping the EXIF here would erase the timeline and the place.</li>
         <li><b>Photographer portfolio</b> - exposure, lens, ISO, and copyright are part of how the photographer presents their work. Some portfolio platforms render EXIF as a sidebar; some browsers display it in image properties. Keeping EXIF lets the viewer see the craft.</li>
-        <li><b>Forensic or evidentiary use</b> - timestamp, GPS, and camera identification may be relevant if the image is later used as evidence. The EXIF block is not a guarantee of authenticity (any of these fields can be edited), but stripping them entirely removes information that may be needed.</li>
+        <li><b>Forensic or evidentiary use</b> - timestamp, GPS, and camera identification may be relevant if the image is later used as evidence. The EXIF block is not a guarantee of authenticity (any of these fields can be edited), but stripping them entirely removes information that may be needed. Ideally do not recompress at all here: copy the original file as-is, and if a smaller copy is unavoidable use <code>jpegtran -copy all</code>.</li>
+        <li><b>Sending to a friend or family member</b> - keeping EXIF is fine; the GPS and timestamp may be relevant context. If the photo will be re-shared further from there, strip first.</li>
     </ul>
     <p>Picking a tool that preserves EXIF: in browser-based tools, look for an explicit "preserve metadata" or "keep EXIF" checkbox; in command-line tools, use <code>cjpeg -copy all</code>, <code>jpegtran -copy all</code>, ImageMagick without <code>-strip</code>, or call your library's preserve-metadata API. <code>jpegtran</code> from libjpeg-turbo is the special case: it does <b>lossless</b> recompression (re-arranges Huffman codes without decoding to pixels) and preserves all marker segments by default, so a <code>jpegtran -optimise</code> pass shrinks a JPEG slightly without touching EXIF or the pixels.</p>
 
@@ -72,10 +72,11 @@
     <p>Three scenarios where stripping EXIF is the right call - the default behaviour of most compressors does the right thing here, but if you are unsure, you can also pass an image through a dedicated metadata-strip tool first:</p>
     <ul>
         <li><b>Public sharing of phone photos</b> - posting a photo to a public website, forum, social network, or marketplace listing. The GPS coordinates and capture timestamp are not useful to a public viewer; they are a privacy leak. Strip EXIF before upload.</li>
-        <li><b>File-size minimisation for the web</b> - an EXIF block from a phone photo is typically 10 - 60 kilobytes, which can be a significant share of a heavily compressed image (a 50-kilobyte JPEG with a 30-kilobyte EXIF block is 60 percent metadata). Stripping EXIF on a web-bound compress pipeline is a free byte saving.</li>
+        <li><b>File-size minimisation for the web</b> - an EXIF block from a phone photo is typically 10 - 60 kilobytes, which can be a significant share of a heavily compressed image (a 50-kilobyte JPEG with a 30-kilobyte EXIF block is 60 percent metadata). Stripping EXIF on a web-bound compress pipeline is a free byte saving; strip the ICC profile with it, and pre-rotate the pixels first so losing the orientation flag cannot silently turn the image sideways.</li>
         <li><b>Public marketplaces and listings</b> - selling a used item, posting a real-estate photo, listing a rental: any context where the listing should not reveal where the photographer lives or works. Strip EXIF before the photo leaves your device.</li>
     </ul>
     <p>For batch stripping, the simplest CLI is <code>exiftool -all= image.jpg</code> (the <code>exiftool</code> utility writes a copy with all metadata removed) or <code>jpegtran -copy none input.jpg &gt; output.jpg</code> (lossless, no quality change, no EXIF). Both are widely available.</p>
+    <p>If you are about to compress an image and you are not sure which case applies, the conservative default is to <i>strip</i> EXIF when the file is going outside your control and <i>keep</i> EXIF when it is going into your own storage.</p>
 
     <h2 class="text-uppercase"><b>What is NOT in EXIF (common confusions)</b></h2>
     <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesexif-not-exif__39168973.svg" alt="Compare what is NOT in EXIF: IPTC/XMP tags, ICC color profile, filesystem dates, and pixel watermarks are separate from EXIF" loading="lazy" width="640" height="360"><figcaption>Compare IPTC/XMP, ICC profile, and filesystem dates - none are EXIF</figcaption></figure>
@@ -88,7 +89,7 @@
     </ul>
 
     <h2 class="text-uppercase"><b>How to check what is in your file</b></h2>
-    <p>How to check what is in your file for Image compression and EXIF metadata: open the JPEG properties or a metadata viewer before and after Image Compressor so you see which tags survived.</p>
+    <p>Open the image's file properties or a metadata viewer both before and after you compress, so you can see exactly which tags survived the re-encode.</p>
     <p>Operating-system shortcuts also work for a quick check:</p>
     <ul>
         <li><b>macOS Finder</b> - select the image, press Command+I, expand "More Info" - shows camera, exposure, and (if present) GPS coordinates rendered as a small map.</li>
@@ -96,18 +97,6 @@
         <li><b>Linux file managers</b> - most file managers (Nautilus, Dolphin, Thunar) show an Exif tab in the file properties dialog if a metadata library is installed.</li>
     </ul>
     <p>For a related check after compression - did the compression also visibly hurt the pixels? - the companion guide at <a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to Tell If a JPG Was Compressed Too Much</a> covers the visual artefacts of over-compression, which is a different question from "did the metadata survive".</p>
-
-    <h2 class="text-uppercase"><b>Practical recipe: keep or strip, by scenario</b></h2>
-    <p>Practical recipe: keep or strip, by scenario on Image compression and EXIF metadata - keep EXIF for personal archives; strip GPS before you post a home photo to a public page.</p>
-    <ul>
-        <li><b>Sharing publicly (social, listings, forums, websites)</b> - strip EXIF. The default behaviour of most compressors does this for free. If the compressor preserves EXIF by default, run the output through <code>exiftool -all= file.jpg</code> as a follow-up step.</li>
-        <li><b>Sending to a friend or family member</b> - keeping EXIF is fine; the GPS and timestamp may be relevant context. If the photo will be re-shared further, strip first.</li>
-        <li><b>Archiving to your own library</b> - keep EXIF. Use a tool with explicit "preserve metadata" or use <code>jpegtran -copy all</code> for lossless recompression.</li>
-        <li><b>Publishing on a photography portfolio</b> - keep EXIF. The exposure and lens fields are part of the portfolio value.</li>
-        <li><b>Reducing file size for a web page where every kilobyte matters</b> - strip EXIF and ICC. Pre-rotate pixels first to avoid losing the orientation flag silently.</li>
-        <li><b>Forensic or evidentiary copy</b> - keep EXIF; ideally do not recompress at all (copy the original file as-is). If a smaller copy is needed, <code>jpegtran -copy all</code> is the safest path.</li>
-    </ul>
-    <p>If you are about to compress an image and you are not sure which case applies: the conservative default is to <i>strip</i> EXIF when sharing externally and <i>keep</i> EXIF when storing internally. The companion guide on choosing a quality level is at <a href="/guides/how-to-choose-a-compression-level.html">How to Choose a Compression Level</a>; the companion guide on whether compression is even the right operation (vs format conversion) is at <a href="/guides/when-to-compress-vs-convert-an-image.html">When to Compress vs Convert an Image</a>.</p>
 
     <h2 class="text-uppercase"><b>Related reading</b></h2>
     <p>These guides cover the adjacent decisions in a JPEG compression workflow:</p>
