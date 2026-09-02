@@ -1,6 +1,16 @@
 <h1 class="text-uppercase"><b>JSON Diff Checker Online</b></h1>
-<time itemprop="dateUpdated" datetime="2026-07-30T00:00:00"><b>Last reviewed: 2026-07-30</b></time>
+<time itemprop="dateUpdated" datetime="2026-09-02T00:00:00"><b>Last reviewed: 2026-09-02</b></time>
 <hr/>
 <p>Paste two JSON texts side-by-side and click Compare to see exactly what changed between them - added keys appear green, removed keys appear red, and changed values appear amber.</p>
 <p>Nested objects and arrays are compared recursively, so deeply nested changes surface with their full dot-path.</p>
 <p>Each diff result shows the full key path (e.g. `user.address.city`), the old value, and the new value side-by-side so you can review changes at a glance.</p>
+
+<h2 class="text-uppercase"><b>How the comparison decides what changed</b></h2>
+<p>Object keys are compared by name, not by position - JSON Diff Checker Online builds the union of every key from both the original and modified object, so a key added at the start, middle, or end of an object is reported correctly regardless of where it sits in the text. Array items work differently: each entry is compared by its position in the list, item 0 against item 0, item 1 against item 1, and so on. If you insert a new item at the front of an array, every item after it shifts position, and the tool reports each shifted slot as changed even though the underlying values simply moved down - it does not try to detect that the values only moved.</p>
+<p>When two values are compared and one is a different data type from the other - for example the string "5" on one side and the number 5 on the other - JSON Diff Checker Online reports that as a changed value rather than flagging the type difference separately. The old and new values are shown side by side in the results table, so the type is still visible from the value itself, just not called out with its own label.</p>
+
+<h2 class="text-uppercase"><b>Reading the results table and taking it with you</b></h2>
+<p>Each row of the results table lists the key path (dot notation for object keys, bracket notation for array items, e.g. `items[2].price`), a colour-coded added / removed / changed badge, and the original and modified values side by side. Leaving either panel blank does not produce an error - an empty panel is treated as an empty JSON object, so every key on the other side is reported as added or removed rather than the comparison failing. Once you are happy with the result, Copy Diff places the table on your clipboard as tab-separated values, which pastes cleanly into a spreadsheet row for row, or as plain text into a bug report or pull request comment.</p>
+
+<h2 class="text-uppercase"><b>What to reach for instead</b></h2>
+<p>JSON Diff Checker Online answers one question: what changed between these two JSON documents. It does not produce a unified diff patch in the `--- a/file.json` / `+++ b/file.json` format that version-control tools expect, so it is not a replacement for a text-based diff tool when you specifically need a patch file. It also does not validate a document against a JSON Schema - checking whether required fields are present, or whether a value's type matches a schema definition - because that is a different question from what changed since last time. And it does not attempt a three-way merge when two people have changed the same document independently; it only ever compares two inputs at a time.</p>
