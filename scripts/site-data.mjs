@@ -14,6 +14,25 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/unix-timestamp-converter-vs-alternatives.html',
+  '/guides/unix-timestamp-converter-step-by-step.html',
+  '/guides/unix-timestamp-converter-when.html',
+  // unix-timestamp-converter companion guides - 5 locale fanout (new_tool_page_discovery 20260902-8)
+  '/guides/pt/unix-timestamp-converter-when.html',
+  '/guides/pt/unix-timestamp-converter-step-by-step.html',
+  '/guides/pt/unix-timestamp-converter-vs-alternatives.html',
+  '/guides/es/unix-timestamp-converter-when.html',
+  '/guides/es/unix-timestamp-converter-step-by-step.html',
+  '/guides/es/unix-timestamp-converter-vs-alternatives.html',
+  '/guides/vi/unix-timestamp-converter-when.html',
+  '/guides/vi/unix-timestamp-converter-step-by-step.html',
+  '/guides/vi/unix-timestamp-converter-vs-alternatives.html',
+  '/guides/id/unix-timestamp-converter-when.html',
+  '/guides/id/unix-timestamp-converter-step-by-step.html',
+  '/guides/id/unix-timestamp-converter-vs-alternatives.html',
+  '/guides/de/unix-timestamp-converter-when.html',
+  '/guides/de/unix-timestamp-converter-step-by-step.html',
+  '/guides/de/unix-timestamp-converter-vs-alternatives.html',
   '/guides/zstd-extractor-vs-alternatives.html',
   '/guides/zstd-extractor-step-by-step.html',
   '/guides/zstd-extractor-when.html',
@@ -7248,6 +7267,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // unix-timestamp-converter companion guides EN + 5 locales (new_tool_page_discovery 20260902-8)
+  '/guides/unix-timestamp-converter-when.html',
+  '/guides/unix-timestamp-converter-step-by-step.html',
+  '/guides/unix-timestamp-converter-vs-alternatives.html',
+  '/guides/pt/unix-timestamp-converter-when.html',
+  '/guides/pt/unix-timestamp-converter-step-by-step.html',
+  '/guides/pt/unix-timestamp-converter-vs-alternatives.html',
+  '/guides/es/unix-timestamp-converter-when.html',
+  '/guides/es/unix-timestamp-converter-step-by-step.html',
+  '/guides/es/unix-timestamp-converter-vs-alternatives.html',
+  '/guides/vi/unix-timestamp-converter-when.html',
+  '/guides/vi/unix-timestamp-converter-step-by-step.html',
+  '/guides/vi/unix-timestamp-converter-vs-alternatives.html',
+  '/guides/id/unix-timestamp-converter-when.html',
+  '/guides/id/unix-timestamp-converter-step-by-step.html',
+  '/guides/id/unix-timestamp-converter-vs-alternatives.html',
+  '/guides/de/unix-timestamp-converter-when.html',
+  '/guides/de/unix-timestamp-converter-step-by-step.html',
+  '/guides/de/unix-timestamp-converter-vs-alternatives.html',
   // zstd-extractor companion guides EN + 5 locales (new-tool-discovery-loop fire 739, 20260901-2)
   '/guides/zstd-extractor-step-by-step.html',
   '/guides/zstd-extractor-when.html',
@@ -16998,6 +17036,7 @@ export const ALIAS_ROUTES = {
   '/zstd-extractor.html': '/zip-tools/zstd-extractor.html',
   '/ai-code-explainer.html': '/developer-tools/ai-code-explainer.html',
   '/redact-pdf.html': '/pdf-tools/redact-pdf.html',
+  '/unix-timestamp-converter.html': '/developer-tools/unix-timestamp-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29328,6 +29367,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/zstd-extractor-vs-alternatives.html': 'guide/de/zstd-extractor-vs-alternatives.jsp',
   '/developer-tools/ai-code-explainer.html': 'utility/ai-code-explainer.jsp',
   '/pdf-tools/redact-pdf.html': 'pdf/redact-pdf.jsp',
+  '/developer-tools/unix-timestamp-converter.html': 'utility/unix-timestamp-converter.jsp',
+  '/guides/unix-timestamp-converter-when.html': 'guide/unix-timestamp-converter-when.jsp',
+  '/guides/unix-timestamp-converter-step-by-step.html': 'guide/unix-timestamp-converter-step-by-step.jsp',
+  '/guides/unix-timestamp-converter-vs-alternatives.html': 'guide/unix-timestamp-converter-vs-alternatives.jsp',
+  '/guides/pt/unix-timestamp-converter-when.html': 'guide/pt/unix-timestamp-converter-when.jsp',
+  '/guides/pt/unix-timestamp-converter-step-by-step.html': 'guide/pt/unix-timestamp-converter-step-by-step.jsp',
+  '/guides/pt/unix-timestamp-converter-vs-alternatives.html': 'guide/pt/unix-timestamp-converter-vs-alternatives.jsp',
+  '/guides/es/unix-timestamp-converter-when.html': 'guide/es/unix-timestamp-converter-when.jsp',
+  '/guides/es/unix-timestamp-converter-step-by-step.html': 'guide/es/unix-timestamp-converter-step-by-step.jsp',
+  '/guides/es/unix-timestamp-converter-vs-alternatives.html': 'guide/es/unix-timestamp-converter-vs-alternatives.jsp',
+  '/guides/vi/unix-timestamp-converter-when.html': 'guide/vi/unix-timestamp-converter-when.jsp',
+  '/guides/vi/unix-timestamp-converter-step-by-step.html': 'guide/vi/unix-timestamp-converter-step-by-step.jsp',
+  '/guides/vi/unix-timestamp-converter-vs-alternatives.html': 'guide/vi/unix-timestamp-converter-vs-alternatives.jsp',
+  '/guides/id/unix-timestamp-converter-when.html': 'guide/id/unix-timestamp-converter-when.jsp',
+  '/guides/id/unix-timestamp-converter-step-by-step.html': 'guide/id/unix-timestamp-converter-step-by-step.jsp',
+  '/guides/id/unix-timestamp-converter-vs-alternatives.html': 'guide/id/unix-timestamp-converter-vs-alternatives.jsp',
+  '/guides/de/unix-timestamp-converter-when.html': 'guide/de/unix-timestamp-converter-when.jsp',
+  '/guides/de/unix-timestamp-converter-step-by-step.html': 'guide/de/unix-timestamp-converter-step-by-step.jsp',
+  '/guides/de/unix-timestamp-converter-vs-alternatives.html': 'guide/de/unix-timestamp-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
