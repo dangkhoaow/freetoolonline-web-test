@@ -1,5 +1,5 @@
 <h1 class="text-uppercase"><b>Base64 Encoder</b></h1>
-<time itemprop="dateUpdated" datetime="2026-07-03T00:00:00"><b>Last reviewed: 2026-07-03</b></time>
+<time itemprop="dateUpdated" datetime="2026-09-02T00:00:00"><b>Last reviewed: 2026-09-02</b></time>
 <hr/>
 <p>Encode text to Base64 or decode a Base64 string back to text, right in your browser. Encoding uses the browser's own btoa and atob, so nothing you paste is uploaded and no account is needed.</p>
 <figure class="illustration"><img src="/img/illustrations/numbered-step-row/base64encoder__4289ff4d.svg" alt="Three steps to use the Base64 tool: paste text, click Encode or Decode, then read the result in the output box." loading="lazy" width="640" height="200"><figcaption>Three steps: paste your text, click Encode or Decode, read the result.</figcaption></figure>
@@ -11,4 +11,14 @@
 </ul>
 <br/><h2><b>How the encoding works</b></h2>
 <p>How the encoding works in Base64 Encoder: the encoder is UTF-8 safe, so accented characters and non-Latin text round-trip correctly. If you paste a string that is not valid Base64, the decoder shows an error inline instead of failing silently - text only, no file upload, and nothing leaves this browser tab.</p>
+<p>Two examples show it in practice. Encoding the two letters "Hi" produces <code>SGk=</code>, and decoding <code>SGk=</code> back gives "Hi" again. Encoding the accented word "caf&eacute;" produces <code>Y2Fmw6k=</code>, and decoding that string returns the accent mark intact - proof the UTF-8-safe wrapping preserves accented and non-Latin characters, not just plain English letters.</p>
 <p>For worked examples on each use case - embedding in HTML, inspecting tokens, and decoding API payloads - see the <a href="/guides/base64-encoder-when.html">Base64 encoder guide</a>.</p>
+<br/><h2><b>Why a JWT or URL-safe token can fail to decode</b></h2>
+<p>Decode only trims the very start and end of what you paste before it runs, so a stray space or line break right before or after your string will not by itself cause a failure. What it does not handle is the URL-safe Base64 alphabet: tokens that swap in <code>-</code> and <code>_</code> for the standard <code>+</code> and <code>/</code> - the style you see inside a JWT or a URL query parameter - fall outside the alphabet this decoder reads, so pasting one shows an inline error instead of the decoded text. Swapping those two characters back to <code>+</code> and <code>/</code> (and restoring any trailing <code>=</code> padding the token dropped) turns it back into standard Base64 this page can decode.</p>
+<p>The same trim-only behavior means a full data URI fails too. Pasting the whole string <code>data:text/plain;base64,SGVsbG8=</code> shows an error, because decode strips only surrounding whitespace, not a <code>data:...;base64,</code> prefix; paste just the payload after the comma - <code>SGVsbG8=</code> in that example - and it decodes cleanly.</p>
+<table class="w3-table w3-bordered" style="max-width:520px;">
+  <tr><th>Alphabet position</th><th>Standard Base64</th><th>URL-safe Base64</th></tr>
+  <tr><td>62nd character</td><td>plus sign</td><td>hyphen</td></tr>
+  <tr><td>63rd character</td><td>forward slash</td><td>underscore</td></tr>
+  <tr><td>trailing padding</td><td>equals signs kept</td><td>often stripped off</td></tr>
+</table>
