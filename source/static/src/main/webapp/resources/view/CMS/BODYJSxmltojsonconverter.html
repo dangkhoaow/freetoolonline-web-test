@@ -1,0 +1,152 @@
+<script>
+    // XML to JSON converter - real in-browser conversion, no upload, no vendor lib.
+    //
+    // Gate H reference: verified-browser-impl-registry.mjs entry
+    // csv_json_converter_papaparse (tabular/markup format conversion family;
+    // XML branch). This slug uses the browser-native DOMParser instead of a
+    // vendored fast-xml-parser bundle - DOMParser is always present, so the
+    // page has zero network dependency and works fully offline.
+    //
+    // Wiring contract (matches BODYHTML IDs): #inputText (source XML),
+    // #outputText (readonly JSON), #convertButton, #clearInputButton,
+    // #copyOutputButton, #compactToggle (pretty vs compact). Everything runs
+    // synchronously in the tab; the XML never leaves the device.
+    (function () {
+        'use strict';
+
+        // Convert one DOM element into a plain JS value.
+        // - attributes become "@_name" keys (fast-xml-parser convention)
+        // - repeated child tags collapse into arrays
+        // - mixed text is preserved under "#text"
+        function elementToValue(el) {
+            var obj = {};
+            var i;
+            if (el.attributes && el.attributes.length) {
+                for (i = 0; i < el.attributes.length; i++) {
+                    var attr = el.attributes[i];
+                    obj['@_' + attr.name] = attr.value;
+                }
+            }
+            var elementChildren = [];
+            var textParts = [];
+            var n;
+            for (n = 0; n < el.childNodes.length; n++) {
+                var node = el.childNodes[n];
+                if (node.nodeType === 1) {           // element
+                    elementChildren.push(node);
+                } else if (node.nodeType === 3 || node.nodeType === 4) { // text / CDATA
+                    textParts.push(node.nodeValue);
+                }
+            }
+            var text = textParts.join('').replace(/\s+/g, ' ').trim();
+
+            if (elementChildren.length === 0) {
+                // Leaf node.
+                if (Object.keys(obj).length === 0) {
+                    return text;                     // pure text -> string
+                }
+                if (text) { obj['#text'] = text; }
+                return obj;
+            }
+
+            elementChildren.forEach(function (child) {
+                var key = child.nodeName;
+                var val = elementToValue(child);
+                if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                    if (!Array.isArray(obj[key])) { obj[key] = [obj[key]]; }
+                    obj[key].push(val);
+                } else {
+                    obj[key] = val;
+                }
+            });
+            if (text) { obj['#text'] = text; }
+            return obj;
+        }
+
+        function xmlToJson(xmlText, compact) {
+            var trimmed = String(xmlText || '').trim();
+            if (!trimmed) { return ''; }
+            var doc;
+            try {
+                doc = new DOMParser().parseFromString(trimmed, 'application/xml');
+            } catch (e) {
+                throw new Error('Could not parse the input as XML.');
+            }
+            // DOMParser reports malformed XML by inserting a <parsererror> node
+            // instead of throwing.
+            var errNode = doc.getElementsByTagName('parsererror')[0];
+            if (errNode) {
+                var msg = (errNode.textContent || 'Invalid XML').replace(/\s+/g, ' ').trim();
+                throw new Error(msg.slice(0, 300));
+            }
+            var root = doc.documentElement;
+            if (!root) { throw new Error('No XML root element found.'); }
+            var result = {};
+            result[root.nodeName] = elementToValue(root);
+            return JSON.stringify(result, null, compact ? 0 : 2);
+        }
+
+        function wire() {
+            var input = document.getElementById('inputText');
+            var output = document.getElementById('outputText');
+            var convertBtn = document.getElementById('convertButton');
+            var clearBtn = document.getElementById('clearInputButton');
+            var copyBtn = document.getElementById('copyOutputButton');
+            var compactToggle = document.getElementById('compactToggle');
+            var stats = document.querySelector('#formatEditor .stats');
+            var oriSize = document.getElementById('oriSize');
+            var outSize = document.getElementById('outSize');
+            if (!input || !output) { return; }
+
+            function byteLen(s) {
+                try { return new Blob([s]).size; } catch (e) { return (s || '').length; }
+            }
+
+            function run() {
+                var src = input.value || '';
+                var compact = !!(compactToggle && compactToggle.checked);
+                try {
+                    var json = xmlToJson(src, compact);
+                    output.value = json;
+                    if (stats && oriSize && outSize) {
+                        oriSize.textContent = byteLen(src);
+                        outSize.textContent = byteLen(json);
+                        stats.classList.remove('w3-hide');
+                    }
+                } catch (err) {
+                    output.value = 'Error: ' + (err && err.message ? err.message : String(err));
+                    if (stats) { stats.classList.add('w3-hide'); }
+                }
+            }
+
+            if (convertBtn) { convertBtn.addEventListener('click', run); }
+            input.addEventListener('input', function () {
+                if ((input.value || '').trim()) { run(); } else { output.value = ''; if (stats) { stats.classList.add('w3-hide'); } }
+            });
+            if (compactToggle) { compactToggle.addEventListener('change', run); }
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    input.value = ''; output.value = '';
+                    if (stats) { stats.classList.add('w3-hide'); }
+                    input.focus();
+                });
+            }
+            if (copyBtn) {
+                copyBtn.addEventListener('click', function () {
+                    var v = output.value || '';
+                    if (!v) { return; }
+                    try { navigator.clipboard.writeText(v); }
+                    catch (e) { output.select(); try { document.execCommand('copy'); } catch (e2) {} }
+                });
+            }
+            // Convert immediately if the input already holds an example.
+            if ((input.value || '').trim()) { run(); }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', wire);
+        } else {
+            wire();
+        }
+    })();
+</script>

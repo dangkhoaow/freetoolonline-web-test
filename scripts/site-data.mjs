@@ -17,6 +17,8 @@ export const INFO_ROUTES = new Set([
   '/guides/html-minifier-vs-alternatives.html',
   '/guides/html-minifier-step-by-step.html',
   '/guides/html-minifier-when.html',
+  // html-minifier-step-by-step locale fanout (create_new_guide_page 20260903-9)
+  '/guides/pt/html-minifier-step-by-step.html',
   '/guides/unix-timestamp-converter-vs-alternatives.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
   '/guides/unix-timestamp-converter-when.html',
@@ -7270,6 +7272,8 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // html-minifier-step-by-step locale fanout (create_new_guide_page 20260903-9)
+  '/guides/pt/html-minifier-step-by-step.html',
   // unix-timestamp-converter companion guides EN + 5 locales (new_tool_page_discovery 20260902-8)
   '/guides/unix-timestamp-converter-when.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
@@ -17041,6 +17045,7 @@ export const ALIAS_ROUTES = {
   '/redact-pdf.html': '/pdf-tools/redact-pdf.html',
   '/unix-timestamp-converter.html': '/developer-tools/unix-timestamp-converter.html',
   '/html-minifier.html': '/developer-tools/html-minifier.html',
+  '/xml-to-json-converter.html': '/developer-tools/xml-to-json-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29393,7 +29398,9 @@ export const JSP_BY_ROUTE = {
   '/developer-tools/html-minifier.html': 'utility/html-minifier.jsp',
   '/guides/html-minifier-when.html': 'guide/html-minifier-when.jsp',
   '/guides/html-minifier-step-by-step.html': 'guide/html-minifier-step-by-step.jsp',
+  '/guides/pt/html-minifier-step-by-step.html': 'guide/pt/html-minifier-step-by-step.jsp',
   '/guides/html-minifier-vs-alternatives.html': 'guide/html-minifier-vs-alternatives.jsp',
+  '/developer-tools/xml-to-json-converter.html': 'utility/xml-to-json-converter.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
