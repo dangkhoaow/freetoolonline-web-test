@@ -28,8 +28,8 @@
 <h2 class="text-uppercase"><b>Benefits of Using This MD5 Tool Online</b></h2>
 <p>What sets the To Text field apart from a plain generator:</p>
 <ul>
-    <li><b>To Text lookups:</b> If you hashed text earlier in this browser, To Text reads the pairing back from browser storage; otherwise it asks the server whether a stored match exists for that 32-character hash - it never reverses MD5 mathematically.</li>
-    <li><b>Privacy on lookup:</b> A To Text request sends only the 32-character hash you paste, not the original text, over HTTPS.</li>
+    <li><b>To Text lookups:</b> a plain generator only runs one direction; this page also tries to recover the original string behind a hash you paste.</li>
+    <li><b>Privacy on lookup:</b> a To Text request sends only the 32-character hash you paste, not the original text, over HTTPS.</li>
 </ul>
 
 <br/>
@@ -37,57 +37,39 @@
 
 <details class="faq-item">
   <summary><b>Why Use an MD5 Hash Generator and Decoder?</b></summary>
-  <p>MD5 is commonly used for checksums, legacy compatibility checks, and quick debugging comparisons. Generating a hash here saves installing a command-line tool for a one-off value, and the To Text field adds a plaintext lookup that a plain generator does not offer.</p>
+  <p>MD5 is commonly used for checksums, legacy compatibility checks, and quick debugging comparisons. Generating a hash here saves installing a command-line tool for a one-off value.</p>
 </details>
 <details class="faq-item">
-  <summary><b>How Does MD5 to Text Decoding Work?</b></summary>
-  <p>MD5 is one-way; true decryption is impossible. On To Text, the page first checks browser storage for a hash you produced in this session or earlier on the same device; if none is found, it calls the server-side lookup path so a previously seen plaintext can be returned when one exists.</p>
+  <summary><b>How does MD5 to Text work, and why did it return nothing for my hash?</b></summary>
+  <p>MD5 is one-way, so true decryption is impossible and the To Text field is a lookup rather than a calculation. It first checks browser storage for a hash you produced on this device, then asks the server whether a stored match exists. An empty result is expected rather than a fault: only plaintext that was hashed and stored before can come back, typically short, common words and phrases that many people have run through an MD5 tool. A unique, long, or random string was almost certainly never cached, so there is nothing to return.</p>
 </details>
 <details class="faq-item">
   <summary><b>Is MD5 Safe for Password Hashing?</b></summary>
-  <p>No. MD5 runs fast enough that a single GPU can test hundreds of millions of candidate passwords per second, and adding a salt does not slow that down - it only stops one precomputed table from covering every account at once. Store human passwords with bcrypt or Argon2id, whose work factor you can raise as hardware gets faster. SHA-256 is not a substitute here either: it is a longer digest but still far too fast for credential storage.</p>
-</details>
-<details class="faq-item">
-  <summary><b>Does This MD5 Converter Work on Mobile?</b></summary>
-  <p>Yes, this MD5 generator and decoder is compatible with mobile browsers, making it easy to create or decode hashes from any device.</p>
-
-<br/>
+  <p>No. MD5 runs fast enough that a single GPU can test hundreds of millions of candidate passwords per second, and adding a salt does not slow that down - it only stops one precomputed table from covering every account at once. Store human passwords with a deliberately slow algorithm instead - bcrypt, scrypt, or Argon2id - whose work factor you can raise as hardware gets faster.</p>
 </details>
 <details class="faq-item">
   <summary><b>Why does this page's hash differ from another tool on the same text?</b></summary>
   <p>The cause is almost always bytes you cannot see. MD5 digests the exact byte sequence it receives, so a trailing blank line, Windows CRLF line endings where the source used Unix LF, or a UTF-8 byte-order mark at the start of the text each shift the 32-hex result even when every visible character matches. Two fixes settle it: paste the string without a trailing newline, and when you are really checking a file, hash the file itself rather than its pasted contents - that removes the line-ending and encoding guesswork entirely.</p>
 </details>
 <details class="faq-item">
-  <summary><b>Why did To Text return nothing for my MD5 hash?</b></summary>
-  <p>MD5 to Text can come back empty, and that is expected rather than a fault. The lookup is a cache match, not a calculation, so it only finds plaintext that was hashed and stored before - typically short, common words and phrases that many people have run through an MD5 tool. A unique, long, or random string was almost certainly never cached, so there is nothing to return. MD5 itself cannot be reversed mathematically, which is why no tool can produce the original text for a hash that was never seen.</p>
-</details>
-<details class="faq-item">
   <summary><b>What is an MD5 collision, and when does it actually matter?</b></summary>
-  <p>A collision is two different inputs that produce the exact same 32-hex MD5. Researchers can now craft these on purpose in seconds on an ordinary laptop, so MD5 is broken for anything that treats the hash as proof a file was not tampered with: code signatures, TLS certificates, and password storage. For those uses reach for SHA-256, or for passwords specifically bcrypt, scrypt, or Argon2, which are deliberately slow to resist brute force. Where a collision would be harmless - a non-adversarial file checksum, a cache key, an ETag, or a quick fingerprint to catch accidental corruption - MD5 is still fast and perfectly convenient. The rule of thumb: if an attacker gains something by forcing two inputs to match, do not use MD5; if the only risk is accidental change, it is fine.</p>
+  <p>A collision is two different inputs that produce the exact same 32-hex MD5. Researchers can now craft these on purpose in seconds on an ordinary laptop, so MD5 is broken for anything that treats the hash as proof a file was not tampered with: code signatures, TLS certificates, and password storage. For those uses reach for SHA-256 instead. Where a collision would be harmless - a non-adversarial file checksum, a cache key, an ETag, or a quick fingerprint to catch accidental corruption - MD5 is still fast and perfectly convenient. The rule of thumb: if an attacker gains something by forcing two inputs to match, do not use MD5; if the only risk is accidental change, it is fine.</p>
 </details>
 <details class="faq-item">
   <summary><b>Do I need an account or any software to use this tool?</b></summary>
-  <p>No sign-up and nothing to download. Open the page and both directions are ready straight away: paste text into the To MD5 panel to build a hash, or paste a hash into the To Text panel to run a lookup. The session is anonymous, so you are never asked for an email or login before you start.</p>
+  <p>No sign-up and nothing to download, and it runs the same way in a mobile browser. The session is anonymous, so you are never asked for an email or login before you start.</p>
 </details>
 <details class="faq-item">
-  <summary><b>How long is an MD5 hash, and which characters does it use?</b></summary>
-  <p>Every MD5 result is exactly 32 characters written in hexadecimal - the digits 0 to 9 and the letters a to f. That length never changes with the input, so a single character and an entire paragraph both come out as a 32-character string. If a value you are comparing is a different length or holds characters outside that set, it is not a standard MD5 hash.</p>
+  <summary><b>How long is an MD5 hash, and does letter case matter when I compare it?</b></summary>
+  <p>Every MD5 result is exactly 32 characters written in hexadecimal - the digits 0 to 9 and the letters a to f. That length never changes with the input, so a single character and an entire paragraph both come out as a 32-character string. If a value you are comparing is a different length or holds characters outside that set, it is not a standard MD5 hash. This tool always writes the hash in lowercase; the digest is the same value in either case, but a plain string comparison treats ab12 and AB12 as different, so lowercase both sides or compare them case-insensitively before deciding two hashes disagree.</p>
 </details>
 <details class="faq-item">
   <summary><b>Is the text I convert stored on your servers?</b></summary>
   <p>When you use the To MD5 panel, the text is sent over HTTPS for processing, and any temporary data created for that request is cleared automatically after a short retention window rather than kept long-term. Because the session is anonymous, nothing you hash is tied to an account or profile.</p>
 </details>
 <details class="faq-item">
-  <summary><b>Can I use MD5 to check whether two pieces of text are identical?</b></summary>
-  <p>Yes - the hash works as a quick fingerprint to compare. Paste the first text into the To MD5 panel and note the 32-character result, then hash the second text the same way. The same input always produces the same hash, so when the two 32-hex strings match the texts are byte-for-byte identical, and when even one character, space, or line break differs the hashes diverge. That makes MD5 a fast way to catch an accidental change between two copies of a message or file.</p>
-</details>
-<details class="faq-item">
-  <summary><b>Does the letter case of an MD5 hash matter when I compare it?</b></summary>
-  <p>This tool always writes the hash in lowercase hexadecimal - the digits 0 to 9 and the letters a to f. The digest a checksum represents is the same whether it is printed in upper or lower case, but a plain string comparison treats them as different, so ab12 and AB12 look unequal to a simple match even though they mean the same value. When you compare the hash from this page against one from another source, lowercase both first or compare them case-insensitively so a formatting difference is not mistaken for a content difference.</p>
-</details>
-<details class="faq-item">
   <summary><b>Does MD5 work with accented letters, emoji, or non-English text?</b></summary>
-  <p>Yes. MD5 digests the raw bytes of whatever you paste, and characters outside plain ASCII - accented letters, emoji, or other scripts - are stored as several bytes each in UTF-8. The tool hashes those bytes like any others and still returns a standard 32-character result. The practical catch is that the encoding has to match: the same visible characters saved in a different encoding produce a different byte sequence and therefore a different hash, so compare values that were entered the same way.</p>
+  <p>Yes. MD5 digests the raw bytes of whatever you paste, and characters outside plain ASCII - accented letters, emoji, or other scripts - are stored as several bytes each in UTF-8. The tool hashes those bytes like any others and still returns a standard 32-character result.</p>
 </details>
 <details class="faq-item">
   <summary><b>Is there a limit on how much text I can convert at once?</b></summary>
