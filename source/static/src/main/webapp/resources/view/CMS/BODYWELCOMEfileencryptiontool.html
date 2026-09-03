@@ -2,6 +2,30 @@
 <time itemprop="dateUpdated" datetime="2026-07-13T00:00:00"><b>Last reviewed: 2026-07-13</b></time>
 <hr/>
 <p>Encrypt or decrypt a file with a password, right in this browser - no upload, no app to install.</p>
-<p>The file is scrambled with AES-256 using a key derived from your password (PBKDF2, 250,000 rounds) plus a fresh random salt and IV every time, so encrypting the same file twice with the same password produces two different .enc files - that is expected, not a bug.</p>
+
+<br/><h2 class="text-uppercase"><b>Key features</b></h2>
+<ul>
+<li>Reads the file you choose with the browser FileReader and never uploads it to a server.</li>
+<li>Derives an encryption key from your password with WebCrypto PBKDF2 (250,000 rounds) plus a fresh random salt, entirely in the browser.</li>
+<li>Encrypts the file with AES-256 (WebCrypto AES-GCM) using a fresh random IV generated in the browser for every run.</li>
+<li>Decrypts a .enc file back to the original with WebCrypto AES-GCM when you supply the same password.</li>
+<li>Builds the protected copy as a downloadable file in the browser, with no server round-trip.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>When to use it</b></h2>
+<p>Reach for it when you need to protect a single file with a password before storing or sharing it, and you would rather not upload the file or install an app. The file is opened locally in your browser and never leaves the device, so it suits sensitive documents you want to keep off any server.</p>
+
+<br/><h2 class="text-uppercase"><b>Encrypt and decrypt</b></h2>
+<table class="w3-table w3-bordered">
+<tr><th>Action</th><th>You provide</th><th>You get back</th></tr>
+<tr><td>Encrypt</td><td>Any file plus a password</td><td>A protected copy with a .enc extension</td></tr>
+<tr><td>Decrypt</td><td>A .enc file plus the same password</td><td>The original file under its original name</td></tr>
+</table>
+<p>Encrypting the same file with the same password twice produces two different .enc files, because a fresh random salt and IV are used every time - that is expected, not a bug.</p>
+
+<br/><h2 class="text-uppercase"><b>Privacy</b></h2>
+<p>Everything runs in your browser: the file is read locally with FileReader, the key is derived from your password, and the encrypted or decrypted result is built as a download with no server round-trip. Your file and your password are never uploaded.</p>
+
+<br/><h2 class="text-uppercase"><b>How the encryption works</b></h2>
+<p>The file is scrambled with AES-256 using a key derived from your password (PBKDF2, 250,000 rounds) plus a fresh random salt and IV every time. The .enc file carries a small 32-byte header - a tag plus that fresh salt and IV - in front of the scrambled data, and your original filename is encrypted inside the data too, so Decrypt can restore the exact filename without it ever being stored outside the encrypted file.</p>
 <p>A wrong password, or a .enc file that was edited or corrupted, is refused with a plain error message instead of producing a broken or garbage file.</p>
-<p>The .enc file carries a small 32-byte header (a tag plus a fresh salt and IV) in front of the scrambled data, and your original filename is encrypted inside that data too, so Decrypt can restore the exact filename without it ever being stored outside the encrypted file.</p>
