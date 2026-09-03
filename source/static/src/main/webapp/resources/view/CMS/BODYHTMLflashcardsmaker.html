@@ -28,6 +28,22 @@
     #listItems .list-item-flashcard-known { color: #2e7d32; font-weight: bold; font-size: 0.85em; margin-left: 6px; }
     /* display:none by default - JS shows this ONLY for a flashcard/flashcards
        slug (initList()), so every other list/tracker/note tool is unaffected. */
+    /* AI card drafts (2026-09-04, this page only - the #fcAi* markup exists
+       only in this BODYHTML, and the paired BODYJS binds it only in the
+       flashcards branch). */
+    #fcAiPanel { margin: 10px 0 16px; padding: 16px; border: 1px solid #ddd; border-radius: 6px; background: #f5f9ff; }
+    #fcAiPanel .fc-ai-note { color: #555; font-size: 0.92em; margin: 4px 0 8px; }
+    #fcAiNotes { width: 100%; height: 96px; resize: vertical; }
+    #fcAiActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    #fcAiEngineBox { display: none; margin-top: 10px; padding: 10px; border: 1px dashed #bbb; border-radius: 4px; background: #fff; }
+    #fcAiModelSel { max-width: 100%; }
+    #fcAiProgress { display: none; background: #e0e0e0; border-radius: 4px; margin-top: 8px; height: 18px; overflow: hidden; }
+    #fcAiProgressBar { background: #1a73e8; color: #fff; font-size: 0.8em; text-align: center; height: 100%; width: 0; }
+    #fcAiEngineNote { color: #555; font-size: 0.9em; margin-top: 6px; min-height: 1em; }
+    #fcAiStatus { font-size: 0.92em; color: #333; margin-top: 10px; }
+    #fcAiDrafts .fc-ai-draft { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; margin-top: 8px; }
+    #fcAiDrafts .fc-ai-draft-q, #fcAiDrafts .fc-ai-draft-a { word-break: break-word; margin-bottom: 4px; }
+    #fcAiDraftActions { display: none; margin-top: 10px; }
     #listStudy { display: none; margin: 10px 0 16px; padding: 16px; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; }
     #listStudyProgress { font-weight: bold; margin-bottom: 8px; color: #555; }
     #listStudyFace { font-size: 1.15em; min-height: 2.4em; padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
@@ -52,6 +68,36 @@
          above. Left empty here so every non-flashcards list/tracker/note
          tool renders nothing extra. -->
     <div id="listBackFieldSlot"></div>
+
+    <!-- AI card drafts (2026-09-04): paste notes -> Q/A draft cards that feed
+         the deck above. Three-tier engine ladder in the paired BODYJS:
+         built-in browser AI (only when already on-device) -> optional
+         on-device model (explicit click, size shown first) -> deterministic
+         no-model extraction so the feature works in every browser. The demo
+         drafts from the pre-filled sample notes render on load. -->
+    <div id="fcAiPanel">
+        <label class="list-field-label" for="fcAiNotes">Turn notes into card drafts</label>
+        <p class="fc-ai-note">Paste study notes and click Generate card drafts to get question-and-answer drafts you can add to the deck - it doubles as a quiz-question generator for any pasted text. Everything runs in this browser; your notes never leave the device. Without an AI model the drafts come from term-definition and fill-in-the-blank extraction; the optional on-device model writes smarter questions.</p>
+        <textarea id="fcAiNotes" class="w3-input w3-border" maxlength="100000"
+                  placeholder="Paste your study notes here"></textarea>
+        <div id="fcAiActions">
+            <button type="button" id="fcAiGenerateBtn" class="w3-button w3-blue">Generate card drafts</button>
+            <button type="button" id="fcAiEngineToggle" class="w3-button w3-light-grey w3-small">AI model options</button>
+        </div>
+        <div id="fcAiEngineBox">
+            <p class="fc-ai-note">Optional: load an on-device AI model for smarter drafts. Each option shows its one-time download size before anything starts; the model is cached by this browser and shared with the other AI tools on this site.</p>
+            <select id="fcAiModelSel" class="w3-select w3-border"></select>
+            <button type="button" id="fcAiLoadBtn" class="w3-button w3-dark-grey w3-small" style="margin-top:6px;">Load AI model</button>
+            <div id="fcAiProgress"><div id="fcAiProgressBar"></div></div>
+            <div id="fcAiEngineNote"></div>
+        </div>
+        <div id="fcAiStatus" aria-live="polite"></div>
+        <div id="fcAiDrafts" aria-live="polite"></div>
+        <div id="fcAiDraftActions">
+            <button type="button" id="fcAiAddAllBtn" class="w3-button w3-green w3-small">Add all drafts to deck</button>
+            <button type="button" id="fcAiClearBtn" class="w3-button w3-light-grey w3-small">Clear drafts</button>
+        </div>
+    </div>
 
     <!-- Flashcards mode only: one-card-at-a-time study widget. Hidden by
          default (CSS above); initList() shows it ONLY for a flashcard/

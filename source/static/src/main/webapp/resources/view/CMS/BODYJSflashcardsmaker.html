@@ -35,6 +35,34 @@
     // {text, done}, and a one-card-at-a-time Study widget (#listStudy in the
     // paired BODYHTML) drives the actual studying. All other list/tracker/
     // todo/habit/grocery/note slugs are UNCHANGED.
+    //
+    // AI CARD DRAFTS layer (2026-09-04, ai-local-tools fire45, mode=enhance,
+    // FLASHCARDS branch ONLY - the #fcAi* markup exists only in this page's
+    // paired BODYHTML, so no other list/tracker/note tool is affected).
+    // Paste study notes -> question/answer card DRAFTS that feed the existing
+    // deck editor. THREE-TIER ENGINE LADDER (each honestly labeled on-page):
+    //   1. Chrome built-in AI (Prompt API / LanguageModel global) ONLY when
+    //      availability() === 'available' (already on-device, zero download);
+    //      a 'downloadable' state never activates the tier - that would start
+    //      a silent model download.
+    //   2. WebLLM from the SELF-HOSTED /vendor/web-llm standalone ESM
+    //      (web-llm 0.2.84, vendored - guard-5 strongest shape, no floating
+    //      CDN specifier; same window.__ftoWebLLM cache + same
+    //      'webllm-last-model' localStorage key as private-ai-chat, so the
+    //      browser weight cache is SHARED across this site's AI tools).
+    //      Model loads ONLY on the explicit "Load AI model" click, WebGPU
+    //      decided by an AWAITED requestAdapter() capability probe (rule 9,
+    //      never bare `'gpu' in navigator`), determinate progress bar, and
+    //      every picker option's download size derived at runtime from
+    //      webllm.prebuiltAppConfig.model_list (vram_required_MB) - never
+    //      hardcoded.
+    //   3. No-AI deterministic fallback so the feature is NEVER dead: basic
+    //      drafts extracted from "Term: definition" / "Term - definition"
+    //      lines, "X is/are Y" sentences, and fill-in-the-blank (cloze)
+    //      sentences - labeled "basic drafts (no AI model)".
+    // G16 corollary: on load with zero interaction the notes box is pre-filled
+    // with sample notes and their TIER-3 drafts render immediately (labeled as
+    // a sample demo) - real visible output, no model download.
     var LIST_IS_FLASHCARDS = /(^|-)flashcards?(-|$)/.test('flashcards-maker');
 
     var LIST_STORAGE_KEY = 'ftol-list-flashcards-maker';
@@ -352,6 +380,447 @@
         reader.readAsText(file);
     }
 
+    // ================= AI CARD DRAFTS (flashcards branch only) =================
+    // See the header block above for the three-tier ladder + hosting rules.
+
+    var FC_AI_LS_MODEL = 'webllm-last-model'; // SHARED key with private-ai-chat + the llm text tools (shared weight cache)
+    var FC_AI_MAX_CHARS = 8000;               // model-path input cap (small-model context window)
+    var FC_AI_MAX_DRAFTS = 20;
+    var FC_AI_SIDE_MAX = 500;                 // same cap as the manual front/back fields
+    var FC_AI_MODELS = [
+        { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 1B (default)' },
+        { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 3B (better quality)' },
+        { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', label: 'Phi 3.5 mini' }
+    ];
+    var FC_AI_SIZE_PENDING = 'download size shown before the download starts';
+    var FC_AI_SIZE_UNKNOWN = 'size unknown - may be large';
+    var FC_AI_SAMPLE_NOTES = 'Photosynthesis is the process plants use to turn sunlight, water, and carbon dioxide into glucose and oxygen. Chlorophyll: the green pigment inside chloroplasts that absorbs light energy. The mitochondrion is the part of the cell that releases energy from glucose during respiration. Osmosis: the movement of water across a partially permeable membrane from a dilute solution to a more concentrated one.';
+
+    var fcAiEngine = null;        // webllm MLCEngine (created once)
+    var fcAiLoadedModel = null;   // model id currently reloaded into the engine
+    var fcAiProgressCb = null;    // rebound on every load call
+    var fcAiGenerating = false;
+    var fcAiBuiltinOk = false;    // tier-1 availability (probed async on init)
+    var fcAiModelSizes = null;    // { model_id: '2.2 GB' } from prebuiltAppConfig
+    var fcAiSizesPromise = null;
+    var fcAiDrafts = [];          // [{front, back, added}]
+    var fcAiLastEngine = null;    // label of the engine that produced the drafts on screen
+
+    var FC_AI_STOPWORDS = (function () {
+        var list = ('a an the and or but if of to in on at by for with from into as is are was were be been being it its ' +
+            'this that these those they them their he she his her we our you your i not no so do does did done have has ' +
+            'had will would can could than then there here when where which who whom what how why all each some most ' +
+            'more very up down out over under again back through between because while about also just only').split(' ');
+        var map = {};
+        for (var i = 0; i < list.length; i++) { map[list[i]] = 1; }
+        return map;
+    })();
+
+    function fcAiTrimSide(s) {
+        s = String(s || '').replace(/\s+/g, ' ').trim();
+        if (s.length <= FC_AI_SIDE_MAX) return s;
+        var cut = s.slice(0, FC_AI_SIDE_MAX - 3);
+        var sp = cut.lastIndexOf(' ');
+        return (sp > 200 ? cut.slice(0, sp) : cut) + '...';
+    }
+
+    // ---- Tier 3: deterministic drafts (no AI model) --------------------------
+    function fcAiBasicDrafts(text) {
+        var drafts = [];
+        var seen = {};
+        function push(front, back) {
+            front = fcAiTrimSide(front); back = fcAiTrimSide(back);
+            if (!front || !back) return;
+            var key = front.toLowerCase();
+            if (seen[key]) return;
+            seen[key] = 1;
+            drafts.push({ front: front, back: back, added: false });
+        }
+        var lines = String(text || '').split(/\n+/);
+        var leftover = [];
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            if (!line) continue;
+            // "Term: definition" or "Term - definition" (needs the spaced hyphen,
+            // so in-word hyphens like "in-browser" never split a sentence).
+            var m = line.match(/^([^:]{2,80}?)\s*(?::|\s-\s)\s*(.{3,})$/);
+            if (m && !/[.!?]/.test(m[1])) { push('What is ' + m[1].trim().replace(/\.$/, '') + '?', m[2]); continue; }
+            leftover.push(line);
+        }
+        var sentences = (leftover.join(' ').match(/[^.!?]+[.!?]+/g) || []);
+        for (var s = 0; s < sentences.length && drafts.length < FC_AI_MAX_DRAFTS; s++) {
+            var sen = sentences[s].trim();
+            if (sen.length < 40 || sen.length > FC_AI_SIDE_MAX) continue;
+            // "X is/are Y." -> "What is X?"
+            var d = sen.match(/^(?:The\s+|A\s+|An\s+)?([A-Za-z][A-Za-z0-9' ()-]{1,60}?)\s+(is|are|was|were|means)\s+(.{5,})$/);
+            if (d) { push('What ' + d[2] + ' ' + d[1].trim() + '?', sen); continue; }
+            // Cloze fallback: blank out the longest informative word.
+            var words = sen.replace(/[^A-Za-z0-9' -]/g, ' ').split(/\s+/);
+            var target = '';
+            for (var w = 0; w < words.length; w++) {
+                var cand = words[w];
+                if (cand.length >= 5 && !FC_AI_STOPWORDS[cand.toLowerCase()] && cand.length > target.length) { target = cand; }
+            }
+            if (target) { push(sen.replace(target, '____'), target); }
+        }
+        return drafts.slice(0, FC_AI_MAX_DRAFTS);
+    }
+
+    // ---- Model-output parser (tier 1 + 2 share it) ---------------------------
+    function fcAiParseModelDrafts(raw) {
+        var drafts = [];
+        var seen = {};
+        var lines = String(raw || '').split(/\n+/);
+        var pendingQ = null;
+        for (var i = 0; i < lines.length && drafts.length < FC_AI_MAX_DRAFTS; i++) {
+            var line = lines[i].replace(/^[\s*\-\d.)]+/, '').trim();
+            var q = line.match(/^(?:Q|Question)\s*[:.]\s*(.+)$/i);
+            var a = line.match(/^(?:A|Answer)\s*[:.]\s*(.+)$/i);
+            if (q) { pendingQ = q[1]; continue; }
+            if (a && pendingQ) {
+                var front = fcAiTrimSide(pendingQ), back = fcAiTrimSide(a[1]);
+                var key = front.toLowerCase();
+                if (front && back && !seen[key]) { seen[key] = 1; drafts.push({ front: front, back: back, added: false }); }
+                pendingQ = null;
+            }
+        }
+        return drafts;
+    }
+
+    function fcAiBuildPrompt(text) {
+        return 'Turn the study notes below into flashcards. Output ONLY flashcard lines, one card per two lines, exactly in this format:\n' +
+            'Q: <short question>\nA: <short answer>\n' +
+            'Make up to 12 cards. Use only facts stated in the notes. Keep each question and each answer under 200 characters.\n\nNOTES:\n' + text;
+    }
+
+    // ---- Tier 1: Chrome built-in Prompt API ----------------------------------
+    function fcAiBuiltinApi() {
+        try {
+            if (typeof LanguageModel !== 'undefined' && LanguageModel && typeof LanguageModel.availability === 'function') return LanguageModel;
+        } catch (e) { void e; }
+        return null;
+    }
+
+    // Only 'available' (already on-device, nothing to download) activates tier 1.
+    function fcAiProbeBuiltin(cb) {
+        var api = fcAiBuiltinApi();
+        if (!api) { cb(false); return; }
+        try {
+            Promise.resolve(api.availability())
+                .then(function (a) { cb(a === 'available'); })
+                .catch(function () { cb(false); });
+        } catch (e) { cb(false); }
+    }
+
+    function fcAiRunBuiltin(text, onDone, onError) {
+        try {
+            var api = fcAiBuiltinApi();
+            if (!api) { onError(new Error('Built-in AI unavailable')); return; }
+            Promise.resolve(api.create())
+                .then(function (session) { return session.prompt(fcAiBuildPrompt(text)); })
+                .then(function (res) { onDone(String(res == null ? '' : res)); })
+                .catch(onError);
+        } catch (e) { onError(e); }
+    }
+
+    // ---- Tier 2: WebLLM (vendored, lazy, click-gated) ------------------------
+    // Rule-9 capability probe: the ADAPTER decides, never `'gpu' in navigator`.
+    function fcAiWebGpuAdapter() {
+        if (typeof navigator === 'undefined' || !navigator.gpu) { return Promise.resolve(false); }
+        try { return navigator.gpu.requestAdapter().then(function (a) { return !!a; }).catch(function () { return false; }); }
+        catch (e) { return Promise.resolve(false); }
+    }
+
+    // Idempotent lazy-loader for the SELF-HOSTED web-llm standalone ESM
+    // (/vendor/web-llm, 0.2.84). Same window cache keys as private-ai-chat so
+    // the ~6.6MB lib is fetched once per browser session across AI pages.
+    function fcAiLoadWebLLM() {
+        if (window.__ftoWebLLM) { return Promise.resolve(window.__ftoWebLLM); }
+        if (window.__ftoWebLLMPromise) { return window.__ftoWebLLMPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/web-llm';
+        window.__ftoWebLLMPromise = import(base + '/web-llm.js')
+            .then(function (mod) { window.__ftoWebLLM = mod; return mod; });
+        return window.__ftoWebLLMPromise;
+    }
+
+    function fcAiSizeMapFrom(webllm) {
+        var map = {};
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            for (var i = 0; i < list.length; i++) {
+                var e = list[i];
+                if (!e || !e.model_id || typeof e.vram_required_MB !== 'number') continue;
+                var n = e.vram_required_MB;
+                map[e.model_id] = n >= 1024 ? (Math.round(n / 102.4) / 10) + ' GB' : Math.round(n) + ' MB';
+            }
+        } catch (e) { void e; }
+        return map;
+    }
+
+    // Imports the web-llm ESM (script only - NO weights) so a real size is on
+    // screen before any download starts. Failure -> sizes stay "unknown".
+    function fcAiEnsureModelSizes() {
+        if (fcAiModelSizes) { return Promise.resolve(fcAiModelSizes); }
+        if (fcAiSizesPromise) { return fcAiSizesPromise; }
+        fcAiSizesPromise = fcAiLoadWebLLM()
+            .then(function (webllm) { fcAiModelSizes = fcAiSizeMapFrom(webllm); return fcAiModelSizes; })
+            .catch(function () { fcAiModelSizes = {}; return fcAiModelSizes; });
+        return fcAiSizesPromise;
+    }
+
+    function fcAiValidateModelId(webllm, wanted) {
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            for (var i = 0; i < list.length; i++) { if (list[i] && list[i].model_id === wanted) return wanted; }
+            // Wanted id not in this web-llm build: fall back to the first curated id present.
+            for (var c = 0; c < FC_AI_MODELS.length; c++) {
+                for (var j = 0; j < list.length; j++) { if (list[j] && list[j].model_id === FC_AI_MODELS[c].id) return FC_AI_MODELS[c].id; }
+            }
+        } catch (e) { void e; }
+        return wanted;
+    }
+
+    function fcAiLoadModel(modelId, progressCb) {
+        fcAiProgressCb = progressCb || null;
+        return fcAiLoadWebLLM().then(function (webllm) {
+            var id = fcAiValidateModelId(webllm, modelId || FC_AI_MODELS[0].id);
+            if (!fcAiEngine) {
+                fcAiEngine = new webllm.MLCEngine();
+                try {
+                    fcAiEngine.setInitProgressCallback(function (report) {
+                        if (fcAiProgressCb) { fcAiProgressCb(typeof report.progress === 'number' ? report.progress : 0, report.text || ''); }
+                    });
+                } catch (e) { void e; }
+            }
+            if (fcAiLoadedModel === id) { return fcAiEngine; }
+            return Promise.resolve(fcAiEngine.reload(id)).then(function () {
+                fcAiLoadedModel = id;
+                try { localStorage.setItem(FC_AI_LS_MODEL, id); } catch (e) { void e; }
+                return fcAiEngine;
+            });
+        });
+    }
+
+    function fcAiRunWebLLM(text, onDone, onError) {
+        if (!fcAiEngine || !fcAiLoadedModel) { onError(new Error('No model loaded')); return; }
+        try {
+            fcAiEngine.chat.completions.create({
+                messages: [
+                    { role: 'system', content: 'You are a precise study assistant running privately in the user browser. Follow the instruction exactly and output only the requested result.' },
+                    { role: 'user', content: fcAiBuildPrompt(text) }
+                ],
+                temperature: 0.3,
+                max_tokens: 900
+            }).then(function (res) {
+                var out = res && res.choices && res.choices[0] && res.choices[0].message ? res.choices[0].message.content : '';
+                onDone(String(out == null ? '' : out));
+            }).catch(onError);
+        } catch (e) { onError(e); }
+    }
+
+    // ---- UI ------------------------------------------------------------------
+    function fcAiSetStatus(html) { $('#fcAiStatus').html(html); }
+
+    function fcAiStatusLine() {
+        var above = fcAiLastEngine ? 'Drafts above: ' + fcAiLastEngine : 'No drafts yet';
+        var ready = fcAiLoadedModel ? 'on-device model (' + fcAiLoadedModel + ')'
+            : (fcAiBuiltinOk ? 'built-in browser AI (no download)' : 'basic drafts (no AI model)');
+        return listEscapeHtml(above) + ' &middot; ready: ' + listEscapeHtml(ready);
+    }
+
+    function fcAiRenderDrafts() {
+        var $box = $('#fcAiDrafts');
+        if ($box.length === 0) return;
+        $box.empty();
+        if (!fcAiDrafts.length) { $('#fcAiDraftActions').hide(); return; }
+        for (var i = 0; i < fcAiDrafts.length; i++) {
+            var d = fcAiDrafts[i];
+            $box.append(
+                '<div class="fc-ai-draft" data-idx="' + i + '">' +
+                    '<div class="fc-ai-draft-q"><b>Q:</b> ' + listEscapeHtml(d.front) + '</div>' +
+                    '<div class="fc-ai-draft-a"><b>A:</b> ' + listEscapeHtml(d.back) + '</div>' +
+                    '<button type="button" class="w3-button w3-small ' + (d.added ? 'w3-light-grey" disabled>Added' : 'w3-green fc-ai-add">Add to deck') + '</button>' +
+                '</div>'
+            );
+        }
+        $('#fcAiDraftActions').show();
+    }
+
+    function fcAiDeckHasFront(front) {
+        var key = String(front || '').toLowerCase();
+        for (var i = 0; i < listItems.length; i++) {
+            if (String(listItems[i].front || '').toLowerCase() === key) return true;
+        }
+        return false;
+    }
+
+    function fcAiAddDraft(idx) {
+        var d = fcAiDrafts[idx];
+        if (!d || d.added) return 0;
+        if (fcAiDeckHasFront(d.front)) { d.added = true; return 0; }
+        listItems.unshift({ id: listMakeId(), front: d.front, back: d.back, known: false, createdAt: Date.now() });
+        d.added = true;
+        return 1;
+    }
+
+    function fcAiAddAll() {
+        var added = 0, skipped = 0;
+        for (var i = 0; i < fcAiDrafts.length; i++) {
+            if (fcAiDrafts[i].added) continue;
+            if (fcAiAddDraft(i)) { added++; } else { skipped++; }
+        }
+        listSave(); listRender(); fcAiRenderDrafts();
+        fcAiSetStatus(listEscapeHtml('Added ' + added + ' card' + (added === 1 ? '' : 's') + ' to the deck' +
+            (skipped ? ' (' + skipped + ' skipped - a card with the same front is already in the deck)' : '') + '.') +
+            '<br>' + fcAiStatusLine());
+    }
+
+    function fcAiShowDrafts(drafts, engineLabel, note) {
+        fcAiDrafts = drafts;
+        fcAiLastEngine = engineLabel;
+        fcAiRenderDrafts();
+        var msg = drafts.length
+            ? drafts.length + ' draft' + (drafts.length === 1 ? '' : 's') + ' below - review each one, then add the good ones to your deck.'
+            : 'No drafts could be extracted from that text. Try notes with full sentences or "Term: definition" lines.';
+        fcAiSetStatus(listEscapeHtml(msg + (note ? ' ' + note : '')) + '<br>' + fcAiStatusLine());
+    }
+
+    function fcAiGenerate() {
+        if (fcAiGenerating) return;
+        var text = ($('#fcAiNotes').val() || '').trim();
+        if (!text) { fcAiSetStatus('Paste some study notes first, then click Generate card drafts.'); return; }
+        var note = '';
+        var modelText = text;
+        if (text.length > FC_AI_MAX_CHARS) {
+            modelText = text.slice(0, FC_AI_MAX_CHARS);
+            note = '(Only the first ' + FC_AI_MAX_CHARS + ' characters were used - the on-device models have a small context window.)';
+        }
+        function fallBackBasic(why) {
+            var drafts = fcAiBasicDrafts(text);
+            fcAiGenerating = false;
+            $('#fcAiGenerateBtn').prop('disabled', false);
+            fcAiShowDrafts(drafts, 'basic drafts (no AI model)', why || note);
+        }
+        fcAiGenerating = true;
+        $('#fcAiGenerateBtn').prop('disabled', true);
+        if (fcAiEngine && fcAiLoadedModel) {
+            fcAiSetStatus('Generating drafts with the on-device model...');
+            fcAiRunWebLLM(modelText, function (raw) {
+                var drafts = fcAiParseModelDrafts(raw);
+                fcAiGenerating = false;
+                $('#fcAiGenerateBtn').prop('disabled', false);
+                if (!drafts.length) { fallBackBasic('(The model reply could not be read as cards, so these are the basic no-model drafts instead.)'); return; }
+                fcAiShowDrafts(drafts, 'on-device model (' + fcAiLoadedModel + ')', note);
+            }, function () { fallBackBasic('(The on-device model failed on this text, so these are the basic no-model drafts instead.)'); });
+            return;
+        }
+        if (fcAiBuiltinOk) {
+            fcAiSetStatus('Generating drafts with the built-in browser AI...');
+            fcAiRunBuiltin(modelText, function (raw) {
+                var drafts = fcAiParseModelDrafts(raw);
+                fcAiGenerating = false;
+                $('#fcAiGenerateBtn').prop('disabled', false);
+                if (!drafts.length) { fallBackBasic('(The built-in AI reply could not be read as cards, so these are the basic no-model drafts instead.)'); return; }
+                fcAiShowDrafts(drafts, 'built-in browser AI (no download)', note);
+            }, function () { fallBackBasic('(The built-in browser AI failed on this text, so these are the basic no-model drafts instead.)'); });
+            return;
+        }
+        fallBackBasic('');
+    }
+
+    function fcAiOptionText(id) {
+        var base = id;
+        for (var i = 0; i < FC_AI_MODELS.length; i++) { if (FC_AI_MODELS[i].id === id) { base = FC_AI_MODELS[i].label; break; } }
+        if (!fcAiModelSizes) { return base + ' - ' + FC_AI_SIZE_PENDING; }
+        var size = fcAiModelSizes[id];
+        return base + ' - ' + (size ? 'about ' + size : FC_AI_SIZE_UNKNOWN);
+    }
+
+    function fcAiPopulateModelSel() {
+        var $sel = $('#fcAiModelSel');
+        if ($sel.length === 0) return;
+        var ids = FC_AI_MODELS.map(function (m) { return m.id; });
+        var last = null;
+        try { last = localStorage.getItem(FC_AI_LS_MODEL); } catch (e) { void e; }
+        if (last && ids.indexOf(last) === -1) { ids.push(last); } // restored id from the shared key still gets a size label
+        $sel.empty();
+        for (var i = 0; i < ids.length; i++) {
+            $sel.append($('<option>').attr('value', ids[i]).text(fcAiOptionText(ids[i])));
+        }
+        if (last) { $sel.val(last); }
+    }
+
+    function fcAiToggleEngineBox() {
+        var $box = $('#fcAiEngineBox');
+        if ($box.is(':visible')) { $box.hide(); return; }
+        $box.show();
+        fcAiPopulateModelSel();
+        // Read real sizes (script-only import, no weights), then refresh labels.
+        fcAiEnsureModelSizes().then(function () { fcAiPopulateModelSel(); });
+        fcAiWebGpuAdapter().then(function (ok) {
+            if (!ok) {
+                $('#fcAiEngineNote').text('This browser did not provide a WebGPU adapter, so the on-device model cannot run here. ' +
+                    'You still get basic drafts' + (fcAiBuiltinOk ? ' and the built-in browser AI' : '') + '.');
+                $('#fcAiLoadBtn').prop('disabled', true);
+            } else {
+                $('#fcAiEngineNote').text('The model downloads once into the browser cache (shared with the other AI tools on this site) and runs fully on this device.');
+                $('#fcAiLoadBtn').prop('disabled', false);
+            }
+        });
+    }
+
+    function fcAiLoadClicked() {
+        var id = $('#fcAiModelSel').val() || FC_AI_MODELS[0].id;
+        $('#fcAiLoadBtn').prop('disabled', true);
+        $('#fcAiProgress').show();
+        fcAiSetStatus('Loading the on-device model - the download size was shown in the picker; later loads come from the browser cache.');
+        fcAiLoadModel(id, function (frac, txt) {
+            var pct = Math.max(0, Math.min(100, Math.round(frac * 100)));
+            $('#fcAiProgressBar').css('width', pct + '%').text(pct + '%');
+            if (txt) { $('#fcAiEngineNote').text(txt); }
+        }).then(function () {
+            $('#fcAiProgress').hide();
+            $('#fcAiLoadBtn').prop('disabled', false);
+            $('#fcAiEngineNote').text('Model ready: ' + fcAiLoadedModel + '. Click Generate card drafts to use it.');
+            fcAiSetStatus(fcAiStatusLine());
+        }).catch(function (err) {
+            $('#fcAiProgress').hide();
+            $('#fcAiLoadBtn').prop('disabled', false);
+            $('#fcAiEngineNote').text('The model could not be loaded (' + String(err && err.message ? err.message : err).slice(0, 160) + '). Basic drafts still work.');
+        });
+    }
+
+    function fcAiInit() {
+        if ($('#fcAiPanel').length === 0) return; // markup exists only on the flashcards page
+        // G16 corollary: sample notes + their tier-3 drafts render on load with
+        // zero interaction and zero download, labeled as a sample demo.
+        var $notes = $('#fcAiNotes');
+        if (!($notes.val() || '').trim()) { $notes.val(FC_AI_SAMPLE_NOTES); }
+        fcAiDrafts = fcAiBasicDrafts($notes.val());
+        fcAiLastEngine = 'basic drafts (no AI model) - sample demo from the example notes above';
+        fcAiRenderDrafts();
+        fcAiSetStatus(listEscapeHtml('Sample demo: draft cards extracted from the example notes above, no AI model involved. Paste your own notes and click Generate card drafts.') + '<br>' + fcAiStatusLine());
+        // Tier-1 probe is async; only flips the "ready" clause, never the output.
+        fcAiProbeBuiltin(function (ok) {
+            fcAiBuiltinOk = !!ok;
+            if (ok) { fcAiSetStatus(listEscapeHtml('Sample demo: draft cards extracted from the example notes above, no AI model involved. Paste your own notes and click Generate card drafts.') + '<br>' + fcAiStatusLine()); }
+        });
+        $('#fcAiGenerateBtn').off('click.fcai').on('click.fcai', fcAiGenerate);
+        $('#fcAiEngineToggle').off('click.fcai').on('click.fcai', fcAiToggleEngineBox);
+        $('#fcAiLoadBtn').off('click.fcai').on('click.fcai', fcAiLoadClicked);
+        $('#fcAiAddAllBtn').off('click.fcai').on('click.fcai', fcAiAddAll);
+        $('#fcAiClearBtn').off('click.fcai').on('click.fcai', function () {
+            fcAiDrafts = []; fcAiRenderDrafts(); fcAiSetStatus(fcAiStatusLine());
+        });
+        $('#fcAiDrafts').off('click.fcai', '.fc-ai-add').on('click.fcai', '.fc-ai-add', function () {
+            var idx = parseInt($(this).closest('.fc-ai-draft').attr('data-idx'), 10);
+            var added = fcAiAddDraft(idx);
+            listSave(); listRender(); fcAiRenderDrafts();
+            fcAiSetStatus(listEscapeHtml(added ? 'Card added to the top of your deck.' : 'A card with that front text is already in the deck - not added twice.') + '<br>' + fcAiStatusLine());
+        });
+    }
+    // =============== end AI CARD DRAFTS =======================================
+
     function initList() {
         if ($('#listInput').length === 0) return; // not a list page
 
@@ -434,6 +903,7 @@
             $('#listStudyUnknownBtn').off('click.list').on('click.list', function () { studyMark(false); });
             $('#listStudyShuffleBtn').off('click.list').on('click.list', studyShuffle);
             $('#listStudyResetBtn').off('click.list').on('click.list', studyReset);
+            fcAiInit(); // AI card drafts layer (fire45) - no-op unless #fcAiPanel exists
         }
         // Export / import backup (present only when the BODYHTML includes them).
         $('#listExport').off('click.list').on('click.list', listExport);
