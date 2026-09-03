@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/html-minifier-vs-alternatives.html',
+  '/guides/html-minifier-step-by-step.html',
+  '/guides/html-minifier-when.html',
   '/guides/unix-timestamp-converter-vs-alternatives.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
   '/guides/unix-timestamp-converter-when.html',
@@ -17037,6 +17040,7 @@ export const ALIAS_ROUTES = {
   '/ai-code-explainer.html': '/developer-tools/ai-code-explainer.html',
   '/redact-pdf.html': '/pdf-tools/redact-pdf.html',
   '/unix-timestamp-converter.html': '/developer-tools/unix-timestamp-converter.html',
+  '/html-minifier.html': '/developer-tools/html-minifier.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29386,6 +29390,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/unix-timestamp-converter-when.html': 'guide/de/unix-timestamp-converter-when.jsp',
   '/guides/de/unix-timestamp-converter-step-by-step.html': 'guide/de/unix-timestamp-converter-step-by-step.jsp',
   '/guides/de/unix-timestamp-converter-vs-alternatives.html': 'guide/de/unix-timestamp-converter-vs-alternatives.jsp',
+  '/developer-tools/html-minifier.html': 'utility/html-minifier.jsp',
+  '/guides/html-minifier-when.html': 'guide/html-minifier-when.jsp',
+  '/guides/html-minifier-step-by-step.html': 'guide/html-minifier-step-by-step.jsp',
+  '/guides/html-minifier-vs-alternatives.html': 'guide/html-minifier-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
