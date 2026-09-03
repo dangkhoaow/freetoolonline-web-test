@@ -14,11 +14,15 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/yaml-formatter-vs-alternatives.html',
+  '/guides/yaml-formatter-step-by-step.html',
+  '/guides/yaml-formatter-when.html',
   '/guides/html-minifier-vs-alternatives.html',
   '/guides/html-minifier-step-by-step.html',
   '/guides/html-minifier-when.html',
   // html-minifier-step-by-step locale fanout (create_new_guide_page 20260903-9)
   '/guides/pt/html-minifier-step-by-step.html',
+  '/guides/es/html-minifier-step-by-step.html',
   '/guides/unix-timestamp-converter-vs-alternatives.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
   '/guides/unix-timestamp-converter-when.html',
@@ -7274,6 +7278,7 @@ export const INFO_ROUTES = new Set([
 export const GUIDE_ROUTES = new Set([
   // html-minifier-step-by-step locale fanout (create_new_guide_page 20260903-9)
   '/guides/pt/html-minifier-step-by-step.html',
+  '/guides/es/html-minifier-step-by-step.html',
   // unix-timestamp-converter companion guides EN + 5 locales (new_tool_page_discovery 20260902-8)
   '/guides/unix-timestamp-converter-when.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
@@ -17046,6 +17051,7 @@ export const ALIAS_ROUTES = {
   '/unix-timestamp-converter.html': '/developer-tools/unix-timestamp-converter.html',
   '/html-minifier.html': '/developer-tools/html-minifier.html',
   '/xml-to-json-converter.html': '/developer-tools/xml-to-json-converter.html',
+  '/yaml-formatter.html': '/developer-tools/yaml-formatter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29399,8 +29405,13 @@ export const JSP_BY_ROUTE = {
   '/guides/html-minifier-when.html': 'guide/html-minifier-when.jsp',
   '/guides/html-minifier-step-by-step.html': 'guide/html-minifier-step-by-step.jsp',
   '/guides/pt/html-minifier-step-by-step.html': 'guide/pt/html-minifier-step-by-step.jsp',
+  '/guides/es/html-minifier-step-by-step.html': 'guide/es/html-minifier-step-by-step.jsp',
   '/guides/html-minifier-vs-alternatives.html': 'guide/html-minifier-vs-alternatives.jsp',
   '/developer-tools/xml-to-json-converter.html': 'utility/xml-to-json-converter.jsp',
+  '/developer-tools/yaml-formatter.html': 'utility/yaml-formatter.jsp',
+  '/guides/yaml-formatter-when.html': 'guide/yaml-formatter-when.jsp',
+  '/guides/yaml-formatter-step-by-step.html': 'guide/yaml-formatter-step-by-step.jsp',
+  '/guides/yaml-formatter-vs-alternatives.html': 'guide/yaml-formatter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
