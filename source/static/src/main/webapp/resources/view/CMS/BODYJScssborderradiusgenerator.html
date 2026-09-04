@@ -1,0 +1,109 @@
+<script>
+    // CSS Border-Radius Generator (css-border-radius-generator) - pure JS + CSS
+    // string construction, no upload, no backend, no vendored lib. Registry
+    // Gate-H entry: text_transform_purejs. Distinct from css-box-shadow-generator
+    // (which builds a box-shadow declaration: offset/blur/spread/color/inset) -
+    // this tool builds a border-radius shorthand from four independent corner
+    // sliders plus a px/% unit toggle and a master "all corners" slider, with a
+    // live rounded-corner preview swatch. Renders with default values on page
+    // load (no click required) so the preview and generated CSS are visible
+    // immediately, mirroring the css-box-shadow-generator "render on load"
+    // contract.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('cssBorderRadiusGeneratorTool');
+        if (!root) return; // not a css-border-radius-generator page
+
+        root.innerHTML =
+            '<div class="w3-row">' +
+            '<div class="w3-col m6" style="padding-right:12px;">' +
+            '<div style="margin-bottom:10px;"><label>Unit</label><br>' +
+            '<select id="cbrgUnit" class="w3-select w3-border" style="max-width:160px;">' +
+            '<option value="px" selected>px (pixels)</option>' +
+            '<option value="%">% (percent)</option>' +
+            '</select></div>' +
+            '<div style="margin-bottom:10px;"><label>All corners: <span id="cbrgAllVal">20</span><span class="cbrgUnitLabel">px</span></label>' +
+            '<input id="cbrgAll" type="range" min="0" max="100" value="20" class="w3-input"></div>' +
+            '<hr>' +
+            '<div style="margin-bottom:10px;"><label>Top-left: <span id="cbrgTLVal">20</span><span class="cbrgUnitLabel">px</span></label>' +
+            '<input id="cbrgTL" type="range" min="0" max="100" value="20" class="w3-input"></div>' +
+            '<div style="margin-bottom:10px;"><label>Top-right: <span id="cbrgTRVal">20</span><span class="cbrgUnitLabel">px</span></label>' +
+            '<input id="cbrgTR" type="range" min="0" max="100" value="20" class="w3-input"></div>' +
+            '<div style="margin-bottom:10px;"><label>Bottom-right: <span id="cbrgBRVal">20</span><span class="cbrgUnitLabel">px</span></label>' +
+            '<input id="cbrgBR" type="range" min="0" max="100" value="20" class="w3-input"></div>' +
+            '<div style="margin-bottom:10px;"><label>Bottom-left: <span id="cbrgBLVal">20</span><span class="cbrgUnitLabel">px</span></label>' +
+            '<input id="cbrgBL" type="range" min="0" max="100" value="20" class="w3-input"></div>' +
+            '</div>' +
+            '<div class="w3-col m6" style="padding-left:12px;">' +
+            '<div id="cbrgPreviewWrap" style="display:flex;align-items:center;justify-content:center;min-height:200px;background:#f4f4f4;border-radius:6px;">' +
+            '<div id="cbrgPreviewBox" style="width:150px;height:150px;background:#1a73e8;"></div>' +
+            '</div>' +
+            '<div class="outputImgs" style="margin-top:12px;">' +
+            '<pre id="cbrgOutput" class="w3-padding w3-light-grey" style="white-space:pre-wrap;word-break:break-all;visibility:visible"></pre>' +
+            '<button id="cbrgCopyBtn" type="button" class="w3-button w3-blue" style="margin-top:6px;">Copy CSS</button>' +
+            '<span id="cbrgCopyStatus" style="margin-left:8px;color:#555;"></span>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+
+        var q = function (id) { return root.querySelector(id); };
+
+        function render() {
+            var unit = q('#cbrgUnit').value;
+            var tl = q('#cbrgTL').value;
+            var tr = q('#cbrgTR').value;
+            var br = q('#cbrgBR').value;
+            var bl = q('#cbrgBL').value;
+
+            q('#cbrgTLVal').textContent = tl;
+            q('#cbrgTRVal').textContent = tr;
+            q('#cbrgBRVal').textContent = br;
+            q('#cbrgBLVal').textContent = bl;
+            q('#cbrgAllVal').textContent = q('#cbrgAll').value;
+
+            // Reflect the current unit in every value label.
+            var labels = root.querySelectorAll('.cbrgUnitLabel');
+            for (var i = 0; i < labels.length; i++) { labels[i].textContent = unit; }
+
+            // border-radius shorthand order: top-left top-right bottom-right bottom-left.
+            var radiusValue = tl + unit + ' ' + tr + unit + ' ' + br + unit + ' ' + bl + unit;
+            var css = 'border-radius: ' + radiusValue + ';';
+
+            q('#cbrgPreviewBox').style.borderRadius = radiusValue;
+            q('#cbrgOutput').textContent = css;
+        }
+
+        // Master "All corners" slider sets all four corners, then re-renders.
+        q('#cbrgAll').addEventListener('input', function () {
+            var v = q('#cbrgAll').value;
+            q('#cbrgTL').value = v;
+            q('#cbrgTR').value = v;
+            q('#cbrgBR').value = v;
+            q('#cbrgBL').value = v;
+            render();
+        });
+
+        ['#cbrgUnit', '#cbrgTL', '#cbrgTR', '#cbrgBR', '#cbrgBL'].forEach(function (sel) {
+            q(sel).addEventListener('input', render);
+            q(sel).addEventListener('change', render);
+        });
+
+        q('#cbrgCopyBtn').addEventListener('click', function () {
+            var text = q('#cbrgOutput').textContent;
+            var status = q('#cbrgCopyStatus');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () {
+                    status.textContent = 'Copied.';
+                }).catch(function () {
+                    status.textContent = 'Could not copy - select the text manually.';
+                });
+            } else {
+                status.textContent = 'Select the text above and copy manually.';
+            }
+        });
+
+        render(); // render immediately with defaults - no click required
+    }
+</script>

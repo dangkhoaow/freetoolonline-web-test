@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/css-border-radius-generator-vs-alternatives.html',
+  '/guides/css-border-radius-generator-step-by-step.html',
+  '/guides/css-border-radius-generator-when.html',
   '/guides/rich-text-editor-vs-alternatives.html',
   '/guides/rich-text-editor-step-by-step.html',
   '/guides/rich-text-editor-when.html',
@@ -17070,6 +17073,7 @@ export const ALIAS_ROUTES = {
   '/yaml-formatter.html': '/developer-tools/yaml-formatter.html',
   '/markdown-table-generator.html': '/developer-tools/markdown-table-generator.html',
   '/rich-text-editor.html': '/developer-tools/rich-text-editor.html',
+  '/css-border-radius-generator.html': '/developer-tools/css-border-radius-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29442,6 +29446,10 @@ export const JSP_BY_ROUTE = {
   '/guides/rich-text-editor-when.html': 'guide/rich-text-editor-when.jsp',
   '/guides/rich-text-editor-step-by-step.html': 'guide/rich-text-editor-step-by-step.jsp',
   '/guides/rich-text-editor-vs-alternatives.html': 'guide/rich-text-editor-vs-alternatives.jsp',
+  '/developer-tools/css-border-radius-generator.html': 'utility/css-border-radius-generator.jsp',
+  '/guides/css-border-radius-generator-when.html': 'guide/css-border-radius-generator-when.jsp',
+  '/guides/css-border-radius-generator-step-by-step.html': 'guide/css-border-radius-generator-step-by-step.jsp',
+  '/guides/css-border-radius-generator-vs-alternatives.html': 'guide/css-border-radius-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
