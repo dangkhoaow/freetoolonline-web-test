@@ -54,6 +54,8 @@ export const INFO_ROUTES = new Set([
   '/guides/de/hex-rgb-converter-vs-alternatives.html',
   '/guides/css-border-radius-generator-vs-alternatives.html',
   '/guides/css-border-radius-generator-step-by-step.html',
+  // css-border-radius-generator-step-by-step locale fanout (create_new_guide_page 20260905)
+  '/guides/pt/css-border-radius-generator-step-by-step.html',
   '/guides/css-border-radius-generator-when.html',
   '/guides/rich-text-editor-vs-alternatives.html',
   '/guides/rich-text-editor-step-by-step.html',
@@ -7336,6 +7338,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/html-minifier-step-by-step.html',
   // html-minifier-vs-alternatives locale fanout (create_new_guide_page 20260904-5)
   '/guides/pt/html-minifier-vs-alternatives.html',
+  // css-border-radius-generator-step-by-step locale fanout (create_new_guide_page 20260905)
+  '/guides/pt/css-border-radius-generator-step-by-step.html',
   // unix-timestamp-converter companion guides EN + 5 locales (new_tool_page_discovery 20260902-8)
   '/guides/unix-timestamp-converter-when.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
@@ -29489,6 +29493,7 @@ export const JSP_BY_ROUTE = {
   '/developer-tools/css-border-radius-generator.html': 'utility/css-border-radius-generator.jsp',
   '/guides/css-border-radius-generator-when.html': 'guide/css-border-radius-generator-when.jsp',
   '/guides/css-border-radius-generator-step-by-step.html': 'guide/css-border-radius-generator-step-by-step.jsp',
+  '/guides/pt/css-border-radius-generator-step-by-step.html': 'guide/pt/css-border-radius-generator-step-by-step.jsp',
   '/guides/css-border-radius-generator-vs-alternatives.html': 'guide/css-border-radius-generator-vs-alternatives.jsp',
   '/developer-tools/hex-to-rgb-converter.html': 'utility/hex-to-rgb-converter.jsp',
   '/guides/hex-rgb-converter-when.html': 'guide/hex-rgb-converter-when.jsp',
