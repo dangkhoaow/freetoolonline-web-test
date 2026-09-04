@@ -12,11 +12,29 @@
     // slug carries a passport/visa/id token (see isPassportPhotoSlug() in
     // emit-cms-fragments.mjs), this same skeleton renders a DIFFERENT UI - crop to
     // a fixed country-size preset (mm -> px @ 300 DPI), pan/zoom to position the
-    // face, composite onto a white background (passport photos require a plain
-    // light background; canvas has no background removal, so this always fills
-    // white behind the crop - documented as a limitation, not a claim of bg
-    // removal), and an optional tiled 4x6in print sheet. Still canvas + toBlob,
-    // still 100% client-side, still the same mount div id.
+    // face, composite onto a white background, and an optional tiled 4x6in print
+    // sheet. Still canvas + toBlob, still 100% client-side, same mount div id.
+    //
+    // AI-BACKDROP ENHANCE (ai-local-tools fire46, 2026-09-04): optional on-device
+    // background replacement. Engine ladder:
+    //   tier (b) AI on explicit opt-in: Xenova/modnet (Apache-2.0, ~26 MB fp32)
+    //     portrait matting on the VENDORED transformers.js 3.8.1 bundle
+    //     (/vendor/transformers/, wasmPaths repointed, numThreads=1 - GitHub Pages
+    //     cannot send COOP/COEP). Pin+probe record: background-remover fire42 -
+    //     IDENTICAL loader, model, dtype and runtime; model weights cache is
+    //     SHARED with /image-tools/background-remover.html (same model id + same
+    //     runtime = same browser cache entries). Download size stated in the UI
+    //     BEFORE any download starts; model loads only after the reader picks an
+    //     AI backdrop option and clicks Generate.
+    //   tier (c) deterministic fallback: the plain white-fill crop (no model, no
+    //     download - the pre-fire46 behavior, still the default). If the AI path
+    //     fails, Generate still produces the plain crop and says so.
+    //   tier (a) Chrome Built-in AI: no built-in task API does image segmentation
+    //     (Summarizer/Rewriter/Proofreader/Translator/Prompt are text) - n/a.
+    // Device per rule 9: navigator.gpu.requestAdapter() CAPABILITY probe, result
+    // decides webgpu vs wasm; session-creation failure on webgpu retries on wasm.
+    // Face-centering GUIDES (same fire): dashed crown/chin band + center line on
+    // the crop stage - purely visual aids, no face detection.
 
     web.localUpload = false;
 
@@ -47,6 +65,148 @@
     function ppMmToPx(mm) { return Math.round((mm / 25.4) * PP_DPI); }
     function ppPresetById(id) { for (var i = 0; i < PP_PRESETS.length; i++) if (PP_PRESETS[i].id === id) return PP_PRESETS[i]; return PP_PRESETS[0]; }
 
+    // ---- AI backdrop engine (fire46) - identical pipeline to background-remover ----
+    var PP_VENDOR = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/transformers/';
+    var PP_MODEL = { id: 'Xenova/modnet', dtype: 'fp32', mb: 26 };
+    var PP_BACKDROPS = {
+        original: { label: 'Keep the photo\'s own background (no download)', color: null },
+        white: { label: 'AI backdrop: plain white', color: '#ffffff' },
+        lightblue: { label: 'AI backdrop: light blue', color: '#cfe4f7' },
+        grey: { label: 'AI backdrop: light grey', color: '#d9d9d9' }
+    };
+
+    // rule 9: capability probe, never feature detection.
+    var ppGpuProbe = null;
+    function ppPickDevice() {
+        if (!navigator.gpu || !navigator.gpu.requestAdapter) return Promise.resolve('wasm');
+        if (!ppGpuProbe) {
+            ppGpuProbe = navigator.gpu.requestAdapter().then(function (a) {
+                return a ? 'webgpu' : 'wasm';
+            }).catch(function () { return 'wasm'; });
+        }
+        return ppGpuProbe;
+    }
+
+    var ppLib = null;
+    function ppLoadLib() {
+        if (!ppLib) {
+            ppLib = import(/* webpackIgnore: true */ PP_VENDOR + 'transformers.min.js').then(function (tf) {
+                tf.env.allowLocalModels = false;
+                tf.env.backends.onnx.wasm.wasmPaths = PP_VENDOR;
+                tf.env.backends.onnx.wasm.numThreads = 1;
+                return tf;
+            });
+        }
+        return ppLib;
+    }
+    var ppEngine = null;
+    function ppLoadEngine(setStatus) {
+        if (ppEngine) return ppEngine;
+        ppEngine = ppLoadLib().then(function (tf) {
+            return ppPickDevice().then(function (device) {
+                setStatus('Loading the backdrop model (first run downloads ~' + PP_MODEL.mb + ' MB once, then it stays cached in this browser) ...');
+                var seen = {};
+                function progress(ev) {
+                    if (ev && ev.status === 'progress' && ev.total > 1000000) {
+                        var pct = ev.total ? Math.round(ev.loaded / ev.total * 100) : 0;
+                        if (seen[ev.file] !== pct && pct % 5 === 0) { seen[ev.file] = pct; setStatus('Downloading the backdrop model: ' + pct + '% of ~' + PP_MODEL.mb + ' MB ...'); }
+                    }
+                }
+                function build(dev) {
+                    return tf.AutoModel.from_pretrained(PP_MODEL.id, { device: dev, dtype: PP_MODEL.dtype, progress_callback: progress }).then(function (model) {
+                        return tf.AutoProcessor.from_pretrained(PP_MODEL.id).then(function (processor) {
+                            return { tf: tf, model: model, processor: processor, device: dev };
+                        });
+                    });
+                }
+                return build(device).catch(function (e) {
+                    if (device === 'webgpu') { setStatus('WebGPU failed here - retrying on the CPU backend ...'); return build('wasm'); }
+                    throw e;
+                });
+            });
+        }).catch(function (e) { ppEngine = null; throw e; });
+        return ppEngine;
+    }
+
+    // AI alpha mask of a canvas: run modnet, normalize (sigmoid when logits),
+    // scale the model-resolution mask back up via canvas smoothing.
+    async function ppAiAlpha(canvas, setStatus) {
+        var m = await ppLoadEngine(setStatus);
+        setStatus('Separating the person from the background in your browser (' + (m.device === 'webgpu' ? 'GPU' : 'CPU') + ') ...');
+        var image = await m.tf.RawImage.fromCanvas(canvas);
+        var inputs = await m.processor(image);
+        var out;
+        try { out = await m.model(inputs); }
+        catch (e1) {
+            try { out = await m.model({ input: inputs.pixel_values }); }
+            catch (e2) { out = await m.model({ input_image: inputs.pixel_values }); }
+        }
+        var t = out[Object.keys(out)[0]][0];
+        var data = t.data, mn = Infinity, mx = -Infinity, i, v;
+        for (i = 0; i < data.length; i++) { v = Number(data[i]); if (v < mn) mn = v; if (v > mx) mx = v; }
+        var sig = mn < -0.01 || mx > 1.01;
+        var H = t.dims[t.dims.length - 2], W = t.dims[t.dims.length - 1];
+        var mc = document.createElement('canvas'); mc.width = W; mc.height = H;
+        var mctx = mc.getContext('2d');
+        var mid = mctx.createImageData(W, H);
+        for (i = 0; i < W * H; i++) {
+            v = Number(data[i]);
+            if (sig) v = 1 / (1 + Math.exp(-v));
+            var g = Math.max(0, Math.min(255, Math.round(v * 255)));
+            mid.data[i * 4] = g; mid.data[i * 4 + 1] = g; mid.data[i * 4 + 2] = g; mid.data[i * 4 + 3] = 255;
+        }
+        mctx.putImageData(mid, 0, 0);
+        var sc = document.createElement('canvas'); sc.width = canvas.width; sc.height = canvas.height;
+        var sctx = sc.getContext('2d');
+        sctx.imageSmoothingEnabled = true; sctx.imageSmoothingQuality = 'high';
+        sctx.drawImage(mc, 0, 0, canvas.width, canvas.height);
+        var sid = sctx.getImageData(0, 0, canvas.width, canvas.height);
+        var alpha = new Uint8ClampedArray(canvas.width * canvas.height);
+        for (i = 0; i < alpha.length; i++) alpha[i] = sid.data[i * 4];
+        return alpha;
+    }
+
+    // Composite: subject (crop pixels x alpha) over a solid compliant backdrop.
+    function ppComposeBackdrop(srcCanvas, alpha, color) {
+        var W = srcCanvas.width, H = srcCanvas.height, i;
+        var subj = document.createElement('canvas'); subj.width = W; subj.height = H;
+        var sctx = subj.getContext('2d');
+        sctx.drawImage(srcCanvas, 0, 0);
+        var sid = sctx.getImageData(0, 0, W, H);
+        for (i = 0; i < alpha.length; i++) sid.data[i * 4 + 3] = alpha[i];
+        sctx.putImageData(sid, 0, 0);
+        var outC = document.createElement('canvas'); outC.width = W; outC.height = H;
+        var octx = outC.getContext('2d');
+        octx.fillStyle = color || '#ffffff';
+        octx.fillRect(0, 0, W, H);
+        octx.drawImage(subj, 0, 0);
+        return outC;
+    }
+
+    // Zero-interaction demo (G16): a canvas-drawn head-and-shoulders figure on a
+    // busy background next to the same figure on a plain white backdrop. Purely
+    // deterministic - no model, no download, drawn on page render.
+    function ppDrawDemoPair(beforeC, afterC) {
+        function figure(ctx, w, h, bg) {
+            if (bg === 'busy') {
+                var grad = ctx.createLinearGradient(0, 0, w, h);
+                grad.addColorStop(0, '#7fa8c9'); grad.addColorStop(0.5, '#b9a06e'); grad.addColorStop(1, '#6e8f6b');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = 'rgba(255,255,255,.25)';
+                ctx.beginPath(); ctx.arc(w * 0.2, h * 0.25, w * 0.16, 0, Math.PI * 2); ctx.fill();
+                ctx.fillRect(w * 0.62, h * 0.1, w * 0.3, h * 0.34);
+            } else {
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+            }
+            ctx.fillStyle = '#5b4636';
+            ctx.beginPath(); ctx.arc(w / 2, h * 0.36, w * 0.21, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(w * 0.16, h); ctx.quadraticCurveTo(w / 2, h * 0.52, w * 0.84, h); ctx.closePath(); ctx.fill();
+        }
+        var bctx = beforeC.getContext('2d'), actx = afterC.getContext('2d');
+        figure(bctx, beforeC.width, beforeC.height, 'busy');
+        figure(actx, afterC.width, afterC.height, 'plain');
+    }
+
     function icRenderPassportMode(root) {
         var optionsHtml = PP_PRESETS.map(function (p) { return '<option value="' + p.id + '">' + p.label + '</option>'; }).join('');
         root.innerHTML =
@@ -54,7 +214,17 @@
             '<div class="w3-row" style="margin-bottom:8px;">Photo size ' +
             '<select id="ppPreset" class="w3-select w3-border" style="width:auto;display:inline-block;">' + optionsHtml + '</select></div>' +
             '<div id="ppCustomWrap" style="display:none;margin-bottom:8px;">Width <input id="ppCustomW" type="number" min="10" max="120" value="40" class="w3-input w3-border" style="width:70px;display:inline-block;"> mm &times; Height <input id="ppCustomH" type="number" min="10" max="120" value="50" class="w3-input w3-border" style="width:70px;display:inline-block;"> mm</div>' +
-            '<div class="w3-row" style="margin-bottom:8px;">Zoom <input id="ppZoom" type="range" min="1" max="3" step="0.05" value="1" style="vertical-align:middle;width:200px;" disabled></div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">Background ' +
+            '<select id="ppBg" class="w3-select w3-border" style="width:auto;max-width:90vw;display:inline-block;">' +
+            '<option value="original" selected>' + PP_BACKDROPS.original.label + '</option>' +
+            '<option value="white">' + PP_BACKDROPS.white.label + ' (~' + PP_MODEL.mb + ' MB one-time download)</option>' +
+            '<option value="lightblue">' + PP_BACKDROPS.lightblue.label + ' (~' + PP_MODEL.mb + ' MB one-time download)</option>' +
+            '<option value="grey">' + PP_BACKDROPS.grey.label + ' (~' + PP_MODEL.mb + ' MB one-time download)</option>' +
+            '</select>' +
+            '<div id="ppBgNote" style="display:none;font-size:.85em;color:#777;margin-top:4px;">The AI backdrop runs on your device - the photo still never leaves the browser. The ~' + PP_MODEL.mb + ' MB model downloads once and is shared with the <a href="/image-tools/background-remover.html">Background Remover</a> tool, so if you used that here before, it is already cached.</div>' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">Zoom <input id="ppZoom" type="range" min="1" max="3" step="0.05" value="1" style="vertical-align:middle;width:200px;" disabled> ' +
+            '<label style="margin-left:10px;white-space:nowrap;"><input type="checkbox" id="ppGuides" checked> Face guides</label></div>' +
             '<div id="ppStageWrap" style="margin:0 auto 8px;display:none;">' +
             '<canvas id="ppStage" style="border:2px solid #1a73e8;cursor:move;touch-action:none;"></canvas>' +
             '<div style="font-size:.85em;color:#777;margin-top:4px;">Drag the photo to position the face. Use the zoom slider to fill the frame.</div>' +
@@ -64,7 +234,13 @@
             '<a id="ppDl" class="w3-button w3-blue" style="display:none;">Download photo</a> ' +
             '<a id="ppDlSheet" class="w3-button w3-blue" style="display:none;">Download print sheet</a></div>' +
             '<div class="w3-row outputImgs" style="visibility:visible !important;"><canvas id="ppOutCanvas" style="max-width:90vw;border:1px solid #ddd;display:none;"></canvas></div>' +
-            '<div id="ppStatus" style="min-height:1.2em;margin-top:6px;color:#555;">Choose a photo. Cropping happens locally - nothing is uploaded.</div>';
+            '<div id="ppStatus" style="min-height:1.2em;margin-top:6px;color:#555;">Choose a photo. Cropping happens locally - nothing is uploaded.</div>' +
+            '<div id="ppDemo" style="margin-top:12px;">' +
+            '<div style="font-size:.9em;color:#555;margin-bottom:4px;">Example: the optional AI backdrop swaps a busy background for a plain one - all on your device.</div>' +
+            '<canvas id="ppDemoBefore" width="96" height="120" style="border:1px solid #ddd;margin-right:8px;vertical-align:middle;"></canvas>' +
+            '<span style="color:#999;">&rarr;</span> ' +
+            '<canvas id="ppDemoAfter" width="96" height="120" style="border:1px solid #ddd;margin-left:8px;vertical-align:middle;"></canvas>' +
+            '</div>';
 
         var fileEl = root.querySelector('#ppFile'), presetEl = root.querySelector('#ppPreset'), zoomEl = root.querySelector('#ppZoom');
         var customWrap = root.querySelector('#ppCustomWrap'), customW = root.querySelector('#ppCustomW'), customH = root.querySelector('#ppCustomH');
@@ -73,6 +249,9 @@
         var runBtn = root.querySelector('#ppRun'), dl = root.querySelector('#ppDl'), dlSheet = root.querySelector('#ppDlSheet');
         var outCanvas = root.querySelector('#ppOutCanvas'), outCtx = outCanvas.getContext('2d');
         var statusEl = root.querySelector('#ppStatus');
+        var bgEl = root.querySelector('#ppBg'), bgNote = root.querySelector('#ppBgNote'), guidesChk = root.querySelector('#ppGuides');
+        ppDrawDemoPair(root.querySelector('#ppDemoBefore'), root.querySelector('#ppDemoAfter'));
+        bgEl.addEventListener('change', function () { bgNote.style.display = bgEl.value === 'original' ? 'none' : ''; });
 
         var STAGE_UNIT = 260; // preview canvas long-edge target, in CSS px
         var img = null, panX = 0, panY = 0, drawnW = 0, drawnH = 0, dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
@@ -104,9 +283,30 @@
             stageCtx.fillStyle = '#fff';
             stageCtx.fillRect(0, 0, stage.width, stage.height);
             stageCtx.drawImage(img, panX, panY, drawnW, drawnH);
-            // Rule-of-thirds style head-guide overlay, purely visual.
             stageCtx.strokeStyle = 'rgba(26,115,232,.55)'; stageCtx.lineWidth = 1;
             stageCtx.strokeRect(0.5, 0.5, stage.width - 1, stage.height - 1);
+            // Face-centering guides (fire46): dashed crown line (~12% down), chin
+            // line (~78% down) and a center vertical. Visual aids only - most photo
+            // specs want the head filling roughly the band between these two lines.
+            // No face detection; the reader positions the face by dragging.
+            if (guidesChk && guidesChk.checked) {
+                var crownY = Math.round(stage.height * 0.12) + 0.5;
+                var chinY = Math.round(stage.height * 0.78) + 0.5;
+                var midX = Math.round(stage.width / 2) + 0.5;
+                stageCtx.save();
+                stageCtx.setLineDash([5, 4]);
+                stageCtx.strokeStyle = 'rgba(26,115,232,.7)';
+                stageCtx.beginPath(); stageCtx.moveTo(0, crownY); stageCtx.lineTo(stage.width, crownY); stageCtx.stroke();
+                stageCtx.beginPath(); stageCtx.moveTo(0, chinY); stageCtx.lineTo(stage.width, chinY); stageCtx.stroke();
+                stageCtx.strokeStyle = 'rgba(26,115,232,.35)';
+                stageCtx.beginPath(); stageCtx.moveTo(midX, 0); stageCtx.lineTo(midX, stage.height); stageCtx.stroke();
+                stageCtx.setLineDash([]);
+                stageCtx.fillStyle = 'rgba(26,115,232,.8)';
+                stageCtx.font = '9px sans-serif';
+                stageCtx.fillText('top of head', 4, crownY - 3);
+                stageCtx.fillText('chin', 4, chinY - 3);
+                stageCtx.restore();
+            }
         }
         function applyZoom(zoom) {
             if (!img) return;
@@ -149,6 +349,7 @@
         customW.addEventListener('input', function () { if (img && presetEl.value === 'custom') resetStageForNewImage(); });
         customH.addEventListener('input', function () { if (img && presetEl.value === 'custom') resetStageForNewImage(); });
         zoomEl.addEventListener('input', function () { applyZoom(parseFloat(zoomEl.value) || 1); });
+        guidesChk.addEventListener('change', redrawStage);
 
         function pointerXY(e) {
             var r = stage.getBoundingClientRect();
@@ -178,18 +379,36 @@
             ctx2.fillStyle = '#fff'; ctx2.fillRect(0, 0, w, h);
             ctx2.drawImage(img, panX * outScale, panY * outScale, drawnW * outScale, drawnH * outScale);
         }
-        runBtn.addEventListener('click', function () {
+        runBtn.addEventListener('click', async function () {
             if (!img) { setStatus('Choose a photo first.'); return; }
             var p = activePreset();
             var targetW = ppMmToPx(p.mmW), targetH = ppMmToPx(p.mmH);
             var outScale = targetW / stage.width;
             outCanvas.width = targetW; outCanvas.height = targetH; outCanvas.style.display = '';
             renderFinalTo(outCtx, targetW, targetH, outScale);
+            // AI backdrop (tier b, opt-in). On any failure the plain crop below is
+            // still delivered (tier c - deterministic fallback), and the status
+            // says which one the reader got.
+            var bgMode = bgEl.value, bgApplied = false, bgFailNote = '';
+            if (bgMode !== 'original' && PP_BACKDROPS[bgMode] && PP_BACKDROPS[bgMode].color) {
+                runBtn.disabled = true;
+                try {
+                    var alpha = await ppAiAlpha(outCanvas, setStatus);
+                    var composed = ppComposeBackdrop(outCanvas, alpha, PP_BACKDROPS[bgMode].color);
+                    outCtx.clearRect(0, 0, targetW, targetH);
+                    outCtx.drawImage(composed, 0, 0);
+                    bgApplied = true;
+                } catch (eAi) {
+                    bgFailNote = ' The AI backdrop could not run here (' + (eAi && eAi.message ? eAi.message : String(eAi)) + ') - you got the plain crop instead. If the model download failed, check the connection and try again; the photo itself never leaves this browser.';
+                } finally { runBtn.disabled = false; }
+            }
             outCanvas.toBlob(function (blob) {
                 if (!blob) { setStatus('This browser could not encode the photo.'); return; }
                 var u = URL.createObjectURL(blob);
                 dl.href = u; dl.download = 'passport-photo-' + p.id + '.jpg'; dl.style.display = ''; dl.textContent = 'Download photo (' + targetW + '×' + targetH + 'px)';
-                var doneMsg = 'Cropped to ' + p.label + ' (' + targetW + '×' + targetH + 'px @ 300 DPI), white background, locally - no upload.';
+                var doneMsg = 'Cropped to ' + p.label + ' (' + targetW + '×' + targetH + 'px @ 300 DPI), ' +
+                    (bgApplied ? PP_BACKDROPS[bgMode].label.replace('AI backdrop: ', '') + ' AI backdrop, ' : 'white background, ') +
+                    'locally - no upload.' + bgFailNote;
                 if (sheetChk.checked) {
                     var sheetW = ppMmToPx(101.6), sheetH = ppMmToPx(152.4); // 4x6 in
                     var margin = Math.round(PP_DPI * 0.08), gap = Math.round(PP_DPI * 0.04);
