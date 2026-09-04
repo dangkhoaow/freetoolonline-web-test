@@ -32,6 +32,8 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/html-minifier-step-by-step.html',
   '/guides/id/html-minifier-step-by-step.html',
   '/guides/de/html-minifier-step-by-step.html',
+  // html-minifier-vs-alternatives locale fanout (create_new_guide_page 20260904-5)
+  '/guides/pt/html-minifier-vs-alternatives.html',
   '/guides/unix-timestamp-converter-vs-alternatives.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
   '/guides/unix-timestamp-converter-when.html',
@@ -7291,6 +7293,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/html-minifier-step-by-step.html',
   '/guides/id/html-minifier-step-by-step.html',
   '/guides/de/html-minifier-step-by-step.html',
+  // html-minifier-vs-alternatives locale fanout (create_new_guide_page 20260904-5)
+  '/guides/pt/html-minifier-vs-alternatives.html',
   // unix-timestamp-converter companion guides EN + 5 locales (new_tool_page_discovery 20260902-8)
   '/guides/unix-timestamp-converter-when.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
@@ -29424,6 +29428,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/html-minifier-step-by-step.html': 'guide/id/html-minifier-step-by-step.jsp',
   '/guides/de/html-minifier-step-by-step.html': 'guide/de/html-minifier-step-by-step.jsp',
   '/guides/html-minifier-vs-alternatives.html': 'guide/html-minifier-vs-alternatives.jsp',
+  '/guides/pt/html-minifier-vs-alternatives.html': 'guide/pt/html-minifier-vs-alternatives.jsp',
   '/developer-tools/xml-to-json-converter.html': 'utility/xml-to-json-converter.jsp',
   '/developer-tools/yaml-formatter.html': 'utility/yaml-formatter.jsp',
   '/guides/yaml-formatter-when.html': 'guide/yaml-formatter-when.jsp',
