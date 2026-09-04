@@ -1012,6 +1012,7 @@ try {
     { title: "HTML Minifier Online", url: "https://freetoolonline.com/developer-tools/html-minifier.html", include: !1, tags: "developer" },
     { title: "XML to JSON Converter Online", url: "https://freetoolonline.com/developer-tools/xml-to-json-converter.html", include: !1, tags: "developer" },
     { title: "YAML Formatter Online", url: "https://freetoolonline.com/developer-tools/yaml-formatter.html", include: !1, tags: "developer" },
+    { title: "Markdown Table Generator Online", url: "https://freetoolonline.com/developer-tools/markdown-table-generator.html", include: !1, tags: "developer" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

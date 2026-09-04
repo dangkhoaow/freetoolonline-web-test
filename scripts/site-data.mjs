@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/markdown-table-generator-vs-alternatives.html',
+  '/guides/markdown-table-generator-step-by-step.html',
+  '/guides/markdown-table-generator-when.html',
   '/guides/yaml-formatter-vs-alternatives.html',
   '/guides/yaml-formatter-step-by-step.html',
   '/guides/yaml-formatter-when.html',
@@ -24,6 +27,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/html-minifier-step-by-step.html',
   '/guides/es/html-minifier-step-by-step.html',
   '/guides/vi/html-minifier-step-by-step.html',
+  '/guides/id/html-minifier-step-by-step.html',
   '/guides/unix-timestamp-converter-vs-alternatives.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
   '/guides/unix-timestamp-converter-when.html',
@@ -7281,6 +7285,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/html-minifier-step-by-step.html',
   '/guides/es/html-minifier-step-by-step.html',
   '/guides/vi/html-minifier-step-by-step.html',
+  '/guides/id/html-minifier-step-by-step.html',
   // unix-timestamp-converter companion guides EN + 5 locales (new_tool_page_discovery 20260902-8)
   '/guides/unix-timestamp-converter-when.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
@@ -17054,6 +17059,7 @@ export const ALIAS_ROUTES = {
   '/html-minifier.html': '/developer-tools/html-minifier.html',
   '/xml-to-json-converter.html': '/developer-tools/xml-to-json-converter.html',
   '/yaml-formatter.html': '/developer-tools/yaml-formatter.html',
+  '/markdown-table-generator.html': '/developer-tools/markdown-table-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29409,12 +29415,17 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/html-minifier-step-by-step.html': 'guide/pt/html-minifier-step-by-step.jsp',
   '/guides/es/html-minifier-step-by-step.html': 'guide/es/html-minifier-step-by-step.jsp',
   '/guides/vi/html-minifier-step-by-step.html': 'guide/vi/html-minifier-step-by-step.jsp',
+  '/guides/id/html-minifier-step-by-step.html': 'guide/id/html-minifier-step-by-step.jsp',
   '/guides/html-minifier-vs-alternatives.html': 'guide/html-minifier-vs-alternatives.jsp',
   '/developer-tools/xml-to-json-converter.html': 'utility/xml-to-json-converter.jsp',
   '/developer-tools/yaml-formatter.html': 'utility/yaml-formatter.jsp',
   '/guides/yaml-formatter-when.html': 'guide/yaml-formatter-when.jsp',
   '/guides/yaml-formatter-step-by-step.html': 'guide/yaml-formatter-step-by-step.jsp',
   '/guides/yaml-formatter-vs-alternatives.html': 'guide/yaml-formatter-vs-alternatives.jsp',
+  '/developer-tools/markdown-table-generator.html': 'utility/markdown-table-generator.jsp',
+  '/guides/markdown-table-generator-when.html': 'guide/markdown-table-generator-when.jsp',
+  '/guides/markdown-table-generator-step-by-step.html': 'guide/markdown-table-generator-step-by-step.jsp',
+  '/guides/markdown-table-generator-vs-alternatives.html': 'guide/markdown-table-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

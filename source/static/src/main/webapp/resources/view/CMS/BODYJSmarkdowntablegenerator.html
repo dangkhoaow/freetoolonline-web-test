@@ -1,0 +1,173 @@
+<script>
+    // Markdown Table Generator - fully client-side, pure JS string transform, no upload.
+    // Pastes CSV / TSV / pipe-delimited rows and emits a GitHub-Flavored-Markdown
+    // table (header row, alignment separator row with colons, body rows). Literal
+    // pipe characters in cells are escaped. No fetch() against user data.
+
+    web.localUpload = false;
+
+    function mtgRepeat(ch, n) { var s = ''; for (var i = 0; i < n; i++) s += ch; return s; }
+
+    // Core transform: rows text + options -> GFM markdown table string.
+    function generateMarkdownTable(inputText, opts) {
+        var text = String(inputText == null ? '' : inputText);
+        opts = opts || {};
+        var hasHeader = opts.hasHeader !== false; // default true
+        var align = (opts.align || 'left').toLowerCase();
+
+        var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+            .filter(function (l) { return l.trim().length > 0; });
+        if (lines.length === 0) {
+            return { output_text: '', _is_mock: false, _empty: true };
+        }
+
+        // Auto-detect delimiter from the first non-empty line: tab > pipe > comma.
+        var first = lines[0];
+        var delim;
+        if (first.indexOf('\t') !== -1) delim = '\t';
+        else if (first.indexOf('|') !== -1) delim = '|';
+        else delim = ',';
+
+        function splitLine(line) {
+            var cells;
+            if (delim === '|') {
+                var t = line.trim();
+                if (t.charAt(0) === '|') t = t.slice(1);
+                if (t.charAt(t.length - 1) === '|') t = t.slice(0, -1);
+                cells = t.split('|');
+            } else {
+                cells = line.split(delim);
+            }
+            return cells.map(function (c) { return c.trim(); });
+        }
+
+        var rows = lines.map(splitLine);
+        var colCount = rows.reduce(function (m, r) { return Math.max(m, r.length); }, 0);
+
+        function esc(cell) {
+            return String(cell == null ? '' : cell).replace(/\|/g, '\\|');
+        }
+
+        rows = rows.map(function (r) {
+            var out = r.slice();
+            while (out.length < colCount) out.push('');
+            return out.map(esc);
+        });
+
+        var headerRow, bodyRows;
+        if (hasHeader) {
+            headerRow = rows[0];
+            bodyRows = rows.slice(1);
+        } else {
+            headerRow = [];
+            for (var i = 0; i < colCount; i++) headerRow.push('Column ' + (i + 1));
+            bodyRows = rows;
+        }
+
+        // Column widths for readable padding (min 3).
+        var widths = [];
+        for (var c = 0; c < colCount; c++) {
+            var w = headerRow[c] ? headerRow[c].length : 0;
+            for (var b = 0; b < bodyRows.length; b++) {
+                var v = bodyRows[b][c] || '';
+                if (v.length > w) w = v.length;
+            }
+            widths.push(Math.max(3, w));
+        }
+
+        function pad(s, w) {
+            s = String(s == null ? '' : s);
+            while (s.length < w) s += ' ';
+            return s;
+        }
+
+        function rowLine(cells) {
+            var parts = [];
+            for (var c2 = 0; c2 < colCount; c2++) parts.push(pad(cells[c2] || '', widths[c2]));
+            return '| ' + parts.join(' | ') + ' |';
+        }
+
+        function sepCell(w) {
+            if (align === 'center') return ':' + mtgRepeat('-', Math.max(1, w - 2)) + ':';
+            if (align === 'right') return mtgRepeat('-', Math.max(2, w - 1)) + ':';
+            return ':' + mtgRepeat('-', Math.max(2, w - 1)); // left (default)
+        }
+
+        var sepParts = [];
+        for (var sc = 0; sc < colCount; sc++) sepParts.push(sepCell(widths[sc]));
+        var sepLine = '| ' + sepParts.join(' | ') + ' |';
+
+        var lineOut = [];
+        lineOut.push(rowLine(headerRow));
+        lineOut.push(sepLine);
+        for (var r2 = 0; r2 < bodyRows.length; r2++) lineOut.push(rowLine(bodyRows[r2]));
+
+        return { output_text: lineOut.join('\n'), _is_mock: false, _delim: delim, _cols: colCount };
+    }
+
+    // Adapter for the shared generator contract (reads the form fields).
+    async function generateForSlug(formValues) {
+        formValues = formValues || {};
+        var input = formValues['mtgInput'] || '';
+        var align = formValues['mtgAlign'] || 'left';
+        var hasHeader = formValues['mtgHeader'] !== false; // caller passes boolean
+        var result = generateMarkdownTable(input, { hasHeader: hasHeader, align: align });
+        return result;
+    }
+
+    function doAfterPageRendered() {
+        var $btn = $('#generateBtn');
+        if ($btn.length === 0) return;
+
+        function runGenerate() {
+            var $out = $('.outputImgs').empty();
+            var formValues = {
+                mtgInput: $('#mtgInput').val() || '',
+                mtgAlign: $('#mtgAlign').val() || 'left',
+                mtgHeader: $('#mtgHeader').is(':checked')
+            };
+            var result = generateMarkdownTable(formValues.mtgInput, {
+                hasHeader: formValues.mtgHeader,
+                align: formValues.mtgAlign
+            });
+            if (result._empty || !result.output_text) {
+                $out.html('<div class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow"><p>Paste at least one row of data above, then click Generate Markdown Table.</p></div>');
+                return;
+            }
+            var md = result.output_text;
+            var safe = $('<div>').text(md).html();
+            var html = ''
+                + '<div class="w3-bar w3-margin-bottom">'
+                + '  <button type="button" id="mtgCopyBtn" class="w3-button w3-blue w3-round w3-small">Copy Markdown</button>'
+                + '  <button type="button" id="mtgDownloadBtn" class="w3-button w3-teal w3-round w3-small" style="margin-left:8px">Download .md</button>'
+                + '</div>'
+                + '<pre class="w3-padding w3-light-grey w3-round" style="white-space:pre;overflow-x:auto"><code id="mtgOutputCode" style="font-family:monospace">' + safe + '</code></pre>';
+            $out.html(html);
+
+            $('#mtgCopyBtn').off('click').on('click', function () {
+                try { navigator.clipboard.writeText(md); }
+                catch (e) {
+                    var ta = document.createElement('textarea');
+                    ta.value = md; document.body.appendChild(ta); ta.select();
+                    try { document.execCommand('copy'); } catch (e2) {}
+                    document.body.removeChild(ta);
+                }
+                var $b = $(this); var old = $b.text();
+                $b.text('Copied'); setTimeout(function () { $b.text(old); }, 1200);
+            });
+
+            $('#mtgDownloadBtn').off('click').on('click', function () {
+                var blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url; a.download = 'table.md';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+            });
+        }
+
+        $btn.off('click').on('click', runGenerate);
+        // Generate once on load so the prefilled example shows a real table.
+        if (($('#mtgInput').val() || '').trim()) runGenerate();
+    }
+</script>
