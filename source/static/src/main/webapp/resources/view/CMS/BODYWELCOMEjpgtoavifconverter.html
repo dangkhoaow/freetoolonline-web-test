@@ -9,7 +9,7 @@
 <li>Draws your JPG to an in-browser HTML5 canvas and encodes it to AVIF with a WebAssembly engine running on your device.</li>
 <li>Returns the AVIF as a downloadable blob with no server round-trip.</li>
 <li>Builds the preview link for the output entirely client-side.</li>
-<li>Output sizing and quality are set from the option fields above the file picker; the defaults match the most common downstream use.</li>
+<li>A quality slider above the file picker controls the AVIF compression level from 10 to 100, defaulting to 60; a live number beside the slider updates as you drag it, and the output image keeps the exact width and height of the source JPG since there is no separate resize control.</li>
 </ul>
 
 <br/><h2>Privacy</h2>
@@ -17,3 +17,9 @@
 
 <br/><h2>Good to know</h2>
 <p>The encoder is single-threaded WebAssembly, so a very large image can take a few seconds; 10-bit and 12-bit HDR encoding are not offered. To convert to or from other formats such as PNG, JPG, or WebP, browse the <a href="/image-converter-tools.html">image conversion tools hub</a>.</p>
+
+<br/><h2>What happens after you click Convert</h2>
+<p>Clicking Convert to AVIF does not start encoding right away. The tool first loads the AVIF WebAssembly module from the site's own vendor folder, and it only does this on that first click, so simply choosing a file never triggers a download of the encoder. The status line under the button tracks each stage in plain language: it confirms the image is ready once you pick a file, then reports that the in-browser AVIF encoder is loading (first run only), then that it is encoding, and finally shows the finished file's size in kilobytes once the AVIF blob is ready. Each message replaces the previous one in the same line, so you always know which step is running without opening the browser's developer console. Because the WebAssembly module loads once per page visit, converting a second image on the same page skips straight to the encoding step and finishes faster than the first conversion. Nothing in this sequence involves a network request to any server other than the site's own static files - the image itself never leaves your device. The preview stays hidden until the AVIF file is actually ready, then it displays the real converted output rather than the original JPG, so if your browser can decode AVIF images you are looking at the finished file itself, not a placeholder.</p>
+
+<br/><h2>If the encoder can't finish the conversion</h2>
+<p>The Convert to AVIF button stays disabled until you have chosen a readable image file, so there is nothing to click before that. Once a conversion starts, the button disables again so a second click cannot start two encodes at the same time. If the WebAssembly encoder throws an error partway through - for example on a corrupted file or a browser that restricts WebAssembly - the status line shows the browser's own error message instead of failing silently, and the Convert button re-enables so you can try a different image without reloading the page. Surfacing the real error matters here because a corrupted source file and a WebAssembly restriction need different fixes, and a generic "something went wrong" message would leave you guessing which one you hit.</p>
