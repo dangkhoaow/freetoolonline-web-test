@@ -1016,6 +1016,7 @@ try {
     { title: "Rich Text Editor Online", url: "https://freetoolonline.com/developer-tools/rich-text-editor.html", include: !1, tags: "developer" },
     { title: "CSS Border Radius Generator Online", url: "https://freetoolonline.com/developer-tools/css-border-radius-generator.html", include: !1, tags: "developer" },
     { title: "Hex to RGB Converter Online", url: "https://freetoolonline.com/developer-tools/hex-to-rgb-converter.html", include: !1, tags: "developer" },
+    { title: "Aquarium Water Checker - Compare Before & After Photos", url: "https://freetoolonline.com/utility-tools/aquarium-water-checker.html", include: !1, tags: "utility" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

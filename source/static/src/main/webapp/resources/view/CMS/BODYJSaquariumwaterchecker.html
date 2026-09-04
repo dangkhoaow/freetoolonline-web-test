@@ -1,0 +1,549 @@
+<script>
+    // Aquarium Water Checker - compare two photos of the same tank (before /
+    // after) and measure whether the water is clearing or getting worse.
+    // Everything runs in this browser: canvas pixel analysis (always on),
+    // optional Chrome Built-in AI (feature-detected, never assumed), and an
+    // optional on-device CLIP zero-shot pass (download-on-click, size stated
+    // first). Nothing is uploaded to any server.
+    //
+    // ENGINE LADDER (ai-local-tools-runbook rule 1):
+    //   tier a  Chrome Built-in Prompt API (LanguageModel) when availability()
+    //           === 'available' - rewrites the measured report as prose. Zero
+    //           download; probed per rule 9 (capability, not presence).
+    //   tier b  Xenova/clip-vit-base-patch32 zero-shot-image-classification on
+    //           the VENDORED transformers.js 3.8.1 bundle (/vendor/transformers/,
+    //           EXACT pin), wasm numThreads=1, dtype q8. onnx/model_quantized.onnx
+    //           is 146.6 MB (sha256 0898a3fa...) served from the HF CDN, loaded
+    //           ONLY on an explicit click with the size stated BEFORE download.
+    //           PIN-PROBED 2026-09-05 headless: loads in 10.8 s, 2-image
+    //           zero-shot in 612 ms, correct discrimination on both synthetic
+    //           tests (seo-reports/20260905-aquarium-fire1/qa/clip-pin-probe.json).
+    //   tier c  Deterministic canvas metrics - the always-on fallback and the
+    //           source of every number on the page: Laplacian sharpness,
+    //           dark-decile haze lift (normalized by the bright decile so the
+    //           proxy is exposure-tolerant), RGB tint class, midtone speckle.
+    //
+    // HONESTY BOUNDS (mirrored in tool-skill ## NOT implemented): no photo can
+    // measure ammonia / nitrite / pH / temperature; species suggestions are AI
+    // guesses the reader confirms in the stocking form; comparison assumes
+    // similar framing + lighting and the page warns when exposure differs.
+    //
+    // Before/after scrubbing: the SAME juxtapose lib compress-image already
+    // loads from the site asset host (dkbg1jftzfsd2.cloudfront.net) - both img
+    // src attributes are set BEFORE the script loads because the lib scans
+    // .juxtapose containers at load time.
+    //
+    // Framework contract: doAfterPageRendered() (fires once jQuery + base
+    // script load); no top-level DOM access. Demo output is static in BODYHTML
+    // so G16 renders with zero interaction and zero download.
+
+    web.localUpload = false;
+
+    var AWC_ANALYSIS_SIZE = 512;
+    var AWC_CLIP_MODEL = 'Xenova/clip-vit-base-patch32';
+    var AWC_CLIP_MB = 147; // onnx/model_quantized.onnx 146.6 MB, stated before download
+    var AWC_SAMPLE_A = '/img/illustrations/aquarium-sample-before.svg';
+    var AWC_SAMPLE_B = '/img/illustrations/aquarium-sample-after.svg';
+    var AWC_JUXTA_JS = 'https://dkbg1jftzfsd2.cloudfront.net/script/lib/juxtapose/juxtapose.min.js';
+    var AWC_JUXTA_CSS = 'https://dkbg1jftzfsd2.cloudfront.net/script/lib/juxtapose/juxtapose.min.css';
+
+    // Relative waste output per adult individual - community-consensus
+    // heuristics stated on-page as estimates, never science.
+    var AWC_SPECIES = [
+        { id: 'goldfish',  label: 'Goldfish / Ranchu / Oranda', waste: 12,  minL: 75 },
+        { id: 'betta',     label: 'Betta',                      waste: 2,   minL: 15 },
+        { id: 'guppy',     label: 'Guppy / Endler',             waste: 1,   minL: 8 },
+        { id: 'tetra',     label: 'Tetra / Rasbora',            waste: 1,   minL: 8 },
+        { id: 'danio',     label: 'Danio / GloFish',            waste: 1.2, minL: 10 },
+        { id: 'molly',     label: 'Molly / Platy',              waste: 2,   minL: 12 },
+        { id: 'pleco',     label: 'Pleco / Otocinclus',         waste: 6,   minL: 60 },
+        { id: 'corydoras', label: 'Corydoras',                  waste: 1.5, minL: 12 },
+        { id: 'snail',     label: 'Nerite / Mystery snail',     waste: 0.5, minL: 4 },
+        { id: 'shrimp',    label: 'Shrimp',                     waste: 0.2, minL: 2 }
+    ];
+
+    // CLIP zero-shot label sets (tier b). Water labels cross-check the
+    // deterministic verdict; species labels only PREFILL the stocking form.
+    var AWC_WATER_LABELS = [
+        ['clear aquarium water with sharp background details', 'clear'],
+        ['milky white cloudy aquarium water', 'biological_haze'],
+        ['aquarium water full of floating dust particles', 'particulate'],
+        ['green tinted aquarium water with algae bloom', 'green_bloom'],
+        ['brown tea colored aquarium water', 'amber_tint']
+    ];
+    var AWC_SPECIES_LABELS = [
+        ['a goldfish', 'goldfish'], ['a betta fighting fish', 'betta'],
+        ['small guppy fish', 'guppy'], ['a school of small tetra fish', 'tetra'],
+        ['striped zebra danio fish', 'danio'], ['a molly or platy fish', 'molly'],
+        ['a pleco catfish on glass', 'pleco'], ['corydoras catfish on gravel', 'corydoras'],
+        ['a snail on aquarium glass', 'snail'], ['small freshwater shrimp', 'shrimp'],
+        ['an aquarium with no fish visible', null]
+    ];
+
+    function awcEsc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+
+    // ---------------------------------------------------------------- tier c
+    function awcLoadToCanvas(src, cb) {
+        var img = new Image();
+        img.onload = function () {
+            try {
+                var w0 = img.naturalWidth || img.width, h0 = img.naturalHeight || img.height;
+                var scale = Math.min(1, AWC_ANALYSIS_SIZE / Math.max(w0, h0));
+                var w = Math.max(1, Math.round(w0 * scale)), h = Math.max(1, Math.round(h0 * scale));
+                var c = document.createElement('canvas');
+                c.width = w; c.height = h;
+                var ctx = c.getContext('2d', { willReadFrequently: true });
+                ctx.drawImage(img, 0, 0, w, h);
+                cb(null, ctx.getImageData(0, 0, w, h));
+            } catch (e) { cb(e); }
+        };
+        img.onerror = function () { cb(new Error('could not decode this image')); };
+        img.src = src;
+    }
+
+    function awcMetrics(d0) {
+        var d = d0.data, w = d0.width, h = d0.height, n = w * h;
+        var sumR = 0, sumG = 0, sumB = 0, sumL = 0, sumL2 = 0;
+        var lum = new Float32Array(n);
+        for (var i = 0, p = 0; i < n; i++, p += 4) {
+            var r = d[p], g = d[p + 1], b = d[p + 2];
+            sumR += r; sumG += g; sumB += b;
+            var L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            lum[i] = L; sumL += L; sumL2 += L * L;
+        }
+        var meanR = sumR / n, meanG = sumG / n, meanB = sumB / n, meanL = sumL / n;
+        var varL = Math.max(0, sumL2 / n - meanL * meanL);
+        var contrast = Math.min(1, Math.sqrt(varL) / 64);
+
+        // Laplacian variance = focus/edge energy; haze softens it.
+        var lapSum = 0, lapSum2 = 0, m = 0, speckle = 0, sc = 0;
+        for (var y = 1; y < h - 1; y++) {
+            for (var x = 1; x < w - 1; x++) {
+                var idx = y * w + x;
+                var v = 4 * lum[idx] - lum[idx - 1] - lum[idx + 1] - lum[idx - w] - lum[idx + w];
+                lapSum += v; lapSum2 += v * v; m++;
+                var Lv = lum[idx];
+                if (Lv > 40 && Lv < 215) {
+                    var a = Math.abs(v);
+                    if (a < 40) { speckle += a; sc++; }
+                }
+            }
+        }
+        var lapMean = lapSum / m;
+        var sharpness = Math.max(0, lapSum2 / m - lapMean * lapMean);
+        speckle = sc ? speckle / sc : 0;
+
+        var sorted = Array.prototype.slice.call(lum).sort(function (a2, b2) { return a2 - b2; });
+        var darkDecile = sorted[Math.floor(n * 0.1)] / 255;
+        var brightDecile = sorted[Math.floor(n * 0.9)] / 255;
+        var hazeRatio = darkDecile / Math.max(brightDecile, 0.15);
+        var haze = Math.min(1, Math.max(0, (hazeRatio - 0.25) / 0.55));
+
+        var maxC = Math.max(meanR, meanG, meanB, 1);
+        var rn = meanR / maxC, gn = meanG / maxC, bn = meanB / maxC;
+        var tint = 'neutral';
+        if (Math.abs(rn - gn) < 0.08 && Math.abs(gn - bn) < 0.08 && hazeRatio > 0.6) tint = 'milky';
+        else if (gn === 1 && gn - Math.max(rn, bn) > 0.10) tint = 'green';
+        else if (rn === 1 && gn > bn + 0.06 && rn - bn > 0.15) tint = 'amber';
+        else if (bn === 1 && bn - rn > 0.08) tint = 'blue';
+
+        var sharpN = Math.min(1, Math.log10(1 + sharpness) / 3.2);
+        var clarity = Math.round(100 * (0.45 * sharpN + 0.35 * (1 - haze) + 0.20 * contrast));
+
+        return { meanLuma: meanL / 255, contrast: contrast, sharpness: sharpness, speckle: speckle,
+                 haze: haze, darkDecile: darkDecile, brightDecile: brightDecile, tint: tint, clarity: clarity };
+    }
+
+    // Optical state of ONE image - phrased as observation, never chemistry.
+    function awcStateOf(mx) {
+        if (mx.haze > 0.45) {
+            if (mx.tint === 'green') return 'green_bloom';
+            if (mx.speckle > 6.5) return 'particulate';
+            return 'biological_haze';
+        }
+        if (mx.haze > 0.28) return 'light_haze';
+        if (mx.tint === 'amber') return 'amber_tint';
+        return 'clear';
+    }
+
+    var AWC_STATES = {
+        clear:           { badge: 'OPTIMAL', cls: 'w3-green',  title: 'Crystal clear',
+            note: 'Background edges stay sharp and the shadows stay dark - light passes with little scatter.' },
+        light_haze:      { badge: 'STABLE',  cls: 'w3-amber',  title: 'Slight haze',
+            note: 'A mild lift in the darkest areas suggests some suspended matter. Watch the trend over the next day or two.' },
+        particulate:     { badge: 'WARNING', cls: 'w3-orange', title: 'Particulate cloudiness (dust / silt pattern)',
+            note: 'High-frequency speckle is the signature of mechanical particles - often unrinsed substrate or a stirred-up bottom.' },
+        biological_haze: { badge: 'WARNING', cls: 'w3-orange', title: 'Uniform milky haze (bloom pattern)',
+            note: 'Even, low-texture haze across the frame is the classic look of a heterotrophic bacterial bloom.' },
+        green_bloom:     { badge: 'WARNING', cls: 'w3-orange', title: 'Green tint (algae direction)',
+            note: 'A green shift with haze points toward free-floating algae rather than bacteria or dust.' },
+        amber_tint:      { badge: 'STABLE',  cls: 'w3-amber',  title: 'Amber / tea tint, good clarity',
+            note: 'A warm transparent hue with sharp edges usually means tannins or matured water, not a problem.' }
+    };
+
+    function awcCompare(mA, mB) {
+        var exposureDelta = Math.abs(mA.meanLuma - mB.meanLuma);
+        var comparable = exposureDelta < 0.40;
+        var lowConfidence = exposureDelta >= 0.22;
+        var deltaPts = mB.clarity - mA.clarity;
+        var trend = !comparable ? 'not_comparable' : (deltaPts >= 4 ? 'improving' : (deltaPts <= -4 ? 'worsening' : 'stable'));
+        return { comparable: comparable, lowConfidence: lowConfidence, exposureDelta: exposureDelta,
+                 deltaPts: deltaPts, trend: trend, stateA: awcStateOf(mA), stateB: awcStateOf(mB) };
+    }
+
+    function awcBioload(stock, liters) {
+        var load = 0, minVol = 0, any = false;
+        stock.forEach(function (s) {
+            var sp = null;
+            for (var i = 0; i < AWC_SPECIES.length; i++) if (AWC_SPECIES[i].id === s.id) sp = AWC_SPECIES[i];
+            if (!sp || !s.count) return;
+            any = true; load += sp.waste * s.count; minVol += sp.minL * s.count;
+        });
+        if (!any || !liters || liters <= 0) return null;
+        var pressure = load / (liters / 10);
+        var band = pressure < 1 ? 'light' : pressure < 2 ? 'balanced' : pressure < 3.5 ? 'heavy' : 'overstocked';
+        return { pressure: Math.round(pressure * 100) / 100, band: band, minLiters: minVol };
+    }
+
+    function awcBlueprint(cmp, bio) {
+        var acts = [];
+        if (!cmp.comparable) acts.push('Retake one photo first: the two shots differ too much in overall brightness for a fair comparison. Match the time of day and room light, then run the check again.');
+        if (cmp.stateB === 'biological_haze') {
+            acts.push('Halt or halve feeding for 48 hours - a milky bloom feeds on dissolved organics.');
+            acts.push('Do NOT deep-clean the filter right now; starve the bloom instead of removing the bacteria that will out-compete it.');
+            acts.push('Keep surface agitation high: a bloom can pull oxygen down overnight.');
+        }
+        if (cmp.stateB === 'particulate') {
+            acts.push('Add fine filter floss or a polishing pad to the mechanical stage of the filter.');
+            acts.push('Avoid stirring the substrate; siphon the settled dust in about 48 hours.');
+        }
+        if (cmp.stateB === 'green_bloom') {
+            acts.push('Shorten the lighting period to about 6 hours and block direct sunlight on the tank.');
+            acts.push('Reduce feeding, and consider floating plants to compete for nutrients.');
+        }
+        if (cmp.stateB === 'light_haze') acts.push('No structural change yet - re-shoot the same angle in 24 hours and compare again; act only if the haze number climbs.');
+        if (bio && bio.band === 'overstocked') acts.push('The stocking estimate is high for this volume - increase water-change cadence and consider rehoming the heaviest-waste species.');
+        if (bio && bio.band === 'heavy') acts.push('Stocking runs heavy for this volume - keep a weekly 25-30% water-change rhythm.');
+        if (!acts.length) acts.push('Nothing to fix from these two photos - keep the current maintenance cadence and save a comparison photo weekly.');
+        return acts;
+    }
+
+    // ---------------------------------------------------------------- state
+    var awc = { A: null, B: null, exifr: null, clip: null, clipLoading: null, builtin: null, juxtaLoaded: false };
+
+    function awcStatus(msg, spin) {
+        var el = document.getElementById('awcStatus');
+        if (el) el.innerHTML = (spin ? '<i class="fa fa-spinner fa-spin"></i> ' : '') + awcEsc(msg);
+    }
+
+    // EXIF capture time via vendored exifr (rule: metadata read on-device).
+    function awcExifr() {
+        if (window.exifr && typeof window.exifr.parse === 'function') return Promise.resolve(window.exifr);
+        if (awc.exifr) return awc.exifr;
+        awc.exifr = new Promise(function (res, rej) {
+            loadScript((typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/exifr/exifr-lite.umd.js', function () {
+                if (window.exifr) res(window.exifr); else rej(new Error('exifr failed to load'));
+            });
+        });
+        return awc.exifr;
+    }
+
+    function awcReadSlot(which, file) {
+        var slot = { file: file, url: URL.createObjectURL(file), name: file.name, when: null, metrics: null };
+        awc[which] = slot;
+        var img = document.getElementById(which === 'A' ? 'awcThumbA' : 'awcThumbB');
+        if (img) { img.src = slot.url; img.style.display = 'block'; }
+        var lbl = document.getElementById(which === 'A' ? 'awcNameA' : 'awcNameB');
+        if (lbl) lbl.textContent = file.name;
+        awcExifr().then(function (ex) { return ex.parse(file, ['DateTimeOriginal', 'CreateDate']); })
+            .then(function (meta) {
+                var t = meta && (meta.DateTimeOriginal || meta.CreateDate);
+                slot.when = t ? new Date(t) : null;
+                awcWhenLabel(which, slot);
+            })
+            .catch(function () { slot.when = null; awcWhenLabel(which, slot); });
+        awcMaybeEnable();
+    }
+
+    function awcWhenLabel(which, slot) {
+        var el = document.getElementById(which === 'A' ? 'awcWhenA' : 'awcWhenB');
+        if (!el) return;
+        if (slot.when) el.textContent = 'Taken: ' + slot.when.toLocaleString();
+        else if (slot.file && slot.file.lastModified) el.textContent = 'No capture time in this photo - file date: ' + new Date(slot.file.lastModified).toLocaleDateString();
+        else el.textContent = 'No capture time in this photo.';
+    }
+
+    function awcMaybeEnable() {
+        var btn = document.getElementById('awcAnalyze');
+        if (btn) btn.disabled = !(awc.A && awc.B);
+    }
+
+    function awcWireDrop(zoneId, inputId, which) {
+        var zone = document.getElementById(zoneId), input = document.getElementById(inputId);
+        if (!zone || !input) return;
+        zone.addEventListener('click', function () { input.click(); });
+        zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('awc-over'); });
+        zone.addEventListener('dragleave', function () { zone.classList.remove('awc-over'); });
+        zone.addEventListener('drop', function (e) {
+            e.preventDefault(); zone.classList.remove('awc-over');
+            var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+            if (f && /^image\//.test(f.type)) awcReadSlot(which, f);
+        });
+        input.addEventListener('change', function () { if (input.files && input.files[0]) awcReadSlot(which, input.files[0]); });
+    }
+
+    // ---------------------------------------------------------------- analyze
+    function awcAnalyze() {
+        if (!awc.A || !awc.B) return;
+        awcStatus('Reading pixels on this device...', true);
+        awcLoadToCanvas(awc.A.url, function (eA, idA) {
+            if (eA) { awcStatus('Left photo: ' + eA.message); return; }
+            awcLoadToCanvas(awc.B.url, function (eB, idB) {
+                if (eB) { awcStatus('Right photo: ' + eB.message); return; }
+                awc.A.metrics = awcMetrics(idA);
+                awc.B.metrics = awcMetrics(idB);
+                var cmp = awcCompare(awc.A.metrics, awc.B.metrics);
+                var bio = awcReadStockForm();
+                awcRender(cmp, bio);
+                awcStatus('Done - analyzed on this device, nothing uploaded.');
+            });
+        });
+    }
+
+    function awcReadStockForm() {
+        var liters = parseFloat((document.getElementById('awcVolume') || {}).value || '');
+        var unit = (document.getElementById('awcVolUnit') || {}).value || 'l';
+        if (unit === 'gal' && liters) liters = liters * 3.785;
+        var stock = [];
+        AWC_SPECIES.forEach(function (sp) {
+            var el = document.getElementById('awcN_' + sp.id);
+            var c = el ? parseInt(el.value, 10) : 0;
+            if (c > 0) stock.push({ id: sp.id, count: c });
+        });
+        return awcBioload(stock, liters);
+    }
+
+    function awcGaugeHtml(clarity) {
+        var deg = Math.round(360 * Math.max(0, Math.min(100, clarity)) / 100);
+        var col = clarity >= 70 ? '#2e7d32' : clarity >= 45 ? '#f59f00' : '#e03131';
+        return '<div class="awc-ring" style="background:conic-gradient(' + col + ' ' + deg + 'deg,#e7e7e7 0deg)"><span>' + clarity + '</span></div>';
+    }
+
+    function awcRender(cmp, bio) {
+        var wrap = document.getElementById('awcResult');
+        if (!wrap) return;
+        wrap.classList.remove('w3-hide');
+        var stA = AWC_STATES[cmp.stateA], stB = AWC_STATES[cmp.stateB];
+        var badge = !cmp.comparable ? { badge: 'RETAKE', cls: 'w3-grey', title: 'Photos not comparable', note: 'The two shots differ too much in overall brightness to score a fair delta.' } : stB;
+        document.getElementById('awcBadge').innerHTML =
+            '<span class="w3-tag w3-round ' + badge.cls + '">' + badge.badge + '</span> <b>' + awcEsc(badge.title) + '</b>' +
+            (cmp.comparable && cmp.lowConfidence ? ' <span class="w3-text-grey">(lighting differs between the shots - read the delta with caution)</span>' : '');
+
+        // gauges + trend
+        var trendTxt = cmp.trend === 'improving' ? 'Improving (+' + cmp.deltaPts + ' points)'
+            : cmp.trend === 'worsening' ? 'Worsening (' + cmp.deltaPts + ' points)'
+            : cmp.trend === 'stable' ? 'Stable (' + (cmp.deltaPts >= 0 ? '+' : '') + cmp.deltaPts + ' points)'
+            : 'Not comparable';
+        document.getElementById('awcGauges').innerHTML =
+            '<div class="awc-gcol"><div class="awc-glabel">Before</div>' + awcGaugeHtml(awc.A.metrics.clarity) + '</div>' +
+            '<div class="awc-gcol awc-trend"><b>' + awcEsc(trendTxt) + '</b><br><span class="w3-text-grey">optical clarity, 0-100</span></div>' +
+            '<div class="awc-gcol"><div class="awc-glabel">After</div>' + awcGaugeHtml(awc.B.metrics.clarity) + '</div>';
+
+        // elapsed time between shots (EXIF when present)
+        var elapsed = '';
+        if (awc.A.when && awc.B.when) {
+            var hrs = Math.abs(awc.B.when - awc.A.when) / 3600000;
+            elapsed = hrs >= 48 ? Math.round(hrs / 24) + ' days apart' : Math.round(hrs) + ' hours apart';
+        }
+        document.getElementById('awcElapsed').textContent = elapsed ? ('Photos taken ' + elapsed + ' (from the photos\' own metadata).') : '';
+
+        // comparative table
+        function row(k, a, b, d) { return '<tr><td>' + k + '</td><td>' + a + '</td><td>' + b + '</td><td>' + d + '</td></tr>'; }
+        var mA = awc.A.metrics, mB = awc.B.metrics;
+        document.getElementById('awcTable').innerHTML =
+            row('<b>Optical state</b>', awcEsc(stA.title), awcEsc(stB.title), cmp.trend === 'improving' ? 'Improved' : cmp.trend === 'worsening' ? 'Worsened' : '-') +
+            row('Clarity score', String(mA.clarity), String(mB.clarity), (cmp.deltaPts >= 0 ? '+' : '') + cmp.deltaPts + ' pts') +
+            row('Haze (shadow lift)', Math.round(mA.haze * 100) + '%', Math.round(mB.haze * 100) + '%', (mB.haze < mA.haze ? 'Less scatter' : mB.haze > mA.haze ? 'More scatter' : '-')) +
+            row('Edge sharpness', mA.sharpness.toFixed(0), mB.sharpness.toFixed(0), (mB.sharpness > mA.sharpness ? 'Background crisper' : mB.sharpness < mA.sharpness ? 'Background softer' : '-')) +
+            row('Particle speckle', mA.speckle.toFixed(1), mB.speckle.toFixed(1), (mA.speckle - mB.speckle >= 2 ? 'Fewer particles' : mB.speckle - mA.speckle >= 2 ? 'More particles' : '-')) +
+            row('Color tint', awcEsc(mA.tint), awcEsc(mB.tint), '-');
+        document.getElementById('awcNote').textContent = stB.note;
+
+        // stocking
+        var bioEl = document.getElementById('awcBio');
+        if (bio) {
+            var bandTxt = { light: 'Lightly stocked', balanced: 'Balanced', heavy: 'Heavy', overstocked: 'Overstocked' }[bio.band];
+            bioEl.innerHTML = '<b>Stocking pressure: ' + awcEsc(bandTxt) + '</b> (' + bio.pressure + ' waste units per 10 L; rule-of-thumb minimum for the fish entered: ~' + Math.round(bio.minLiters) + ' L). This is an estimate from the counts you entered, not a measurement.';
+        } else {
+            bioEl.innerHTML = '<span class="w3-text-grey">Enter tank volume and fish counts above to add a stocking-pressure estimate to the report.</span>';
+        }
+
+        // action blueprint
+        var acts = awcBlueprint(cmp, bio);
+        document.getElementById('awcActions').innerHTML = acts.map(function (a) { return '<li>' + awcEsc(a) + '</li>'; }).join('');
+
+        // juxtapose slider - set BOTH img src first, then load the lib (it
+        // scans .juxtapose containers on load; same idiom as compress-image).
+        var jx = document.getElementById('awcJuxta');
+        jx.innerHTML = '<div class="juxtapose"><img src="' + awc.A.url + '" data-label="Before"><img src="' + awc.B.url + '" data-label="After"></div>';
+        loadDeferredStyle(AWC_JUXTA_CSS);
+        if (window.juxtapose && window.juxtapose.JXSlider) {
+            try { new window.juxtapose.JXSlider('#awcJuxta .juxtapose', [{ src: awc.A.url, label: 'Before' }, { src: awc.B.url, label: 'After' }], { showLabels: true, makeResponsive: true }); } catch (e) { void e; }
+        } else if (!awc.juxtaLoaded) {
+            awc.juxtaLoaded = true;
+            loadScript(AWC_JUXTA_JS, function () { });
+        }
+
+        // AI panels reflect current availability
+        awcRenderAiPanel();
+        var target = document.getElementById('awcResult');
+        if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ---------------------------------------------------------------- tier a
+    // Chrome Built-in Prompt API - capability probe per rule 9: only
+    // availability() === 'available' activates the tier (a 'downloadable'
+    // state would trigger a silent model download, which is forbidden).
+    function awcProbeBuiltin(cb) {
+        try {
+            if (typeof LanguageModel !== 'undefined' && LanguageModel && typeof LanguageModel.availability === 'function') {
+                LanguageModel.availability().then(function (a) { cb(a === 'available'); }, function () { cb(false); });
+                return;
+            }
+        } catch (e) { void e; }
+        cb(false);
+    }
+
+    function awcBuiltinRewrite() {
+        if (!awc.A || !awc.A.metrics || !awc.B || !awc.B.metrics) return;
+        var out = document.getElementById('awcAiProse');
+        out.textContent = 'Writing with the browser\'s built-in AI (on-device)...';
+        var mA = awc.A.metrics, mB = awc.B.metrics;
+        var cmp = awcCompare(mA, mB);
+        var facts = 'Facts measured from two photos of the same aquarium (before vs after): ' +
+            'clarity score ' + mA.clarity + ' vs ' + mB.clarity + ' (0-100); ' +
+            'haze ' + Math.round(mA.haze * 100) + '% vs ' + Math.round(mB.haze * 100) + '%; ' +
+            'edge sharpness ' + mA.sharpness.toFixed(0) + ' vs ' + mB.sharpness.toFixed(0) + '; ' +
+            'particle speckle ' + mA.speckle.toFixed(1) + ' vs ' + mB.speckle.toFixed(1) + '; ' +
+            'tint ' + mA.tint + ' vs ' + mB.tint + '; optical pattern: ' + cmp.stateA + ' then ' + cmp.stateB + '.';
+        try {
+            LanguageModel.create().then(function (session) {
+                return session.prompt(
+                    'You are an experienced freshwater aquarist. Rewrite these measurements as a short, calm 3-4 sentence assessment for the tank owner. Use ONLY the facts given; do not invent chemistry readings (no ammonia/pH numbers). ' + facts
+                );
+            }).then(function (text) { out.textContent = text; })
+              .catch(function (e) { out.textContent = 'The built-in AI could not run: ' + (e && e.message || e); });
+        } catch (e) { out.textContent = 'The built-in AI could not run: ' + (e && e.message || e); }
+    }
+
+    // ---------------------------------------------------------------- tier b
+    function awcLoadClip() {
+        if (awc.clip) return Promise.resolve(awc.clip);
+        if (awc.clipLoading) return awc.clipLoading;
+        var bar = document.getElementById('awcClipBar');
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '');
+        awc.clipLoading = import(base + '/vendor/transformers/transformers.min.js').then(function (tf) {
+            tf.env.allowLocalModels = false;
+            tf.env.backends.onnx.wasm.wasmPaths = base + '/vendor/transformers/';
+            tf.env.backends.onnx.wasm.numThreads = 1; // GitHub Pages: no COOP/COEP
+            var seen = {};
+            return tf.pipeline('zero-shot-image-classification', AWC_CLIP_MODEL, {
+                device: 'wasm', dtype: 'q8',
+                progress_callback: function (info) {
+                    if (!bar || !info || !info.file) return;
+                    if (info.status === 'progress' && info.total) {
+                        seen[info.file] = info.loaded / info.total;
+                        var files = Object.keys(seen); var sum = 0;
+                        files.forEach(function (f) { sum += seen[f]; });
+                        var pct = Math.round(100 * sum / Math.max(files.length, 1));
+                        bar.style.width = Math.min(99, pct) + '%';
+                        bar.textContent = Math.min(99, pct) + '%';
+                    }
+                }
+            });
+        }).then(function (pipe) {
+            awc.clip = pipe;
+            if (bar) { bar.style.width = '100%'; bar.textContent = 'ready'; }
+            return pipe;
+        }).catch(function (e) { awc.clipLoading = null; throw e; });
+        return awc.clipLoading;
+    }
+
+    function awcRunClip() {
+        if (!awc.A || !awc.B) { awcStatus('Add both photos first, then run the AI check.'); return; }
+        var box = document.getElementById('awcClipOut');
+        var prog = document.getElementById('awcClipProgress');
+        if (prog) prog.classList.remove('w3-hide');
+        box.innerHTML = '<span class="w3-text-grey">Downloading the model once (about ' + AWC_CLIP_MB + ' MB, cached by the browser), then checking both photos on this device...</span>';
+        awcLoadClip().then(function (clf) {
+            var waterLabels = AWC_WATER_LABELS.map(function (l) { return l[0]; });
+            var speciesLabels = AWC_SPECIES_LABELS.map(function (l) { return l[0]; });
+            return clf(awc.A.url, waterLabels).then(function (wA) {
+                return clf(awc.B.url, waterLabels).then(function (wB) {
+                    return clf(awc.B.url, speciesLabels).then(function (sp) { return { wA: wA, wB: wB, sp: sp }; });
+                });
+            });
+        }).then(function (r) {
+            function mapLabel(txt, set) { for (var i = 0; i < set.length; i++) if (set[i][0] === txt) return set[i][1]; return null; }
+            var aKey = mapLabel(r.wA[0].label, AWC_WATER_LABELS), bKey = mapLabel(r.wB[0].label, AWC_WATER_LABELS);
+            var det = awcCompare(awc.A.metrics || awcMetricsFallback(), awc.B.metrics || awcMetricsFallback());
+            var agree = awc.B.metrics ? (bKey === det.stateB || (bKey === 'clear' && det.stateB === 'light_haze') || (bKey === 'biological_haze' && det.stateB === 'light_haze')) : null;
+            var html = '<p><b>AI sees (before):</b> ' + awcEsc(r.wA[0].label) + ' (' + Math.round(r.wA[0].score * 100) + '%)<br>' +
+                       '<b>AI sees (after):</b> ' + awcEsc(r.wB[0].label) + ' (' + Math.round(r.wB[0].score * 100) + '%)' +
+                       (agree === true ? ' <span class="w3-text-green">- agrees with the pixel measurements</span>' : agree === false ? ' <span class="w3-text-orange">- differs from the pixel measurements; trust the numbers and your own eyes</span>' : '') + '</p>';
+            var picks = r.sp.filter(function (x) { return x.score > 0.18 && mapLabel(x.label, AWC_SPECIES_LABELS); }).slice(0, 3);
+            if (picks.length) {
+                html += '<p><b>The AI thinks it may see:</b> ' + picks.map(function (x) { return awcEsc(x.label) + ' (' + Math.round(x.score * 100) + '%)'; }).join(', ') +
+                        '. These are guesses - tick to prefill the stocking form, then correct the counts yourself:</p><p>' +
+                        picks.map(function (x) { var id = mapLabel(x.label, AWC_SPECIES_LABELS); return '<button type="button" class="w3-button w3-small w3-light-grey awc-prefill" data-sp="' + id + '">+1 ' + awcEsc(id) + '</button> '; }).join('') + '</p>';
+            } else {
+                html += '<p class="w3-text-grey">The AI did not recognize a fish it is confident about in the after photo - enter your stocking by hand above.</p>';
+            }
+            box.innerHTML = html;
+            var btns = box.getElementsByClassName('awc-prefill');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].addEventListener('click', function () {
+                    var el = document.getElementById('awcN_' + this.getAttribute('data-sp'));
+                    if (el) el.value = (parseInt(el.value, 10) || 0) + 1;
+                });
+            }
+        }).catch(function (e) {
+            box.innerHTML = '<span class="w3-text-red">The on-device AI could not run here: ' + awcEsc(e && e.message || String(e)) + '. The pixel measurements above are unaffected.</span>';
+        });
+    }
+    function awcMetricsFallback() { return { meanLuma: 0.5, clarity: 0, haze: 0, sharpness: 0, speckle: 0, tint: 'neutral', contrast: 0 }; }
+
+    function awcRenderAiPanel() {
+        var el = document.getElementById('awcBuiltinRow');
+        if (!el) return;
+        if (awc.builtin) el.classList.remove('w3-hide'); else el.classList.add('w3-hide');
+    }
+
+    // ---------------------------------------------------------------- boot
+    function doAfterPageRendered() {
+        awcWireDrop('awcDropA', 'awcFileA', 'A');
+        awcWireDrop('awcDropB', 'awcFileB', 'B');
+        var analyze = document.getElementById('awcAnalyze');
+        if (analyze) analyze.addEventListener('click', awcAnalyze);
+        var clipBtn = document.getElementById('awcClipBtn');
+        if (clipBtn) clipBtn.addEventListener('click', awcRunClip);
+        var biBtn = document.getElementById('awcBuiltinBtn');
+        if (biBtn) biBtn.addEventListener('click', awcBuiltinRewrite);
+        var demoBtn = document.getElementById('awcDemoBtn');
+        if (demoBtn) demoBtn.addEventListener('click', function () {
+            var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '');
+            awc.A = { url: base + AWC_SAMPLE_A, name: 'sample day 1', when: null, file: null };
+            awc.B = { url: base + AWC_SAMPLE_B, name: 'sample day 4', when: null, file: null };
+            var tA = document.getElementById('awcThumbA'), tB = document.getElementById('awcThumbB');
+            if (tA) { tA.src = awc.A.url; tA.style.display = 'block'; }
+            if (tB) { tB.src = awc.B.url; tB.style.display = 'block'; }
+            var nA = document.getElementById('awcNameA'), nB = document.getElementById('awcNameB');
+            if (nA) nA.textContent = 'Bundled sample - day 1 (milky)';
+            if (nB) nB.textContent = 'Bundled sample - day 4 (clear)';
+            awcMaybeEnable();
+            awcAnalyze();
+        });
+        awcProbeBuiltin(function (ok) { awc.builtin = ok; awcRenderAiPanel(); });
+        awcStatus('Add two photos of the same tank - nothing leaves this device.');
+    }
+</script>

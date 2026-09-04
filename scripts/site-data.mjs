@@ -14,6 +14,25 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // aquarium-water-checker guides (ai-local aquarium-fire1) + locale fanout
+  '/guides/aquarium-water-checker-when.html',
+  '/guides/aquarium-water-checker-step-by-step.html',
+  '/guides/aquarium-water-checker-vs-alternatives.html',
+  '/guides/pt/aquarium-water-checker-when.html',
+  '/guides/pt/aquarium-water-checker-step-by-step.html',
+  '/guides/pt/aquarium-water-checker-vs-alternatives.html',
+  '/guides/es/aquarium-water-checker-when.html',
+  '/guides/es/aquarium-water-checker-step-by-step.html',
+  '/guides/es/aquarium-water-checker-vs-alternatives.html',
+  '/guides/vi/aquarium-water-checker-when.html',
+  '/guides/vi/aquarium-water-checker-step-by-step.html',
+  '/guides/vi/aquarium-water-checker-vs-alternatives.html',
+  '/guides/id/aquarium-water-checker-when.html',
+  '/guides/id/aquarium-water-checker-step-by-step.html',
+  '/guides/id/aquarium-water-checker-vs-alternatives.html',
+  '/guides/de/aquarium-water-checker-when.html',
+  '/guides/de/aquarium-water-checker-step-by-step.html',
+  '/guides/de/aquarium-water-checker-vs-alternatives.html',
   '/guides/hex-rgb-converter-vs-alternatives.html',
   '/guides/hex-rgb-converter-step-by-step.html',
   '/guides/hex-rgb-converter-when.html',
@@ -17094,6 +17113,7 @@ export const ALIAS_ROUTES = {
   '/rich-text-editor.html': '/developer-tools/rich-text-editor.html',
   '/css-border-radius-generator.html': '/developer-tools/css-border-radius-generator.html',
   '/hex-to-rgb-converter.html': '/developer-tools/hex-to-rgb-converter.html',
+  '/aquarium-water-checker.html': '/utility-tools/aquarium-water-checker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29490,6 +29510,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/hex-rgb-converter-when.html': 'guide/de/hex-rgb-converter-when.jsp',
   '/guides/de/hex-rgb-converter-step-by-step.html': 'guide/de/hex-rgb-converter-step-by-step.jsp',
   '/guides/de/hex-rgb-converter-vs-alternatives.html': 'guide/de/hex-rgb-converter-vs-alternatives.jsp',
+  '/utility-tools/aquarium-water-checker.html': 'utility/aquarium-water-checker.jsp',
+  '/guides/aquarium-water-checker-when.html': 'guide/aquarium-water-checker-when.jsp',
+  '/guides/aquarium-water-checker-step-by-step.html': 'guide/aquarium-water-checker-step-by-step.jsp',
+  '/guides/aquarium-water-checker-vs-alternatives.html': 'guide/aquarium-water-checker-vs-alternatives.jsp',
+  '/guides/pt/aquarium-water-checker-when.html': 'guide/pt/aquarium-water-checker-when.jsp',
+  '/guides/pt/aquarium-water-checker-step-by-step.html': 'guide/pt/aquarium-water-checker-step-by-step.jsp',
+  '/guides/pt/aquarium-water-checker-vs-alternatives.html': 'guide/pt/aquarium-water-checker-vs-alternatives.jsp',
+  '/guides/es/aquarium-water-checker-when.html': 'guide/es/aquarium-water-checker-when.jsp',
+  '/guides/es/aquarium-water-checker-step-by-step.html': 'guide/es/aquarium-water-checker-step-by-step.jsp',
+  '/guides/es/aquarium-water-checker-vs-alternatives.html': 'guide/es/aquarium-water-checker-vs-alternatives.jsp',
+  '/guides/vi/aquarium-water-checker-when.html': 'guide/vi/aquarium-water-checker-when.jsp',
+  '/guides/vi/aquarium-water-checker-step-by-step.html': 'guide/vi/aquarium-water-checker-step-by-step.jsp',
+  '/guides/vi/aquarium-water-checker-vs-alternatives.html': 'guide/vi/aquarium-water-checker-vs-alternatives.jsp',
+  '/guides/id/aquarium-water-checker-when.html': 'guide/id/aquarium-water-checker-when.jsp',
+  '/guides/id/aquarium-water-checker-step-by-step.html': 'guide/id/aquarium-water-checker-step-by-step.jsp',
+  '/guides/id/aquarium-water-checker-vs-alternatives.html': 'guide/id/aquarium-water-checker-vs-alternatives.jsp',
+  '/guides/de/aquarium-water-checker-when.html': 'guide/de/aquarium-water-checker-when.jsp',
+  '/guides/de/aquarium-water-checker-step-by-step.html': 'guide/de/aquarium-water-checker-step-by-step.jsp',
+  '/guides/de/aquarium-water-checker-vs-alternatives.html': 'guide/de/aquarium-water-checker-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
