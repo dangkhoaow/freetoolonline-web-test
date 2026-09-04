@@ -14,6 +14,25 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/hex-rgb-converter-vs-alternatives.html',
+  '/guides/hex-rgb-converter-step-by-step.html',
+  '/guides/hex-rgb-converter-when.html',
+  // hex-rgb-converter locale fanout (new-tool-discovery fire741)
+  '/guides/pt/hex-rgb-converter-when.html',
+  '/guides/pt/hex-rgb-converter-step-by-step.html',
+  '/guides/pt/hex-rgb-converter-vs-alternatives.html',
+  '/guides/es/hex-rgb-converter-when.html',
+  '/guides/es/hex-rgb-converter-step-by-step.html',
+  '/guides/es/hex-rgb-converter-vs-alternatives.html',
+  '/guides/vi/hex-rgb-converter-when.html',
+  '/guides/vi/hex-rgb-converter-step-by-step.html',
+  '/guides/vi/hex-rgb-converter-vs-alternatives.html',
+  '/guides/id/hex-rgb-converter-when.html',
+  '/guides/id/hex-rgb-converter-step-by-step.html',
+  '/guides/id/hex-rgb-converter-vs-alternatives.html',
+  '/guides/de/hex-rgb-converter-when.html',
+  '/guides/de/hex-rgb-converter-step-by-step.html',
+  '/guides/de/hex-rgb-converter-vs-alternatives.html',
   '/guides/css-border-radius-generator-vs-alternatives.html',
   '/guides/css-border-radius-generator-step-by-step.html',
   '/guides/css-border-radius-generator-when.html',
@@ -17074,6 +17093,7 @@ export const ALIAS_ROUTES = {
   '/markdown-table-generator.html': '/developer-tools/markdown-table-generator.html',
   '/rich-text-editor.html': '/developer-tools/rich-text-editor.html',
   '/css-border-radius-generator.html': '/developer-tools/css-border-radius-generator.html',
+  '/hex-to-rgb-converter.html': '/developer-tools/hex-to-rgb-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29450,6 +29470,26 @@ export const JSP_BY_ROUTE = {
   '/guides/css-border-radius-generator-when.html': 'guide/css-border-radius-generator-when.jsp',
   '/guides/css-border-radius-generator-step-by-step.html': 'guide/css-border-radius-generator-step-by-step.jsp',
   '/guides/css-border-radius-generator-vs-alternatives.html': 'guide/css-border-radius-generator-vs-alternatives.jsp',
+  '/developer-tools/hex-to-rgb-converter.html': 'utility/hex-to-rgb-converter.jsp',
+  '/guides/hex-rgb-converter-when.html': 'guide/hex-rgb-converter-when.jsp',
+  '/guides/hex-rgb-converter-step-by-step.html': 'guide/hex-rgb-converter-step-by-step.jsp',
+  '/guides/hex-rgb-converter-vs-alternatives.html': 'guide/hex-rgb-converter-vs-alternatives.jsp',
+  // hex-rgb-converter locale fanout (new-tool-discovery fire741)
+  '/guides/pt/hex-rgb-converter-when.html': 'guide/pt/hex-rgb-converter-when.jsp',
+  '/guides/pt/hex-rgb-converter-step-by-step.html': 'guide/pt/hex-rgb-converter-step-by-step.jsp',
+  '/guides/pt/hex-rgb-converter-vs-alternatives.html': 'guide/pt/hex-rgb-converter-vs-alternatives.jsp',
+  '/guides/es/hex-rgb-converter-when.html': 'guide/es/hex-rgb-converter-when.jsp',
+  '/guides/es/hex-rgb-converter-step-by-step.html': 'guide/es/hex-rgb-converter-step-by-step.jsp',
+  '/guides/es/hex-rgb-converter-vs-alternatives.html': 'guide/es/hex-rgb-converter-vs-alternatives.jsp',
+  '/guides/vi/hex-rgb-converter-when.html': 'guide/vi/hex-rgb-converter-when.jsp',
+  '/guides/vi/hex-rgb-converter-step-by-step.html': 'guide/vi/hex-rgb-converter-step-by-step.jsp',
+  '/guides/vi/hex-rgb-converter-vs-alternatives.html': 'guide/vi/hex-rgb-converter-vs-alternatives.jsp',
+  '/guides/id/hex-rgb-converter-when.html': 'guide/id/hex-rgb-converter-when.jsp',
+  '/guides/id/hex-rgb-converter-step-by-step.html': 'guide/id/hex-rgb-converter-step-by-step.jsp',
+  '/guides/id/hex-rgb-converter-vs-alternatives.html': 'guide/id/hex-rgb-converter-vs-alternatives.jsp',
+  '/guides/de/hex-rgb-converter-when.html': 'guide/de/hex-rgb-converter-when.jsp',
+  '/guides/de/hex-rgb-converter-step-by-step.html': 'guide/de/hex-rgb-converter-step-by-step.jsp',
+  '/guides/de/hex-rgb-converter-vs-alternatives.html': 'guide/de/hex-rgb-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
