@@ -1,0 +1,253 @@
+<script>
+    // Rich text editor skeleton (rich-text-editor) - 100% client-side WYSIWYG.
+    // No upload, no backend, no persistence. Registry Gate-H entry:
+    // wysiwyg_editor_contenteditable. A native contenteditable surface is
+    // formatted via the Selection/Range API (link insertion) and the still-
+    // universally-supported execCommand primitives (bold/italic/underline/
+    // lists/heading/removeFormat). Pasted HTML is sanitized (script + on*
+    // handlers + javascript: URLs stripped) before it enters the document.
+    // Framework contract: doAfterPageRendered(); renders nothing on its own -
+    // the editing surface + toolbar live in BODYHTML and are wired here.
+
+    web.localUpload = false;
+
+    // ---- paste sanitizer (inline; no DOMPurify vendored) --------------------
+    // Parse untrusted HTML in a detached document, drop dangerous nodes and
+    // attributes, and return safe HTML. Never executes the input.
+    function rteSanitizeHtml(dirty) {
+        var doc = document.implementation.createHTMLDocument('');
+        var container = doc.createElement('div');
+        container.innerHTML = String(dirty == null ? '' : dirty);
+        // Remove elements that can execute or load code.
+        var kill = container.querySelectorAll('script,style,iframe,object,embed,link,meta,noscript,template,form');
+        for (var i = 0; i < kill.length; i++) { kill[i].parentNode.removeChild(kill[i]); }
+        // Walk every remaining element and scrub attributes.
+        var all = container.getElementsByTagName('*');
+        for (var j = 0; j < all.length; j++) {
+            var el = all[j];
+            var attrs = el.attributes;
+            for (var k = attrs.length - 1; k >= 0; k--) {
+                var name = attrs[k].name;
+                var val = attrs[k].value || '';
+                var lname = name.toLowerCase();
+                if (lname.indexOf('on') === 0) { el.removeAttribute(name); continue; } // onclick, onerror, ...
+                if ((lname === 'href' || lname === 'src' || lname === 'xlink:href') &&
+                    /^\s*(javascript|data|vbscript):/i.test(val)) {
+                    el.removeAttribute(name);
+                }
+                if (lname === 'style' && /expression\s*\(|url\s*\(\s*['"]?\s*javascript:/i.test(val)) {
+                    el.removeAttribute(name);
+                }
+            }
+        }
+        return container.innerHTML;
+    }
+
+    // Insert an HTML string at the current caret inside the editor.
+    function rteInsertHtmlAtCaret(editor, html) {
+        editor.focus();
+        var sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) { editor.innerHTML += html; return; }
+        var range = sel.getRangeAt(0);
+        range.deleteContents();
+        var temp = document.createElement('div');
+        temp.innerHTML = html;
+        var frag = document.createDocumentFragment(), node, last = null;
+        while ((node = temp.firstChild)) { last = frag.appendChild(node); }
+        range.insertNode(frag);
+        if (last) {
+            range = range.cloneRange();
+            range.setStartAfter(last);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    }
+
+    // Wrap the current selection in an anchor via the Selection/Range API.
+    function rteWrapSelectionInLink(editor, url) {
+        editor.focus();
+        var sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false;
+        var range = sel.getRangeAt(0);
+        var a = document.createElement('a');
+        a.setAttribute('href', url);
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener nofollow');
+        try {
+            range.surroundContents(a);
+        } catch (e) {
+            // surroundContents throws when the selection spans element boundaries;
+            // fall back to extracting the contents and re-inserting inside the anchor.
+            a.appendChild(range.extractContents());
+            range.insertNode(a);
+        }
+        sel.removeAllRanges();
+        return true;
+    }
+
+    function rteExec(cmd, value) {
+        try { return document.execCommand(cmd, false, value); } catch (e) { return false; }
+    }
+
+    function rteCopyText(text, statusEl, okMsg) {
+        function fallback() {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.focus(); ta.select();
+            var ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+            document.body.removeChild(ta);
+            statusEl.textContent = ok ? okMsg : 'Copy failed - select the text manually and press Ctrl+C.';
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+                statusEl.textContent = okMsg;
+            }, fallback);
+        } else {
+            fallback();
+        }
+    }
+
+    function doAfterPageRendered() {
+        var editor = document.getElementById('rteEditor');
+        if (!editor) return; // not a rich-text-editor page
+        var toolbar = document.getElementById('rteToolbar');
+        var source = document.getElementById('rteSource');
+        var status = document.getElementById('rteStatus');
+        var toggleBtn = document.getElementById('rteToggleSource');
+        var copyHtmlBtn = document.getElementById('rteCopyHtml');
+        var copyRichBtn = document.getElementById('rteCopyRich');
+
+        function syncSource() {
+            if (source && source.style.display !== 'none') {
+                source.textContent = editor.innerHTML;
+            }
+        }
+
+        // Toolbar: one delegated click handler for every button.
+        if (toolbar) {
+            toolbar.addEventListener('click', function (ev) {
+                var btn = ev.target.closest ? ev.target.closest('[data-rte-cmd]') : null;
+                if (!btn) return;
+                ev.preventDefault();
+                var cmd = btn.getAttribute('data-rte-cmd');
+                editor.focus();
+                switch (cmd) {
+                    case 'bold': rteExec('bold'); break;
+                    case 'italic': rteExec('italic'); break;
+                    case 'underline': rteExec('underline'); break;
+                    case 'heading': rteExec('formatBlock', 'H2'); break;
+                    case 'ul': rteExec('insertUnorderedList'); break;
+                    case 'ol': rteExec('insertOrderedList'); break;
+                    case 'link':
+                        var sel = window.getSelection();
+                        if (!sel || sel.isCollapsed) {
+                            status.textContent = 'Select the text you want to turn into a link first.';
+                            break;
+                        }
+                        var url = window.prompt('Link URL (https://...)', 'https://');
+                        if (url) {
+                            var clean = String(url).trim();
+                            if (/^\s*(javascript|data|vbscript):/i.test(clean)) {
+                                status.textContent = 'That URL scheme is not allowed.';
+                                break;
+                            }
+                            if (rteWrapSelectionInLink(editor, clean)) {
+                                status.textContent = 'Link added.';
+                            }
+                        }
+                        break;
+                    case 'clear':
+                        rteExec('removeFormat');
+                        rteExec('unlink');
+                        break;
+                }
+                syncSource();
+            });
+        }
+
+        // Paste: sanitize the pasted HTML before it enters the document.
+        editor.addEventListener('paste', function (ev) {
+            var cd = ev.clipboardData || window.clipboardData;
+            if (!cd) return; // let the browser handle it
+            ev.preventDefault();
+            var html = cd.getData('text/html');
+            if (html) {
+                rteInsertHtmlAtCaret(editor, rteSanitizeHtml(html));
+            } else {
+                var text = cd.getData('text/plain') || '';
+                // Escape text so it inserts literally, not as markup.
+                var esc = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+                rteInsertHtmlAtCaret(editor, esc);
+            }
+            syncSource();
+        });
+
+        editor.addEventListener('input', syncSource);
+
+        // Show / hide HTML source.
+        if (toggleBtn && source) {
+            toggleBtn.addEventListener('click', function () {
+                if (source.style.display === 'none') {
+                    source.textContent = editor.innerHTML;
+                    source.style.display = 'block';
+                    toggleBtn.textContent = 'Hide HTML source';
+                } else {
+                    source.style.display = 'none';
+                    toggleBtn.textContent = 'Show HTML source';
+                }
+            });
+        }
+
+        // Copy the raw HTML markup.
+        if (copyHtmlBtn) {
+            copyHtmlBtn.addEventListener('click', function () {
+                var html = editor.innerHTML;
+                if (!html.trim()) { status.textContent = 'Nothing to copy yet - type something first.'; return; }
+                rteCopyText(html, status, 'HTML copied to clipboard.');
+            });
+        }
+
+        // Copy rich text: put both text/html and text/plain on the clipboard so
+        // pasting into a word processor keeps the formatting.
+        if (copyRichBtn) {
+            copyRichBtn.addEventListener('click', function () {
+                var html = editor.innerHTML;
+                var text = editor.innerText || editor.textContent || '';
+                if (!html.trim()) { status.textContent = 'Nothing to copy yet - type something first.'; return; }
+                if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+                    try {
+                        var item = new ClipboardItem({
+                            'text/html': new Blob([html], { type: 'text/html' }),
+                            'text/plain': new Blob([text], { type: 'text/plain' })
+                        });
+                        navigator.clipboard.write([item]).then(function () {
+                            status.textContent = 'Rich text copied to clipboard.';
+                        }, function () {
+                            // Fall back to selecting the editor and letting the browser copy.
+                            rteSelectAndCopy();
+                        });
+                        return;
+                    } catch (e) { /* fall through */ }
+                }
+                rteSelectAndCopy();
+            });
+        }
+
+        function rteSelectAndCopy() {
+            var range = document.createRange();
+            range.selectNodeContents(editor);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            var ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+            sel.removeAllRanges();
+            status.textContent = ok ? 'Rich text copied to clipboard.' : 'Copy failed - select the text manually and press Ctrl+C.';
+        }
+    }
+</script>
