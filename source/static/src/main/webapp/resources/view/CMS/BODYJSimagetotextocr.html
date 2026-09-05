@@ -1,9 +1,18 @@
 <script>
     // Self-contained IN-BROWSER OCR (image-to-text-ocr) - Tesseract.js (WASM), ZERO upload.
-    // Reads a chosen image entirely in this browser tab, runs OCR via the
+    // Reads a chosen OR pasted image entirely in this browser tab, runs OCR via the
     // self-hosted /vendor/tesseract engine, and renders the recognized text for
     // copy/download. No server, no upload - mirrors the /vendor/pdf-lib and
     // /vendor/ffmpeg lazy-load pattern the existing in-browser tools already use.
+    //
+    // Cleanup ladder (ai-local fire47, 2026-09-05):
+    //   tier-a: Chrome Built-in Proofreader API - CAPABILITY-probed via
+    //           Proofreader.availability() (never assumed from presence, rule 9);
+    //           the "Fix errors with AI" button only renders when the probe passes.
+    //   tier-c: deterministic tidy pass (join hyphen-split words, unwrap
+    //           hard-wrapped lines, collapse repeated spaces) - always available,
+    //           never changes spelling.
+    //   Both keep a one-level undo of the text they replaced.
     //
     // NOT implemented (anti-claims, must be in tool-<slug>/SKILL.md ## NOT implemented):
     //   - Recognizes one language at a time (English by default); does not
@@ -13,6 +22,8 @@
     //     bounding boxes.
     //   - First run on a device downloads the OCR engine + language data (a few
     //     megabytes) - later runs on that device are faster (browser-cached).
+    //   - The AI fix appears only in browsers that ship a built-in proofreading
+    //     model; it can also change words that were recognized correctly.
 
     function ftoLoadTesseract() {
         if (window.Tesseract && window.Tesseract.createWorker) { return Promise.resolve(); }
@@ -33,40 +44,144 @@
         return window.__ftoTesseractPromise;
     }
 
+    // Deterministic tidy pass (tier-c cleanup): joins words split by a hyphen at a
+    // line break, unwraps hard-wrapped prose lines (only when the next line starts
+    // lowercase or with a digit, so lists and headings keep their line breaks),
+    // collapses repeated blank lines and repeated spaces. Never changes spelling.
+    function ftoTidyOcrText(t) {
+        var s = String(t || '').replace(/\r\n/g, '\n');
+        s = s.replace(/[ \t]+\n/g, '\n');
+        s = s.replace(/([A-Za-z])-\n([a-z])/g, '$1$2');
+        s = s.replace(/([^\n.!?:;-])\n(?!\n)([a-z0-9(])/g, '$1 $2');
+        s = s.replace(/\n{3,}/g, '\n\n');
+        s = s.replace(/[ \t]{2,}/g, ' ');
+        return s.trim();
+    }
+
+    // Capability probe for the Chrome Built-in Proofreader API (tier-a cleanup).
+    // Presence of the global is NOT capability (rule 9) - availability() decides.
+    // Resolves to 'available' | 'downloadable' | null (null = hide the AI button).
+    function ftoProbeProofreader() {
+        try {
+            if (typeof self.Proofreader === 'undefined' || !self.Proofreader ||
+                typeof self.Proofreader.availability !== 'function') {
+                return Promise.resolve(null);
+            }
+            return Promise.resolve(self.Proofreader.availability({ expectedInputLanguages: ['en'] }))
+                .then(function (a) { return (a === 'available' || a === 'downloadable') ? a : null; })
+                .catch(function () { return null; });
+        } catch (e) { return Promise.resolve(null); }
+    }
+
     function doAfterPageRendered() {
         var fileEl = document.getElementById('ocrFile');
         var previewEl = document.getElementById('ocrPreview');
         var runBtn = document.getElementById('ocrRunBtn');
+        var pasteBtn = document.getElementById('ocrPasteBtn');
         var statusEl = document.getElementById('ocrStatus');
         var errEl = document.getElementById('ocrError');
         var outputWrap = document.getElementById('ocrOutputWrap');
         var outputEl = document.getElementById('ocrOutput');
         var copyBtn = document.getElementById('ocrCopyBtn');
         var dl = document.getElementById('ocrDownload');
+        var tidyBtn = document.getElementById('ocrTidyBtn');
+        var aiFixBtn = document.getElementById('ocrAiFixBtn');
+        var undoBtn = document.getElementById('ocrUndoBtn');
         if (!fileEl || !runBtn || !outputEl) { return; }   // not the image-to-text-ocr page
 
         var sharedWorker = null;   // reused across recognitions on this page view
         var previewUrl = null;
+        var pastedFile = null;     // fallback when DataTransfer -> input.files is unsupported
+        var preCleanupText = null; // one-level undo for tidy / AI fix
+        var proofreaderInst = null;
 
         function setStatus(m) { if (statusEl) { statusEl.textContent = m || ''; } }
         function setErr(m) { if (errEl) { errEl.textContent = m || ''; } }
 
-        fileEl.addEventListener('change', function () {
-            setErr(''); setStatus('');
-            if (outputWrap) { outputWrap.style.display = 'none'; }
+        function showPreviewFor(f) {
             if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
-            var f = fileEl.files && fileEl.files[0];
             if (!f || !previewEl) { return; }
             previewUrl = URL.createObjectURL(f);
             previewEl.src = previewUrl;
             previewEl.style.display = '';
+        }
+
+        function currentFile() {
+            return (fileEl.files && fileEl.files[0]) || pastedFile;
+        }
+
+        function acceptPastedImage(f, sourceLabel) {
+            setErr(''); setStatus('');
+            if (outputWrap) { outputWrap.style.display = 'none'; }
+            pastedFile = f;
+            try {
+                var dt = new DataTransfer();
+                dt.items.add(f);
+                fileEl.files = dt.files;
+            } catch (e) { void e; /* pastedFile fallback covers this */ }
+            showPreviewFor(f);
+            setStatus('Screenshot received from ' + sourceLabel + ' - click Extract text.');
+        }
+
+        fileEl.addEventListener('change', function () {
+            setErr(''); setStatus('');
+            pastedFile = null;
+            if (outputWrap) { outputWrap.style.display = 'none'; }
+            var f = fileEl.files && fileEl.files[0];
+            if (!f) { return; }
+            showPreviewFor(f);
         });
+
+        // Ctrl+V / Cmd+V anywhere on the page picks up an image from the clipboard.
+        // Works without any permission prompt; ignores text-only pastes.
+        document.addEventListener('paste', function (ev) {
+            var items = ev.clipboardData && ev.clipboardData.items;
+            if (!items) { return; }
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].kind === 'file' && /^image\//.test(items[i].type)) {
+                    var f = items[i].getAsFile();
+                    if (f) {
+                        ev.preventDefault();
+                        acceptPastedImage(f, 'the clipboard (Ctrl+V)');
+                    }
+                    return;
+                }
+            }
+        });
+
+        if (pasteBtn) {
+            pasteBtn.addEventListener('click', function () {
+                setErr('');
+                // navigator.clipboard.read needs a user gesture + permission and is
+                // not available everywhere - the Ctrl+V path above is the fallback.
+                if (!navigator.clipboard || typeof navigator.clipboard.read !== 'function') {
+                    setStatus('This browser does not expose clipboard reading to buttons - press Ctrl+V (Cmd+V on a Mac) on this page instead.');
+                    return;
+                }
+                navigator.clipboard.read().then(function (clipItems) {
+                    for (var i = 0; i < clipItems.length; i++) {
+                        var types = clipItems[i].types || [];
+                        for (var j = 0; j < types.length; j++) {
+                            if (/^image\//.test(types[j])) {
+                                return clipItems[i].getType(types[j]).then(function (blob) {
+                                    var f = new File([blob], 'pasted-screenshot.png', { type: blob.type || 'image/png' });
+                                    acceptPastedImage(f, 'the clipboard');
+                                });
+                            }
+                        }
+                    }
+                    setStatus('No image found on the clipboard - copy a screenshot first, then try again (or press Ctrl+V).');
+                }).catch(function () {
+                    setStatus('Clipboard permission was not granted - press Ctrl+V (Cmd+V on a Mac) on this page instead.');
+                });
+            });
+        }
 
         runBtn.addEventListener('click', function () {
             setErr(''); setStatus('');
             if (outputWrap) { outputWrap.style.display = 'none'; }
-            var f = fileEl.files && fileEl.files[0];
-            if (!f) { setErr('Choose an image first.'); return; }
+            var f = currentFile();
+            if (!f) { setErr('Choose an image or paste a screenshot first.'); return; }
             runBtn.disabled = true;
             setStatus('Loading the OCR engine in your browser (first run on this device downloads a few megabytes) ...');
             var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/tesseract';
@@ -91,6 +206,8 @@
                 .then(function (result) {
                     var text = (result && result.data && result.data.text) ? result.data.text : '';
                     outputEl.value = text;
+                    preCleanupText = null;
+                    if (undoBtn) { undoBtn.style.display = 'none'; }
                     if (outputWrap) { outputWrap.style.display = ''; }
                     setStatus(text.trim()
                         ? 'Done in your browser - no upload. Review the text below (OCR is not perfect - check names, numbers, and punctuation).'
@@ -101,6 +218,72 @@
                 })
                 .then(function () { runBtn.disabled = false; });
         });
+
+        function rememberForUndo() {
+            preCleanupText = outputEl.value || '';
+            if (undoBtn) { undoBtn.style.display = ''; }
+        }
+
+        if (tidyBtn) {
+            tidyBtn.addEventListener('click', function () {
+                setErr('');
+                var t = outputEl.value || '';
+                if (!t.trim()) { setStatus('Nothing to tidy yet - extract text first.'); return; }
+                var tidied = ftoTidyOcrText(t);
+                if (tidied === t.trim()) { setStatus('Tidy made no changes - the text had no split words or wrapped lines to fix.'); return; }
+                rememberForUndo();
+                outputEl.value = tidied;
+                setStatus('Tidied: joined words split across line breaks and unwrapped hard-wrapped lines. Spelling was not changed. Undo restores the raw text.');
+            });
+        }
+
+        if (undoBtn) {
+            undoBtn.addEventListener('click', function () {
+                if (preCleanupText === null) { return; }
+                outputEl.value = preCleanupText;
+                preCleanupText = null;
+                undoBtn.style.display = 'none';
+                setStatus('Restored the text from before the last cleanup.');
+            });
+        }
+
+        // tier-a: show the AI fix button only when the browser's built-in
+        // Proofreader model is actually reachable (capability probe, rule 9).
+        if (aiFixBtn) {
+            ftoProbeProofreader().then(function (avail) {
+                if (!avail) { return; }   // stays hidden - Tidy text still works everywhere
+                aiFixBtn.style.display = '';
+                aiFixBtn.addEventListener('click', function () {
+                    setErr('');
+                    var t = outputEl.value || '';
+                    if (!t.trim()) { setStatus('Nothing to fix yet - extract text first.'); return; }
+                    aiFixBtn.disabled = true;
+                    setStatus(avail === 'downloadable'
+                        ? 'Your browser is preparing its built-in proofreading model (a one-time download by the browser itself) ...'
+                        : 'Proofreading on this device ...');
+                    var created = proofreaderInst
+                        ? Promise.resolve(proofreaderInst)
+                        : Promise.resolve(self.Proofreader.create({ expectedInputLanguages: ['en'] }))
+                            .then(function (p) { proofreaderInst = p; return p; });
+                    created
+                        .then(function (p) { return p.proofread(t.slice(0, 8000)); })
+                        .then(function (res) {
+                            var corrected = res && typeof res.correctedInput === 'string' ? res.correctedInput : null;
+                            if (!corrected) { setStatus('The proofreading model returned no corrections.'); return; }
+                            var tail = t.length > 8000 ? t.slice(8000) : '';
+                            rememberForUndo();
+                            outputEl.value = corrected + tail;
+                            setStatus(tail
+                                ? 'Fixed likely OCR misreads in the first part of a long text (the model reads up to 8,000 characters). It can also change words that were already correct - review the result; Undo restores the raw text.'
+                                : 'Fixed likely OCR misreads on this device. The model can also change words that were already correct - review the result; Undo restores the raw text.');
+                        })
+                        .catch(function (err) {
+                            setErr('The built-in proofreading model could not run: ' + (err && err.message ? err.message : 'unknown error') + '. Tidy text still works.');
+                        })
+                        .then(function () { aiFixBtn.disabled = false; });
+                });
+            });
+        }
 
         if (copyBtn) {
             copyBtn.addEventListener('click', function () {

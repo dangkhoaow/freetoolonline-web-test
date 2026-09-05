@@ -1,13 +1,13 @@
 <div class="w3-container">
-    <p>Choose an image, then click Extract text; the recognized text appears below once the scan finishes.</p>
+    <p>Choose an image or paste a screenshot, then click Extract text; the recognized text appears below once the scan finishes.</p>
 </div>
 
 <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
     <p>Extracting text from a photo or screenshot takes three steps:</p>
     <ol>
-        <li>Pick an image file with the file picker - it opens in the browser and is never uploaded to a server.</li>
+        <li>Pick an image file with the file picker, or press Ctrl+V (Cmd+V on a Mac) to paste a screenshot straight from the clipboard - either way it opens in the browser and is never uploaded to a server.</li>
         <li>Click Extract text. The first run on a device downloads the OCR engine in the background; later runs on the same device start faster.</li>
-        <li>Review the recognized text in the box below - copy it or download it as a .txt file. OCR is not perfect, so double-check names, numbers, and punctuation.</li>
+        <li>Review the recognized text in the box below - copy it or download it as a .txt file. OCR is not perfect, so double-check names, numbers, and punctuation. The Tidy text button joins words the scan split across line breaks; in browsers with a built-in proofreading model, a Fix errors with AI button can also correct likely misreads on your device.</li>
     </ol>
 </div>
 
@@ -19,12 +19,16 @@
     #ocrError { color: #b00020; font-weight: bold; min-height: 1em; }
     #ocrOutputWrap { margin-top: 10px; }
     #ocrOutput { width: 100%; min-height: 180px; font-family: monospace; }
+    #ocrPasteBtn { margin-top: 6px; }
+    #ocrDemo { margin-top: 18px; }
+    #ocrDemo .ocr-demo-pane { background: #fafafa; border: 1px solid #ddd; padding: 8px 10px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap; margin: 4px 0 10px 0; }
 </style>
 
 <div id="imageToTextOcrTool" class="w3-container">
     <div class="ocr-row">
         <label class="ocr-label" for="ocrFile">Choose an image with text (photo or screenshot)</label>
         <input type="file" id="ocrFile" accept="image/*" class="w3-input w3-border" />
+        <button type="button" id="ocrPasteBtn" class="w3-button w3-light-grey w3-border">Paste screenshot from clipboard</button>
         <img id="ocrPreview" alt="Selected image preview" />
     </div>
     <div class="ocr-row">
@@ -34,10 +38,30 @@
     <div id="ocrStatus"></div>
     <div id="ocrOutputWrap" class="w3-row outputImgs" style="display: none; visibility: visible !important;">
         <label class="ocr-label" for="ocrOutput">Recognized text</label>
-        <textarea id="ocrOutput" class="w3-input w3-border" readonly></textarea>
+        <textarea id="ocrOutput" class="w3-input w3-border"></textarea>
         <div style="margin-top: 8px;">
             <button type="button" id="ocrCopyBtn" class="w3-button w3-blue">Copy</button>
             <button type="button" id="ocrDownload" class="w3-button w3-blue">Download .txt</button>
+            <button type="button" id="ocrTidyBtn" class="w3-button w3-light-grey w3-border">Tidy text</button>
+            <button type="button" id="ocrAiFixBtn" class="w3-button w3-light-grey w3-border" style="display: none;">Fix errors with AI</button>
+            <button type="button" id="ocrUndoBtn" class="w3-button w3-light-grey w3-border" style="display: none;">Undo last cleanup</button>
         </div>
+    </div>
+
+    <div id="ocrDemo" class="w3-row">
+        <h3 class="text-uppercase"><b>Worked example</b></h3>
+        <p>Raw OCR output keeps the line breaks of the original image, so words get split by hyphens and sentences get chopped mid-line. This is what the scan of a memo snippet returns:</p>
+        <div class="ocr-demo-pane">The quarterly re-
+port is due Fri-
+day at 5 pm.
+
+Please send it to
+the finance team
+before the meeting.</div>
+        <p>One click of Tidy text joins the split words and unwraps the lines - without touching spelling:</p>
+        <div class="ocr-demo-pane">The quarterly report is due Friday at 5 pm.
+
+Please send it to the finance team before the meeting.</div>
+        <p>Lines that end in punctuation or start a new list item keep their line breaks, so numbered lists and headings survive the tidy pass unchanged.</p>
     </div>
 </div>
