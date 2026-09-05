@@ -1,0 +1,701 @@
+<script>
+    // AI story-generator skeleton (ai-story-generator) - browser-local flash-fiction and
+    // story-opening drafting from a structured brief (premise / genre / main
+    // character / setting / length). Registry entry: llm_story_generator_webllm.
+    // Distinct from private-ai-chat (form-shaped one-shot story draft, not an
+    // open-ended conversation), from ai-email-writer / cover-letter-generator
+    // (different artifact: fiction, not correspondence) and from llm-text-task
+    // (that family TRANSFORMS existing text; this page COMPOSES a new story).
+    // The privacy angle is load-bearing: the premise and every draft stay in
+    // the browser on every tier - nothing is uploaded, nothing is logged.
+    //
+    // THREE-TIER ENGINE LADDER (in order, each honestly labeled):
+    //   1. Chrome Built-in Prompt API when ALREADY on-device (no download):
+    //      `LanguageModel` global (2025+ spec) + legacy ai.languageModel probe.
+    //      Feature-detected + try/catch everywhere; only availability
+    //      'available' activates the tier.
+    //   2. WebLLM - EXACT PIN https://esm.run/@mlc-ai/web-llm@0.2.84 (HARD
+    //      GUARD 5; same pin probe-verified for this family in headless
+    //      Chromium, fire39 gate-h artifact). Engine idioms from the
+    //      email-writer / cover-letter skeletons: lazy import + model load
+    //      ONLY on the explicit "Load model" click, new webllm.MLCEngine() +
+    //      engine.reload(modelId), determinate progress via
+    //      setInitProgressCallback, streaming chat.completions, WebGPU
+    //      capability probe (requestAdapter, never bare 'gpu' in navigator),
+    //      last model in localStorage 'webllm-last-model' (SAME key as
+    //      private-ai-chat / ai-email-writer / cover-letter-generator -
+    //      shared browser weight cache), 'Clear cached models' via
+    //      engine.clearCache(true), model ids validated against
+    //      webllm.prebuiltAppConfig.model_list and every option's download
+    //      size derived from that list.
+    //   3. No-AI fallback so the page is NEVER dead: a deterministic story
+    //      assembler builds a genre-flavored story start (title, opening line
+    //      placing the character in the setting, the premise as the inciting
+    //      incident, a rising beat, a closing hook) labeled "Template story
+    //      start (no AI model)". It is a real zero-download writing scaffold
+    //      on its own, and it renders the G16 sample demo on load with zero
+    //      interaction.
+    //
+    // STATUS LINE CONTRACT (ported from email-writer): "Output above: <engine>"
+    // names the engine that produced the visible output; "ready: <engine>" is
+    // availability only.
+    //
+    // 100% in-browser: no upload, no backend, nothing sent anywhere. This tool
+    // DRAFTS fiction only. Framework contract: bootstrap in
+    // doAfterPageRendered(); no top-level DOM access.
+
+    web.localUpload = false;
+
+    var ASG_SLUG = 'ai-story-generator';
+    var ASG_LS_MODEL = 'webllm-last-model'; // shared with private-ai-chat + ai-email-writer + cover-letter-generator (shared cache)
+    var ASG_MAX_CHARS = 4000;               // premise + fields cap (small-model context)
+    var ASG_WEBLLM_URL = 'https://esm.run/@mlc-ai/web-llm@0.2.84'; // EXACT pin - HARD GUARD 5
+    var ASG_SYSTEM_PROMPT = 'You are a careful creative-fiction assistant running privately in the user browser. Write an original story strictly from the premise, genre, character, setting and length the user gives you. Plain prose paragraphs only - no markdown headings, no lists, no commentary before or after the story. Give the story a short title on the first line. Keep close to the requested length and never write beyond it.';
+
+    var ASG_WEBLLM_MODELS = [
+        { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 1B (default, smallest)' },
+        { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 3B (better stories, larger download)' },
+        { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', label: 'Phi 3.5 mini' }
+    ];
+    var ASG_SIZE_UNKNOWN = 'size unknown - may be large';
+    var ASG_SIZE_PENDING = 'download size shown before the download starts';
+
+    var ASG_GENRES = [
+        { value: 'adventure', label: 'Adventure' },
+        { value: 'fantasy', label: 'Fantasy' },
+        { value: 'scifi', label: 'Science fiction' },
+        { value: 'mystery', label: 'Mystery' },
+        { value: 'romance', label: 'Romance' },
+        { value: 'comedy', label: 'Comedy' }
+    ];
+
+    var ASG_LENGTHS = [
+        { value: 'flash', label: 'Flash fiction (about 150 words)' },
+        { value: 'short', label: 'Short story (about 300 words)' },
+        { value: 'opening', label: 'Opening scene with a hook (about 200 words)' }
+    ];
+
+    // G16 sample - renders a complete tier-3 template story start on load.
+    var ASG_SAMPLE = {
+        premise: 'a lighthouse keeper finds a message in a bottle addressed to her by name',
+        genre: 'mystery',
+        character: 'Mara',
+        setting: 'a small island lighthouse',
+        length: 'flash'
+    };
+
+    // Engine state.
+    var asgEngine = null;
+    var asgEngineHooked = false;
+    var asgLoadedModel = null;
+    var asgGenerating = false;
+    var asgProgressCb = null;
+    var asgBuiltinOk = false;     // tier-1 Prompt API availability
+    var asgBuiltinKind = null;    // 'new' | 'legacy'
+    var asgModelSizes = null;
+    var asgSizesPromise = null;
+    var asgLastOutputEngine = null;
+
+    // ---- Tier 3: deterministic story assembler --------------------------------------
+    function asgTrim(t) { return String(t || '').replace(/^\s+|\s+$/g, ''); }
+
+    function asgSentence(t) {
+        var s = asgTrim(t);
+        if (!s) return '';
+        s = s.charAt(0).toUpperCase() + s.slice(1);
+        if (!/[.!?]$/.test(s)) s += '.';
+        return s;
+    }
+
+    function asgLowerFirst(t) {
+        var s = asgTrim(t).replace(/[.!?]+$/, '');
+        if (!s) return '';
+        return s.charAt(0).toLowerCase() + s.slice(1);
+    }
+
+    // Deterministic per-genre beat lines. {name} and {setting} are replaced.
+    var ASG_GENRE_BEATS = {
+        adventure: {
+            defaultName: 'the traveler',
+            defaultSetting: 'the old trade road',
+            open: '{name} had crossed {setting} twice before, and both times the maps had lied.',
+            incident: 'This time it began when {premise}.',
+            fallbackIncident: 'This time it began with a stranger, a sealed envelope, and a route no guide would take.',
+            rise: 'Every step after that led {name} further from the marked trail and closer to the place people only mentioned in half-finished sentences.',
+            hookFlash: 'Somewhere ahead, past the ridge, something answered.',
+            hookEnd: 'By the time the light dropped, {name} understood that the journey had only now begun.'
+        },
+        fantasy: {
+            defaultName: 'the apprentice',
+            defaultSetting: 'the tower at the edge of the marsh',
+            open: 'In {setting}, {name} had learned exactly one rule: never ask the walls a question you cannot afford to have answered.',
+            incident: 'The rule broke the morning {premise}.',
+            fallbackIncident: 'The rule broke the morning a door appeared where no door had ever been.',
+            rise: 'Old names stirred. Small charms failed one by one, politely, like servants giving notice, and {name} felt the change arrive before any bell rang.',
+            hookFlash: 'The candles bent toward the dark, listening.',
+            hookEnd: 'And when {name} finally spoke the question aloud, the answer was already waiting.'
+        },
+        scifi: {
+            defaultName: 'the pilot',
+            defaultSetting: 'a relay station on the far side of the belt',
+            open: 'Nothing on {setting} was supposed to change without a log entry, and {name} kept the cleanest logs in the sector.',
+            incident: 'The anomaly opened the shift {premise}.',
+            fallbackIncident: 'The anomaly opened the shift a signal arrived that was time-stamped four minutes in the future.',
+            rise: 'Diagnostics came back green, which was the worst possible result: whatever it was, the machines could not see it, and {name} could.',
+            hookFlash: 'The console blinked once, deliberately.',
+            hookEnd: 'Protocol said report and wait. {name} closed the channel and reached for the manual override instead.'
+        },
+        mystery: {
+            defaultName: 'the detective',
+            defaultSetting: 'a town where everyone locked their doors by nine',
+            open: 'In {setting}, nothing had gone missing in years - which is exactly what made {name} suspicious.',
+            incident: 'It started the day {premise}.',
+            fallbackIncident: 'It started the day a letter arrived with no stamp, no name, and a date from yesterday.',
+            rise: 'Each answer fit too neatly, the way rehearsed answers do, and {name} began keeping two lists: what people said, and when they looked away while saying it.',
+            hookFlash: 'One name appeared on both lists.',
+            hookEnd: 'By midnight {name} knew the question everyone had been dreading, and asked it anyway.'
+        },
+        romance: {
+            defaultName: 'Alex',
+            defaultSetting: 'the corner cafe that always smelled of rain and burnt sugar',
+            open: '{name} had a firm policy about {setting}: in, coffee, out, no conversations.',
+            incident: 'The policy lasted right up until {premise}.',
+            fallbackIncident: 'The policy lasted right up until someone claimed the corner table with a book {name} had read eleven times.',
+            rise: 'It became a pattern neither of them named - same hour, same nods, a sentence longer every day, and an empty chair that had started to feel reserved.',
+            hookFlash: 'On Friday, the chair was taken. {name} minded far more than expected.',
+            hookEnd: 'And when the rain finally came, neither of them reached for the door.'
+        },
+        comedy: {
+            defaultName: 'Sam',
+            defaultSetting: 'an office where the printer had its own personality',
+            open: 'There were two certainties in {setting}: the coffee was terrible, and {name} was definitely, absolutely not in charge.',
+            incident: 'Which is why it was a surprise to everyone when {premise}.',
+            fallbackIncident: 'Which is why it was a surprise to everyone when {name} was put in charge of the one thing that could not be allowed to go wrong.',
+            rise: 'The plan had three steps. By noon, step one had filed a complaint, step two was on fire in a small administrative way, and step three had never existed.',
+            hookFlash: 'Naturally, that was when the visitors arrived.',
+            hookEnd: '{name} smiled the smile of a person with no plan and full commitment, and opened the door.'
+        }
+    };
+
+    function asgFill(line, name, setting) {
+        return String(line || '').replace(/\{name\}/g, name).replace(/\{setting\}/g, setting);
+    }
+
+    function asgTitleCase(t) {
+        return String(t || '').replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); });
+    }
+
+    function asgTemplateTitle(brief, genreLabel) {
+        var words = asgTrim(brief.premise).replace(/[^a-zA-Z0-9'\s-]/g, ' ').split(/\s+/).filter(function (w) { return !!w; });
+        if (words.length >= 3) {
+            return asgTitleCase(words.slice(0, Math.min(6, words.length)).join(' '));
+        }
+        return 'A ' + genreLabel + ' Story';
+    }
+
+    function asgGenreLabel(value) {
+        for (var i = 0; i < ASG_GENRES.length; i++) { if (ASG_GENRES[i].value === value) return ASG_GENRES[i].label; }
+        return 'Short';
+    }
+
+    function asgTemplateStory(brief) {
+        var beats = ASG_GENRE_BEATS[brief.genre] || ASG_GENRE_BEATS.adventure;
+        var name = asgTrim(brief.character) || beats.defaultName;
+        var setting = asgTrim(brief.setting) || beats.defaultSetting;
+        var premise = asgLowerFirst(brief.premise);
+
+        var title = asgTemplateTitle(brief, asgGenreLabel(brief.genre));
+        var open = asgFill(beats.open, name, setting);
+        var incident = premise ? asgFill(beats.incident.replace('{premise}', premise), name, setting)
+            : asgFill(beats.fallbackIncident, name, setting);
+        var rise = asgFill(beats.rise, name, setting);
+        var hookFlash = asgFill(beats.hookFlash, name, setting);
+        var hookEnd = asgFill(beats.hookEnd, name, setting);
+
+        var paragraphs;
+        if (brief.length === 'flash') {
+            paragraphs = [open + ' ' + incident, hookFlash];
+        } else if (brief.length === 'opening') {
+            paragraphs = [open, incident, rise, hookFlash];
+        } else { // short
+            paragraphs = [open, incident, rise, hookEnd];
+        }
+        return title + '\n\n' + paragraphs.join('\n\n');
+    }
+
+    // ---- Tier 1: Chrome Built-in Prompt API -----------------------------------------
+    function asgBuiltinApi() {
+        try {
+            if (typeof LanguageModel !== 'undefined' && LanguageModel && typeof LanguageModel.availability === 'function') return LanguageModel;
+        } catch (e) { void e; }
+        return null;
+    }
+
+    function asgProbeBuiltin(cb) {
+        var done = false;
+        function finish(ok, kind) { if (!done) { done = true; cb(!!ok, kind || null); } }
+        function legacyProbe() {
+            try {
+                if (typeof window !== 'undefined' && window.ai && window.ai.languageModel && typeof window.ai.languageModel.capabilities === 'function') {
+                    window.ai.languageModel.capabilities()
+                        .then(function (c) { finish(c && c.available === 'readily', 'legacy'); })
+                        .catch(function () { finish(false, null); });
+                    return;
+                }
+            } catch (e) { void e; }
+            finish(false, null);
+        }
+        var api = asgBuiltinApi();
+        if (!api) { legacyProbe(); return; }
+        try {
+            Promise.resolve(api.availability())
+                .then(function (a) { if (a === 'available') { finish(true, 'new'); } else { legacyProbe(); } })
+                .catch(legacyProbe);
+        } catch (e) { legacyProbe(); }
+    }
+
+    function asgRunBuiltin(task, onDone, onError) {
+        try {
+            if (asgBuiltinKind === 'legacy') {
+                window.ai.languageModel.create().then(function (s) { return s.prompt(task); })
+                    .then(function (out) { onDone(String(out == null ? '' : out)); }).catch(onError);
+                return;
+            }
+            var api = asgBuiltinApi();
+            if (!api) { onError(new Error('Built-in AI unavailable')); return; }
+            Promise.resolve(api.create())
+                .then(function (session) { return session.prompt(task); })
+                .then(function (res) { onDone(String(res == null ? '' : res)); })
+                .catch(onError);
+        } catch (e) { onError(e); }
+    }
+
+    // ---- Tier 2: WebLLM (lazy, click-gated, exact pin) ------------------------------
+    // Capability probe, never feature detection: navigator.gpu existing does
+    // NOT mean WebGPU works - await requestAdapter() and decide from the result.
+    function asgWebGpuSupported() { return typeof navigator !== 'undefined' && 'gpu' in navigator; }
+    function asgWebGpuAdapter() {
+        if (!asgWebGpuSupported()) { return Promise.resolve(false); }
+        try { return navigator.gpu.requestAdapter().then(function (a) { return !!a; }).catch(function () { return false; }); }
+        catch (e) { return Promise.resolve(false); }
+    }
+
+    function asgLoadWebLLM() {
+        if (window.__asgWebLLM) { return Promise.resolve(window.__asgWebLLM); }
+        if (window.__asgWebLLMPromise) { return window.__asgWebLLMPromise; }
+        window.__asgWebLLMPromise = import(ASG_WEBLLM_URL)
+            .then(function (mod) { window.__asgWebLLM = mod; return mod; });
+        return window.__asgWebLLMPromise;
+    }
+
+    function asgValidateModelId(webllm, wanted) {
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            var ids = {}, i;
+            for (i = 0; i < list.length; i++) { if (list[i] && list[i].model_id) ids[list[i].model_id] = true; }
+            if (ids[wanted]) return wanted;
+            for (i = 0; i < ASG_WEBLLM_MODELS.length; i++) { if (ids[ASG_WEBLLM_MODELS[i].id]) return ASG_WEBLLM_MODELS[i].id; }
+            for (i = 0; i < list.length; i++) {
+                var id = list[i] && list[i].model_id;
+                if (id && /instruct|chat/i.test(id) && (/-(0\.5B|1B|1\.5B)-/i.test(id) || /TinyLlama/i.test(id))) return id;
+            }
+            return (list.length && list[0].model_id) ? list[0].model_id : wanted;
+        } catch (e) { return wanted; }
+    }
+
+    function asgFormatSizeMb(mb) {
+        var n = typeof mb === 'number' ? mb : parseFloat(mb);
+        if (!isFinite(n) || n <= 0) { return null; }
+        if (n >= 1024) { return (Math.round((n / 1024) * 10) / 10) + ' GB'; }
+        return Math.round(n) + ' MB';
+    }
+
+    function asgSizeMapFrom(webllm) {
+        var map = {};
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            for (var i = 0; i < list.length; i++) {
+                var e = list[i];
+                if (!e || !e.model_id) { continue; }
+                var s = asgFormatSizeMb(e.vram_required_MB);
+                if (s) { map[e.model_id] = s; }
+            }
+        } catch (e) { void e; }
+        return map;
+    }
+
+    function asgEnsureModelSizes() {
+        if (asgModelSizes) { return Promise.resolve(asgModelSizes); }
+        if (asgSizesPromise) { return asgSizesPromise; }
+        asgSizesPromise = asgLoadWebLLM()
+            .then(function (webllm) { asgModelSizes = asgSizeMapFrom(webllm); return asgModelSizes; })
+            .catch(function () { asgModelSizes = {}; return asgModelSizes; });
+        return asgSizesPromise;
+    }
+
+    function asgBaseLabelFor(id) {
+        for (var i = 0; i < ASG_WEBLLM_MODELS.length; i++) {
+            if (ASG_WEBLLM_MODELS[i].id === id) { return ASG_WEBLLM_MODELS[i].label; }
+        }
+        return id;
+    }
+
+    function asgOptionText(id) {
+        var base = asgBaseLabelFor(id);
+        if (!asgModelSizes) { return base + ' - ' + ASG_SIZE_PENDING; }
+        var size = asgModelSizes[id];
+        return base + ' - ' + (size ? 'about ' + size : ASG_SIZE_UNKNOWN);
+    }
+
+    function asgGetEngine(webllm) {
+        if (!asgEngine) { asgEngine = new webllm.MLCEngine(); }
+        if (!asgEngineHooked) {
+            asgEngineHooked = true;
+            try {
+                asgEngine.setInitProgressCallback(function (report) {
+                    if (asgProgressCb) { asgProgressCb(typeof report.progress === 'number' ? report.progress : 0, report.text || ''); }
+                });
+            } catch (e) { void e; }
+        }
+        return asgEngine;
+    }
+
+    function asgLoadModel(modelId, progressCb) {
+        asgProgressCb = progressCb || null;
+        return asgLoadWebLLM().then(function (webllm) {
+            var id = asgValidateModelId(webllm, modelId || ASG_WEBLLM_MODELS[0].id);
+            var engine = asgGetEngine(webllm);
+            if (asgLoadedModel === id) { return engine; }
+            return Promise.resolve(engine.reload(id)).then(function () {
+                asgLoadedModel = id;
+                try { localStorage.setItem(ASG_LS_MODEL, id); } catch (e) { void e; }
+                return engine;
+            });
+        });
+    }
+
+    function asgClearModelCache(onDone, onError) {
+        asgLoadWebLLM().then(function (webllm) {
+            var engine = asgGetEngine(webllm);
+            if (typeof engine.clearCache !== 'function') { throw new Error('clearCache is unavailable in this WebLLM build'); }
+            return Promise.resolve(engine.clearCache(true));
+        }).then(function () { asgLoadedModel = null; if (onDone) onDone(); })
+            .catch(function (err) { if (onError) onError(err); });
+    }
+
+    // Build the model/Prompt-API task text from the brief. Same text serves tiers 1+2.
+    function asgLengthSpec(length) {
+        if (length === 'flash') return 'a complete flash-fiction story of about 150 words';
+        if (length === 'opening') return 'the opening scene of a longer story, about 200 words, ending on a hook that makes the reader want the next scene';
+        return 'a complete short story of about 300 words';
+    }
+
+    function asgBuildTask(brief) {
+        var lines = ['Write ' + asgLengthSpec(brief.length) + ' in the ' + asgGenreLabel(brief.genre).toLowerCase() + ' genre. Start with a short title on its own first line, then the story.'];
+        if (asgTrim(brief.premise)) lines.push('Premise: ' + asgTrim(brief.premise));
+        if (asgTrim(brief.character)) lines.push('Main character: ' + asgTrim(brief.character));
+        if (asgTrim(brief.setting)) lines.push('Setting: ' + asgTrim(brief.setting));
+        lines.push('Plain prose paragraphs only. No headings, no lists, no notes about the story - just the title and the story itself.');
+        return lines.join('\n\n');
+    }
+
+    function asgRunWebLLM(task, onToken, onDone, onError) {
+        if (!asgEngine || !asgLoadedModel) { if (onError) onError(new Error('Load a model first.')); return; }
+        if (asgGenerating) { return; }
+        asgGenerating = true;
+        var truncated = false;
+        if (task.length > ASG_MAX_CHARS) { task = task.slice(0, ASG_MAX_CHARS); truncated = true; }
+        var messages = [{ role: 'system', content: ASG_SYSTEM_PROMPT }, { role: 'user', content: task }];
+        var full = '';
+        asgEngine.chat.completions.create({ messages: messages, stream: true, temperature: 0.85 })
+            .then(function (stream) {
+                (async function () {
+                    try {
+                        for await (const chunk of stream) {
+                            var d = (chunk && chunk.choices && chunk.choices[0] && chunk.choices[0].delta && chunk.choices[0].delta.content) || '';
+                            if (d) { full += d; if (onToken) { onToken(full); } }
+                        }
+                        asgGenerating = false;
+                        if (onDone) { onDone(full, truncated); }
+                    } catch (err) { asgGenerating = false; if (onError) { onError(err); } }
+                })();
+            })
+            .catch(function (err) { asgGenerating = false; if (onError) { onError(err); } });
+    }
+
+    // ---- UI --------------------------------------------------------------------------
+    function asgOptionsHtml(options) {
+        var out = '';
+        for (var i = 0; i < options.length; i++) { out += '<option value="' + options[i].value + '">' + options[i].label + '</option>'; }
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('storyGenTool');
+        if (!root) return; // not a story-generator page
+
+        var modelOpts = [];
+        for (var mi = 0; mi < ASG_WEBLLM_MODELS.length; mi++) { modelOpts.push({ value: ASG_WEBLLM_MODELS[mi].id, label: asgOptionText(ASG_WEBLLM_MODELS[mi].id) }); }
+
+        root.innerHTML =
+            '<div style="max-width:720px;margin:0 auto;text-align:left;">' +
+            '<label for="asgPremise"><b>Story premise</b> <span class="w3-small w3-text-grey">(one or two sentences - it never leaves your browser)</span></label>' +
+            '<textarea id="asgPremise" rows="3" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin:4px 0 8px 0;" placeholder="e.g. a lighthouse keeper finds a message in a bottle addressed to her by name"></textarea>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<div class="w3-half" style="padding-right:6px;box-sizing:border-box;">' +
+            '<label for="asgCharacter"><b>Main character</b> <span class="w3-small w3-text-grey">(optional)</span></label>' +
+            '<input id="asgCharacter" type="text" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin-top:4px;" placeholder="e.g. Mara">' +
+            '</div>' +
+            '<div class="w3-half" style="padding-left:6px;box-sizing:border-box;">' +
+            '<label for="asgSetting"><b>Setting</b> <span class="w3-small w3-text-grey">(optional)</span></label>' +
+            '<input id="asgSetting" type="text" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin-top:4px;" placeholder="e.g. a small island lighthouse">' +
+            '</div>' +
+            '</div>' +
+            '<div id="asgCount" class="w3-small w3-text-grey" style="text-align:right;">0 chars</div>' +
+            '<div class="w3-row" style="margin:8px 0;">' +
+            '<label for="asgGenre">Genre </label>' +
+            '<select id="asgGenre" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;margin-right:10px;">' + asgOptionsHtml(ASG_GENRES) + '</select>' +
+            '<label for="asgLength">Length </label>' +
+            '<select id="asgLength" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;margin-right:10px;">' + asgOptionsHtml(ASG_LENGTHS) + '</select>' +
+            '<button id="asgRunBtn" type="button" class="w3-button w3-blue">Generate story</button>' +
+            '</div>' +
+            '<div id="asgStatus" class="w3-small" role="status" style="color:#555;margin-bottom:6px;"></div>' +
+            '<div class="outputImgs" style="visibility:visible !important;background:#f7f7f7;border:1px solid #ddd;border-radius:4px;padding:12px;">' +
+            '<div id="asgOutputLabel" class="w3-small w3-text-grey" style="margin-bottom:6px;"></div>' +
+            '<div id="asgOutput" style="white-space:pre-wrap;min-height:2em;"></div>' +
+            '<div style="margin-top:8px;"><button id="asgCopyBtn" type="button" class="w3-button w3-light-grey w3-small">Copy story</button>' +
+            '<span id="asgCopied" role="status" style="margin-left:8px;color:#2e7d32;font-size:0.9em;"></span></div>' +
+            '</div>' +
+            '<div class="w3-panel w3-light-grey w3-round" style="margin-top:16px;padding:10px;">' +
+            '<b>Optional: on-device AI model</b>' +
+            '<div class="w3-small" style="margin:4px 0;">Loads a small open model into your browser with WebLLM for original, premise-driven prose. One-time download, cached for later visits, runs fully on your device.</div>' +
+            '<div id="asgGpuNote" class="w3-small" style="display:none;color:#b00020;margin:4px 0;">This browser has no working WebGPU (needed by WebLLM). Try the latest Chrome or Edge, or Safari 18+. The template story start above still works without it.</div>' +
+            '<label for="asgModelSel">Model </label>' +
+            '<select id="asgModelSel" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;">' + asgOptionsHtml(modelOpts) + '</select> ' +
+            '<button id="asgLoadBtn" type="button" class="w3-button w3-green">Load model</button> ' +
+            '<button id="asgClearCacheBtn" type="button" class="w3-button w3-light-grey w3-small">Clear cached models</button>' +
+            '<div><progress id="asgProgress" max="1" value="0" style="width:100%;max-width:420px;margin-top:8px;display:none;"></progress></div>' +
+            '<div id="asgLoadStatus" class="w3-small w3-text-grey" role="status"></div>' +
+            '</div>' +
+            // Honest-notes block: keep in sync with tool-<slug>/SKILL.md ## NOT implemented anti-claims.
+            '<div id="asgNotes" class="w3-small w3-text-grey" style="margin-top:14px;"><b>Honest notes</b><ul style="margin:4px 0 0 0;">' +
+            '<li>Everything runs in your browser - the premise and every draft never leave this device.</li>' +
+            '<li>Small 1-3B on-device models write flash fiction and story starts, not novels - expect a solid draft to rewrite, not a finished piece.</li>' +
+            '<li>The no-AI template tier assembles a genre-flavored story start from your inputs - a scaffold to rewrite in your own words, deliberately not passed off as AI prose.</li>' +
+            '<li>Need character-name ideas or a short poem instead? Ask for them in the premise box on the AI tiers - the template tier writes story starts only, and there is no separate page for those jobs.</li>' +
+            '<li>On the on-device model path, input longer than ' + ASG_MAX_CHARS + ' characters is truncated to fit the model context.</li>' +
+            '<li>The first model load downloads hundreds of MB to a few GB; later loads come from the browser cache. Each size in the picker is read from the WebLLM model list and shown again before the download starts.</li>' +
+            '</ul></div>' +
+            '</div>';
+
+        var q = function (sel) { return root.querySelector(sel); };
+        var premise = q('#asgPremise'), character = q('#asgCharacter'), setting = q('#asgSetting');
+        var count = q('#asgCount'), genreSel = q('#asgGenre'), lengthSel = q('#asgLength');
+        var runBtn = q('#asgRunBtn'), status = q('#asgStatus');
+        var output = q('#asgOutput'), outputLabel = q('#asgOutputLabel');
+        var copyBtn = q('#asgCopyBtn'), copied = q('#asgCopied');
+        var modelSel = q('#asgModelSel'), loadBtn = q('#asgLoadBtn'), clearBtn = q('#asgClearCacheBtn');
+        var progress = q('#asgProgress'), loadStatus = q('#asgLoadStatus'), gpuNote = q('#asgGpuNote');
+
+        function asgBrief() {
+            return {
+                premise: premise.value, character: character.value, setting: setting.value,
+                genre: genreSel.value, length: lengthSel.value
+            };
+        }
+        function asgTotalChars() { return (premise.value || '').length + (character.value || '').length + (setting.value || '').length; }
+        function asgUpdateCount() { count.textContent = asgTotalChars() + ' chars'; }
+        function asgShowResult(label, text) { outputLabel.textContent = label; output.textContent = text; }
+        function asgActiveTier() { return asgBuiltinOk ? 1 : (asgEngine && asgLoadedModel ? 2 : 3); }
+
+        function asgReadyDescription() {
+            var t = asgActiveTier();
+            if (t === 1) { return 'built-in browser AI (no download)'; }
+            if (t === 2) { return 'on-device model ' + asgLoadedModel + ' via WebLLM'; }
+            return 'template story start (no AI model) - load a model below for original prose';
+        }
+
+        function asgRenderStatusLine() {
+            status.textContent = (asgLastOutputEngine
+                ? 'Output above: ' + asgLastOutputEngine
+                : 'Output above: none yet') + ' - ready: ' + asgReadyDescription() + '.';
+        }
+
+        function asgSetOutputEngine(name) { asgLastOutputEngine = name || null; asgRenderStatusLine(); }
+
+        function asgEnsureOption(sel, id) {
+            for (var i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].value === id) { sel.options[i].textContent = asgOptionText(id); return; }
+            }
+            var o = document.createElement('option');
+            o.value = id; o.textContent = asgOptionText(id); sel.appendChild(o);
+        }
+
+        function asgRefreshModelLabels() {
+            for (var i = 0; i < modelSel.options.length; i++) {
+                modelSel.options[i].textContent = asgOptionText(modelSel.options[i].value);
+            }
+        }
+
+        function asgHydrateModelSizes() { return asgEnsureModelSizes().then(asgRefreshModelLabels); }
+
+        function asgRunTemplate(brief, isDemo) {
+            var demoTag = isDemo ? 'Sample demo - ' : '';
+            asgShowResult(demoTag + 'Template story start (no AI model) - a genre scaffold assembled from your inputs, meant to be rewritten in your own words', asgTemplateStory(brief));
+            asgSetOutputEngine('template story start, no AI model' + (isDemo ? ' (sample demo)' : ''));
+        }
+
+        function asgRunNow() {
+            var brief = asgBrief();
+            if (!asgTrim(brief.premise) && !asgTrim(brief.character) && !asgTrim(brief.setting)) {
+                asgShowResult('No input', 'Type a premise (or at least a character or setting) above, then press Generate story.');
+                asgSetOutputEngine(null);
+                return;
+            }
+            runBtn.disabled = true;
+            function finish() { runBtn.disabled = false; }
+            var task = asgBuildTask(brief);
+            function tier2or3() {
+                if (asgEngine && asgLoadedModel) {
+                    var label = 'On-device AI model (' + asgLoadedModel + ') via WebLLM';
+                    var engineName = 'on-device model ' + asgLoadedModel + ' via WebLLM';
+                    asgShowResult(label, '');
+                    asgSetOutputEngine(engineName + ', writing ...');
+                    asgRunWebLLM(task,
+                        function (partial) { output.textContent = partial; },
+                        function (full, truncated) {
+                            asgShowResult(label + (truncated ? ' - input truncated to ' + ASG_MAX_CHARS + ' chars to fit the model context' : ''), full);
+                            asgSetOutputEngine(engineName + (truncated ? ' (input truncated to ' + ASG_MAX_CHARS + ' chars)' : ''));
+                            finish();
+                        },
+                        function (err) {
+                            asgShowResult('Error', 'Generation failed: ' + (err && err.message ? err.message : 'unknown error') + '. The template story start still works below.');
+                            asgSetOutputEngine(engineName + ' - generation failed');
+                            finish();
+                        });
+                    return;
+                }
+                asgRunTemplate(brief, false);
+                finish();
+            }
+            if (asgBuiltinOk) {
+                asgShowResult('Built-in browser AI (no download)', 'Writing ...');
+                asgSetOutputEngine('built-in browser AI (no download), writing ...');
+                asgRunBuiltin(task,
+                    function (out) {
+                        asgShowResult('Built-in browser AI (no download)', out);
+                        asgSetOutputEngine('built-in browser AI (no download)');
+                        finish();
+                    },
+                    function () { asgBuiltinOk = false; asgRenderStatusLine(); tier2or3(); });
+                return;
+            }
+            tier2or3();
+        }
+
+        premise.addEventListener('input', asgUpdateCount);
+        character.addEventListener('input', asgUpdateCount);
+        setting.addEventListener('input', asgUpdateCount);
+        runBtn.addEventListener('click', asgRunNow);
+
+        copyBtn.addEventListener('click', function () {
+            var text = output.textContent || '';
+            function ok() {
+                copied.textContent = 'Copied!';
+                setTimeout(function () { copied.textContent = ''; }, 1600);
+            }
+            function fallback() {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                var done = false;
+                try { done = document.execCommand('copy'); } catch (e) { done = false; }
+                document.body.removeChild(ta);
+                if (done) ok(); else copied.textContent = 'Copy failed - select the text and copy it manually.';
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok, fallback); }
+            else { fallback(); }
+        });
+
+        try {
+            var last = localStorage.getItem(ASG_LS_MODEL);
+            if (last) { asgEnsureOption(modelSel, last); modelSel.value = last; }
+        } catch (e) { void e; }
+
+        asgWebGpuAdapter().then(function (ok) {
+            if (!ok) { gpuNote.style.display = 'block'; loadBtn.disabled = true; }
+        });
+
+        var asgSizeHydrateOnce = function () {
+            modelSel.removeEventListener('pointerdown', asgSizeHydrateOnce);
+            modelSel.removeEventListener('focus', asgSizeHydrateOnce);
+            loadBtn.removeEventListener('pointerenter', asgSizeHydrateOnce);
+            loadBtn.removeEventListener('focus', asgSizeHydrateOnce);
+            asgHydrateModelSizes();
+        };
+        modelSel.addEventListener('pointerdown', asgSizeHydrateOnce);
+        modelSel.addEventListener('focus', asgSizeHydrateOnce);
+        loadBtn.addEventListener('pointerenter', asgSizeHydrateOnce);
+        loadBtn.addEventListener('focus', asgSizeHydrateOnce);
+
+        loadBtn.addEventListener('click', function () {
+            var wanted = modelSel.value || ASG_WEBLLM_MODELS[0].id;
+            loadBtn.disabled = true; modelSel.disabled = true;
+            loadStatus.textContent = 'Checking the download size for ' + wanted + ' ...';
+            asgHydrateModelSizes().then(function () {
+                var size = asgModelSizes[wanted];
+                progress.style.display = 'block';
+                loadStatus.textContent = 'Downloading ' + wanted + ' - ' +
+                    (size ? 'about ' + size : ASG_SIZE_UNKNOWN) +
+                    ' - one-time download, then cached in this browser ...';
+                return asgLoadModel(wanted, function (frac, msg) {
+                    progress.value = Math.max(0, Math.min(1, frac || 0));
+                    loadStatus.textContent = msg || ('Loading ... ' + Math.round((frac || 0) * 100) + '%');
+                });
+            }).then(function () {
+                progress.value = 1;
+                asgEnsureOption(modelSel, asgLoadedModel);
+                modelSel.value = asgLoadedModel;
+                asgRefreshModelLabels();
+                loadStatus.textContent = 'Model ready' +
+                    (asgLoadedModel === wanted ? '' : ' (requested id not in this WebLLM build; loaded ' + asgLoadedModel + ' instead)') +
+                    ' - the writing happens on your device.';
+                loadBtn.disabled = false; modelSel.disabled = false;
+                asgRenderStatusLine();
+            }).catch(function (err) {
+                loadBtn.disabled = false; modelSel.disabled = false;
+                loadStatus.textContent = 'Could not load the model: ' + (err && err.message ? err.message : 'unknown error') + '.';
+            });
+        });
+
+        clearBtn.addEventListener('click', function () {
+            clearBtn.disabled = true;
+            loadStatus.textContent = 'Clearing cached model files ...';
+            asgClearModelCache(function () {
+                clearBtn.disabled = false;
+                loadStatus.textContent = 'Cached model files cleared - the next load downloads again.';
+                asgRenderStatusLine();
+            }, function (err) {
+                clearBtn.disabled = false;
+                loadStatus.textContent = 'Could not clear the cache: ' + (err && err.message ? err.message : 'unknown error') + '.';
+            });
+        });
+
+        // Probe tier 1 (built-in Prompt API) without downloading anything.
+        asgProbeBuiltin(function (ok, kind) { asgBuiltinOk = ok; asgBuiltinKind = kind; asgRenderStatusLine(); });
+
+        // Visible default output on load (e2e G16, zero interaction): the sample
+        // inputs and their tier-3 template story render immediately, labeled demo.
+        premise.value = ASG_SAMPLE.premise;
+        character.value = ASG_SAMPLE.character;
+        setting.value = ASG_SAMPLE.setting;
+        genreSel.value = ASG_SAMPLE.genre;
+        lengthSel.value = ASG_SAMPLE.length;
+        asgUpdateCount();
+        asgRunTemplate({ premise: ASG_SAMPLE.premise, character: ASG_SAMPLE.character, setting: ASG_SAMPLE.setting, genre: ASG_SAMPLE.genre, length: ASG_SAMPLE.length }, true);
+        asgRenderStatusLine();
+    }
+</script>
