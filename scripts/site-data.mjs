@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/cmyk-rgb-converter-vs-alternatives.html',
+  '/guides/cmyk-rgb-converter-step-by-step.html',
+  '/guides/cmyk-rgb-converter-when.html',
   // aquarium-water-checker guides (ai-local aquarium-fire1) + locale fanout
   '/guides/aquarium-water-checker-when.html',
   '/guides/aquarium-water-checker-step-by-step.html',
@@ -56,6 +59,7 @@ export const INFO_ROUTES = new Set([
   '/guides/css-border-radius-generator-step-by-step.html',
   // css-border-radius-generator-step-by-step locale fanout (create_new_guide_page 20260905)
   '/guides/pt/css-border-radius-generator-step-by-step.html',
+  '/guides/es/css-border-radius-generator-step-by-step.html',
   '/guides/css-border-radius-generator-when.html',
   '/guides/rich-text-editor-vs-alternatives.html',
   '/guides/rich-text-editor-step-by-step.html',
@@ -7340,6 +7344,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/html-minifier-vs-alternatives.html',
   // css-border-radius-generator-step-by-step locale fanout (create_new_guide_page 20260905)
   '/guides/pt/css-border-radius-generator-step-by-step.html',
+  '/guides/es/css-border-radius-generator-step-by-step.html',
   // unix-timestamp-converter companion guides EN + 5 locales (new_tool_page_discovery 20260902-8)
   '/guides/unix-timestamp-converter-when.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
@@ -17118,6 +17123,7 @@ export const ALIAS_ROUTES = {
   '/css-border-radius-generator.html': '/developer-tools/css-border-radius-generator.html',
   '/hex-to-rgb-converter.html': '/developer-tools/hex-to-rgb-converter.html',
   '/aquarium-water-checker.html': '/utility-tools/aquarium-water-checker.html',
+  '/cmyk-to-rgb-converter.html': '/developer-tools/cmyk-to-rgb-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29494,6 +29500,7 @@ export const JSP_BY_ROUTE = {
   '/guides/css-border-radius-generator-when.html': 'guide/css-border-radius-generator-when.jsp',
   '/guides/css-border-radius-generator-step-by-step.html': 'guide/css-border-radius-generator-step-by-step.jsp',
   '/guides/pt/css-border-radius-generator-step-by-step.html': 'guide/pt/css-border-radius-generator-step-by-step.jsp',
+  '/guides/es/css-border-radius-generator-step-by-step.html': 'guide/es/css-border-radius-generator-step-by-step.jsp',
   '/guides/css-border-radius-generator-vs-alternatives.html': 'guide/css-border-radius-generator-vs-alternatives.jsp',
   '/developer-tools/hex-to-rgb-converter.html': 'utility/hex-to-rgb-converter.jsp',
   '/guides/hex-rgb-converter-when.html': 'guide/hex-rgb-converter-when.jsp',
@@ -29534,6 +29541,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/aquarium-water-checker-when.html': 'guide/de/aquarium-water-checker-when.jsp',
   '/guides/de/aquarium-water-checker-step-by-step.html': 'guide/de/aquarium-water-checker-step-by-step.jsp',
   '/guides/de/aquarium-water-checker-vs-alternatives.html': 'guide/de/aquarium-water-checker-vs-alternatives.jsp',
+  '/developer-tools/cmyk-to-rgb-converter.html': 'utility/cmyk-to-rgb-converter.jsp',
+  '/guides/cmyk-rgb-converter-when.html': 'guide/cmyk-rgb-converter-when.jsp',
+  '/guides/cmyk-rgb-converter-step-by-step.html': 'guide/cmyk-rgb-converter-step-by-step.jsp',
+  '/guides/cmyk-rgb-converter-vs-alternatives.html': 'guide/cmyk-rgb-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
