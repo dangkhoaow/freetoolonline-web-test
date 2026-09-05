@@ -16,6 +16,7 @@ export const DEFAULT_IO_INFOS = '[]';
 export const INFO_ROUTES = new Set([
   '/guides/color-palette-generator-vs-alternatives.html',
   '/guides/color-palette-generator-step-by-step.html',
+  '/guides/pt/color-palette-generator-step-by-step.html',
   '/guides/color-palette-generator-when.html',
   '/guides/random-color-generator-vs-alternatives.html',
   '/guides/random-color-generator-step-by-step.html',
@@ -29769,6 +29770,7 @@ export const JSP_BY_ROUTE = {
   '/developer-tools/color-palette-generator.html': 'utility/color-palette-generator.jsp',
   '/guides/color-palette-generator-when.html': 'guide/color-palette-generator-when.jsp',
   '/guides/color-palette-generator-step-by-step.html': 'guide/color-palette-generator-step-by-step.jsp',
+  '/guides/pt/color-palette-generator-step-by-step.html': 'guide/pt/color-palette-generator-step-by-step.jsp',
   '/guides/color-palette-generator-vs-alternatives.html': 'guide/color-palette-generator-vs-alternatives.jsp',
 };
 
