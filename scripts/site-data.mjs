@@ -17266,7 +17266,6 @@ export const ALIAS_ROUTES = {
   '/random-color-generator.html': '/developer-tools/random-color-generator.html',
   '/color-palette-generator.html': '/developer-tools/color-palette-generator.html',
   '/ai-story-generator.html': '/utility-tools/ai-story-generator.html',
-  '/utility-tools/ai-story-generator.html': 'utility/ai-story-generator.jsp',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29722,6 +29721,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/hex-rgb-converter-step-by-step.html': 'guide/de/hex-rgb-converter-step-by-step.jsp',
   '/guides/de/hex-rgb-converter-vs-alternatives.html': 'guide/de/hex-rgb-converter-vs-alternatives.jsp',
   '/utility-tools/aquarium-water-checker.html': 'utility/aquarium-water-checker.jsp',
+  '/utility-tools/ai-story-generator.html': 'utility/ai-story-generator.jsp',
   '/guides/ai-story-generator-when.html': 'guide/ai-story-generator-when.jsp',
   '/guides/ai-story-generator-step-by-step.html': 'guide/ai-story-generator-step-by-step.jsp',
   '/guides/ai-story-generator-vs-alternatives.html': 'guide/ai-story-generator-vs-alternatives.jsp',
