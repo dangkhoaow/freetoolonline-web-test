@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/color-palette-generator-vs-alternatives.html',
+  '/guides/color-palette-generator-step-by-step.html',
+  '/guides/color-palette-generator-when.html',
   '/guides/random-color-generator-vs-alternatives.html',
   '/guides/random-color-generator-step-by-step.html',
   '/guides/random-color-generator-when.html',
@@ -61,6 +64,7 @@ export const INFO_ROUTES = new Set([
   '/guides/css-border-radius-generator-vs-alternatives.html',
   // css-border-radius-generator-vs-alternatives locale fanout (create_new_guide_page 20260905)
   '/guides/pt/css-border-radius-generator-vs-alternatives.html',
+  '/guides/es/css-border-radius-generator-vs-alternatives.html',
   '/guides/css-border-radius-generator-step-by-step.html',
   // css-border-radius-generator-step-by-step locale fanout (create_new_guide_page 20260905)
   '/guides/pt/css-border-radius-generator-step-by-step.html',
@@ -7403,6 +7407,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/html-minifier-vs-alternatives.html',
   // css-border-radius-generator-vs-alternatives locale fanout (create_new_guide_page 20260905)
   '/guides/pt/css-border-radius-generator-vs-alternatives.html',
+  '/guides/es/css-border-radius-generator-vs-alternatives.html',
   // css-border-radius-generator-step-by-step locale fanout (create_new_guide_page 20260905)
   '/guides/pt/css-border-radius-generator-step-by-step.html',
   '/guides/es/css-border-radius-generator-step-by-step.html',
@@ -17240,6 +17245,7 @@ export const ALIAS_ROUTES = {
   '/aquarium-water-checker.html': '/utility-tools/aquarium-water-checker.html',
   '/cmyk-to-rgb-converter.html': '/developer-tools/cmyk-to-rgb-converter.html',
   '/random-color-generator.html': '/developer-tools/random-color-generator.html',
+  '/color-palette-generator.html': '/developer-tools/color-palette-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29673,6 +29679,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/css-border-radius-generator-step-by-step.html': 'guide/de/css-border-radius-generator-step-by-step.jsp',
   '/guides/css-border-radius-generator-vs-alternatives.html': 'guide/css-border-radius-generator-vs-alternatives.jsp',
   '/guides/pt/css-border-radius-generator-vs-alternatives.html': 'guide/pt/css-border-radius-generator-vs-alternatives.jsp',
+  '/guides/es/css-border-radius-generator-vs-alternatives.html': 'guide/es/css-border-radius-generator-vs-alternatives.jsp',
   '/developer-tools/hex-to-rgb-converter.html': 'utility/hex-to-rgb-converter.jsp',
   '/guides/hex-rgb-converter-when.html': 'guide/hex-rgb-converter-when.jsp',
   '/guides/hex-rgb-converter-step-by-step.html': 'guide/hex-rgb-converter-step-by-step.jsp',
@@ -29720,6 +29727,10 @@ export const JSP_BY_ROUTE = {
   '/guides/random-color-generator-when.html': 'guide/random-color-generator-when.jsp',
   '/guides/random-color-generator-step-by-step.html': 'guide/random-color-generator-step-by-step.jsp',
   '/guides/random-color-generator-vs-alternatives.html': 'guide/random-color-generator-vs-alternatives.jsp',
+  '/developer-tools/color-palette-generator.html': 'utility/color-palette-generator.jsp',
+  '/guides/color-palette-generator-when.html': 'guide/color-palette-generator-when.jsp',
+  '/guides/color-palette-generator-step-by-step.html': 'guide/color-palette-generator-step-by-step.jsp',
+  '/guides/color-palette-generator-vs-alternatives.html': 'guide/color-palette-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
