@@ -305,6 +305,8 @@ export const INFO_ROUTES = new Set([
   '/guides/es/client-side-pdf-editor-toolkit-when.html',
   // client-side-pdf-editor-toolkit-when vi locale (create_new_guide_page 20260824-3)
   '/guides/vi/client-side-pdf-editor-toolkit-when.html',
+  '/guides/id/client-side-pdf-editor-toolkit-when.html',
+  '/guides/de/client-side-pdf-editor-toolkit-when.html',
   '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
   // pdf-xchange-editor-browser-plugin-edge-vs-alternatives pt locale (create_new_guide_page 20260830-5)
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
@@ -7555,6 +7557,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/client-side-pdf-editor-toolkit-when.html',
   // client-side-pdf-editor-toolkit-when vi locale (create_new_guide_page 20260824-3)
   '/guides/vi/client-side-pdf-editor-toolkit-when.html',
+  '/guides/id/client-side-pdf-editor-toolkit-when.html',
+  '/guides/de/client-side-pdf-editor-toolkit-when.html',
   // devtools-style-pdf-element-inspector-editor-android-when pt locale (create_new_guide_page 20260825-3)
   '/guides/pt/devtools-style-pdf-element-inspector-editor-android-when.html',
   // devtools-style-pdf-element-inspector-editor-android-when es locale (create_new_guide_page 20260825-4)
@@ -29470,6 +29474,8 @@ export const JSP_BY_ROUTE = {
   '/image-converter-tools/client-side-pdf-editor-toolkit.html': 'convert/client-side-pdf-editor-toolkit.jsp',
   '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/pt/client-side-pdf-editor-toolkit-when.html': 'guide/pt/client-side-pdf-editor-toolkit-when.jsp',
+  '/guides/id/client-side-pdf-editor-toolkit-when.html': 'guide/id/client-side-pdf-editor-toolkit-when.jsp',
+  '/guides/de/client-side-pdf-editor-toolkit-when.html': 'guide/de/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/es/client-side-pdf-editor-toolkit-when.html': 'guide/es/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/vi/client-side-pdf-editor-toolkit-when.html': 'guide/vi/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/client-side-pdf-editor-toolkit-step-by-step.jsp',
