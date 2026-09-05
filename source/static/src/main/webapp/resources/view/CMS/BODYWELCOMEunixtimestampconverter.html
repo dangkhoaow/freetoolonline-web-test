@@ -1,7 +1,18 @@
 <h1 class="text-uppercase"><b>Unix Timestamp Converter</b></h1>
-<time itemprop="dateUpdated" datetime="2026-09-02T00:00:00"><b>Last reviewed: 2026-09-02</b></time>
+<time itemprop="dateUpdated" datetime="2026-09-05T00:00:00"><b>Last reviewed: 2026-09-05</b></time>
 <hr/>
 <p>Paste a Unix timestamp and read it as a normal date, or paste a date and get the Unix seconds and milliseconds back. The conversion is plain JavaScript running in your browser - nothing is sent to a server.</p>
 <p>You do not need to know whether your value is in seconds or milliseconds: the unit is detected automatically from the digit count, so a 10-digit value like 1756800000 and a 13-digit value like 1756800000000 both work without picking a mode. Microsecond and nanosecond values from database exports are recognized the same way.</p>
 <p>The output shows the same instant several ways at once: ISO 8601 UTC, your local time with its UTC offset, and a relative phrase such as "3 days ago". That makes it quick to sanity-check a log entry, an API response field, or a database row against wall-clock time.</p>
 <p>If the input is not a timestamp or a date, the page shows a plain-language hint with working examples instead of an error dump, and the Copy Output button puts the formatted result on your clipboard for pasting into a ticket or a query.</p>
+<br/><h2>How the Unix Timestamp Converter tells seconds from milliseconds</h2>
+<p>The Unix Timestamp Converter reads the digit count of whatever you paste to pick the unit before doing any math, instead of asking you to choose a mode first. A value up to 11 digits is treated as seconds - the current epoch sits at 10 digits, so this range covers every real-world second-based timestamp with headroom. A value of 12 to 14 digits is read as milliseconds - JavaScript's own Date.now() output lands at 13 digits today. A value of 15 to 17 digits is read as microseconds, and 18 digits or more is read as nanoseconds, the two formats you are more likely to meet in a database export or a tracing tool than in everyday application code.</p>
+<table class="w3-table w3-bordered">
+<tr><th>Digits</th><th>Unit detected</th><th>Example</th></tr>
+<tr><td>Up to 11</td><td>Seconds</td><td>1756800000</td></tr>
+<tr><td>12-14</td><td>Milliseconds</td><td>1756800000000</td></tr>
+<tr><td>15-17</td><td>Microseconds</td><td>1756800000000000</td></tr>
+<tr><td>18+</td><td>Nanoseconds</td><td>1756800000000000000</td></tr>
+</table>
+<p>Getting the unit wrong is not a small rounding error - it is the classic off-by-1000 mistake where a millisecond value read as seconds lands in the year 1970, and a seconds value read as milliseconds lands tens of thousands of years in the future. Detecting the unit from digit count, rather than from a dropdown, means pasting a value straight from a system log (typically seconds) or straight from a JavaScript Date.now() call or browser event timestamp (typically milliseconds) into the same box always resolves correctly without you needing to know which one it is first.</p>
+<p>The reverse direction uses the same no-mode-switch approach: paste a date instead of a number - an ISO 8601 string such as 2026-09-02T12:00:00Z, or any other format the browser's own date parser can read - and the Unix Timestamp Converter returns both values for that instant side by side. For example, pasting 2026-09-02T12:00:00Z returns Unix seconds 1788350400 and Unix milliseconds 1788350400000 together, so you never have to remember which unit a downstream system expects before pasting the result back in.</p>
