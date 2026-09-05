@@ -17,6 +17,7 @@ export const INFO_ROUTES = new Set([
   '/guides/color-palette-generator-vs-alternatives.html',
   '/guides/color-palette-generator-step-by-step.html',
   '/guides/pt/color-palette-generator-step-by-step.html',
+  '/guides/es/color-palette-generator-step-by-step.html',
   '/guides/color-palette-generator-when.html',
   '/guides/random-color-generator-vs-alternatives.html',
   '/guides/random-color-generator-step-by-step.html',
@@ -7417,6 +7418,9 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // color-palette-generator-step-by-step locale fanout (create_new_guide_page 20260905-5)
+  '/guides/pt/color-palette-generator-step-by-step.html',
+  '/guides/es/color-palette-generator-step-by-step.html',
   // html-minifier-step-by-step locale fanout (create_new_guide_page 20260903-9)
   '/guides/pt/html-minifier-step-by-step.html',
   '/guides/es/html-minifier-step-by-step.html',
@@ -29722,7 +29726,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/hex-rgb-converter-step-by-step.html': 'guide/de/hex-rgb-converter-step-by-step.jsp',
   '/guides/de/hex-rgb-converter-vs-alternatives.html': 'guide/de/hex-rgb-converter-vs-alternatives.jsp',
   '/utility-tools/aquarium-water-checker.html': 'utility/aquarium-water-checker.jsp',
-  '/utility-tools/ai-story-generator.html': 'utility/ai-story-generator.jsp',
   '/guides/ai-story-generator-when.html': 'guide/ai-story-generator-when.jsp',
   '/guides/ai-story-generator-step-by-step.html': 'guide/ai-story-generator-step-by-step.jsp',
   '/guides/ai-story-generator-vs-alternatives.html': 'guide/ai-story-generator-vs-alternatives.jsp',
@@ -29771,7 +29774,9 @@ export const JSP_BY_ROUTE = {
   '/guides/color-palette-generator-when.html': 'guide/color-palette-generator-when.jsp',
   '/guides/color-palette-generator-step-by-step.html': 'guide/color-palette-generator-step-by-step.jsp',
   '/guides/pt/color-palette-generator-step-by-step.html': 'guide/pt/color-palette-generator-step-by-step.jsp',
+  '/guides/es/color-palette-generator-step-by-step.html': 'guide/es/color-palette-generator-step-by-step.jsp',
   '/guides/color-palette-generator-vs-alternatives.html': 'guide/color-palette-generator-vs-alternatives.jsp',
+  '/utility-tools/ai-story-generator.html': 'utility/ai-story-generator.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
