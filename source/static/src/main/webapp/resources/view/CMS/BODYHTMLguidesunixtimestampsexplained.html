@@ -24,7 +24,7 @@
     <tr><td>Microseconds</td><td>16</td><td>1,776,495,426,000,000</td><td>Specialized telemetry</td></tr>
   </tbody>
 </table>
-<p>A 10-digit seconds value interpreted as milliseconds renders as a date in 1970 (50+ years too early). A 13-digit millisecond value interpreted as seconds renders as a date ~56,000 AD. Both errors are instantly visible once the timestamp is converted - use <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> to sanity-check, or <a href="/utility-tools/get-time-in-millisecond.html">Get Current Time in Milliseconds</a> to compare against now.</p>
+<p>A 10-digit seconds value interpreted as milliseconds renders as a date in 1970 (50+ years too early). A 13-digit millisecond value interpreted as seconds renders as a date ~56,000 AD. Both errors are instantly visible once the timestamp is converted - use <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> to sanity-check, or <a href="/utility-tools/get-time-in-millisecond.html">Convert a Date to Milliseconds</a> to go the other direction.</p>
 
 <br/><h2 class="text-uppercase"><b>ISO 8601: the readable interchange format</b></h2>
 <p>ISO 8601 is a human-readable date-time format that also machines agree on. The canonical form looks like: <code>2026-04-18T12:17:06.520Z</code>. Parts:</p>
@@ -54,17 +54,43 @@
 <p><b>2. Month 0-11 in JavaScript Date.</b> <code>new Date(2026, 3, 18)</code> is 18 April 2026, not 18 March 2026. Month is 0-indexed but day and year are 1-indexed. Prefer the ISO 8601 constructor (<code>new Date(&quot;2026-04-18&quot;)</code>) which follows the natural numbering.</p>
 <p><b>3. DST transitions.</b> On "spring forward" night, 2:30am local doesn't exist; on "fall back" night, 1:30am happens twice. If your system stores local-time strings, these moments create impossible or duplicated timestamps. UTC storage eliminates the problem; Date libraries like Luxon or date-fns-tz handle the conversion explicitly.</p>
 
+<br/><h2 class="text-uppercase"><b>Negative timestamps, leap seconds, and the Year 2038 problem</b></h2>
+<p>Three edge cases of the Unix-time standard that rarely come up until they break something. First, the count can go <b>negative</b>: any moment before 1 January 1970 UTC is a negative integer, so <code>-86400</code> is 31 December 1969 00:00:00 UTC, not an error to be filtered out. Second, Unix time deliberately <b>ignores leap seconds</b> - by POSIX convention every calendar day is defined as exactly 86,400 seconds, so the occasional UTC leap second is either dropped or "smeared" across surrounding seconds depending on the operating system, rather than being counted. Third, a timestamp stored as a signed 32-bit integer overflows at <code>2,147,483,647</code> seconds after the epoch - 03:14:07 UTC on 19 January 2038 - and wraps around to a large negative number, which most systems then render as a date in December 1901. Modern 64-bit timestamps push that overflow far enough into the future (roughly the year 292,278,994 AD, per the table above) that it is no longer a practical concern, but any code still using a 32-bit epoch field is exposed to the same bug the industry called Y2K, just eighteen years later.</p>
+
+<br/><h2 class="text-uppercase"><b>Which converter do I need - date to milliseconds, or milliseconds to date?</b></h2>
+<p><a href="/utility-tools/get-time-in-millisecond.html">Convert a Date to Milliseconds</a> takes the reverse direction from what its name might suggest: you pick a specific calendar date and time in a format-locked datetime box and click Get Millisecond, and the epoch-milliseconds value for that exact moment appears below the button - it does not run as a continuously ticking clock. <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> goes the other way: paste a millisecond epoch value and the matching calendar date and time appear on the same screen. That page also arrives pre-filled with the current moment's epoch value and auto-runs the conversion the instant it loads, so the first thing visible is a working example of the exact input format expected, before a single character has been typed. Both converters run the arithmetic entirely in the browser - no upload, no account, and no value leaves the device.</p>
+
 <br/><h2 class="text-uppercase"><b>Related tools</b></h2>
 <ul>
     <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> - paste a timestamp, get UTC and local formatted dates.</li>
-    <li><a href="/utility-tools/get-time-in-millisecond.html">Get Current Time in Milliseconds</a> - live epoch reading updated every second.</li>
+    <li><a href="/utility-tools/get-time-in-millisecond.html">Convert a Date to Milliseconds</a> - pick a datetime, get its epoch-milliseconds value.</li>
     <li><a href="/developer-tools/md5-converter.html">MD5 Converter</a> - hash a string for checksums or de-duplication keys.</li>
     <li><a href="/developer-tools/json-parser.html">JSON Parser</a> - inspect API responses that contain timestamp fields.</li>
     <li><a href="/guides/en/current-millis.html">Current millis - live Unix timestamp in milliseconds</a> - a companion guide showing how to read the live epoch value and what the digit count means.</li>
     <li><a href="/guides/en/long-number-millisecond-or-second.html">Is this long number a millisecond or second timestamp?</a> - use this when you receive an unfamiliar number and need to confirm its precision before parsing.</li>
 </ul>
 
+<style>
+    /* Collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-row page-section faq">
+<h2 class="text-uppercase"><b>Frequently Asked Questions</b></h2>
+<details class="faq-item"><summary>Can a Unix timestamp be negative?</summary><p>Yes. Any date before 1 January 1970 UTC is represented as a negative integer - for example, <code>-86400</code> is 31 December 1969 00:00:00 UTC, exactly one day before the epoch. A negative value is a valid pre-1970 date, not an error.</p></details>
+<details class="faq-item"><summary>Do leap seconds get added into a Unix timestamp?</summary><p>No. By POSIX convention every day is defined as exactly 86,400 seconds, so leap seconds are excluded from the count rather than added to it. Systems that need to stay aligned with UTC handle the occasional leap second by dropping it or smearing it across nearby seconds, never by counting it in the epoch value itself.</p></details>
+<details class="faq-item"><summary>What happens when a 32-bit Unix timestamp overflows?</summary><p>It hits the "Year 2038 problem": a signed 32-bit integer runs out of room at 03:14:07 UTC on 19 January 2038 (2,147,483,647 seconds after the epoch) and wraps around to a large negative number, which typically renders as a date in December 1901. 64-bit timestamps do not have this problem within any realistic timeframe.</p></details>
+<details class="faq-item"><summary>Does "Z" mean something different from "+00:00" in an ISO 8601 timestamp?</summary><p>No. Both represent UTC. "Z" (sometimes called "Zulu time") is simply shorthand for a zero offset, so <code>2026-04-18T12:17:06Z</code> and <code>2026-04-18T12:17:06+00:00</code> describe the exact same moment.</p></details>
+<details class="faq-item"><summary>Is "Convert a Date to Milliseconds" a live, continuously updating clock?</summary><p>No. It converts one specific datetime you pick in the input box into its epoch-milliseconds value when you click the button - it is a one-shot conversion, not a running clock.</p></details>
+<details class="faq-item"><summary>Does "Convert Milliseconds to Date" show a working example before I paste my own value?</summary><p>Yes. The page loads pre-filled with the current moment's millisecond epoch and immediately runs the conversion, so a live example is already on screen in the exact format the box expects, before any typing happens.</p></details>
+</div>
+
 <p><br/><a href="/utility-tools.html">&larr; Back to Utility Tools</a></p>
-<p class="reviewed"><time itemprop="dateReviewed" datetime="2026-06-28">Last reviewed: 2026-06-28</time></p>
+<p class="reviewed"><time itemprop="dateReviewed" datetime="2026-09-06">Last reviewed: 2026-09-06</time></p>
 <address class="author"><a rel="author" href="/about-us.html">FreetoolOnline editorial team</a></address>
 </div>
