@@ -17,6 +17,7 @@ export const INFO_ROUTES = new Set([
   '/guides/color-palette-generator-vs-alternatives.html',
   '/guides/pt/color-palette-generator-vs-alternatives.html',
   '/guides/es/color-palette-generator-vs-alternatives.html',
+  '/guides/vi/color-palette-generator-vs-alternatives.html',
   '/guides/color-palette-generator-step-by-step.html',
   '/guides/pt/color-palette-generator-step-by-step.html',
   '/guides/es/color-palette-generator-step-by-step.html',
@@ -7428,6 +7429,7 @@ export const GUIDE_ROUTES = new Set([
   // color-palette-generator-vs-alternatives locale fanout (create_new_guide_page 20260906-2)
   '/guides/pt/color-palette-generator-vs-alternatives.html',
   '/guides/es/color-palette-generator-vs-alternatives.html',
+  '/guides/vi/color-palette-generator-vs-alternatives.html',
   // color-palette-generator-step-by-step locale fanout (create_new_guide_page 20260905-5)
   '/guides/pt/color-palette-generator-step-by-step.html',
   '/guides/es/color-palette-generator-step-by-step.html',
@@ -29798,6 +29800,7 @@ export const JSP_BY_ROUTE = {
   '/guides/color-palette-generator-vs-alternatives.html': 'guide/color-palette-generator-vs-alternatives.jsp',
   '/guides/pt/color-palette-generator-vs-alternatives.html': 'guide/pt/color-palette-generator-vs-alternatives.jsp',
   '/guides/es/color-palette-generator-vs-alternatives.html': 'guide/es/color-palette-generator-vs-alternatives.jsp',
+  '/guides/vi/color-palette-generator-vs-alternatives.html': 'guide/vi/color-palette-generator-vs-alternatives.jsp',
   '/utility-tools/ai-story-generator.html': 'utility/ai-story-generator.jsp',
 };
 
