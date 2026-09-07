@@ -101,6 +101,7 @@ export const INFO_ROUTES = new Set([
   '/guides/es/css-border-radius-generator-vs-alternatives.html',
   '/guides/vi/css-border-radius-generator-vs-alternatives.html',
   '/guides/id/css-border-radius-generator-vs-alternatives.html',
+  '/guides/de/css-border-radius-generator-vs-alternatives.html',
   '/guides/css-border-radius-generator-step-by-step.html',
   // css-border-radius-generator-step-by-step locale fanout (create_new_guide_page 20260905)
   '/guides/pt/css-border-radius-generator-step-by-step.html',
@@ -7466,6 +7467,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/css-border-radius-generator-vs-alternatives.html',
   '/guides/vi/css-border-radius-generator-vs-alternatives.html',
   '/guides/id/css-border-radius-generator-vs-alternatives.html',
+  '/guides/de/css-border-radius-generator-vs-alternatives.html',
   // css-border-radius-generator-step-by-step locale fanout (create_new_guide_page 20260905)
   '/guides/pt/css-border-radius-generator-step-by-step.html',
   '/guides/es/css-border-radius-generator-step-by-step.html',
@@ -29745,6 +29747,7 @@ export const JSP_BY_ROUTE = {
   '/guides/es/css-border-radius-generator-vs-alternatives.html': 'guide/es/css-border-radius-generator-vs-alternatives.jsp',
   '/guides/vi/css-border-radius-generator-vs-alternatives.html': 'guide/vi/css-border-radius-generator-vs-alternatives.jsp',
   '/guides/id/css-border-radius-generator-vs-alternatives.html': 'guide/id/css-border-radius-generator-vs-alternatives.jsp',
+  '/guides/de/css-border-radius-generator-vs-alternatives.html': 'guide/de/css-border-radius-generator-vs-alternatives.jsp',
   '/developer-tools/hex-to-rgb-converter.html': 'utility/hex-to-rgb-converter.jsp',
   '/guides/hex-rgb-converter-when.html': 'guide/hex-rgb-converter-when.jsp',
   '/guides/hex-rgb-converter-step-by-step.html': 'guide/hex-rgb-converter-step-by-step.jsp',
