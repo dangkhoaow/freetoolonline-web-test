@@ -187,6 +187,10 @@ export const INFO_ROUTES = new Set([
   '/guides/de/html-minifier-step-by-step.html',
   // html-minifier-vs-alternatives locale fanout (create_new_guide_page 20260904-5)
   '/guides/pt/html-minifier-vs-alternatives.html',
+  '/guides/es/html-minifier-vs-alternatives.html',
+  '/guides/vi/html-minifier-vs-alternatives.html',
+  '/guides/id/html-minifier-vs-alternatives.html',
+  '/guides/de/html-minifier-vs-alternatives.html',
   '/guides/unix-timestamp-converter-vs-alternatives.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
   '/guides/unix-timestamp-converter-when.html',
@@ -7468,6 +7472,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/html-minifier-step-by-step.html',
   // html-minifier-vs-alternatives locale fanout (create_new_guide_page 20260904-5)
   '/guides/pt/html-minifier-vs-alternatives.html',
+  '/guides/es/html-minifier-vs-alternatives.html',
+  '/guides/vi/html-minifier-vs-alternatives.html',
+  '/guides/id/html-minifier-vs-alternatives.html',
+  '/guides/de/html-minifier-vs-alternatives.html',
   // css-border-radius-generator-vs-alternatives locale fanout (create_new_guide_page 20260905)
   '/guides/pt/css-border-radius-generator-vs-alternatives.html',
   '/guides/es/css-border-radius-generator-vs-alternatives.html',
@@ -29682,6 +29690,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/html-minifier-step-by-step.html': 'guide/de/html-minifier-step-by-step.jsp',
   '/guides/html-minifier-vs-alternatives.html': 'guide/html-minifier-vs-alternatives.jsp',
   '/guides/pt/html-minifier-vs-alternatives.html': 'guide/pt/html-minifier-vs-alternatives.jsp',
+  '/guides/es/html-minifier-vs-alternatives.html': 'guide/es/html-minifier-vs-alternatives.jsp',
+  '/guides/vi/html-minifier-vs-alternatives.html': 'guide/vi/html-minifier-vs-alternatives.jsp',
+  '/guides/id/html-minifier-vs-alternatives.html': 'guide/id/html-minifier-vs-alternatives.jsp',
+  '/guides/de/html-minifier-vs-alternatives.html': 'guide/de/html-minifier-vs-alternatives.jsp',
   '/developer-tools/xml-to-json-converter.html': 'utility/xml-to-json-converter.jsp',
   '/developer-tools/yaml-formatter.html': 'utility/yaml-formatter.jsp',
   '/guides/yaml-formatter-when.html': 'guide/yaml-formatter-when.jsp',
