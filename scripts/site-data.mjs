@@ -127,6 +127,10 @@ export const INFO_ROUTES = new Set([
   '/guides/css-border-radius-generator-when.html',
   // css-border-radius-generator-when locale fanout (create_new_guide_page 20260908)
   '/guides/pt/css-border-radius-generator-when.html',
+  '/guides/es/css-border-radius-generator-when.html',
+  '/guides/vi/css-border-radius-generator-when.html',
+  '/guides/id/css-border-radius-generator-when.html',
+  '/guides/de/css-border-radius-generator-when.html',
   '/guides/rich-text-editor-vs-alternatives.html',
   '/guides/rich-text-editor-step-by-step.html',
   '/guides/rich-text-editor-when.html',
@@ -7472,6 +7476,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/css-border-radius-generator-vs-alternatives.html',
   // css-border-radius-generator-when locale fanout (create_new_guide_page 20260908)
   '/guides/pt/css-border-radius-generator-when.html',
+  '/guides/es/css-border-radius-generator-when.html',
+  '/guides/vi/css-border-radius-generator-when.html',
+  '/guides/id/css-border-radius-generator-when.html',
+  '/guides/de/css-border-radius-generator-when.html',
   // css-border-radius-generator-step-by-step locale fanout (create_new_guide_page 20260905)
   '/guides/pt/css-border-radius-generator-step-by-step.html',
   '/guides/es/css-border-radius-generator-step-by-step.html',
@@ -29726,6 +29734,10 @@ export const JSP_BY_ROUTE = {
   '/developer-tools/css-border-radius-generator.html': 'utility/css-border-radius-generator.jsp',
   '/guides/css-border-radius-generator-when.html': 'guide/css-border-radius-generator-when.jsp',
   '/guides/pt/css-border-radius-generator-when.html': 'guide/pt/css-border-radius-generator-when.jsp',
+  '/guides/es/css-border-radius-generator-when.html': 'guide/es/css-border-radius-generator-when.jsp',
+  '/guides/vi/css-border-radius-generator-when.html': 'guide/vi/css-border-radius-generator-when.jsp',
+  '/guides/id/css-border-radius-generator-when.html': 'guide/id/css-border-radius-generator-when.jsp',
+  '/guides/de/css-border-radius-generator-when.html': 'guide/de/css-border-radius-generator-when.jsp',
   '/guides/css-border-radius-generator-step-by-step.html': 'guide/css-border-radius-generator-step-by-step.jsp',
   '/guides/pt/css-border-radius-generator-step-by-step.html': 'guide/pt/css-border-radius-generator-step-by-step.jsp',
   '/guides/es/css-border-radius-generator-step-by-step.html': 'guide/es/css-border-radius-generator-step-by-step.jsp',
