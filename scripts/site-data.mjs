@@ -34,6 +34,7 @@ export const INFO_ROUTES = new Set([
   '/guides/de/color-palette-generator-when.html',
   '/guides/random-color-generator-vs-alternatives.html',
   '/guides/pt/random-color-generator-vs-alternatives.html',
+  '/guides/es/random-color-generator-vs-alternatives.html',
   '/guides/random-color-generator-step-by-step.html',
   '/guides/pt/random-color-generator-step-by-step.html',
   '/guides/es/random-color-generator-step-by-step.html',
@@ -7478,6 +7479,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/color-palette-generator-when.html',
   // random-color-generator-vs-alternatives locale fanout (create_new_guide_page 20260910)
   '/guides/pt/random-color-generator-vs-alternatives.html',
+  '/guides/es/random-color-generator-vs-alternatives.html',
   // random-color-generator-step-by-step locale fanout (create_new_guide_page 20260909-6)
   '/guides/pt/random-color-generator-step-by-step.html',
   '/guides/es/random-color-generator-step-by-step.html',
@@ -29879,6 +29881,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/random-color-generator-step-by-step.html': 'guide/de/random-color-generator-step-by-step.jsp',
   '/guides/random-color-generator-vs-alternatives.html': 'guide/random-color-generator-vs-alternatives.jsp',
   '/guides/pt/random-color-generator-vs-alternatives.html': 'guide/pt/random-color-generator-vs-alternatives.jsp',
+  '/guides/es/random-color-generator-vs-alternatives.html': 'guide/es/random-color-generator-vs-alternatives.jsp',
   '/developer-tools/color-palette-generator.html': 'utility/color-palette-generator.jsp',
   '/guides/color-palette-generator-when.html': 'guide/color-palette-generator-when.jsp',
   '/guides/pt/color-palette-generator-when.html': 'guide/pt/color-palette-generator-when.jsp',
