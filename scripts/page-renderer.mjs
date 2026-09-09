@@ -271,6 +271,11 @@ const HOWTO_ROUTES = new Set([
   '/convert-time-in-millisecond-to-date.html',
   '/pdf-to-images.html',
   '/extract-gif-to-image-frames.html',
+  // cycle20260909-4: the flat entry above is a stale ALIAS (the tool's canonical
+  // route moved to the /image-converter-tools/ subfolder); aliases render as
+  // redirects, so HowTo never emitted on the real page. Add the canonical key so
+  // extractHowToSteps picks up the w3-pale-green 3-step panel in BODYHTML.
+  '/image-converter-tools/extract-gif-to-image-frames.html',
   '/remove-pdf-password.html',
   '/protect-pdf-by-password.html',
   '/video-maker.html',

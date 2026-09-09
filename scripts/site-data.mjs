@@ -184,6 +184,7 @@ export const INFO_ROUTES = new Set([
   '/guides/es/html-minifier-when.html',
   '/guides/vi/html-minifier-when.html',
   '/guides/id/html-minifier-when.html',
+  '/guides/de/html-minifier-when.html',
   // html-minifier-step-by-step locale fanout (create_new_guide_page 20260903-9)
   '/guides/pt/html-minifier-step-by-step.html',
   '/guides/es/html-minifier-step-by-step.html',
@@ -7480,6 +7481,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/html-minifier-when.html',
   '/guides/vi/html-minifier-when.html',
   '/guides/id/html-minifier-when.html',
+  '/guides/de/html-minifier-when.html',
   // html-minifier-vs-alternatives locale fanout (create_new_guide_page 20260904-5)
   '/guides/pt/html-minifier-vs-alternatives.html',
   '/guides/es/html-minifier-vs-alternatives.html',
@@ -29696,6 +29698,7 @@ export const JSP_BY_ROUTE = {
   '/guides/es/html-minifier-when.html': 'guide/es/html-minifier-when.jsp',
   '/guides/vi/html-minifier-when.html': 'guide/vi/html-minifier-when.jsp',
   '/guides/id/html-minifier-when.html': 'guide/id/html-minifier-when.jsp',
+  '/guides/de/html-minifier-when.html': 'guide/de/html-minifier-when.jsp',
   '/guides/html-minifier-step-by-step.html': 'guide/html-minifier-step-by-step.jsp',
   '/guides/pt/html-minifier-step-by-step.html': 'guide/pt/html-minifier-step-by-step.jsp',
   '/guides/es/html-minifier-step-by-step.html': 'guide/es/html-minifier-step-by-step.jsp',
