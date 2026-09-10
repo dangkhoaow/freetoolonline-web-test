@@ -1,7 +1,17 @@
+<style>
+    /* Collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
 <article class="guide-body">
   <h1>MD5 decode: what readers usually mean and where to go next</h1>
   <p class="lead">"MD5 decode" is a search the cryptography does not actually support - MD5 is a one-way hash, so the original input cannot be derived from the 32-hex output the way "decode" implies.</p>
-  <p class="reviewed">Last reviewed: 2026-07-01</p>
+  <p class="reviewed">Last reviewed: 2026-09-10</p>
   <address class="author"><a rel="author" href="/about-us.html">FreetoolOnline editorial team</a></address>
   <table class="quick-facts">
     <thead><tr><th>Reader intent behind "MD5 decode"</th><th>What is actually possible</th><th>Where to go</th></tr></thead>
@@ -25,4 +35,25 @@
   <p>If you are storing passwords means stop using MD5 for that job - pick a slow salted KDF from the <a href="/guides/en/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">alternatives guide</a> instead of trying to reverse the hash.</p>
   <p>An additional hazard specific to online tools: the MD5 converter's reverse-lookup cache is global - any string you hash through the tool is stored so that any future visitor who pastes that exact MD5 can retrieve your original input. Never hash passwords or any confidential string through an online tool, even as a quick spot-check. Use your language's standard library (<code>hashlib.md5</code> in Python, <code>MessageDigest.getInstance("MD5")</code> in Java, <code>crypto.createHash('md5')</code> in Node) for password-related testing instead.</p>
   <p>If the download button does not appear after a hash or conversion on this site, see <a href="/guides/en/download-link-not-appearing-after-conversion-five-fixes.html">download link not appearing after conversion - five fixes</a>.</p>
+  <h2>Frequently Asked Questions</h2>
+  <details class="faq-item">
+    <summary><b>Do letter-case differences mean two MD5 hashes do not match?</b></summary>
+    <p>No. Hexadecimal is case-insensitive, so <code>d41d8cd98f00b204e9800998ecf8427e</code> and <code>D41D8CD98F00B204E9800998ECF8427E</code> represent the exact same 128-bit digest. If a lookup or a side-by-side comparison reports no match anyway, the real cause is something else - stray whitespace, an invisible byte-order mark, or a genuinely different input - not the letter case.</p>
+  </details>
+  <details class="faq-item">
+    <summary><b>I pasted a hash and the lookup says it does not match - could the copy-paste itself be the problem?</b></summary>
+    <p>Yes. Three copy-paste artifacts commonly break a lookup or a comparison without changing anything visible on screen: leading or trailing whitespace picked up from the source; an invisible UTF-8 byte-order mark at the very start of a hash copied from a text file; and a colon-separated format such as <code>d4:1d:8c:d9:8f:00:b2:04</code> that some tools emit instead of one plain 32-character string. None of these change the underlying digest, but a strict string comparison treats them as different input.</p>
+  </details>
+  <details class="faq-item">
+    <summary><b>The value I am trying to "decode" is not 32 characters - is it still an MD5 hash?</b></summary>
+    <p>No. MD5 always produces exactly a 32-character hexadecimal digest, no more and no less. A 40-character string is SHA-1, a 64-character string is SHA-256, and an 8-character string is usually CRC32. If the value you have is longer or shorter than 32 characters, it was never an MD5 hash in the first place, and no MD5 lookup or converter can help - it belongs to a different algorithm entirely.</p>
+  </details>
+  <details class="faq-item">
+    <summary><b>What is the reliable way to tell whether two MD5 values are actually identical?</b></summary>
+    <p>Run a short check instead of eyeballing the two strings: lowercase both, trim any leading or trailing whitespace from both, confirm each is exactly 32 characters, confirm each contains only the characters 0-9 and a-f, then compare the two strings character by character. If all of that lines up, the hashes are identical; if even one hex digit differs after that cleanup, the two inputs were genuinely different.</p>
+  </details>
+  <details class="faq-item">
+    <summary><b>If verifying a downloaded file is the real job, is MD5 still good enough for that?</b></summary>
+    <p>Yes, for that specific job. MD5 is fine for catching accidental corruption - confirming a download matches the file the publisher intended, or that a transferred copy is byte-for-byte the same as the original. It is unsafe only for adversarial uses such as password storage or tamper-proofing, because two different inputs can now be crafted on purpose to produce the same MD5 hash (a collision) in seconds on ordinary hardware. A collision does not matter for a routine accidental-corruption check; it matters a great deal for anything a hostile party could exploit.</p>
+  </details>
 </article>
