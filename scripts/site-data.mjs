@@ -42,6 +42,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/random-color-generator-when.html',
   '/guides/es/random-color-generator-when.html',
   '/guides/vi/random-color-generator-when.html',
+  '/guides/id/random-color-generator-when.html',
   '/guides/pt/random-color-generator-step-by-step.html',
   '/guides/es/random-color-generator-step-by-step.html',
   '/guides/vi/random-color-generator-step-by-step.html',
@@ -7493,6 +7494,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/random-color-generator-when.html', // random-color-generator-when pt locale fanout (create_new_guide_page 20260910-6)
   '/guides/es/random-color-generator-when.html', // random-color-generator-when es locale fanout (create_new_guide_page 20260910-7)
   '/guides/vi/random-color-generator-when.html', // random-color-generator-when vi locale fanout (create_new_guide_page 20260910-8)
+  '/guides/id/random-color-generator-when.html', // random-color-generator-when id locale fanout (create_new_guide_page 20260910-9)
   '/guides/pt/random-color-generator-step-by-step.html',
   '/guides/es/random-color-generator-step-by-step.html',
   '/guides/vi/random-color-generator-step-by-step.html',
@@ -29889,6 +29891,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/random-color-generator-when.html': 'guide/pt/random-color-generator-when.jsp',
   '/guides/es/random-color-generator-when.html': 'guide/es/random-color-generator-when.jsp',
   '/guides/vi/random-color-generator-when.html': 'guide/vi/random-color-generator-when.jsp',
+  '/guides/id/random-color-generator-when.html': 'guide/id/random-color-generator-when.jsp',
   '/guides/pt/random-color-generator-step-by-step.html': 'guide/pt/random-color-generator-step-by-step.jsp',
   '/guides/es/random-color-generator-step-by-step.html': 'guide/es/random-color-generator-step-by-step.jsp',
   '/guides/vi/random-color-generator-step-by-step.html': 'guide/vi/random-color-generator-step-by-step.jsp',
