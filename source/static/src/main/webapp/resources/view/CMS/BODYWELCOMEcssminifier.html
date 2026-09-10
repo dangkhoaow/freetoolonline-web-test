@@ -12,21 +12,34 @@
         </ol>
         <p style="margin-bottom: 0;"><b>Note:</b> Minification won't fix invalid CSS-validate your source if the output looks wrong.</p>
     </div>
+
+<br/><h2 class="text-uppercase"><b>Minification versus compression - you want both</b></h2>
     <div class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow" style="margin-top: 10px;">
-        <p><b>CSS minifier vs CSS compressor - which do you need?</b> Minification strips comments, newlines, and redundant whitespace; the result is byte-for-byte safe to ship. Compression (gzip, brotli) layers on top of minification at the server or CDN and saves another 60-80% on wire size. You want <b>both</b> in production: minify at build time, enable brotli on your web server or CDN.</p>
+        <p>Minification strips comments, newlines, and redundant whitespace; the result is byte-for-byte safe to ship. Compression (gzip, brotli) layers on top of minification at the server or CDN and saves another 60-80% on wire size. You want <b>both</b> in production: minify at build time, enable brotli on your web server or CDN.</p>
         <p style="margin-bottom: 0;">For the full decision - the rule separating whitespace-strip minification from gzip-scale compression, when minification breaks <code>!important</code> precedence, and how to keep sourcemaps - see <a href="/guides/css-minifier-vs-compressor.html">CSS minifier vs compressor</a> and <a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">How to minify CSS / JS for Cloud Run cold-start wins</a> for a concrete cold-start workflow.</p>
     </div>
 
-<p><b>Want the two further size-reduction layers - identifier renaming and unused-rule removal?</b> See <a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking</a> for how an uglifier and tree-shaking stack on top of this minifier for the smallest possible bundle.</p>
+<br/><h2 class="text-uppercase"><b>Two further size-reduction layers beyond minifying</b></h2>
+<p>Identifier renaming and unused-rule removal shrink a bundle further than whitespace stripping can. See <a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking</a> for how an uglifier and tree-shaking stack on top of this minifier for the smallest possible bundle.</p>
 
-<h3>Your stylesheet stays in the browser</h3>
-<p><br/>The work happens inside the browser using the <code>csso</code> library, so the source stylesheet never leaves the device - the textarea content sits in memory until the tab closes, and nothing is written to a server, queued, or retained for download. Reviewers on a shared machine or a client laptop can paste a draft stylesheet for a one-off check without worrying about it landing in shared storage.</p>
+<br/><h2 class="text-uppercase"><b>Your stylesheet stays in the browser</b></h2>
+<p>The work happens inside the browser using the <code>csso</code> library, so the source stylesheet never leaves the device - the textarea content sits in memory until the tab closes, and nothing is written to a server, queued, or retained for download. Reviewers on a shared machine or a client laptop can paste a draft stylesheet for a one-off check without worrying about it landing in shared storage.</p>
 
-<p><b>Stitching this into a stylesheet build,</b> the natural next stop is its mirror tool: when a colleague hands you a one-line production build that you need to read, the <a href="/developer-tools/css-unminifier.html">CSS unminifier</a> expands it back to indented form so you can trace a rule. If the bytes you are shrinking include a hand-built animation, the <a href="/developer-tools/css-gradient-generator.html">CSS gradient generator</a> writes the linear-gradient and keyframes block you then feed straight through this minifier. The <a href="/developer-tools.html">developer tools hub</a> lists the full minify, format, and hash set, every one running in-browser with no upload.</p>
-<p class="reviewed"><time itemprop="dateReviewed" datetime="2026-08-04">Last reviewed: 2026-08-04</time></p>
+<br/><h2 class="text-uppercase"><b>Fitting the minifier into a stylesheet build</b></h2>
+<p>The natural next stop is its mirror tool: when a colleague hands you a one-line production build that you need to read, the <a href="/developer-tools/css-unminifier.html">CSS unminifier</a> expands it back to indented form so you can trace a rule. If the bytes you are shrinking include a hand-built animation, the <a href="/developer-tools/css-gradient-generator.html">CSS gradient generator</a> writes the linear-gradient and keyframes block you then feed straight through this minifier. The <a href="/developer-tools.html">developer tools hub</a> lists the full minify, format, and hash set, every one running in-browser with no upload.</p>
+<p class="reviewed"><time itemprop="dateReviewed" datetime="2026-09-10">Last reviewed: 2026-09-10</time></p>
 <p class="byline">Reviewed by FreetoolOnline editorial team</p>
 
 <section class="ai-overview-recapture">
-  <h3>Depth: Paste-and-go minify click path</h3>
-  <p>Paste a stylesheet into the left editor (<code>#cssInput</code>), click <b>Minify</b>, and the compressed CSS appears in the right pane in the same click - no install, no signup, no upload progress bar to wait through. The page runs the <code>csso</code> library with structure-aware optimisation, so duplicate selectors and redundant rules merge on top of whitespace stripping; on a typical 40-80 KB theme stylesheet that often lands in the 50-70% size cut range instead of a whitespace-only ~20-30% pass. Watch the stats row under the output (<code>#oriSize</code>, <code>#comSize</code>, <code>#savSize</code>) before you ship - if absolute savings are under a few KB, keep the readable source for debugging and skip the deploy. On a phone the two panes shrink so Minify stays in thumb reach near 480 px; on desktop they stretch so a 2,000-line sheet stays without horizontal scroll. Use <b>Copy</b> under the right pane to drop the result into a build folder or CMS theme file without retyping.</p>
+  <h2 class="text-uppercase"><b>The paste-and-go minify click path</b></h2>
+  <p>Paste a stylesheet into the left editor (<code>#cssInput</code>), click <b>Minify</b>, and the compressed CSS appears in the right pane in the same click - no install, no signup, no upload progress bar to wait through. Use <b>Copy</b> under the right pane to drop the result into a build folder or CMS theme file without retyping.</p>
+
+  <h3>Structure-aware optimisation beats a whitespace-only pass</h3>
+  <p>The page runs the <code>csso</code> library with structure-aware optimisation, so duplicate selectors and redundant rules merge on top of whitespace stripping. On a typical 40-80 KB theme stylesheet that often lands in the 50-70% size cut range instead of a whitespace-only ~20-30% pass.</p>
+
+  <h3>Check the stats row before you ship</h3>
+  <p>Watch the stats row under the output (<code>#oriSize</code>, <code>#comSize</code>, <code>#savSize</code>) before you ship - if absolute savings are under a few KB, keep the readable source for debugging and skip the deploy.</p>
+
+  <h3>Both panes stay usable on a phone</h3>
+  <p>On a phone the two panes shrink so Minify stays in thumb reach near 480 px; on desktop they stretch so a 2,000-line sheet stays without horizontal scroll.</p>
 </section>
