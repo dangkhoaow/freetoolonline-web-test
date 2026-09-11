@@ -194,6 +194,7 @@ export const INFO_ROUTES = new Set([
   // yaml-formatter-step-by-step locale fanout (new_guide_locale_completeness 20260911-2)
   '/guides/pt/yaml-formatter-step-by-step.html',
   '/guides/es/yaml-formatter-step-by-step.html',
+  '/guides/vi/yaml-formatter-step-by-step.html',
   '/guides/html-minifier-vs-alternatives.html',
   '/guides/html-minifier-step-by-step.html',
   '/guides/html-minifier-when.html',
@@ -7595,6 +7596,7 @@ export const GUIDE_ROUTES = new Set([
   // yaml-formatter-step-by-step locale fanout (new_guide_locale_completeness 20260911-2)
   '/guides/pt/yaml-formatter-step-by-step.html',
   '/guides/es/yaml-formatter-step-by-step.html',
+  '/guides/vi/yaml-formatter-step-by-step.html',
   // unix-timestamp-converter companion guides EN + 5 locales (new_tool_page_discovery 20260902-8)
   '/guides/unix-timestamp-converter-when.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
@@ -29757,6 +29759,7 @@ export const JSP_BY_ROUTE = {
   // yaml-formatter-step-by-step locale fanout (new_guide_locale_completeness 20260911-2)
   '/guides/pt/yaml-formatter-step-by-step.html': 'guide/pt/yaml-formatter-step-by-step.jsp',
   '/guides/es/yaml-formatter-step-by-step.html': 'guide/es/yaml-formatter-step-by-step.jsp',
+  '/guides/vi/yaml-formatter-step-by-step.html': 'guide/vi/yaml-formatter-step-by-step.jsp',
   '/developer-tools/markdown-table-generator.html': 'utility/markdown-table-generator.jsp',
   '/guides/markdown-table-generator-when.html': 'guide/markdown-table-generator-when.jsp',
   '/guides/markdown-table-generator-step-by-step.html': 'guide/markdown-table-generator-step-by-step.jsp',
