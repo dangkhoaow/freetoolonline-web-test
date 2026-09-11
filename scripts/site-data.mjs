@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/avif-jpg-converter-vs-alternatives.html',
+  '/guides/avif-jpg-converter-step-by-step.html',
+  '/guides/avif-jpg-converter-when.html',
   '/guides/color-palette-generator-vs-alternatives.html',
   '/guides/pt/color-palette-generator-vs-alternatives.html',
   '/guides/es/color-palette-generator-vs-alternatives.html',
@@ -7455,6 +7458,22 @@ export const INFO_ROUTES = new Set([
   '/guides/id/venus-atmospheric-superrotation-vs-alternatives.html',
   '/guides/de/venus-atmospheric-superrotation-vs-alternatives.html',
 
+  // avif-jpg-converter locale fanout (new-tool-discovery-loop-runbook fire748, 2026-09-11)
+  '/guides/pt/avif-jpg-converter-when.html',
+  '/guides/pt/avif-jpg-converter-step-by-step.html',
+  '/guides/pt/avif-jpg-converter-vs-alternatives.html',
+  '/guides/es/avif-jpg-converter-when.html',
+  '/guides/es/avif-jpg-converter-step-by-step.html',
+  '/guides/es/avif-jpg-converter-vs-alternatives.html',
+  '/guides/vi/avif-jpg-converter-when.html',
+  '/guides/vi/avif-jpg-converter-step-by-step.html',
+  '/guides/vi/avif-jpg-converter-vs-alternatives.html',
+  '/guides/id/avif-jpg-converter-when.html',
+  '/guides/id/avif-jpg-converter-step-by-step.html',
+  '/guides/id/avif-jpg-converter-vs-alternatives.html',
+  '/guides/de/avif-jpg-converter-when.html',
+  '/guides/de/avif-jpg-converter-step-by-step.html',
+  '/guides/de/avif-jpg-converter-vs-alternatives.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -14534,6 +14553,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/venus-atmospheric-superrotation-vs-alternatives.html',
   '/guides/de/venus-atmospheric-superrotation-vs-alternatives.html',
 
+  // avif-jpg-converter locale fanout (new-tool-discovery-loop-runbook fire748, 2026-09-11)
+  '/guides/avif-jpg-converter-when.html',
+  '/guides/avif-jpg-converter-step-by-step.html',
+  '/guides/avif-jpg-converter-vs-alternatives.html',
+  '/guides/pt/avif-jpg-converter-when.html',
+  '/guides/pt/avif-jpg-converter-step-by-step.html',
+  '/guides/pt/avif-jpg-converter-vs-alternatives.html',
+  '/guides/es/avif-jpg-converter-when.html',
+  '/guides/es/avif-jpg-converter-step-by-step.html',
+  '/guides/es/avif-jpg-converter-vs-alternatives.html',
+  '/guides/vi/avif-jpg-converter-when.html',
+  '/guides/vi/avif-jpg-converter-step-by-step.html',
+  '/guides/vi/avif-jpg-converter-vs-alternatives.html',
+  '/guides/id/avif-jpg-converter-when.html',
+  '/guides/id/avif-jpg-converter-step-by-step.html',
+  '/guides/id/avif-jpg-converter-vs-alternatives.html',
+  '/guides/de/avif-jpg-converter-when.html',
+  '/guides/de/avif-jpg-converter-step-by-step.html',
+  '/guides/de/avif-jpg-converter-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -17383,6 +17421,7 @@ export const ALIAS_ROUTES = {
   '/random-color-generator.html': '/developer-tools/random-color-generator.html',
   '/color-palette-generator.html': '/developer-tools/color-palette-generator.html',
   '/ai-story-generator.html': '/utility-tools/ai-story-generator.html',
+  '/avif-to-jpg.html': '/image-converter-tools/avif-to-jpg.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29941,6 +29980,26 @@ export const JSP_BY_ROUTE = {
   '/guides/id/color-palette-generator-vs-alternatives.html': 'guide/id/color-palette-generator-vs-alternatives.jsp',
   '/guides/de/color-palette-generator-vs-alternatives.html': 'guide/de/color-palette-generator-vs-alternatives.jsp',
   '/utility-tools/ai-story-generator.html': 'utility/ai-story-generator.jsp',
+  '/image-converter-tools/avif-to-jpg.html': 'convert/avif-to-jpg.jsp',
+  '/guides/avif-jpg-converter-when.html': 'guide/avif-jpg-converter-when.jsp',
+  '/guides/avif-jpg-converter-step-by-step.html': 'guide/avif-jpg-converter-step-by-step.jsp',
+  '/guides/avif-jpg-converter-vs-alternatives.html': 'guide/avif-jpg-converter-vs-alternatives.jsp',
+  // avif-jpg-converter locale fanout (new-tool-discovery-loop-runbook fire748, 2026-09-11)
+  '/guides/pt/avif-jpg-converter-when.html': 'guide/pt/avif-jpg-converter-when.jsp',
+  '/guides/pt/avif-jpg-converter-step-by-step.html': 'guide/pt/avif-jpg-converter-step-by-step.jsp',
+  '/guides/pt/avif-jpg-converter-vs-alternatives.html': 'guide/pt/avif-jpg-converter-vs-alternatives.jsp',
+  '/guides/es/avif-jpg-converter-when.html': 'guide/es/avif-jpg-converter-when.jsp',
+  '/guides/es/avif-jpg-converter-step-by-step.html': 'guide/es/avif-jpg-converter-step-by-step.jsp',
+  '/guides/es/avif-jpg-converter-vs-alternatives.html': 'guide/es/avif-jpg-converter-vs-alternatives.jsp',
+  '/guides/vi/avif-jpg-converter-when.html': 'guide/vi/avif-jpg-converter-when.jsp',
+  '/guides/vi/avif-jpg-converter-step-by-step.html': 'guide/vi/avif-jpg-converter-step-by-step.jsp',
+  '/guides/vi/avif-jpg-converter-vs-alternatives.html': 'guide/vi/avif-jpg-converter-vs-alternatives.jsp',
+  '/guides/id/avif-jpg-converter-when.html': 'guide/id/avif-jpg-converter-when.jsp',
+  '/guides/id/avif-jpg-converter-step-by-step.html': 'guide/id/avif-jpg-converter-step-by-step.jsp',
+  '/guides/id/avif-jpg-converter-vs-alternatives.html': 'guide/id/avif-jpg-converter-vs-alternatives.jsp',
+  '/guides/de/avif-jpg-converter-when.html': 'guide/de/avif-jpg-converter-when.jsp',
+  '/guides/de/avif-jpg-converter-step-by-step.html': 'guide/de/avif-jpg-converter-step-by-step.jsp',
+  '/guides/de/avif-jpg-converter-vs-alternatives.html': 'guide/de/avif-jpg-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
