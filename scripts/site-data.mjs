@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/avif-png-converter-vs-alternatives.html',
+  '/guides/avif-png-converter-step-by-step.html',
+  '/guides/avif-png-converter-when.html',
   '/guides/avif-jpg-converter-vs-alternatives.html',
   '/guides/avif-jpg-converter-step-by-step.html',
   '/guides/avif-jpg-converter-when.html',
@@ -199,6 +202,7 @@ export const INFO_ROUTES = new Set([
   '/guides/es/yaml-formatter-step-by-step.html',
   '/guides/vi/yaml-formatter-step-by-step.html',
   '/guides/id/yaml-formatter-step-by-step.html',
+  '/guides/de/yaml-formatter-step-by-step.html',
   '/guides/html-minifier-vs-alternatives.html',
   '/guides/html-minifier-step-by-step.html',
   '/guides/html-minifier-when.html',
@@ -7618,6 +7622,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/yaml-formatter-step-by-step.html',
   '/guides/vi/yaml-formatter-step-by-step.html',
   '/guides/id/yaml-formatter-step-by-step.html',
+  '/guides/de/yaml-formatter-step-by-step.html',
   // unix-timestamp-converter companion guides EN + 5 locales (new_tool_page_discovery 20260902-8)
   '/guides/unix-timestamp-converter-when.html',
   '/guides/unix-timestamp-converter-step-by-step.html',
@@ -17422,6 +17427,7 @@ export const ALIAS_ROUTES = {
   '/color-palette-generator.html': '/developer-tools/color-palette-generator.html',
   '/ai-story-generator.html': '/utility-tools/ai-story-generator.html',
   '/avif-to-jpg.html': '/image-converter-tools/avif-to-jpg.html',
+  '/avif-to-png.html': '/image-converter-tools/avif-to-png.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29802,6 +29808,7 @@ export const JSP_BY_ROUTE = {
   '/guides/es/yaml-formatter-step-by-step.html': 'guide/es/yaml-formatter-step-by-step.jsp',
   '/guides/vi/yaml-formatter-step-by-step.html': 'guide/vi/yaml-formatter-step-by-step.jsp',
   '/guides/id/yaml-formatter-step-by-step.html': 'guide/id/yaml-formatter-step-by-step.jsp',
+  '/guides/de/yaml-formatter-step-by-step.html': 'guide/de/yaml-formatter-step-by-step.jsp',
   '/developer-tools/markdown-table-generator.html': 'utility/markdown-table-generator.jsp',
   '/guides/markdown-table-generator-when.html': 'guide/markdown-table-generator-when.jsp',
   '/guides/markdown-table-generator-step-by-step.html': 'guide/markdown-table-generator-step-by-step.jsp',
@@ -30000,6 +30007,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/avif-jpg-converter-when.html': 'guide/de/avif-jpg-converter-when.jsp',
   '/guides/de/avif-jpg-converter-step-by-step.html': 'guide/de/avif-jpg-converter-step-by-step.jsp',
   '/guides/de/avif-jpg-converter-vs-alternatives.html': 'guide/de/avif-jpg-converter-vs-alternatives.jsp',
+  '/image-converter-tools/avif-to-png.html': 'convert/avif-to-png.jsp',
+  '/guides/avif-png-converter-when.html': 'guide/avif-png-converter-when.jsp',
+  '/guides/avif-png-converter-step-by-step.html': 'guide/avif-png-converter-step-by-step.jsp',
+  '/guides/avif-png-converter-vs-alternatives.html': 'guide/avif-png-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
