@@ -12,7 +12,7 @@
 <div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>Read and compare MD5 hashes correctly: case, whitespace, hex format</b></h1>
     <p>After generating a hash on <a href="/developer-tools/md5-converter.html">MD5 Converter</a>, lowercase both strings, trim whitespace, strip colon separators, then compare all 32 hex characters. Upper vs lower case, leading spaces, and colon formatting are cosmetic - the hashes still match. Any single hex digit different, or a length other than 32 characters, means the inputs differed.</p>
-<time itemprop="dateReviewed" datetime="2026-06-29">Last reviewed: 2026-06-29</time>
+<time itemprop="dateReviewed" datetime="2026-09-12">Last reviewed: 2026-09-12</time>
 <address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
 
     <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
@@ -72,6 +72,26 @@
     <p>The avalanche property of the hash function makes this guarantee mechanical: a one-bit change in the input flips roughly half the output bits, so a near-miss in the hash never corresponds to a near-miss in the inputs. If your hash from <a href="/developer-tools/md5-converter.html">MD5 Converter</a> disagrees with the published expected value in any single hex digit, the bytes you hashed are not the bytes the publisher hashed - re-download the file or re-fetch the source. A single hex character of difference is "the inputs differed, retry the whole thing", not "almost correct, retry just the last block".</p>
 
     <p><em>Related developer and MD5 guides: <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - When to Hash</a> (algorithm choice), <a href="/guides/why-md5-cannot-be-decrypted.html">Why MD5 Cannot Be Decrypted</a> (why MD5 is not reversible), <a href="/guides/md5-to-text-why-you-cannot-convert-back.html">MD5 to Text - Why You Cannot Convert It Back</a> (operational counterpart), <a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">MD5 Alternatives - bcrypt vs Argon2id vs SHA-256</a> (modern alternatives for adversarial use), and <a href="/guides/en/download-link-not-appearing-after-conversion-five-fixes.html">download link not appearing after conversion - five fixes</a> (if the converter finishes but shows no download link).</em></p>
+</details>
+
+<details class="faq-item">
+  <summary><b>Does editing a file's metadata change its MD5 hash?</b></summary>
+  <p>Yes. MD5 hashes the exact bytes it is given, and in most file formats the metadata (EXIF tags on a photo, ID3 tags on an MP3, document properties on a PDF) is stored inside those same bytes, so changing it changes the hash - even when the visible content looks identical. MD5 has no concept of "content bytes" versus "metadata bytes"; it hashes everything in the file, so any edit that changes even one byte produces a completely different 32-character result.</p>
+</details>
+
+<details class="faq-item">
+  <summary><b>Will hashing the same text twice always produce the same MD5?</b></summary>
+  <p>Yes. MD5 is deterministic and uses no randomness, salt, or secret key: the same input bytes always produce the exact same 32-character result, on any device, at any time. That is different from password-hashing algorithms such as bcrypt or Argon2, which deliberately add a random salt so the same password produces a different stored value each time - a distinction that matters specifically for passwords, not for the file-integrity or download-verification checks this guide covers.</p>
+</details>
+
+<details class="faq-item">
+  <summary><b>Why compare hashes instead of comparing the two files directly?</b></summary>
+  <p>Because a hash comparison does not require having both files in the same place. A publisher can post a 32-character MD5 next to a multi-gigabyte download; you generate the same 32 characters locally after the download finishes and compare the two short strings, instead of needing the publisher's original file sitting next to yours to run a byte-by-byte comparison.</p>
+</details>
+
+<details class="faq-item">
+  <summary><b>My MD5 does not match the published value - what should I check first?</b></summary>
+  <p>Run through the 5-step compare flow above before assuming the file is bad: confirm you copied the full hash (a partial copy-paste is the most common cause), re-check for the four cosmetic mismatches (case, whitespace, BOM, separators), and re-copy the expected value directly from the publisher's page rather than from a forwarded email or chat message, which can silently add or drop whitespace. If the hash still disagrees after all four checks, re-download the file - the copy you have is not byte-identical to the one the publisher hashed.</p>
 </details>
 
 <section class="ai-overview-recapture">
