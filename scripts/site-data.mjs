@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/product-recall-lookup-step-by-step.html',
+  '/guides/product-recall-lookup-when.html',
+  '/guides/product-recall-lookup-vs-alternatives.html',
+  '/guides/pt/product-recall-lookup-step-by-step.html',
+  '/guides/pt/product-recall-lookup-when.html',
+  '/guides/pt/product-recall-lookup-vs-alternatives.html',
+  '/guides/es/product-recall-lookup-step-by-step.html',
+  '/guides/es/product-recall-lookup-when.html',
+  '/guides/es/product-recall-lookup-vs-alternatives.html',
+  '/guides/vi/product-recall-lookup-step-by-step.html',
+  '/guides/vi/product-recall-lookup-when.html',
+  '/guides/vi/product-recall-lookup-vs-alternatives.html',
+  '/guides/id/product-recall-lookup-step-by-step.html',
+  '/guides/id/product-recall-lookup-when.html',
+  '/guides/id/product-recall-lookup-vs-alternatives.html',
+  '/guides/de/product-recall-lookup-step-by-step.html',
+  '/guides/de/product-recall-lookup-when.html',
+  '/guides/de/product-recall-lookup-vs-alternatives.html',
   '/guides/avif-png-converter-vs-alternatives.html',
   '/guides/pt/avif-png-converter-vs-alternatives.html',
   '/guides/es/avif-png-converter-vs-alternatives.html',
@@ -17477,6 +17495,7 @@ export const ALIAS_ROUTES = {
   '/ai-story-generator.html': '/utility-tools/ai-story-generator.html',
   '/avif-to-jpg.html': '/image-converter-tools/avif-to-jpg.html',
   '/avif-to-png.html': '/image-converter-tools/avif-to-png.html',
+  '/product-recall-lookup.html': '/utility-tools/product-recall-lookup.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30109,6 +30128,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/avif-png-converter-vs-alternatives.html': 'guide/vi/avif-png-converter-vs-alternatives.jsp',
   '/guides/id/avif-png-converter-vs-alternatives.html': 'guide/id/avif-png-converter-vs-alternatives.jsp',
   '/guides/de/avif-png-converter-vs-alternatives.html': 'guide/de/avif-png-converter-vs-alternatives.jsp',
+  '/utility-tools/product-recall-lookup.html': 'utility/product-recall-lookup.jsp',
+  '/guides/product-recall-lookup-step-by-step.html': 'guide/product-recall-lookup-step-by-step.jsp',
+  '/guides/product-recall-lookup-when.html': 'guide/product-recall-lookup-when.jsp',
+  '/guides/product-recall-lookup-vs-alternatives.html': 'guide/product-recall-lookup-vs-alternatives.jsp',
+  '/guides/pt/product-recall-lookup-step-by-step.html': 'guide/pt/product-recall-lookup-step-by-step.jsp',
+  '/guides/pt/product-recall-lookup-when.html': 'guide/pt/product-recall-lookup-when.jsp',
+  '/guides/pt/product-recall-lookup-vs-alternatives.html': 'guide/pt/product-recall-lookup-vs-alternatives.jsp',
+  '/guides/es/product-recall-lookup-step-by-step.html': 'guide/es/product-recall-lookup-step-by-step.jsp',
+  '/guides/es/product-recall-lookup-when.html': 'guide/es/product-recall-lookup-when.jsp',
+  '/guides/es/product-recall-lookup-vs-alternatives.html': 'guide/es/product-recall-lookup-vs-alternatives.jsp',
+  '/guides/vi/product-recall-lookup-step-by-step.html': 'guide/vi/product-recall-lookup-step-by-step.jsp',
+  '/guides/vi/product-recall-lookup-when.html': 'guide/vi/product-recall-lookup-when.jsp',
+  '/guides/vi/product-recall-lookup-vs-alternatives.html': 'guide/vi/product-recall-lookup-vs-alternatives.jsp',
+  '/guides/id/product-recall-lookup-step-by-step.html': 'guide/id/product-recall-lookup-step-by-step.jsp',
+  '/guides/id/product-recall-lookup-when.html': 'guide/id/product-recall-lookup-when.jsp',
+  '/guides/id/product-recall-lookup-vs-alternatives.html': 'guide/id/product-recall-lookup-vs-alternatives.jsp',
+  '/guides/de/product-recall-lookup-step-by-step.html': 'guide/de/product-recall-lookup-step-by-step.jsp',
+  '/guides/de/product-recall-lookup-when.html': 'guide/de/product-recall-lookup-when.jsp',
+  '/guides/de/product-recall-lookup-vs-alternatives.html': 'guide/de/product-recall-lookup-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

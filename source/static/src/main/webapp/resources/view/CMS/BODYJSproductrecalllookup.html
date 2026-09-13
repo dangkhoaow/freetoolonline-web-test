@@ -1,0 +1,263 @@
+<script>
+    // Product-recall-lookup - live-data class, no upload, no backend, no
+    // vendored lib. Registry Gate-H entry: product_recall_lookup_cpsc.
+    // Keyless, CORS-`*` US-government CPSC Recall REST API only
+    // (saferproducts.gov). Reuses the drug-recall-lookup architecture
+    // verbatim (fire750, itself from food fire731 / vehicle fire724):
+    // on-load default example lookup as the zero-interaction G16 path, then
+    // reader-driven lookups by product/brand/manufacturer keyword with an
+    // optional hazard keyword. CPSC-specific notes: the API returns a plain
+    // JSON ARRAY sorted newest-first (no result envelope), an empty result
+    // is HTTP 200 + [] (never a 404 like openFDA), and a keyword query
+    // without a date bound scans the full 1977-present corpus - so search
+    // results render a bounded number of cards with a count line. HONESTY
+    // NOTE: the search query IS sent to the official US government CPSC API
+    // (never to this site's servers) - the page states that plainly and
+    // never claims "never leaves your browser".
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top
+    // level. In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var PR_API_URL = 'https://www.saferproducts.gov/RestWebServices/Recall?format=json';
+    var PR_EXAMPLE_DAYS = 60;
+    var PR_EXAMPLE_SHOW = 8;
+    var PR_SEARCH_SHOW = 25;
+
+    // CPSC remedy options observed live in RemedyOptions[].Option
+    // (2026-09-13 probe: Refund / Repair / Replace). Definitions are
+    // plain-language explanations of the option label, never invented
+    // hazard claims.
+    var PR_REMEDY_DEFS = {
+        'Refund': 'The firm gives your money back - the notice says whether you must return, destroy, or photograph the product first.',
+        'Repair': 'The firm provides a fix (a repair kit, replacement part, or free service) so you can keep using the product.',
+        'Replace': 'The firm swaps the recalled product for a new or equivalent unit free of charge.'
+    };
+
+    function prEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function prStatus(root, msg, isError) {
+        var el = root.querySelector('#prStatus');
+        if (!el) return;
+        el.style.color = isError ? '#b00020' : '#555';
+        el.textContent = msg;
+    }
+
+    // CPSC returns a bare JSON array; an empty result set is HTTP 200 + []
+    // (verified live 2026-09-13) - that is "no recalls found", never a failure.
+    function prFetchJson(url) {
+        return fetch(url, { headers: { 'Accept': 'application/json' } }).then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        }).then(function (data) {
+            return Array.isArray(data) ? data : [];
+        });
+    }
+
+    function prFmtDate(iso) {
+        var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+        return m ? (m[1] + '-' + m[2] + '-' + m[3]) : String(iso || '');
+    }
+
+    function prDateNDaysAgo(n) {
+        var d = new Date(Date.now() - n * 86400000);
+        var mo = String(d.getMonth() + 1); if (mo.length < 2) mo = '0' + mo;
+        var da = String(d.getDate()); if (da.length < 2) da = '0' + da;
+        return d.getFullYear() + '-' + mo + '-' + da;
+    }
+
+    function prJoinNames(arr, field, max) {
+        if (!arr || !arr.length) return '';
+        var names = [];
+        for (var i = 0; i < arr.length && names.length < (max || 3); i++) {
+            var v = arr[i] && arr[i][field] ? String(arr[i][field]).trim() : '';
+            if (v) names.push(v);
+        }
+        return names.join('; ');
+    }
+
+    function prRemedyBadges(rec) {
+        var opts = rec.RemedyOptions || [];
+        var out = '';
+        for (var i = 0; i < opts.length; i++) {
+            var o = opts[i] && opts[i].Option ? String(opts[i].Option).trim() : '';
+            if (!o) continue;
+            out += '<span style="display:inline-block;background:#1a73e8;color:#fff;border-radius:3px;padding:1px 8px;margin:2px 6px 2px 0;font-size:0.85em;font-weight:600;">' + prEsc(o) + '</span>';
+        }
+        return out;
+    }
+
+    function prProductsLine(rec) {
+        var prods = rec.Products || [];
+        if (!prods.length) return '';
+        var bits = [];
+        for (var i = 0; i < prods.length && i < 3; i++) {
+            var p = prods[i] || {};
+            var b = prEsc(p.Name || '');
+            if (p.Model) b += ' (model ' + prEsc(p.Model) + ')';
+            if (p.NumberOfUnits) b += ' - ' + prEsc(p.NumberOfUnits) + ' units';
+            if (b) bits.push(b);
+        }
+        return bits.length ? '<p style="margin:6px 0 0;"><b>Products:</b> ' + bits.join('; ') + '</p>' : '';
+    }
+
+    function prRenderResults(root, recs, queryLabel, isExample, shownCap) {
+        var listEl = root.querySelector('#prResults');
+        if (!listEl) return;
+        recs = recs || [];
+        var head = '';
+        if (isExample) {
+            head += '<p style="color:#777;font-size:0.9em;margin:8px 0 2px;">Consumer product recalls announced by the US CPSC in the last ' + PR_EXAMPLE_DAYS + ' days (newest first) so you can see what results look like - run your own search above.</p>';
+        }
+        if (!recs.length) {
+            listEl.innerHTML = head +
+                '<div style="border:1px solid #c8e6c9;background:#f1f8e9;border-radius:4px;padding:10px 14px;margin-top:8px;">' +
+                '<b>No recalls found for ' + prEsc(queryLabel) + '.</b> ' +
+                'The CPSC recall database has no entry matching that query. Try a shorter or more generic keyword (a product type like "stroller" often matches where a full product name does not), and remember new recalls can take hours to days to appear here - for breaking recalls check <a href="https://www.cpsc.gov/Recalls" target="_blank" rel="noopener">cpsc.gov/Recalls</a>.' +
+                '</div>';
+            return;
+        }
+        var total = recs.length;
+        var show = recs.slice(0, shownCap || PR_SEARCH_SHOW);
+        var html = head + '<p style="margin:10px 0 4px;"><b>' + (total > show.length ? ('Showing the ' + show.length + ' newest of ' + total + ' recalls') : (total + ' recall' + (total === 1 ? '' : 's'))) + '</b> for ' + prEsc(queryLabel) + ', newest first:</p>';
+        for (var i = 0; i < show.length; i++) {
+            var r = show[i];
+            var hazard = prJoinNames(r.Hazards, 'Name', 2);
+            var remedy = prJoinNames(r.Remedies, 'Name', 2);
+            var firm = prJoinNames(r.Manufacturers, 'Name', 2);
+            var soldAt = prJoinNames(r.Retailers, 'Name', 2);
+            var country = prJoinNames(r.ManufacturerCountries, 'Country', 3);
+            var injuries = prJoinNames(r.Injuries, 'Name', 1);
+            html += '<div style="border:1px solid #e0e0e0;border-left:4px solid #b00020;border-radius:4px;padding:10px 14px;margin-top:10px;">';
+            html += '<div style="font-weight:600;">' + (r.URL ? '<a href="' + prEsc(r.URL) + '" target="_blank" rel="noopener">' + prEsc(r.Title || 'Recall notice') + '</a>' : prEsc(r.Title || 'Recall notice')) + '</div>';
+            html += '<div style="color:#777;font-size:0.88em;margin:2px 0 4px;">' + (r.RecallDate ? 'Announced ' + prFmtDate(r.RecallDate) : '') + (r.RecallNumber ? ' - recall no. ' + prEsc(r.RecallNumber) : '') + (firm ? ' - ' + prEsc(firm) : '') + (country ? ' - made in ' + prEsc(country) : '') + '</div>';
+            html += '<div>' + prRemedyBadges(r) + '</div>';
+            html += prProductsLine(r);
+            if (hazard) html += '<p style="margin:6px 0 0;"><b>Hazard:</b> ' + prEsc(hazard) + '</p>';
+            if (injuries) html += '<p style="margin:6px 0 0;"><b>Incidents:</b> ' + prEsc(injuries) + '</p>';
+            if (remedy) html += '<p style="margin:6px 0 0;"><b>What to do:</b> ' + prEsc(remedy) + '</p>';
+            if (soldAt) html += '<p style="margin:6px 0 0;"><b>Sold at:</b> ' + prEsc(soldAt) + '</p>';
+            html += '</div>';
+        }
+        html += '<p style="color:#777;font-size:0.9em;margin-top:8px;">Data source: US Consumer Product Safety Commission recall database (saferproducts.gov). Vehicles, food, and medicines are covered by other agencies - use the <a href="/utility-tools/vehicle-recall-lookup.html">vehicle</a>, <a href="/utility-tools/food-recall-lookup.html">food</a>, or <a href="/utility-tools/drug-recall-lookup.html">drug</a> recall lookups for those.</p>';
+        listEl.innerHTML = html;
+    }
+
+    // Search strategy (verified against the live API 2026-09-13):
+    // RecallTitle=<kw> does a case-insensitive substring match on the
+    // recall title - the broadest single-field product/brand search the
+    // API offers. When it returns zero rows the tool retries once with
+    // Manufacturer=<kw> so a firm-name query still matches. An optional
+    // hazard keyword adds Hazard=<kw> to either pass.
+    function prBuildUrl(field, kw, hazard) {
+        var url = PR_API_URL;
+        if (kw) url += '&' + field + '=' + encodeURIComponent(kw);
+        if (hazard) url += '&Hazard=' + encodeURIComponent(hazard);
+        return url;
+    }
+
+    function prLookup(root, kw, hazard, isExample) {
+        kw = String(kw || '').trim();
+        hazard = String(hazard || '').trim();
+        var label;
+        if (isExample) {
+            label = 'the latest US consumer product recalls';
+        } else if (kw && hazard) {
+            label = '"' + kw + '" (hazard: ' + hazard + ')';
+        } else if (kw) {
+            label = '"' + kw + '"';
+        } else if (hazard) {
+            label = 'hazard "' + hazard + '"';
+        } else {
+            prStatus(root, 'Type a product, brand, or manufacturer keyword (or a hazard like "choking"), then press Search recalls.', true);
+            return;
+        }
+        prStatus(root, 'Checking the CPSC recall database for ' + label + '...');
+        root.querySelector('#prResults').innerHTML = '';
+        if (isExample) {
+            var exUrl = PR_API_URL + '&RecallDateStart=' + prDateNDaysAgo(PR_EXAMPLE_DAYS);
+            prFetchJson(exUrl).then(function (recs) {
+                prStatus(root, 'Last checked: ' + new Date().toLocaleString() + ' (source: saferproducts.gov)');
+                prRenderResults(root, recs, label, true, PR_EXAMPLE_SHOW);
+            }).catch(function (e) {
+                prStatus(root, 'Could not reach the CPSC service: ' + (e && e.message ? e.message : String(e)) + '. Try again in a moment.', true);
+            });
+            return;
+        }
+        prFetchJson(prBuildUrl('RecallTitle', kw, hazard)).then(function (recs) {
+            if (!recs.length && kw) {
+                // Title search missed - retry once as a manufacturer-name search.
+                prStatus(root, 'No title match - checking manufacturer names for ' + label + '...');
+                return prFetchJson(prBuildUrl('Manufacturer', kw, hazard)).then(function (mRecs) {
+                    prStatus(root, 'Last checked: ' + new Date().toLocaleString() + ' (source: saferproducts.gov)');
+                    prRenderResults(root, mRecs, label + (mRecs.length ? ' (matched by manufacturer name)' : ''), false, PR_SEARCH_SHOW);
+                });
+            }
+            prStatus(root, 'Last checked: ' + new Date().toLocaleString() + ' (source: saferproducts.gov)');
+            prRenderResults(root, recs, label, false, PR_SEARCH_SHOW);
+        }).catch(function (e) {
+            prStatus(root, 'Could not reach the CPSC service: ' + (e && e.message ? e.message : String(e)) + '. Try again in a moment.', true);
+        });
+    }
+
+    function prRenderExplainer() {
+        var out = '<table style="border-collapse:collapse;margin-top:8px;font-size:0.92em;"><thead><tr><th style="text-align:left;padding:4px 8px;">Remedy option</th><th style="text-align:left;padding:4px 8px;">What it means for you</th></tr></thead><tbody>';
+        var order = ['Refund', 'Repair', 'Replace'];
+        for (var i = 0; i < order.length; i++) {
+            out += '<tr><td style="padding:4px 8px;font-weight:600;vertical-align:top;white-space:nowrap;">' + order[i] + '</td><td style="padding:4px 8px;">' + PR_REMEDY_DEFS[order[i]] + '</td></tr>';
+        }
+        out += '</tbody></table>';
+        out += '<div style="font-weight:bold;margin-top:12px;">If a product you own is recalled</div>' +
+            '<ol style="margin:6px 0 0 18px;padding:0;">' +
+            '<li>Stop using the product immediately - especially anything for babies or children. Recalls are announced because a hazard was verified, and most cover every unit of the listed model.</li>' +
+            '<li>Open the official notice (each result title links to the cpsc.gov page) and compare the model number, date codes, and where you bought it against your product.</li>' +
+            '<li>Follow the remedy in the notice - refund, repair, or replacement is provided free of charge by the firm; the notice lists the contact and whether to return, fix, or dispose of the product.</li>' +
+            '<li>If the product hurt someone, or you own a hazardous product that is not listed, report it at SaferProducts.gov - reports there help trigger future recalls.</li>' +
+            '</ol>' +
+            '<p style="font-size:0.92em;color:#555;margin-top:8px;">This page checks the US Consumer Product Safety Commission recall database (saferproducts.gov) - toys, nursery gear, appliances, furniture, electronics, sports equipment, and other consumer products sold in the US. Vehicles (NHTSA), food and medicines (FDA), and recalls in other countries (Health Canada, ACCC) are separate systems and are NOT included - this site has dedicated <a href="/utility-tools/vehicle-recall-lookup.html">vehicle</a>, <a href="/utility-tools/food-recall-lookup.html">food</a>, and <a href="/utility-tools/drug-recall-lookup.html">drug</a> recall lookups. New recalls can take hours to days to appear in the database - for breaking announcements check <a href="https://www.cpsc.gov/Recalls" target="_blank" rel="noopener">cpsc.gov/Recalls</a>. Your search query goes only to the official US-government CPSC API, never to this site\'s servers, and this page does not store it. Always follow the remedy instructions on the official CPSC recall notice.</p>';
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('productRecallTool');
+        if (!root) return; // not a product-recall page
+        try {
+            var explainBox = root.querySelector('#prExplainer');
+            if (explainBox) explainBox.innerHTML = prRenderExplainer();
+
+            var kwInput = root.querySelector('#prKeywordInput');
+            var hazardInput = root.querySelector('#prHazardInput');
+            var searchBtn = root.querySelector('#prSearchBtn');
+
+            if (searchBtn) {
+                searchBtn.addEventListener('click', function () {
+                    prLookup(root,
+                        kwInput ? kwInput.value : '',
+                        hazardInput ? hazardInput.value : '',
+                        false);
+                });
+            }
+            var onEnter = function (ev) {
+                if (ev.key === 'Enter') {
+                    ev.preventDefault();
+                    prLookup(root, kwInput ? kwInput.value : '', hazardInput ? hazardInput.value : '', false);
+                }
+            };
+            if (kwInput) kwInput.addEventListener('keydown', onEnter);
+            if (hazardInput) hazardInput.addEventListener('keydown', onEnter);
+
+            // Always render SOMETHING visible on load (G16) - the labeled
+            // newest-recalls example lookup, so the page never shows a blank
+            // panel before the reader interacts.
+            prLookup(root, '', '', true);
+        } catch (e) {
+            root.innerHTML = '<p style="color:#b00020;">Could not start the tool: ' + prEsc(e && e.message ? e.message : String(e)) + '</p>';
+        }
+    }
+</script>

@@ -1024,6 +1024,7 @@ try {
     { title: "AI Story Generator - Offline, Private, No Sign-Up", url: "https://freetoolonline.com/utility-tools/ai-story-generator.html", include: !1, tags: "utility" },
     { title: "AVIF to JPG Converter", url: "https://freetoolonline.com/image-converter-tools/avif-to-jpg.html", include: !1, tags: "image-conversion" },
     { title: "AVIF to PNG Converter", url: "https://freetoolonline.com/image-converter-tools/avif-to-png.html", include: !1, tags: "image-conversion" },
+    { title: "Product Recall Lookup (CPSC)", url: "https://freetoolonline.com/utility-tools/product-recall-lookup.html", include: !1, tags: "utility" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
