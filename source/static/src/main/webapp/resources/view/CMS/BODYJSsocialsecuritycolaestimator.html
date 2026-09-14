@@ -1,0 +1,332 @@
+<script>
+    // Social Security COLA estimator - live-data class, no upload, no backend,
+    // no vendored lib. Registry Gate-H entry: ssa_cola_estimator_bls_cpiw.
+    // Keyless, CORS-`*` US-government BLS public API v1 only
+    // (api.bls.gov, series CWUR0000SA0 = CPI-W, 1982-84=100, NSA). Reuses the
+    // live-data page architecture (product/drug/food/vehicle recall lineage):
+    // on-load fetch renders a visible default result with zero interaction
+    // (G16), then the reader refines with their own benefit amount. SSA COLA
+    // formula (ssa.gov/cola): percentage increase, rounded to the nearest
+    // 0.1%, of the Q3 (Jul+Aug+Sep) average CPI-W over the prior determination
+    // year's Q3 average; a negative result means 0% (benefits are never cut by
+    // the COLA). Until September CPI-W publishes, the missing Q3 month(s) are
+    // projected with the latest published value and the output SAYS SO.
+    // HONESTY NOTES: the CPI-W fetch goes to the official US-government BLS
+    // API (never to this site's servers); the benefit amount the reader types
+    // is used in local arithmetic only and is never transmitted anywhere.
+    // BLS v1 is keyless with a small per-IP daily quota, so the parsed series
+    // is cached in localStorage (ftol:ssacola:*) for 6 hours.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top
+    // level. In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var SC_API_URL = 'https://api.bls.gov/publicAPI/v1/timeseries/data/CWUR0000SA0';
+    var SC_CACHE_KEY = 'ftol:ssacola:cpiw-v1';
+    var SC_CACHE_MS = 6 * 60 * 60 * 1000;
+    var SC_EXAMPLE_BENEFIT = 2000;
+    // Verified against bls.gov/schedule/news_release/cpi.htm (2026-09-14):
+    // September 2026 CPI releases Oct 14, 2026, 08:30 ET - the morning SSA
+    // announces the 2027 COLA. Only used while it is in the future AND the
+    // COLA year is 2027; other years fall back to the generic
+    // "typically mid-October" wording (no fabricated dates).
+    var SC_ANNOUNCE_ISO = '2026-10-14T12:30:00Z';
+    var SC_ANNOUNCE_LABEL = 'October 14, 2026, 8:30 a.m. Eastern';
+    var SC_ANNOUNCE_COLA_YEAR = 2027;
+    var SC_MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+
+    function scEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function scStatus(root, msg, isError) {
+        var el = root.querySelector('#scStatus');
+        if (!el) return;
+        el.style.color = isError ? '#b00020' : '#555';
+        el.textContent = msg;
+    }
+
+    function scFmtMoney(n) {
+        var fixed = (Math.round(n * 100) / 100).toFixed(2);
+        return '$' + fixed.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function scFmtIndex(n) {
+        return n == null ? '-' : (Math.round(n * 1000) / 1000).toFixed(3);
+    }
+
+    // ---- data layer -------------------------------------------------------
+
+    function scReadCache() {
+        try {
+            var raw = localStorage.getItem(SC_CACHE_KEY);
+            if (!raw) return null;
+            var obj = JSON.parse(raw);
+            if (!obj || !obj.ts || !obj.rows || (Date.now() - obj.ts) > SC_CACHE_MS) return null;
+            return obj.rows;
+        } catch (e) { return null; }
+    }
+
+    function scWriteCache(rows) {
+        try {
+            localStorage.setItem(SC_CACHE_KEY, JSON.stringify({ ts: Date.now(), rows: rows }));
+        } catch (e) { /* quota or private mode - cache is best-effort only */ }
+    }
+
+    // Parses the BLS v1 payload into [{year, month, value}] (M13 = annual
+    // average is excluded). The v1 API returns the latest ~3 calendar years.
+    function scParseSeries(payload) {
+        if (!payload || payload.status !== 'REQUEST_SUCCEEDED') {
+            throw new Error('BLS API: ' + ((payload && payload.message && payload.message[0]) || 'unexpected response'));
+        }
+        var series = payload.Results && payload.Results.series && payload.Results.series[0];
+        var data = (series && series.data) || [];
+        if (!data.length) {
+            throw new Error('BLS API returned no CPI-W rows' + ((payload.message && payload.message[0]) ? ' (' + payload.message[0] + ')' : ''));
+        }
+        var rows = [];
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            var m = /^M(\d\d)$/.exec(d.period || '');
+            if (!m) continue;
+            var month = parseInt(m[1], 10);
+            if (month < 1 || month > 12) continue; // skips M13 annual average
+            var v = parseFloat(d.value);
+            if (!isFinite(v)) continue;
+            rows.push({ year: parseInt(d.year, 10), month: month, value: v });
+        }
+        if (!rows.length) throw new Error('BLS API returned no usable monthly CPI-W rows');
+        rows.sort(function (a, b) { return (a.year - b.year) || (a.month - b.month); });
+        return rows;
+    }
+
+    function scFetchSeries(cb, errCb) {
+        var cached = scReadCache();
+        if (cached) { cb(cached, true); return; }
+        fetch(SC_API_URL)
+            .then(function (r) {
+                if (!r.ok) throw new Error('BLS API HTTP ' + r.status);
+                return r.json();
+            })
+            .then(function (json) {
+                var rows = scParseSeries(json);
+                scWriteCache(rows);
+                cb(rows, false);
+            })
+            .catch(errCb);
+    }
+
+    // ---- COLA math --------------------------------------------------------
+
+    function scFind(rows, year, month) {
+        for (var i = 0; i < rows.length; i++) {
+            if (rows[i].year === year && rows[i].month === month) return rows[i];
+        }
+        return null;
+    }
+
+    function scLatest(rows) { return rows[rows.length - 1]; }
+
+    // Builds the COLA model for "now": Q3 of baseYear vs Q3 of baseYear-1.
+    // Missing current-Q3 months are projected with the latest published value.
+    function scComputeModel(rows, now) {
+        var baseYear = now.getFullYear();
+        var priorYear = baseYear - 1;
+        var colaYear = baseYear + 1;
+        var latest = scLatest(rows);
+
+        var prior = [], current = [], projectedMonths = [];
+        for (var m = 7; m <= 9; m++) {
+            var p = scFind(rows, priorYear, m);
+            if (!p) return { error: 'The BLS series is missing ' + SC_MONTH_NAMES[m - 1] + ' ' + priorYear + ' - the baseline quarter cannot be computed. Try again later.' };
+            prior.push(p.value);
+            var c = scFind(rows, baseYear, m);
+            if (c) {
+                current.push({ value: c.value, projected: false });
+            } else {
+                current.push({ value: latest.value, projected: true });
+                projectedMonths.push(SC_MONTH_NAMES[m - 1]);
+            }
+        }
+        var sum = 0, sumC = 0, i;
+        for (i = 0; i < prior.length; i++) sum += prior[i];
+        for (i = 0; i < current.length; i++) sumC += current[i].value;
+        var q3Prior = sum / prior.length;
+        var q3Now = sumC / current.length;
+        var rawPct = (q3Now / q3Prior - 1) * 100;
+        var cola = Math.max(0, Math.round(rawPct * 10) / 10);
+        return {
+            baseYear: baseYear, priorYear: priorYear, colaYear: colaYear,
+            prior: prior, current: current, projectedMonths: projectedMonths,
+            q3Prior: q3Prior, q3Now: q3Now, cola: cola, rawPct: rawPct,
+            official: projectedMonths.length === 0,
+            latestLabel: SC_MONTH_NAMES[latest.month - 1] + ' ' + latest.year + ' (' + scFmtIndex(latest.value) + ')'
+        };
+    }
+
+    // SSA rounds the raised benefit down to the next lower dime.
+    function scApplyCola(benefit, colaPct) {
+        return Math.floor(benefit * (1 + colaPct / 100) * 10) / 10;
+    }
+
+    // ---- rendering --------------------------------------------------------
+
+    function scRenderHeadline(root, model) {
+        var el = root.querySelector('#scHeadline');
+        if (!el) return;
+        var badge = model.official
+            ? '<span style="background:#1b5e20;color:#fff;padding:2px 8px;border-radius:3px;font-size:0.75em;vertical-align:middle;">official-formula value</span>'
+            : '<span style="background:#e65100;color:#fff;padding:2px 8px;border-radius:3px;font-size:0.75em;vertical-align:middle;">projection</span>';
+        var caveat = model.official
+            ? 'All three third-quarter months of ' + model.baseYear + ' are published - this is the official calculation. Confirm the announced number at ssa.gov/cola.'
+            : 'Projected: ' + scEsc(model.projectedMonths.join(' and ')) + ' ' + model.baseYear + ' CPI-W is not published yet, so the latest published value - ' + scEsc(model.latestLabel) + ' - stands in. The number moves when new data lands.';
+        el.innerHTML =
+            '<div style="font-size:2.2em;font-weight:bold;line-height:1.1;">' + model.cola.toFixed(1) + '%</div>' +
+            '<div style="margin:4px 0 2px;">estimated ' + model.colaYear + ' Social Security COLA ' + badge + '</div>' +
+            '<div style="color:#555;font-size:0.9em;max-width:560px;margin:0 auto;">' + caveat + '</div>';
+    }
+
+    function scRenderTable(root, model) {
+        var el = root.querySelector('#scTable');
+        if (!el) return;
+        var monthRow = function (i) {
+            var cur = model.current[i];
+            var curCell = scFmtIndex(cur.value) + (cur.projected ? ' <span style="color:#e65100;">(projected)</span>' : '');
+            return '<tr><td>' + SC_MONTH_NAMES[6 + i] + '</td><td>' + scFmtIndex(model.prior[i]) + '</td><td>' + curCell + '</td></tr>';
+        };
+        el.innerHTML =
+            '<div class="w3-responsive"><table class="w3-table-all w3-small" style="max-width:560px;margin:0 auto;">' +
+            '<tr><th>CPI-W month</th><th>Q3 ' + model.priorYear + ' (baseline)</th><th>Q3 ' + model.baseYear + '</th></tr>' +
+            monthRow(0) + monthRow(1) + monthRow(2) +
+            '<tr style="font-weight:bold;"><td>Q3 average</td><td>' + scFmtIndex(model.q3Prior) + '</td><td>' + scFmtIndex(model.q3Now) + '</td></tr>' +
+            '</table></div>' +
+            '<p style="color:#555;font-size:0.85em;max-width:560px;margin:6px auto 0;">CPI-W (1982-84 = 100), not seasonally adjusted, fetched from the US Bureau of Labor Statistics public API. Change: ' +
+            (model.rawPct >= 0 ? '+' : '') + (Math.round(model.rawPct * 100) / 100).toFixed(2) + '% before the nearest-0.1% rounding' +
+            (model.rawPct < 0 ? ' - a negative change means a 0% COLA, never a benefit cut' : '') + '.</p>';
+    }
+
+    function scRenderBenefit(root, model, benefit, isExample) {
+        var el = root.querySelector('#scBenefitResult');
+        if (!el) return;
+        if (!isFinite(benefit) || benefit <= 0) {
+            el.innerHTML = '<p style="color:#b00020;">Enter a monthly benefit amount above zero, like 1976.50.</p>';
+            return;
+        }
+        var next = scApplyCola(benefit, model.cola);
+        var diff = next - benefit;
+        el.innerHTML =
+            '<table class="w3-table-all w3-small" style="max-width:560px;margin:0 auto;">' +
+            '<tr><td>Current monthly benefit' + (isExample ? ' <span style="color:#e65100;">(example - type yours above)</span>' : '') + '</td><td style="text-align:right;">' + scFmtMoney(benefit) + '</td></tr>' +
+            '<tr><td>Estimated ' + model.colaYear + ' COLA</td><td style="text-align:right;">' + model.cola.toFixed(1) + '%</td></tr>' +
+            '<tr><td>Estimated new monthly benefit</td><td style="text-align:right;font-weight:bold;">' + scFmtMoney(next) + '</td></tr>' +
+            '<tr><td>Estimated monthly increase</td><td style="text-align:right;">' + scFmtMoney(diff) + '</td></tr>' +
+            '</table>' +
+            '<p style="color:#555;font-size:0.85em;max-width:560px;margin:6px auto 0;">Gross amounts, rounded down to the dime the way SSA rounds. Medicare premiums, tax withholding, and earnings-test adjustments are not modeled - your net deposit can differ. Your amount stays in this browser tab.</p>';
+    }
+
+    function scRenderCountdown(root, model, now) {
+        var el = root.querySelector('#scCountdown');
+        if (!el) return;
+        var announce = new Date(SC_ANNOUNCE_ISO);
+        if (model.colaYear === SC_ANNOUNCE_COLA_YEAR && now < announce) {
+            var days = Math.floor((announce - now) / 86400000);
+            var hours = Math.floor(((announce - now) % 86400000) / 3600000);
+            el.innerHTML = '<p style="max-width:560px;margin:8px auto 0;"><b>' + days + ' day' + (days === 1 ? '' : 's') + ' ' + hours + ' hour' + (hours === 1 ? '' : 's') + '</b> until the official ' + model.colaYear + ' COLA announcement - SSA announces it when BLS releases September CPI-W on ' + SC_ANNOUNCE_LABEL + ' (source: the BLS CPI release schedule).</p>';
+        } else if (model.official) {
+            el.innerHTML = '<p style="max-width:560px;margin:8px auto 0;">All three third-quarter months are published, so the value above follows the official formula. The announced number lives at ssa.gov/cola.</p>';
+        } else {
+            el.innerHTML = '<p style="max-width:560px;margin:8px auto 0;">SSA announces each year\'s COLA when BLS releases September CPI-W, typically mid-October. Check ssa.gov/cola for the official number.</p>';
+        }
+    }
+
+    function scRenderExplainer() {
+        return '<ol style="text-align:left;max-width:560px;margin:6px auto;">' +
+            '<li>Average the CPI-W index for July, August, and September of this year.</li>' +
+            '<li>Average the same three months of the last year a COLA was determined (normally last year).</li>' +
+            '<li>Divide the first average by the second; the percentage increase, rounded to the nearest 0.1%, is the COLA.</li>' +
+            '<li>If the result is negative, the COLA is 0% - benefits are never reduced by this formula.</li>' +
+            '</ol>';
+    }
+
+    function scRenderAll(root, model, now) {
+        scRenderHeadline(root, model);
+        scRenderTable(root, model);
+        scRenderCountdown(root, model, now);
+        var input = root.querySelector('#scBenefitInput');
+        var typed = input ? parseFloat(input.value) : NaN;
+        if (isFinite(typed) && typed > 0) {
+            scRenderBenefit(root, model, typed, false);
+        } else {
+            scRenderBenefit(root, model, SC_EXAMPLE_BENEFIT, true);
+        }
+    }
+
+    // Pre-fetch placeholder for the countdown block: renders synchronously so
+    // the page shows dated, useful output even before (or without) the API
+    // response. Uses only the verified announcement date and the clock.
+    function scRenderPlaceholder() {
+        var now = new Date();
+        var announce = new Date(SC_ANNOUNCE_ISO);
+        if (now.getFullYear() + 1 === SC_ANNOUNCE_COLA_YEAR && now < announce) {
+            var days = Math.floor((announce - now) / 86400000);
+            return '<p style="max-width:560px;margin:8px auto 0;"><b>' + days + ' day' + (days === 1 ? '' : 's') + '</b> until the official ' + SC_ANNOUNCE_COLA_YEAR + ' COLA announcement on ' + SC_ANNOUNCE_LABEL + '.</p>';
+        }
+        return '<p style="max-width:560px;margin:8px auto 0;">SSA announces each year\'s COLA with the September CPI-W release, typically mid-October (ssa.gov/cola).</p>';
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('ssaColaTool');
+        if (!root) return; // not the COLA estimator page
+        try {
+            var explainBox = root.querySelector('#scExplainer');
+            if (explainBox) explainBox.innerHTML = scRenderExplainer();
+
+            // Visible immediately (G16): the announcement line renders before
+            // any network response; the fetch fills the numbers in.
+            var cd = root.querySelector('#scCountdown');
+            if (cd) cd.innerHTML = scRenderPlaceholder();
+            scStatus(root, 'Fetching the latest CPI-W data from the US Bureau of Labor Statistics...');
+
+            var model = null;
+            var estimateBtn = root.querySelector('#scEstimateBtn');
+            var input = root.querySelector('#scBenefitInput');
+            var recalc = function () {
+                if (!model) return;
+                if (input && String(input.value).trim() === '') {
+                    scRenderBenefit(root, model, SC_EXAMPLE_BENEFIT, true);
+                } else {
+                    scRenderBenefit(root, model, input ? parseFloat(input.value) : NaN, false);
+                }
+            };
+            if (estimateBtn) estimateBtn.addEventListener('click', recalc);
+            if (input) {
+                input.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter') { ev.preventDefault(); recalc(); }
+                });
+                input.addEventListener('input', recalc);
+            }
+
+            scFetchSeries(function (rows, fromCache) {
+                var now = new Date();
+                model = scComputeModel(rows, now);
+                if (model.error) {
+                    scStatus(root, model.error, true);
+                    return;
+                }
+                scStatus(root, fromCache
+                    ? 'CPI-W data loaded (cached in this browser within the last 6 hours; source: BLS public API).'
+                    : 'Live CPI-W data loaded from the BLS public API.');
+                scRenderAll(root, model, now);
+            }, function (err) {
+                scStatus(root, 'Could not fetch CPI-W data: ' + (err && err.message ? err.message : String(err)) + '. The formula walkthrough below still applies; try again in a minute or check ssa.gov/cola.', true);
+            });
+        } catch (e) {
+            root.innerHTML = '<p style="color:#b00020;">Could not start the tool: ' + scEsc(e && e.message ? e.message : String(e)) + '</p>';
+        }
+    }
+</script>
