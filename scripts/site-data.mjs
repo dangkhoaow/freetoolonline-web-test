@@ -10703,20 +10703,14 @@ export const GUIDE_ROUTES = new Set([
   // so GUIDE_ROUTES never listed them. Backfilling EN + full pt/es/vi/id/de
   // locale fanout (guide_locale_fanout drain unit, runbook SS4b).
   '/guides/habit-tracker-step-by-step.html',
-  '/guides/habit-tracker-when.html',
   '/guides/habit-tracker-vs-alternatives.html',
   '/guides/pt/habit-tracker-step-by-step.html',
-  '/guides/pt/habit-tracker-when.html',
   '/guides/pt/habit-tracker-vs-alternatives.html',
   '/guides/es/habit-tracker-step-by-step.html',
-  '/guides/es/habit-tracker-when.html',
   '/guides/es/habit-tracker-vs-alternatives.html',
-  '/guides/vi/habit-tracker-when.html',
   '/guides/id/habit-tracker-step-by-step.html',
-  '/guides/id/habit-tracker-when.html',
   '/guides/id/habit-tracker-vs-alternatives.html',
   '/guides/de/habit-tracker-step-by-step.html',
-  '/guides/de/habit-tracker-when.html',
   '/guides/de/habit-tracker-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire-39 (2026-07-09): webp-to-jpg
   // companion guides - EN + full pt/es/vi/id/de locale fanout shipped
@@ -15365,6 +15359,38 @@ export const ALIAS_ROUTES = {
   '/guides/vi/how-to-play-lightning-math-battle.html': '/games/lightning-math-battle.html',
   '/guides/id/how-to-play-lightning-math-battle.html': '/games/lightning-math-battle.html',
   '/guides/de/how-to-play-lightning-math-battle.html': '/games/lightning-math-battle.html',
+  // consolidation fire140 (2026-09-15): retire the habit-tracker-when and
+  // qr-code-scanner-when doorway families into their surviving -vs-alternatives
+  // keepers. Backlog items topical-map-utility.habit-tracker and
+  // topical-map-utility.qr-code-scanner (1 live excess family each, 6 routes each).
+  // Section 3.5 gate re-run this fire from graphify-out/content/graph.json:
+  // habit-tracker-when 0 clicks / 0 citations / 0 impr vs kept -step-by-step 0/1/2
+  // and -vs-alternatives 0/0/14; qr-code-scanner-when 0/0/2 vs kept
+  // -vs-alternatives 0/1/19 and -step-by-step 0/0/44 - the excess is strictly
+  // weaker on clicks>citations>impressions in both, so no inversion (rule 2) and
+  // no all-zero triplet (rule 3). Both retired pages were thin templates whose
+  // every fact already appeared verbatim on a surviving sibling, so the
+  // shared-fact list is non-empty and unique-to-excess is EMPTY. The one detail
+  // per family that the 301 TARGET lacked was folded into it first (local-storage
+  // reload/clear-site-data behaviour; full-resolution photo downscale before
+  // decoding). Each keeper's own pointer link to the retired route was rewritten
+  // to a live sibling, and the qr tool page's See-also line kept its surviving
+  // links, so no internal link is lost. Edge layer patched in the same push.
+  // vi/habit-tracker-when 301s to the EN keeper because vi/habit-tracker-
+  // vs-alternatives is itself an alias - a locale-matched target there would
+  // build a 301 chain.
+  '/guides/habit-tracker-when.html': '/guides/habit-tracker-vs-alternatives.html',
+  '/guides/pt/habit-tracker-when.html': '/guides/pt/habit-tracker-vs-alternatives.html',
+  '/guides/es/habit-tracker-when.html': '/guides/es/habit-tracker-vs-alternatives.html',
+  '/guides/vi/habit-tracker-when.html': '/guides/habit-tracker-vs-alternatives.html',
+  '/guides/id/habit-tracker-when.html': '/guides/id/habit-tracker-vs-alternatives.html',
+  '/guides/de/habit-tracker-when.html': '/guides/de/habit-tracker-vs-alternatives.html',
+  '/guides/qr-code-scanner-when.html': '/guides/qr-code-scanner-vs-alternatives.html',
+  '/guides/pt/qr-code-scanner-when.html': '/guides/pt/qr-code-scanner-vs-alternatives.html',
+  '/guides/es/qr-code-scanner-when.html': '/guides/es/qr-code-scanner-vs-alternatives.html',
+  '/guides/vi/qr-code-scanner-when.html': '/guides/vi/qr-code-scanner-vs-alternatives.html',
+  '/guides/id/qr-code-scanner-when.html': '/guides/id/qr-code-scanner-vs-alternatives.html',
+  '/guides/de/qr-code-scanner-when.html': '/guides/de/qr-code-scanner-vs-alternatives.html',
   // consolidation fire56 (2026-08-13): retire the how-to-view-spinosaurus-in-3d
   // + spinosaurus-3d-viewer-vs-ar-apps doorway families into the
   // spinosaurus-size-comparison keeper, locale-matched. Backlog item
@@ -18786,21 +18812,15 @@ export const JSP_BY_ROUTE = {
   '/guides/de/speech-text-step-by-step.html': 'guide/de/speech-text-step-by-step.jsp',
   '/guides/de/speech-text-vs-alternatives.html': 'guide/de/speech-text-vs-alternatives.jsp',
   '/utility-tools/habit-tracker.html': 'utility/habit-tracker.jsp',
-  '/guides/habit-tracker-when.html': 'guide/habit-tracker-when.jsp',
   '/guides/habit-tracker-step-by-step.html': 'guide/habit-tracker-step-by-step.jsp',
   '/guides/habit-tracker-vs-alternatives.html': 'guide/habit-tracker-vs-alternatives.jsp',
   '/guides/pt/habit-tracker-step-by-step.html': 'guide/pt/habit-tracker-step-by-step.jsp',
-  '/guides/pt/habit-tracker-when.html': 'guide/pt/habit-tracker-when.jsp',
   '/guides/pt/habit-tracker-vs-alternatives.html': 'guide/pt/habit-tracker-vs-alternatives.jsp',
   '/guides/es/habit-tracker-step-by-step.html': 'guide/es/habit-tracker-step-by-step.jsp',
-  '/guides/es/habit-tracker-when.html': 'guide/es/habit-tracker-when.jsp',
   '/guides/es/habit-tracker-vs-alternatives.html': 'guide/es/habit-tracker-vs-alternatives.jsp',
-  '/guides/vi/habit-tracker-when.html': 'guide/vi/habit-tracker-when.jsp',
   '/guides/id/habit-tracker-step-by-step.html': 'guide/id/habit-tracker-step-by-step.jsp',
-  '/guides/id/habit-tracker-when.html': 'guide/id/habit-tracker-when.jsp',
   '/guides/id/habit-tracker-vs-alternatives.html': 'guide/id/habit-tracker-vs-alternatives.jsp',
   '/guides/de/habit-tracker-step-by-step.html': 'guide/de/habit-tracker-step-by-step.jsp',
-  '/guides/de/habit-tracker-when.html': 'guide/de/habit-tracker-when.jsp',
   '/guides/de/habit-tracker-vs-alternatives.html': 'guide/de/habit-tracker-vs-alternatives.jsp',
   '/utility-tools/grocery-list.html': 'utility/grocery-list.jsp',
   '/guides/grocery-list-vs-alternatives.html': 'guide/grocery-list-vs-alternatives.jsp',
@@ -20912,22 +20932,16 @@ export const JSP_BY_ROUTE = {
 
   '/guides/de/species-life-battle-vs-alternatives.html': 'guide/de/species-life-battle-vs-alternatives.jsp',
   '/utility-tools/qr-code-scanner.html': 'utility/qr-code-scanner.jsp',
-  '/guides/qr-code-scanner-when.html': 'guide/qr-code-scanner-when.jsp',
   '/guides/qr-code-scanner-step-by-step.html': 'guide/qr-code-scanner-step-by-step.jsp',
   '/guides/qr-code-scanner-vs-alternatives.html': 'guide/qr-code-scanner-vs-alternatives.jsp',
-  '/guides/pt/qr-code-scanner-when.html': 'guide/pt/qr-code-scanner-when.jsp',
   '/guides/pt/qr-code-scanner-step-by-step.html': 'guide/pt/qr-code-scanner-step-by-step.jsp',
   '/guides/pt/qr-code-scanner-vs-alternatives.html': 'guide/pt/qr-code-scanner-vs-alternatives.jsp',
-  '/guides/es/qr-code-scanner-when.html': 'guide/es/qr-code-scanner-when.jsp',
   '/guides/es/qr-code-scanner-step-by-step.html': 'guide/es/qr-code-scanner-step-by-step.jsp',
   '/guides/es/qr-code-scanner-vs-alternatives.html': 'guide/es/qr-code-scanner-vs-alternatives.jsp',
-  '/guides/vi/qr-code-scanner-when.html': 'guide/vi/qr-code-scanner-when.jsp',
   '/guides/vi/qr-code-scanner-step-by-step.html': 'guide/vi/qr-code-scanner-step-by-step.jsp',
   '/guides/vi/qr-code-scanner-vs-alternatives.html': 'guide/vi/qr-code-scanner-vs-alternatives.jsp',
-  '/guides/id/qr-code-scanner-when.html': 'guide/id/qr-code-scanner-when.jsp',
   '/guides/id/qr-code-scanner-step-by-step.html': 'guide/id/qr-code-scanner-step-by-step.jsp',
   '/guides/id/qr-code-scanner-vs-alternatives.html': 'guide/id/qr-code-scanner-vs-alternatives.jsp',
-  '/guides/de/qr-code-scanner-when.html': 'guide/de/qr-code-scanner-when.jsp',
   '/guides/de/qr-code-scanner-step-by-step.html': 'guide/de/qr-code-scanner-step-by-step.jsp',
   '/guides/de/qr-code-scanner-vs-alternatives.html': 'guide/de/qr-code-scanner-vs-alternatives.jsp',
   '/developer-tools/text-repeater.html': 'utility/text-repeater.jsp',
