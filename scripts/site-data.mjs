@@ -12923,19 +12923,20 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/sky-gates-flight-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire62 (2026-07-12): find-and-replace-text
   // companion guides - EN + full pt/es/vi/id/de locale fanout for all 3 angles.
-  '/guides/find-replace-text-when.html',
+  // content-consolidation fire142 (2026-09-17): the "-when" family was retired
+  // into "-step-by-step" (301, see ALIAS_ROUTES). The emitter's STEP 2b
+  // evidence re-rank keeps -step-by-step (41 impr) over -when (29 impr); the
+  // old slug-length pick had this inverted. -when's unique facts (the regex /
+  // pattern-matching limitation + the vs-alternatives link) were folded into
+  // -step-by-step in every locale first.
   '/guides/find-replace-text-step-by-step.html',
   '/guides/find-replace-text-vs-alternatives.html',
-  '/guides/pt/find-replace-text-when.html',
   '/guides/pt/find-replace-text-step-by-step.html',
   '/guides/pt/find-replace-text-vs-alternatives.html',
-  '/guides/es/find-replace-text-when.html',
   '/guides/es/find-replace-text-step-by-step.html',
   '/guides/es/find-replace-text-vs-alternatives.html',
-  '/guides/id/find-replace-text-when.html',
   '/guides/id/find-replace-text-step-by-step.html',
   '/guides/id/find-replace-text-vs-alternatives.html',
-  '/guides/de/find-replace-text-when.html',
   '/guides/de/find-replace-text-step-by-step.html',
   '/guides/de/find-replace-text-vs-alternatives.html',
   // city-time-machine-3d-when-guides - GUIDE_ROUTES/INFO_ROUTES backfill for the
@@ -15036,7 +15037,17 @@ export const ALIAS_ROUTES = {
   '/guides/vi/impact-crater-formation-when.html': '/guides/impact-crater-formation-when.html', // Phase-B 301 vi-batch-4 fire337
   '/guides/vi/how-to-play-server-survival-td.html': '/guides/how-to-play-server-survival-td.html', // Phase-B 301 vi-batch-4 fire337
   '/guides/vi/find-replace-text-vs-alternatives.html': '/guides/find-replace-text-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont3 fire336
-  '/guides/vi/find-replace-text-when.html': '/guides/find-replace-text-when.html', // Phase-B 301 vi-batch-3-cont3 fire336
+  // content-consolidation fire142 (2026-09-17): the "-when" family is retired into
+  // "-step-by-step" (topical-map-developer.find-and-replace-text backlog drain).
+  // This vi entry is RE-POINTED from the now-retired EN -when target to the EN
+  // -step-by-step canonical, so the retirement does not create a 301 chain
+  // (vi/-when -> /-when -> /-step-by-step).
+  '/guides/vi/find-replace-text-when.html': '/guides/find-replace-text-step-by-step.html', // re-pointed fire142; was /guides/find-replace-text-when.html (Phase-B 301 vi-batch-3-cont3 fire336)
+  '/guides/find-replace-text-when.html': '/guides/find-replace-text-step-by-step.html', // consolidation 301 fire142 (29 impr folded; -step-by-step 41 impr wins the evidence re-rank)
+  '/guides/pt/find-replace-text-when.html': '/guides/pt/find-replace-text-step-by-step.html', // consolidation 301 fire142
+  '/guides/es/find-replace-text-when.html': '/guides/es/find-replace-text-step-by-step.html', // consolidation 301 fire142
+  '/guides/id/find-replace-text-when.html': '/guides/id/find-replace-text-step-by-step.html', // consolidation 301 fire142
+  '/guides/de/find-replace-text-when.html': '/guides/de/find-replace-text-step-by-step.html', // consolidation 301 fire142
   '/guides/vi/flashcards-spaced-repetition-step-by-step.html': '/guides/flashcards-spaced-repetition-step-by-step.html', // Phase-B 301 vi-batch-3-cont3 fire336
   '/guides/vi/flashcards-spaced-repetition-vs-alternatives.html': '/guides/flashcards-spaced-repetition-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont3 fire336
   '/guides/vi/flashcards-spaced-repetition-when.html': '/guides/flashcards-spaced-repetition-when.html', // Phase-B 301 vi-batch-3-cont3 fire336
@@ -26443,19 +26454,17 @@ export const JSP_BY_ROUTE = {
   '/guides/de/character-counter-when.html': 'guide/de/character-counter-when.jsp',
   '/guides/de/character-counter-vs-alternatives.html': 'guide/de/character-counter-vs-alternatives.jsp',
   '/developer-tools/find-and-replace-text.html': 'utility/find-and-replace-text.jsp',
-  '/guides/find-replace-text-when.html': 'guide/find-replace-text-when.jsp',
+  // content-consolidation fire142 (2026-09-17): "-when" routes retired into
+  // "-step-by-step" via ALIAS_ROUTES + CloudFront 301. JSP + CMS fragments are
+  // left on disk (orphan, harmless) so the merge stays revertible.
   '/guides/find-replace-text-step-by-step.html': 'guide/find-replace-text-step-by-step.jsp',
   '/guides/find-replace-text-vs-alternatives.html': 'guide/find-replace-text-vs-alternatives.jsp',
-  '/guides/pt/find-replace-text-when.html': 'guide/pt/find-replace-text-when.jsp',
   '/guides/pt/find-replace-text-step-by-step.html': 'guide/pt/find-replace-text-step-by-step.jsp',
   '/guides/pt/find-replace-text-vs-alternatives.html': 'guide/pt/find-replace-text-vs-alternatives.jsp',
-  '/guides/es/find-replace-text-when.html': 'guide/es/find-replace-text-when.jsp',
   '/guides/es/find-replace-text-step-by-step.html': 'guide/es/find-replace-text-step-by-step.jsp',
   '/guides/es/find-replace-text-vs-alternatives.html': 'guide/es/find-replace-text-vs-alternatives.jsp',
-  '/guides/id/find-replace-text-when.html': 'guide/id/find-replace-text-when.jsp',
   '/guides/id/find-replace-text-step-by-step.html': 'guide/id/find-replace-text-step-by-step.jsp',
   '/guides/id/find-replace-text-vs-alternatives.html': 'guide/id/find-replace-text-vs-alternatives.jsp',
-  '/guides/de/find-replace-text-when.html': 'guide/de/find-replace-text-when.jsp',
   '/guides/de/find-replace-text-step-by-step.html': 'guide/de/find-replace-text-step-by-step.jsp',
   '/guides/de/find-replace-text-vs-alternatives.html': 'guide/de/find-replace-text-vs-alternatives.jsp',
   '/image-converter-tools/image-format-converter.html': 'convert/image-format-converter.jsp',
