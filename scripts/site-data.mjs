@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/video-thumbnail-extractor-vs-alternatives.html',
+  '/guides/video-thumbnail-extractor-step-by-step.html',
+  '/guides/video-thumbnail-extractor-when.html',
+  '/guides/pt/video-thumbnail-extractor-step-by-step.html',
+  '/guides/pt/video-thumbnail-extractor-when.html',
+  '/guides/pt/video-thumbnail-extractor-vs-alternatives.html',
+  '/guides/es/video-thumbnail-extractor-step-by-step.html',
+  '/guides/es/video-thumbnail-extractor-when.html',
+  '/guides/es/video-thumbnail-extractor-vs-alternatives.html',
+  '/guides/vi/video-thumbnail-extractor-step-by-step.html',
+  '/guides/vi/video-thumbnail-extractor-when.html',
+  '/guides/vi/video-thumbnail-extractor-vs-alternatives.html',
+  '/guides/id/video-thumbnail-extractor-step-by-step.html',
+  '/guides/id/video-thumbnail-extractor-when.html',
+  '/guides/id/video-thumbnail-extractor-vs-alternatives.html',
+  '/guides/de/video-thumbnail-extractor-step-by-step.html',
+  '/guides/de/video-thumbnail-extractor-when.html',
+  '/guides/de/video-thumbnail-extractor-vs-alternatives.html',
   '/guides/product-recall-lookup-step-by-step.html',
   '/guides/product-recall-lookup-when.html',
   '/guides/product-recall-lookup-vs-alternatives.html',
@@ -17565,6 +17583,7 @@ export const ALIAS_ROUTES = {
   '/guides/vi/uranus-tilt-vs-alternatives.html': '/guides/vi/uranus-tilt-step-by-step.html',
   '/guides/id/uranus-tilt-vs-alternatives.html': '/guides/id/uranus-tilt-step-by-step.html',
   '/guides/de/uranus-tilt-vs-alternatives.html': '/guides/de/uranus-tilt-step-by-step.html',
+  '/video-thumbnail-extractor.html': '/video-tools/video-thumbnail-extractor.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30199,6 +30218,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/social-security-cola-estimator-step-by-step.html': 'guide/de/social-security-cola-estimator-step-by-step.jsp',
   '/guides/de/social-security-cola-estimator-when.html': 'guide/de/social-security-cola-estimator-when.jsp',
   '/guides/de/social-security-cola-estimator-vs-alternatives.html': 'guide/de/social-security-cola-estimator-vs-alternatives.jsp',
+  '/video-tools/video-thumbnail-extractor.html': 'convert/video-thumbnail-extractor.jsp',
+  '/guides/video-thumbnail-extractor-when.html': 'guide/video-thumbnail-extractor-when.jsp',
+  '/guides/video-thumbnail-extractor-step-by-step.html': 'guide/video-thumbnail-extractor-step-by-step.jsp',
+  '/guides/video-thumbnail-extractor-vs-alternatives.html': 'guide/video-thumbnail-extractor-vs-alternatives.jsp',
+  '/guides/pt/video-thumbnail-extractor-step-by-step.html': 'guide/pt/video-thumbnail-extractor-step-by-step.jsp',
+  '/guides/pt/video-thumbnail-extractor-when.html': 'guide/pt/video-thumbnail-extractor-when.jsp',
+  '/guides/pt/video-thumbnail-extractor-vs-alternatives.html': 'guide/pt/video-thumbnail-extractor-vs-alternatives.jsp',
+  '/guides/es/video-thumbnail-extractor-step-by-step.html': 'guide/es/video-thumbnail-extractor-step-by-step.jsp',
+  '/guides/es/video-thumbnail-extractor-when.html': 'guide/es/video-thumbnail-extractor-when.jsp',
+  '/guides/es/video-thumbnail-extractor-vs-alternatives.html': 'guide/es/video-thumbnail-extractor-vs-alternatives.jsp',
+  '/guides/vi/video-thumbnail-extractor-step-by-step.html': 'guide/vi/video-thumbnail-extractor-step-by-step.jsp',
+  '/guides/vi/video-thumbnail-extractor-when.html': 'guide/vi/video-thumbnail-extractor-when.jsp',
+  '/guides/vi/video-thumbnail-extractor-vs-alternatives.html': 'guide/vi/video-thumbnail-extractor-vs-alternatives.jsp',
+  '/guides/id/video-thumbnail-extractor-step-by-step.html': 'guide/id/video-thumbnail-extractor-step-by-step.jsp',
+  '/guides/id/video-thumbnail-extractor-when.html': 'guide/id/video-thumbnail-extractor-when.jsp',
+  '/guides/id/video-thumbnail-extractor-vs-alternatives.html': 'guide/id/video-thumbnail-extractor-vs-alternatives.jsp',
+  '/guides/de/video-thumbnail-extractor-step-by-step.html': 'guide/de/video-thumbnail-extractor-step-by-step.jsp',
+  '/guides/de/video-thumbnail-extractor-when.html': 'guide/de/video-thumbnail-extractor-when.jsp',
+  '/guides/de/video-thumbnail-extractor-vs-alternatives.html': 'guide/de/video-thumbnail-extractor-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

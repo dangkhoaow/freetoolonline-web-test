@@ -1,0 +1,256 @@
+<script>
+    // Video thumbnail / frame extractor archetype (video-thumbnail-extractor) - REAL in-browser
+    // frame grabbing via HTMLVideoElement seek + canvas drawImage + toBlob.
+    // Registry Gate-H entry: video_thumbnail_extractor (operator-verified
+    // 2026-05-18). 100% client-side: the picked video opens as an object URL
+    // on a muted <video> element; a frame is captured by drawing the video
+    // onto a canvas sized to videoWidth x videoHeight and exported with
+    // canvas.toBlob() as PNG or JPEG. No upload, no FFmpeg, no network.
+    // Framework contract: doAfterPageRendered(); no top-level DOM.
+    //
+    // NOTE (fire755): this skeleton exists because the generic media-converter
+    // guard used to steal `video-*-extractor` slugs and emit an FFmpeg.wasm
+    // audio-bitrate converter (the fire594/fire754 wrong-scaffold defect).
+    // A thumbnail extractor is a seek-and-draw job - no re-encode, no wasm.
+    //
+    // G16 (visible output, zero interaction): on load the skeleton opens an
+    // EMBEDDED tiny VP8/WebM clip (data: URL - no fetch) and extracts a real
+    // frame from it into .outputImgs with a working PNG download link -
+    // proving the whole seek -> drawImage -> toBlob pipeline runs before the
+    // reader picks a file. WebM/VP8 is used because open Chromium builds
+    // (headless e2e) ship without proprietary H.264 decoders.
+
+    web.localUpload = false;
+
+    // 1.0s 256x144 VP8/WebM test clip (colour bars + counter), generated with
+    // ffmpeg testsrc2 and embedded as base64 so the demo needs zero network.
+    var VTE_DEMO_WEBM_B64 = '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';
+
+    var vteThumbCount = 0;
+    var VTE_MAX_THUMBS = 24;
+
+    function vteFmtTime(t) {
+        if (!isFinite(t)) return '0.0s';
+        return (Math.round(t * 10) / 10).toFixed(1) + 's';
+    }
+
+    function vteCodecMessage(videoEl, fallback) {
+        var err = videoEl && videoEl.error;
+        if (err && (err.code === 3 || err.code === 4)) {
+            return 'Your browser cannot decode this video (unsupported codec or container). Try an MP4 (H.264) or WebM file, or open this page in Chrome, Edge or Safari.';
+        }
+        return fallback || 'Could not read this video file.';
+    }
+
+    // Seek the video element and resolve when the frame is actually ready
+    // (`seeked` event), per the video_thumbnail_extractor registry acceptance
+    // criteria. A timeout guards against codecs that never finish seeking -
+    // the reader gets a clear error, never a silent black canvas.
+    function vteSeek(videoEl, time) {
+        return new Promise(function (resolve, reject) {
+            var done = false;
+            function onSeeked() { if (done) return; done = true; cleanup(); resolve(); }
+            function onError() { if (done) return; done = true; cleanup(); reject(new Error(vteCodecMessage(videoEl))); }
+            function cleanup() {
+                videoEl.removeEventListener('seeked', onSeeked);
+                videoEl.removeEventListener('error', onError);
+                clearTimeout(timer);
+            }
+            var timer = setTimeout(function () {
+                if (done) return; done = true; cleanup();
+                reject(new Error('The video did not finish seeking - the codec may be unsupported by this browser.'));
+            }, 6000);
+            videoEl.addEventListener('seeked', onSeeked);
+            videoEl.addEventListener('error', onError);
+            if (Math.abs(videoEl.currentTime - time) < 0.01 && videoEl.readyState >= 2) {
+                done = true; cleanup(); resolve(); return;
+            }
+            try { videoEl.currentTime = time; } catch (e) { done = true; cleanup(); reject(e); }
+        });
+    }
+
+    // Draw the current frame to a canvas and export it as a Blob.
+    function vteGrabFrame(videoEl, mime, quality) {
+        return new Promise(function (resolve, reject) {
+            var w = videoEl.videoWidth, h = videoEl.videoHeight;
+            if (!w || !h) {
+                reject(new Error('No decodable video track found (the file may be audio-only, or the codec is unsupported).'));
+                return;
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(videoEl, 0, 0, w, h);
+            canvas.toBlob(function (blob) {
+                if (!blob) { reject(new Error('Could not encode the frame as an image.')); return; }
+                resolve({ blob: blob, w: w, h: h });
+            }, mime, quality);
+        });
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('videoThumbnailTool');
+        if (!root) return; // not a video-thumbnail page
+
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="vteFile" accept="video/*,.mp4,.webm,.mov,.m4v,.ogv,.mkv,.avi" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div id="vteStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Loading a tiny sample clip so you can see the extractor working...</div>' +
+            '<div id="vtePlayerWrap" style="display:none;max-width:520px;margin:0 auto;">' +
+              '<video id="vteVideo" muted playsinline preload="metadata" style="max-width:100%;max-height:260px;background:#000;border-radius:4px;"></video>' +
+              '<div style="margin:6px 0;"><input type="range" id="vteScrub" min="0" max="0" step="0.01" value="0" style="width:70%;vertical-align:middle;"> <span id="vteTimeLabel" style="font-variant-numeric:tabular-nums;">0.0s</span></div>' +
+              '<div style="margin:6px 0;">' +
+                '<label>Format <select id="vteFormat" class="w3-border"><option value="image/png" selected>PNG (lossless)</option><option value="image/jpeg">JPEG (smaller)</option></select></label> ' +
+                '<label style="margin-left:8px;">JPEG quality <select id="vteQuality" class="w3-border"><option value="0.95">95%</option><option value="0.85" selected>85%</option><option value="0.7">70%</option></select></label>' +
+              '</div>' +
+              '<div style="margin:8px 0;">' +
+                '<button id="vteCaptureBtn" class="w3-button w3-blue">Capture this frame</button> ' +
+                '<button id="vteGridBtn" class="w3-button w3-light-grey w3-border" style="margin-left:8px;">Grab 6 evenly spaced frames</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="w3-row outputImgs" id="vteOut" style="visibility:visible !important;text-align:center;max-width:640px;margin:0 auto;"></div>';
+
+        var fileEl = root.querySelector('#vteFile');
+        var statusEl = root.querySelector('#vteStatus');
+        var playerWrap = root.querySelector('#vtePlayerWrap');
+        var videoEl = root.querySelector('#vteVideo');
+        var scrubEl = root.querySelector('#vteScrub');
+        var timeEl = root.querySelector('#vteTimeLabel');
+        var formatEl = root.querySelector('#vteFormat');
+        var qualityEl = root.querySelector('#vteQuality');
+        var captureBtn = root.querySelector('#vteCaptureBtn');
+        var gridBtn = root.querySelector('#vteGridBtn');
+        var outEl = root.querySelector('#vteOut');
+        var currentUrl = null;
+        var currentBase = 'video';
+        var thumbUrls = [];
+
+        function setStatus(m) { statusEl.textContent = m; }
+
+        function clearThumbs() {
+            for (var i = 0; i < thumbUrls.length; i++) URL.revokeObjectURL(thumbUrls[i]);
+            thumbUrls = []; vteThumbCount = 0; outEl.innerHTML = '';
+        }
+
+        function pickedMime() { return formatEl.value; }
+        function pickedQuality() { return pickedMime() === 'image/jpeg' ? parseFloat(qualityEl.value) : undefined; }
+        function extFor(mime) { return mime === 'image/jpeg' ? 'jpg' : 'png'; }
+
+        function renderThumb(res, time, mime, linkId) {
+            if (vteThumbCount >= VTE_MAX_THUMBS) { setStatus('Thumbnail limit reached - download or reload the page to grab more.'); return; }
+            vteThumbCount++;
+            var url = URL.createObjectURL(res.blob);
+            thumbUrls.push(url);
+            var name = currentBase + '-t' + (Math.round(time * 10) / 10) + 's.' + extFor(mime);
+            var card = document.createElement('div');
+            card.style.cssText = 'display:inline-block;vertical-align:top;margin:6px;max-width:180px;';
+            card.innerHTML =
+                '<img src="' + url + '" alt="Extracted frame at ' + vteFmtTime(time) + '" style="max-width:170px;border:1px solid #e0e0e0;border-radius:4px;display:block;margin:0 auto;">' +
+                '<div style="font-size:0.85em;color:#555;margin:2px 0;">' + vteFmtTime(time) + ' - ' + res.w + 'x' + res.h + '</div>' +
+                '<a class="w3-button w3-blue w3-small"' + (linkId ? ' id="' + linkId + '"' : '') + ' href="' + url + '" download="' + name + '">Download ' + extFor(mime).toUpperCase() + '</a>';
+            outEl.appendChild(card);
+        }
+
+        function captureAt(time, mime, quality, linkId) {
+            return vteSeek(videoEl, time).then(function () {
+                return vteGrabFrame(videoEl, mime, quality);
+            }).then(function (res) {
+                renderThumb(res, videoEl.currentTime, mime, linkId);
+                return res;
+            });
+        }
+
+        // ---- On-load demo (G16): extract a real frame from the embedded clip.
+        (function runDemo() {
+            var demo = document.createElement('video');
+            demo.muted = true; demo.playsInline = true; demo.preload = 'auto';
+            demo.addEventListener('loadedmetadata', function () {
+                var t = Math.min(0.5, (demo.duration || 1) / 2);
+                vteSeek(demo, t).then(function () {
+                    return vteGrabFrame(demo, 'image/png');
+                }).then(function (res) {
+                    var url = URL.createObjectURL(res.blob);
+                    thumbUrls.push(url);
+                    var card = document.createElement('div');
+                    card.style.cssText = 'display:inline-block;vertical-align:top;margin:6px;max-width:200px;';
+                    card.innerHTML =
+                        '<img src="' + url + '" alt="Demo frame extracted from the embedded sample clip" style="max-width:190px;border:1px solid #e0e0e0;border-radius:4px;display:block;margin:0 auto;">' +
+                        '<div style="font-size:0.85em;color:#555;margin:2px 0;">Sample clip frame - ' + res.w + 'x' + res.h + '</div>' +
+                        '<a id="vteDl" class="w3-button w3-blue w3-small" href="' + url + '" download="sample-frame.png">Download PNG</a>';
+                    outEl.appendChild(card);
+                    setStatus('Demo frame extracted locally from an embedded sample clip. Pick your own video above - it never leaves your browser.');
+                }).catch(function (e) {
+                    setStatus('Ready. Pick a video above to extract thumbnails (demo skipped: ' + e.message + ')');
+                });
+            });
+            demo.addEventListener('error', function () {
+                setStatus('Ready. Pick a video above to extract thumbnails - frames are captured entirely in your browser.');
+            });
+            demo.src = 'data:video/webm;base64,' + VTE_DEMO_WEBM_B64;
+        })();
+
+        // ---- Reader path: local file -> object URL -> scrub -> capture.
+        fileEl.addEventListener('change', function () {
+            var f = fileEl.files && fileEl.files[0];
+            if (!f) return;
+            if (currentUrl) { URL.revokeObjectURL(currentUrl); currentUrl = null; }
+            clearThumbs();
+            currentBase = String(f.name || 'video').replace(/\.[a-z0-9]+$/i, '') || 'video';
+            currentUrl = URL.createObjectURL(f);
+            setStatus('Opening ' + f.name + '...');
+            videoEl.src = currentUrl;
+        });
+
+        videoEl.addEventListener('loadedmetadata', function () {
+            playerWrap.style.display = 'block';
+            var d = videoEl.duration;
+            scrubEl.max = isFinite(d) ? d.toFixed(2) : 0;
+            scrubEl.value = 0;
+            timeEl.textContent = vteFmtTime(0);
+            setStatus('Loaded ' + (videoEl.videoWidth || '?') + 'x' + (videoEl.videoHeight || '?') + ', ' + vteFmtTime(d) + '. Scrub to a frame, then capture it.');
+        });
+
+        videoEl.addEventListener('error', function () {
+            playerWrap.style.display = 'none';
+            setStatus(vteCodecMessage(videoEl));
+        });
+
+        // Live preview: seeking the visible <video> shows the frame instantly.
+        scrubEl.addEventListener('input', function () {
+            var t = parseFloat(scrubEl.value) || 0;
+            timeEl.textContent = vteFmtTime(t);
+            try { videoEl.currentTime = t; } catch (e) { /* not seekable yet */ }
+        });
+
+        captureBtn.addEventListener('click', function () {
+            captureBtn.disabled = true;
+            var t = parseFloat(scrubEl.value) || videoEl.currentTime || 0;
+            setStatus('Capturing frame at ' + vteFmtTime(t) + '...');
+            captureAt(t, pickedMime(), pickedQuality()).then(function () {
+                setStatus('Frame captured at ' + vteFmtTime(t) + ' - nothing was uploaded.');
+            }).catch(function (e) {
+                setStatus(e.message);
+            }).then(function () { captureBtn.disabled = false; });
+        });
+
+        gridBtn.addEventListener('click', function () {
+            var d = videoEl.duration;
+            if (!isFinite(d) || d <= 0) { setStatus('Load a video first.'); return; }
+            gridBtn.disabled = true; captureBtn.disabled = true;
+            setStatus('Grabbing 6 evenly spaced frames...');
+            var mime = pickedMime(), q = pickedQuality();
+            var chain = Promise.resolve();
+            for (var i = 0; i < 6; i++) {
+                (function (idx) {
+                    chain = chain.then(function () {
+                        return captureAt(d * (idx + 0.5) / 6, mime, q);
+                    });
+                })(i);
+            }
+            chain.then(function () {
+                setStatus('6 frames extracted - use the download links under each thumbnail.');
+            }).catch(function (e) {
+                setStatus(e.message);
+            }).then(function () { gridBtn.disabled = false; captureBtn.disabled = false; });
+        });
+    }
+</script>
