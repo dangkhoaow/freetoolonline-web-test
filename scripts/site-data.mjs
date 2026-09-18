@@ -3706,22 +3706,16 @@ export const INFO_ROUTES = new Set([
   // GUIDE_ROUTES backfill (new-tool-discovery-loop-runbook fire post-55): JSP_BY_ROUTE + CMS
   // fragments existed but GUIDE_ROUTES was never populated, silently dropping these from
   // sitemap-guides.xml / guides.html / llms.txt (same gap class as the percentage-calculator backfill above).
-  '/guides/solar-system-3d-explorer-when.html',
   '/guides/solar-system-3d-explorer-step-by-step.html',
   '/guides/solar-system-3d-explorer-vs-alternatives.html',
-  '/guides/pt/solar-system-3d-explorer-when.html',
   '/guides/pt/solar-system-3d-explorer-step-by-step.html',
   '/guides/pt/solar-system-3d-explorer-vs-alternatives.html',
-  '/guides/es/solar-system-3d-explorer-when.html',
   '/guides/es/solar-system-3d-explorer-step-by-step.html',
   '/guides/es/solar-system-3d-explorer-vs-alternatives.html',
-  '/guides/de/solar-system-3d-explorer-when.html',
   '/guides/de/solar-system-3d-explorer-step-by-step.html',
   '/guides/de/solar-system-3d-explorer-vs-alternatives.html',
-  '/guides/vi/solar-system-3d-explorer-when.html',
   '/guides/vi/solar-system-3d-explorer-step-by-step.html',
   '/guides/vi/solar-system-3d-explorer-vs-alternatives.html',
-  '/guides/id/solar-system-3d-explorer-when.html',
   '/guides/id/solar-system-3d-explorer-step-by-step.html',
   '/guides/id/solar-system-3d-explorer-vs-alternatives.html',
   '/guides/black-hole-3d-visualizer-when.html',
@@ -4007,12 +4001,6 @@ export const INFO_ROUTES = new Set([
   '/guides/de/tidal-locking-step-by-step.html',
   '/guides/vi/tidal-locking-step-by-step.html',
   '/guides/id/tidal-locking-step-by-step.html',
-  '/guides/tidal-locking-vs-alternatives.html',
-  '/guides/pt/tidal-locking-vs-alternatives.html',
-  '/guides/es/tidal-locking-vs-alternatives.html',
-  '/guides/de/tidal-locking-vs-alternatives.html',
-  '/guides/vi/tidal-locking-vs-alternatives.html',
-  '/guides/id/tidal-locking-vs-alternatives.html',
   '/guides/asteroid-belt-when.html',
   '/guides/pt/asteroid-belt-when.html',
   '/guides/es/asteroid-belt-when.html',
@@ -14679,6 +14667,27 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // content-consolidation fire143 (2026-09-18): two duplicate-intent guide
+  // families retired into their evidence-ranked keeper sibling (backlog items
+  // topical-map-space-3d.tidal-locking.3d-explorer +
+  // topical-map-space-3d.solar-system.3d-explorer, runbook step 1a). Each
+  // excess family was 0 clicks / 0 citations and lost the section-3.5 rule-2
+  // member-evidence read to the kept family; every unique fact (the
+  // comparison table, the sibling-tool distinctions, the session-fit framing)
+  // was folded into the keeper in all 6 locales BEFORE these 301s. JSP + CMS
+  // fragments stay on disk (orphan, harmless) so the merge is revertible.
+  '/guides/tidal-locking-vs-alternatives.html': '/guides/tidal-locking-step-by-step.html', // consolidation 301 fire143
+  '/guides/pt/tidal-locking-vs-alternatives.html': '/guides/pt/tidal-locking-step-by-step.html', // consolidation 301 fire143
+  '/guides/es/tidal-locking-vs-alternatives.html': '/guides/es/tidal-locking-step-by-step.html', // consolidation 301 fire143
+  '/guides/vi/tidal-locking-vs-alternatives.html': '/guides/vi/tidal-locking-step-by-step.html', // consolidation 301 fire143
+  '/guides/id/tidal-locking-vs-alternatives.html': '/guides/id/tidal-locking-step-by-step.html', // consolidation 301 fire143
+  '/guides/de/tidal-locking-vs-alternatives.html': '/guides/de/tidal-locking-step-by-step.html', // consolidation 301 fire143
+  '/guides/solar-system-3d-explorer-when.html': '/guides/solar-system-3d-explorer-step-by-step.html', // consolidation 301 fire143
+  '/guides/pt/solar-system-3d-explorer-when.html': '/guides/pt/solar-system-3d-explorer-step-by-step.html', // consolidation 301 fire143
+  '/guides/es/solar-system-3d-explorer-when.html': '/guides/es/solar-system-3d-explorer-step-by-step.html', // consolidation 301 fire143
+  '/guides/vi/solar-system-3d-explorer-when.html': '/guides/vi/solar-system-3d-explorer-step-by-step.html', // consolidation 301 fire143
+  '/guides/id/solar-system-3d-explorer-when.html': '/guides/id/solar-system-3d-explorer-step-by-step.html', // consolidation 301 fire143
+  '/guides/de/solar-system-3d-explorer-when.html': '/guides/de/solar-system-3d-explorer-step-by-step.html', // consolidation 301 fire143
   '/guides/id/vim-motion-academy-vs-alternatives.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
   '/guides/vi/vim-motion-academy-vs-alternatives.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
   '/guides/de/vim-motion-academy-vs-alternatives.html': '/games/vim-motion-academy.html', // consolidation-fire88 2026-08-31: excess guide family merged into canonical
@@ -23294,24 +23303,18 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/pinacosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/pinacosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/pinacosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/pinacosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/pinacosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/pinacosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
   // solar-system-3d-explorer-guides - locale fanout pt/es/de/vi/id for all 3 angles
   // (new-tool-discovery-loop-runbook guide_locale_fanout unit_debt drain, fire post-55)
-  '/guides/pt/solar-system-3d-explorer-when.html': 'guide/pt/solar-system-3d-explorer-when.jsp',
   '/guides/pt/solar-system-3d-explorer-step-by-step.html': 'guide/pt/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/pt/solar-system-3d-explorer-vs-alternatives.html': 'guide/pt/solar-system-3d-explorer-vs-alternatives.jsp',
-  '/guides/es/solar-system-3d-explorer-when.html': 'guide/es/solar-system-3d-explorer-when.jsp',
   '/guides/es/solar-system-3d-explorer-step-by-step.html': 'guide/es/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/es/solar-system-3d-explorer-vs-alternatives.html': 'guide/es/solar-system-3d-explorer-vs-alternatives.jsp',
-  '/guides/de/solar-system-3d-explorer-when.html': 'guide/de/solar-system-3d-explorer-when.jsp',
   '/guides/de/solar-system-3d-explorer-step-by-step.html': 'guide/de/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/de/solar-system-3d-explorer-vs-alternatives.html': 'guide/de/solar-system-3d-explorer-vs-alternatives.jsp',
-  '/guides/vi/solar-system-3d-explorer-when.html': 'guide/vi/solar-system-3d-explorer-when.jsp',
   '/guides/vi/solar-system-3d-explorer-step-by-step.html': 'guide/vi/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/vi/solar-system-3d-explorer-vs-alternatives.html': 'guide/vi/solar-system-3d-explorer-vs-alternatives.jsp',
-  '/guides/id/solar-system-3d-explorer-when.html': 'guide/id/solar-system-3d-explorer-when.jsp',
   '/guides/id/solar-system-3d-explorer-step-by-step.html': 'guide/id/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/id/solar-system-3d-explorer-vs-alternatives.html': 'guide/id/solar-system-3d-explorer-vs-alternatives.jsp',
   '/space-3d/ceres-cryovolcanism.html': 'space/ceres-cryovolcanism.jsp',
@@ -25498,12 +25501,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/tidal-locking-step-by-step.html': 'guide/de/tidal-locking-step-by-step.jsp',
   '/guides/vi/tidal-locking-step-by-step.html': 'guide/vi/tidal-locking-step-by-step.jsp',
   '/guides/id/tidal-locking-step-by-step.html': 'guide/id/tidal-locking-step-by-step.jsp',
-  '/guides/tidal-locking-vs-alternatives.html': 'guide/tidal-locking-vs-alternatives.jsp',
-  '/guides/pt/tidal-locking-vs-alternatives.html': 'guide/pt/tidal-locking-vs-alternatives.jsp',
-  '/guides/es/tidal-locking-vs-alternatives.html': 'guide/es/tidal-locking-vs-alternatives.jsp',
-  '/guides/de/tidal-locking-vs-alternatives.html': 'guide/de/tidal-locking-vs-alternatives.jsp',
-  '/guides/vi/tidal-locking-vs-alternatives.html': 'guide/vi/tidal-locking-vs-alternatives.jsp',
-  '/guides/id/tidal-locking-vs-alternatives.html': 'guide/id/tidal-locking-vs-alternatives.jsp',
   '/guides/asteroid-belt-when.html': 'guide/asteroid-belt-when.jsp',
   '/guides/pt/asteroid-belt-when.html': 'guide/pt/asteroid-belt-when.jsp',
   '/guides/es/asteroid-belt-when.html': 'guide/es/asteroid-belt-when.jsp',
