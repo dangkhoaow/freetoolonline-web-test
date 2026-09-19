@@ -1,0 +1,307 @@
+<script>
+    // Image to ASCII Art (image-to-ascii-art) - Canvas luminance -> character palette,
+    // fully client-side. Seeded new-tool-discovery-loop fire757 (2026-09-19)
+    // to ship the evergreen catalogue row image-to-ascii-art (registry Gate-H
+    // entry: image_to_ascii_art_canvas, operator-verified 2026-05-18).
+    // Implements every registry acceptance criterion: two output modes
+    // (monospace <pre> + HTML-coloured per-run <span>), 40/80/120/240 column
+    // selector, four character palettes (dense/light/numeric/unicode-block),
+    // invert toggle (print vs terminal), download as .txt or PNG (text on a
+    // transparent canvas). A demo image is drawn programmatically and
+    // converted on load so qa-e2e-test G16 sees real ASCII output with zero
+    // interaction (fire755 embedded-demo precedent, no network fetch).
+    // No external lib, no backend, no upload - drawImage + getImageData.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered().
+
+    web.localUpload = false;
+
+    var I2A_SLUG = 'image-to-ascii-art';
+    var I2A_MAX_ROWS = 400; // cap rows for extreme tall images
+
+    var I2A_PALETTES = {
+        dense:   '@%#*+=-:. ',
+        light:   '@8&%#*+,.- ',
+        numeric: '0123456789.',
+        blocks:  '█▓▒░ '
+    };
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('imageToAsciiTool');
+        if (!root) return;
+
+        var fileEl = document.getElementById('i2aFile');
+        var modeEl = document.getElementById('i2aMode');
+        var colsEl = document.getElementById('i2aCols');
+        var paletteEl = document.getElementById('i2aPalette');
+        var invertEl = document.getElementById('i2aInvert');
+        var outEl = document.getElementById('i2aOut');
+        var statusEl = document.getElementById('i2aStatus');
+        var dlTxtBtn = document.getElementById('i2aDownloadTxt');
+        var dlPngBtn = document.getElementById('i2aDownloadPng');
+        var copyBtn = document.getElementById('i2aCopy');
+
+        var sourceImg = null;      // HTMLImageElement or HTMLCanvasElement
+        var sourceName = 'image';
+        var lastLines = [];        // array of strings (current ASCII)
+        var lastColors = [];       // per-row array of [r,g,b] per char (colored mode)
+        var renderTimer = null;
+        var lastUrl = null;
+
+        function setStatus(msg) {
+            if (statusEl) statusEl.textContent = msg;
+            console.log('[image-to-ascii] status=', msg);
+        }
+
+        function buildDemoImage() {
+            var c = document.createElement('canvas');
+            c.width = 96; c.height = 96;
+            var ctx = c.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 96, 96);
+            var grad = ctx.createRadialGradient(38, 34, 6, 48, 48, 52);
+            grad.addColorStop(0, '#f4f4f4');
+            grad.addColorStop(0.55, '#7a7a7a');
+            grad.addColorStop(1, '#101010');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(48, 48, 40, 0, Math.PI * 2);
+            ctx.fill();
+            return c;
+        }
+
+        function currentPalette() {
+            var key = (paletteEl && paletteEl.value) || 'dense';
+            return I2A_PALETTES[key] || I2A_PALETTES.dense;
+        }
+
+        function convertToAscii() {
+            if (!sourceImg) return;
+            var cols = Math.max(10, Math.min(240, parseInt(colsEl && colsEl.value, 10) || 80));
+            var palette = currentPalette();
+            var invert = !!(invertEl && invertEl.checked);
+            var iw = sourceImg.naturalWidth || sourceImg.width;
+            var ih = sourceImg.naturalHeight || sourceImg.height;
+            if (!iw || !ih) return;
+            // Monospace glyphs are ~2x taller than wide; halve the row count so
+            // the ASCII output keeps the source aspect ratio.
+            var rows = Math.max(1, Math.min(I2A_MAX_ROWS, Math.round(cols * (ih / iw) * 0.5)));
+
+            var c = document.createElement('canvas');
+            c.width = cols; c.height = rows;
+            var ctx = c.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(sourceImg, 0, 0, cols, rows);
+            var data;
+            try {
+                data = ctx.getImageData(0, 0, cols, rows).data;
+            } catch (e) {
+                setStatus('Could not read the image pixels: ' + (e && e.message ? e.message : String(e)));
+                return;
+            }
+
+            var lines = [];
+            var colors = [];
+            for (var y = 0; y < rows; y++) {
+                var line = '';
+                var rowColors = [];
+                for (var x = 0; x < cols; x++) {
+                    var i = (y * cols + x) * 4;
+                    var r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3] / 255;
+                    // Blend transparency onto white so PNG alpha reads as background.
+                    var lum = (0.299 * r + 0.587 * g + 0.114 * b) * a + 255 * (1 - a);
+                    var t = lum / 255;               // 0 = dark, 1 = light
+                    if (invert) t = 1 - t;
+                    var idx = Math.min(palette.length - 1, Math.floor(t * palette.length));
+                    line += palette.charAt(idx);
+                    rowColors.push([
+                        Math.round((r * a + 255 * (1 - a)) / 51) * 51,
+                        Math.round((g * a + 255 * (1 - a)) / 51) * 51,
+                        Math.round((b * a + 255 * (1 - a)) / 51) * 51
+                    ]);
+                }
+                lines.push(line);
+                colors.push(rowColors);
+            }
+            lastLines = lines;
+            lastColors = colors;
+            renderOutput(cols, invert);
+            setStatus(cols + ' columns x ' + rows + ' rows. Everything ran in this tab - nothing was uploaded.');
+        }
+
+        function escapeHtml(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function renderOutput(cols, invert) {
+            if (!outEl) return;
+            var fontSize = cols <= 40 ? 12 : cols <= 80 ? 9 : cols <= 120 ? 6 : 4;
+            outEl.style.fontSize = fontSize + 'px';
+            outEl.style.lineHeight = '1.05';
+            outEl.style.background = invert ? '#111' : '#fff';
+            outEl.style.color = invert ? '#eee' : '#111';
+            var colored = modeEl && modeEl.value === 'color';
+            if (!colored) {
+                outEl.textContent = lastLines.join('\n');
+                return;
+            }
+            // Colored mode: run-length group same-quantized-color chars per row
+            // so the DOM stays small even at 240 columns.
+            var html = [];
+            for (var y = 0; y < lastLines.length; y++) {
+                var line = lastLines[y];
+                var rowColors = lastColors[y] || [];
+                var parts = [];
+                var runStart = 0;
+                for (var x = 1; x <= line.length; x++) {
+                    var sameColor = x < line.length && rowColors[x] && rowColors[runStart] &&
+                        rowColors[x][0] === rowColors[runStart][0] &&
+                        rowColors[x][1] === rowColors[runStart][1] &&
+                        rowColors[x][2] === rowColors[runStart][2];
+                    if (!sameColor) {
+                        var col = rowColors[runStart] || [0, 0, 0];
+                        parts.push('<span style="color:rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')">' +
+                            escapeHtml(line.slice(runStart, x)) + '</span>');
+                        runStart = x;
+                    }
+                }
+                html.push(parts.join(''));
+            }
+            outEl.innerHTML = html.join('\n');
+        }
+
+        function scheduleRender() {
+            if (renderTimer) clearTimeout(renderTimer);
+            renderTimer = setTimeout(function () {
+                renderTimer = null;
+                try {
+                    convertToAscii();
+                } catch (e) {
+                    setStatus('Could not convert the image: ' + (e && e.message ? e.message : String(e)));
+                }
+            }, 16);
+        }
+
+        function revokeLast() {
+            if (lastUrl) {
+                try { URL.revokeObjectURL(lastUrl); } catch (e) {}
+                lastUrl = null;
+            }
+        }
+
+        function downloadBlob(blob, name) {
+            revokeLast();
+            lastUrl = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = lastUrl;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setStatus('Downloaded ' + name + '.');
+        }
+
+        function onDownloadTxt() {
+            if (!lastLines.length) return;
+            var blob = new Blob([lastLines.join('\n')], { type: 'text/plain' });
+            downloadBlob(blob, sourceName.replace(/\.[^.]+$/, '') + '-ascii.txt');
+        }
+
+        function onDownloadPng() {
+            if (!lastLines.length) return;
+            var invert = !!(invertEl && invertEl.checked);
+            var colored = modeEl && modeEl.value === 'color';
+            var fontSize = 12;
+            var charH = Math.round(fontSize * 1.15);
+            var c = document.createElement('canvas');
+            var probe = c.getContext('2d');
+            probe.font = fontSize + 'px monospace';
+            var charW = probe.measureText('M').width;
+            c.width = Math.ceil(charW * (lastLines[0] ? lastLines[0].length : 1));
+            c.height = charH * lastLines.length;
+            var ctx = c.getContext('2d');
+            // Transparent background per the registry acceptance criteria.
+            ctx.font = fontSize + 'px monospace';
+            ctx.textBaseline = 'top';
+            for (var y = 0; y < lastLines.length; y++) {
+                var line = lastLines[y];
+                if (!colored) {
+                    ctx.fillStyle = invert ? '#eeeeee' : '#111111';
+                    ctx.fillText(line, 0, y * charH);
+                } else {
+                    var rowColors = lastColors[y] || [];
+                    for (var x = 0; x < line.length; x++) {
+                        var col = rowColors[x] || [0, 0, 0];
+                        ctx.fillStyle = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+                        ctx.fillText(line.charAt(x), x * charW, y * charH);
+                    }
+                }
+            }
+            c.toBlob(function (blob) {
+                if (!blob) {
+                    setStatus('Could not export the PNG.');
+                    return;
+                }
+                downloadBlob(blob, sourceName.replace(/\.[^.]+$/, '') + '-ascii.png');
+            }, 'image/png');
+        }
+
+        function onCopy() {
+            if (!lastLines.length) return;
+            var text = lastLines.join('\n');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () {
+                    setStatus('ASCII art copied to the clipboard.');
+                }, function () {
+                    setStatus('Clipboard blocked - select the text and copy manually.');
+                });
+            } else {
+                setStatus('Clipboard unavailable - select the text and copy manually.');
+            }
+        }
+
+        function onFile(file) {
+            if (!file) return;
+            if (!/^image\//.test(file.type) && !/\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name || '')) {
+                setStatus('Please choose an image file (PNG, JPEG, WebP, GIF, or BMP).');
+                return;
+            }
+            sourceName = file.name || 'image';
+            setStatus('Loading ' + sourceName + '...');
+            var url = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function () {
+                URL.revokeObjectURL(url);
+                sourceImg = img;
+                scheduleRender();
+            };
+            img.onerror = function () {
+                URL.revokeObjectURL(url);
+                setStatus('Could not read that image. Try a different PNG or JPEG.');
+            };
+            img.src = url;
+        }
+
+        if (fileEl) {
+            fileEl.addEventListener('change', function () {
+                var f = fileEl.files && fileEl.files[0];
+                console.log('[image-to-ascii] file chosen', f && f.name, f && f.type);
+                onFile(f);
+            });
+        }
+        [modeEl, colsEl, paletteEl].forEach(function (el) {
+            if (el) el.addEventListener('change', scheduleRender);
+        });
+        if (invertEl) invertEl.addEventListener('change', scheduleRender);
+        if (dlTxtBtn) dlTxtBtn.addEventListener('click', onDownloadTxt);
+        if (dlPngBtn) dlPngBtn.addEventListener('click', onDownloadPng);
+        if (copyBtn) copyBtn.addEventListener('click', onCopy);
+
+        // Zero-interaction demo render (G16): a programmatic gradient sphere
+        // converts on load, so the reader (and the e2e probe) sees real ASCII
+        // output before choosing a file.
+        sourceImg = buildDemoImage();
+        sourceName = 'demo-sphere';
+        scheduleRender();
+        console.log('[image-to-ascii] wired slug=' + I2A_SLUG);
+    }
+</script>
