@@ -109,13 +109,23 @@ const SCENE_CONFIG = {
 };
 
 // Terrain helpers
+// hash2/vnoise/fbm are called two ways in this file: with {x,y} objects at the
+// makeDuneGeometry call sites, and with [x,y] arrays in the internal recursion
+// (vnoise -> hash2([...]); fbm -> vnoise([...])). Reading p.x/p.y off an array
+// yields undefined -> Math.sin(NaN) -> every dune vertex z = NaN ->
+// THREE.computeBoundingSphere() radius NaN on load. Normalise both shapes so the
+// NaN is impossible regardless of how the helper is called.
+function _p2(p) { return Array.isArray(p) ? { x: p[0], y: p[1] } : p; }
+
 function hash2(p) {
+  p = _p2(p);
   let x = Math.sin(p.x * 12.9898 + p.y * 78.233) * 43758.5453;
   let y = Math.sin(p.x * 73.1812 + p.y * 19.273) * 23456.1234;
   return [x - Math.floor(x), y - Math.floor(y)];
 }
 
 function vnoise(p) {
+  p = _p2(p);
   let i = [Math.floor(p.x), Math.floor(p.y)];
   let f = [p.x - i[0], p.y - i[1]];
   let u = [f[0] * f[0] * (3 - 2 * f[0]), f[1] * f[1] * (3 - 2 * f[1])];
@@ -129,6 +139,7 @@ function vnoise(p) {
 }
 
 function fbm(p, octaves) {
+  p = _p2(p);
   let value = 0, amp = 1, freq = 1;
   for (let i = 0; i < octaves; i++) {
     value += amp * vnoise([p.x * freq, p.y * freq]);
