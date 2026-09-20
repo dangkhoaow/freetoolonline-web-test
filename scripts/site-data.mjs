@@ -524,18 +524,14 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/adobe-pdf-editor-browser-vs-alternatives.html',
   '/guides/id/adobe-pdf-editor-browser-vs-alternatives.html',
   '/guides/de/adobe-pdf-editor-browser-vs-alternatives.html',
-  '/guides/adobe-pdf-editor-browser-step-by-step.html',
-  '/guides/pt/adobe-pdf-editor-browser-step-by-step.html',
-  '/guides/es/adobe-pdf-editor-browser-step-by-step.html',
-  '/guides/vi/adobe-pdf-editor-browser-step-by-step.html',
-  '/guides/id/adobe-pdf-editor-browser-step-by-step.html',
-  '/guides/de/adobe-pdf-editor-browser-step-by-step.html',
-  '/guides/adobe-pdf-editor-browser-when.html',
-  '/guides/pt/adobe-pdf-editor-browser-when.html',
-  '/guides/es/adobe-pdf-editor-browser-when.html',
-  '/guides/vi/adobe-pdf-editor-browser-when.html',
-  '/guides/id/adobe-pdf-editor-browser-when.html',
-  '/guides/de/adobe-pdf-editor-browser-when.html',
+  // content-consolidation fire144 (2026-09-20): the -step-by-step and -when angles of the
+  // adobe-pdf-editor-browser guide family were retired into their same-angle, same-locale
+  // canonical twins '/guides/{loc}/pdf-editor-{angle}.html' (see ALIAS_ROUTES). Their bodies
+  // were byte-identical templates to those twins - shared-fact list total, zero unique facts -
+  // and all 12 carried 0 clicks / 0 citations / 0 impressions while every twin is live.
+  // The -vs-alternatives angle above is deliberately KEPT: runbook section-3.5 rule 2 found it
+  // INVERTED (excess 0/0/170 OUT-RANKS kept 0/0/58), so retiring it would drop the family's
+  // only impression-earning surface.
   '/guides/foxit-pdf-editor-browser-vs-alternatives.html',
   // foxit-pdf-editor-browser-vs-alternatives pt locale (create_new_guide_page 20260828)
   '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html',
@@ -7841,16 +7837,10 @@ export const GUIDE_ROUTES = new Set([
   // foxit-pdf-editor-browser-when id locale (create_new_guide_page 20260829-2)
   '/guides/id/foxit-pdf-editor-browser-when.html',
   '/guides/de/foxit-pdf-editor-browser-when.html',
-  // adobe-pdf-editor-browser-when pt locale (create_new_guide_page 20260821-3)
-  '/guides/pt/adobe-pdf-editor-browser-when.html',
-  // adobe-pdf-editor-browser-when es locale (create_new_guide_page 20260821-4)
-  '/guides/es/adobe-pdf-editor-browser-when.html',
-  // adobe-pdf-editor-browser-when vi locale (create_new_guide_page 20260821-5)
-  '/guides/vi/adobe-pdf-editor-browser-when.html',
-  // adobe-pdf-editor-browser-when id locale (create_new_guide_page 20260821-6)
-  '/guides/id/adobe-pdf-editor-browser-when.html',
-  // adobe-pdf-editor-browser-when de locale (create_new_guide_page 20260821-7)
-  '/guides/de/adobe-pdf-editor-browser-when.html',
+  // adobe-pdf-editor-browser-when (all 6 forms) retired by content-consolidation fire144
+  // (2026-09-20) into '/guides/{loc}/pdf-editor-when.html' - see ALIAS_ROUTES. The 3 bare-EN
+  // forms were never literal members here; they arrived via the JSP_BY_ROUTE auto-merge at the
+  // bottom of this file, so removing the JSP entries drops them from GUIDE_ROUTES too.
   // pdf-xchange-editor-browser-plugin-edge-step-by-step pt locale (create_new_guide_page 20260829-3)
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
   // pdf-xchange-editor-browser-plugin-edge-step-by-step es locale (create_new_guide_page 20260829-4)
@@ -7891,16 +7881,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/adobe-pdf-editor-browser-vs-alternatives.html',
   // adobe-pdf-editor-browser-vs-alternatives de locale (create_new_guide_page 20260821-2)
   '/guides/de/adobe-pdf-editor-browser-vs-alternatives.html',
-  // adobe-pdf-editor-browser-step-by-step pt locale (create_new_guide_page 20260819-5)
-  '/guides/pt/adobe-pdf-editor-browser-step-by-step.html',
-  // adobe-pdf-editor-browser-step-by-step es locale (create_new_guide_page 20260819-6)
-  '/guides/es/adobe-pdf-editor-browser-step-by-step.html',
-  // adobe-pdf-editor-browser-step-by-step vi locale (create_new_guide_page 20260819-946)
-  '/guides/vi/adobe-pdf-editor-browser-step-by-step.html',
-  // adobe-pdf-editor-browser-step-by-step id locale (create_new_guide_page 20260819-947)
-  '/guides/id/adobe-pdf-editor-browser-step-by-step.html',
-  // adobe-pdf-editor-browser-step-by-step de locale (create_new_guide_page 20260820-936)
-  '/guides/de/adobe-pdf-editor-browser-step-by-step.html',
+  // adobe-pdf-editor-browser-step-by-step (all 6 forms) retired by content-consolidation
+  // fire144 (2026-09-20) into '/guides/{loc}/pdf-editor-step-by-step.html' - see ALIAS_ROUTES.
   // what-national-day-is-today companion guides (new-tool-discovery-loop-runbook fire718)
   '/guides/what-national-day-is-today-step-by-step.html',
   '/guides/what-national-day-is-today-when.html',
@@ -14689,6 +14671,33 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // content-consolidation fire144 (2026-09-20): orphan guide inventory of a RETIRED tool.
+  // '/image-converter-tools/adobe-pdf-editor-browser.html' was retired 2026-09-19 into
+  // '/pdf-tools/pdf-editor-online.html', but its 18-URL companion guide family stayed live,
+  // indexable and self-canonical in all 6 sitemap-guides*.xml - inventory describing a surface
+  // that no longer exists (runbook Amendment 2026-09-19 item 7, step 1a).
+  // The -when and -step-by-step angles below were byte-identical templates to the canonical
+  // tool's OWN guide family '/guides/{loc}/pdf-editor-{angle}.html', differing only in the tool
+  // name, the link (which pointed at the now-301'd route) and a wrong-cluster
+  // '/image-converter-tools.html' backlink - shared-fact list TOTAL, zero unique facts to fold,
+  // so no content edit was needed to preserve coverage. All 12 carried 0 clicks / 0 citations /
+  // 0 impressions / $0 revenue and ZERO inbound internal links; every twin is live and
+  // non-alias, so there are no 301 chains and no page loses a link.
+  // The -vs-alternatives angle is deliberately NOT retired: section-3.5 rule 2 found it
+  // INVERTED (excess 0/0/170 OUT-RANKS kept 0/0/58; EN alone 115 vs 6), so a 301 there would
+  // discard the family's only impression-earning surface.
+  '/guides/adobe-pdf-editor-browser-when.html': '/guides/pdf-editor-when.html', // consolidation 301 fire144
+  '/guides/pt/adobe-pdf-editor-browser-when.html': '/guides/pt/pdf-editor-when.html', // consolidation 301 fire144
+  '/guides/es/adobe-pdf-editor-browser-when.html': '/guides/es/pdf-editor-when.html', // consolidation 301 fire144
+  '/guides/vi/adobe-pdf-editor-browser-when.html': '/guides/vi/pdf-editor-when.html', // consolidation 301 fire144
+  '/guides/id/adobe-pdf-editor-browser-when.html': '/guides/id/pdf-editor-when.html', // consolidation 301 fire144
+  '/guides/de/adobe-pdf-editor-browser-when.html': '/guides/de/pdf-editor-when.html', // consolidation 301 fire144
+  '/guides/adobe-pdf-editor-browser-step-by-step.html': '/guides/pdf-editor-step-by-step.html', // consolidation 301 fire144
+  '/guides/pt/adobe-pdf-editor-browser-step-by-step.html': '/guides/pt/pdf-editor-step-by-step.html', // consolidation 301 fire144
+  '/guides/es/adobe-pdf-editor-browser-step-by-step.html': '/guides/es/pdf-editor-step-by-step.html', // consolidation 301 fire144
+  '/guides/vi/adobe-pdf-editor-browser-step-by-step.html': '/guides/vi/pdf-editor-step-by-step.html', // consolidation 301 fire144
+  '/guides/id/adobe-pdf-editor-browser-step-by-step.html': '/guides/id/pdf-editor-step-by-step.html', // consolidation 301 fire144
+  '/guides/de/adobe-pdf-editor-browser-step-by-step.html': '/guides/de/pdf-editor-step-by-step.html', // consolidation 301 fire144
   // content-consolidation fire143 (2026-09-18): two duplicate-intent guide
   // families retired into their evidence-ranked keeper sibling (backlog items
   // topical-map-space-3d.tidal-locking.3d-explorer +
@@ -29745,23 +29754,16 @@ export const JSP_BY_ROUTE = {
   '/guides/id/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/id/foxit-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/de/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/de/foxit-pdf-editor-browser-vs-alternatives.jsp',
   // '/image-converter-tools/adobe-pdf-editor-browser.html' retired 2026-09-19 -> ALIAS to /pdf-tools/pdf-editor-online.html (Phase 6 image-conversion consolidation).
-  '/guides/pt/adobe-pdf-editor-browser-when.html': 'guide/pt/adobe-pdf-editor-browser-when.jsp',
-  '/guides/es/adobe-pdf-editor-browser-when.html': 'guide/es/adobe-pdf-editor-browser-when.jsp',
-  '/guides/vi/adobe-pdf-editor-browser-when.html': 'guide/vi/adobe-pdf-editor-browser-when.jsp',
-  '/guides/id/adobe-pdf-editor-browser-when.html': 'guide/id/adobe-pdf-editor-browser-when.jsp',
-  '/guides/de/adobe-pdf-editor-browser-when.html': 'guide/de/adobe-pdf-editor-browser-when.jsp',
+  // content-consolidation fire144 (2026-09-20): the -when and -step-by-step angles (all 6 forms
+  // each, 12 routes) are 301'd via ALIAS_ROUTES into their same-angle same-locale canonical twin
+  // '/guides/{loc}/pdf-editor-{angle}.html'. JSP wrappers + CMS fragments stay on disk (orphan,
+  // harmless) so the merge is revertible. Removing them here also drops them from GUIDE_ROUTES
+  // via the auto-merge at the bottom of this file, which is what clears sitemap-guides*.xml.
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/pt/adobe-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/es/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/es/adobe-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/vi/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/vi/adobe-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/id/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/id/adobe-pdf-editor-browser-vs-alternatives.jsp',
   '/guides/de/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/de/adobe-pdf-editor-browser-vs-alternatives.jsp',
-  '/guides/pt/adobe-pdf-editor-browser-step-by-step.html': 'guide/pt/adobe-pdf-editor-browser-step-by-step.jsp',
-  '/guides/es/adobe-pdf-editor-browser-step-by-step.html': 'guide/es/adobe-pdf-editor-browser-step-by-step.jsp',
-  '/guides/vi/adobe-pdf-editor-browser-step-by-step.html': 'guide/vi/adobe-pdf-editor-browser-step-by-step.jsp',
-  '/guides/id/adobe-pdf-editor-browser-step-by-step.html': 'guide/id/adobe-pdf-editor-browser-step-by-step.jsp',
-  '/guides/de/adobe-pdf-editor-browser-step-by-step.html': 'guide/de/adobe-pdf-editor-browser-step-by-step.jsp',
-  '/guides/adobe-pdf-editor-browser-when.html': 'guide/adobe-pdf-editor-browser-when.jsp',
-  '/guides/adobe-pdf-editor-browser-step-by-step.html': 'guide/adobe-pdf-editor-browser-step-by-step.jsp',
   '/guides/adobe-pdf-editor-browser-vs-alternatives.html': 'guide/adobe-pdf-editor-browser-vs-alternatives.jsp',
   // '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html' retired 2026-09-19 -> ALIAS to /pdf-tools/pdf-editor-online.html (Phase 6 image-conversion consolidation).
   '/guides/pdf-xchange-editor-browser-plugin-edge-when.html': 'guide/pdf-xchange-editor-browser-plugin-edge-when.jsp',
