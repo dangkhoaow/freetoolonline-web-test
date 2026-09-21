@@ -532,33 +532,12 @@ export const INFO_ROUTES = new Set([
   // The -vs-alternatives angle above is deliberately KEPT: runbook section-3.5 rule 2 found it
   // INVERTED (excess 0/0/170 OUT-RANKS kept 0/0/58), so retiring it would drop the family's
   // only impression-earning surface.
-  '/guides/foxit-pdf-editor-browser-vs-alternatives.html',
-  // foxit-pdf-editor-browser-vs-alternatives pt locale (create_new_guide_page 20260828)
-  '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html',
-  // foxit-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260828-2)
-  '/guides/es/foxit-pdf-editor-browser-vs-alternatives.html',
-  // foxit-pdf-editor-browser-vs-alternatives vi locale (create_new_guide_page 20260828-3)
-  '/guides/vi/foxit-pdf-editor-browser-vs-alternatives.html',
-  // foxit-pdf-editor-browser-vs-alternatives id locale (create_new_guide_page 20260828-5)
-  '/guides/id/foxit-pdf-editor-browser-vs-alternatives.html',
-  // foxit-pdf-editor-browser-vs-alternatives de locale (create_new_guide_page 20260828-6)
-  '/guides/de/foxit-pdf-editor-browser-vs-alternatives.html',
   '/guides/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/es/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/vi/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/id/foxit-pdf-editor-browser-step-by-step.html',
   '/guides/de/foxit-pdf-editor-browser-step-by-step.html',
-  '/guides/foxit-pdf-editor-browser-when.html',
-  // foxit-pdf-editor-browser-when pt locale (create_new_guide_page 20260828-7)
-  '/guides/pt/foxit-pdf-editor-browser-when.html',
-  // foxit-pdf-editor-browser-when es locale (create_new_guide_page 20260828-8)
-  '/guides/es/foxit-pdf-editor-browser-when.html',
-  // foxit-pdf-editor-browser-when vi locale (create_new_guide_page 20260829)
-  '/guides/vi/foxit-pdf-editor-browser-when.html',
-  // foxit-pdf-editor-browser-when id locale (create_new_guide_page 20260829-2)
-  '/guides/id/foxit-pdf-editor-browser-when.html',
-  '/guides/de/foxit-pdf-editor-browser-when.html',
   // game-server-status companion guides (new-tool-discovery-loop fire728)
   '/guides/game-server-status-step-by-step.html',
   '/guides/game-server-status-when.html',
@@ -7808,16 +7787,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html',
   // client-side-pdf-editor-toolkit-step-by-step de locale (create_new_guide_page 20260822-5)
   '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html',
-  // foxit-pdf-editor-browser-vs-alternatives pt locale (create_new_guide_page 20260828)
-  '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html',
-  // foxit-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260828-2)
-  '/guides/es/foxit-pdf-editor-browser-vs-alternatives.html',
-  // foxit-pdf-editor-browser-vs-alternatives vi locale (create_new_guide_page 20260828-3)
-  '/guides/vi/foxit-pdf-editor-browser-vs-alternatives.html',
-  // foxit-pdf-editor-browser-vs-alternatives id locale (create_new_guide_page 20260828-5)
-  '/guides/id/foxit-pdf-editor-browser-vs-alternatives.html',
-  // foxit-pdf-editor-browser-vs-alternatives de locale (create_new_guide_page 20260828-6)
-  '/guides/de/foxit-pdf-editor-browser-vs-alternatives.html',
   // foxit-pdf-editor-browser-step-by-step pt locale (create_new_guide_page 20260819-4)
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   // foxit-pdf-editor-browser-step-by-step es locale (create_new_guide_page 20260826-2)
@@ -7828,15 +7797,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/foxit-pdf-editor-browser-step-by-step.html',
   // foxit-pdf-editor-browser-step-by-step de locale (create_new_guide_page 20260826-5)
   '/guides/de/foxit-pdf-editor-browser-step-by-step.html',
-  // foxit-pdf-editor-browser-when pt locale (create_new_guide_page 20260828-7)
-  '/guides/pt/foxit-pdf-editor-browser-when.html',
-  // foxit-pdf-editor-browser-when es locale (create_new_guide_page 20260828-8)
-  '/guides/es/foxit-pdf-editor-browser-when.html',
-  // foxit-pdf-editor-browser-when vi locale (create_new_guide_page 20260829)
-  '/guides/vi/foxit-pdf-editor-browser-when.html',
-  // foxit-pdf-editor-browser-when id locale (create_new_guide_page 20260829-2)
-  '/guides/id/foxit-pdf-editor-browser-when.html',
-  '/guides/de/foxit-pdf-editor-browser-when.html',
   // adobe-pdf-editor-browser-when (all 6 forms) retired by content-consolidation fire144
   // (2026-09-20) into '/guides/{loc}/pdf-editor-when.html' - see ALIAS_ROUTES. The 3 bare-EN
   // forms were never literal members here; they arrived via the JSP_BY_ROUTE auto-merge at the
@@ -15088,6 +15048,18 @@ export const ALIAS_ROUTES = {
   '/guides/es/find-replace-text-when.html': '/guides/es/find-replace-text-step-by-step.html', // consolidation 301 fire142
   '/guides/id/find-replace-text-when.html': '/guides/id/find-replace-text-step-by-step.html', // consolidation 301 fire142
   '/guides/de/find-replace-text-when.html': '/guides/de/find-replace-text-step-by-step.html', // consolidation 301 fire142
+  '/guides/foxit-pdf-editor-browser-vs-alternatives.html': '/guides/pdf-editor-vs-alternatives.html', // consolidation 301 fire145
+  '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html': '/guides/pt/pdf-editor-vs-alternatives.html', // consolidation 301 fire145
+  '/guides/es/foxit-pdf-editor-browser-vs-alternatives.html': '/guides/es/pdf-editor-vs-alternatives.html', // consolidation 301 fire145
+  '/guides/vi/foxit-pdf-editor-browser-vs-alternatives.html': '/guides/vi/pdf-editor-vs-alternatives.html', // consolidation 301 fire145
+  '/guides/id/foxit-pdf-editor-browser-vs-alternatives.html': '/guides/id/pdf-editor-vs-alternatives.html', // consolidation 301 fire145
+  '/guides/de/foxit-pdf-editor-browser-vs-alternatives.html': '/guides/de/pdf-editor-vs-alternatives.html', // consolidation 301 fire145
+  '/guides/foxit-pdf-editor-browser-when.html': '/guides/pdf-editor-when.html', // consolidation 301 fire145
+  '/guides/pt/foxit-pdf-editor-browser-when.html': '/guides/pt/pdf-editor-when.html', // consolidation 301 fire145
+  '/guides/es/foxit-pdf-editor-browser-when.html': '/guides/es/pdf-editor-when.html', // consolidation 301 fire145
+  '/guides/vi/foxit-pdf-editor-browser-when.html': '/guides/vi/pdf-editor-when.html', // consolidation 301 fire145
+  '/guides/id/foxit-pdf-editor-browser-when.html': '/guides/id/pdf-editor-when.html', // consolidation 301 fire145
+  '/guides/de/foxit-pdf-editor-browser-when.html': '/guides/de/pdf-editor-when.html', // consolidation 301 fire145
   '/guides/vi/flashcards-spaced-repetition-step-by-step.html': '/guides/flashcards-spaced-repetition-step-by-step.html', // Phase-B 301 vi-batch-3-cont3 fire336
   '/guides/vi/flashcards-spaced-repetition-vs-alternatives.html': '/guides/flashcards-spaced-repetition-vs-alternatives.html', // Phase-B 301 vi-batch-3-cont3 fire336
   '/guides/vi/flashcards-spaced-repetition-when.html': '/guides/flashcards-spaced-repetition-when.html', // Phase-B 301 vi-batch-3-cont3 fire336
@@ -29735,24 +29707,12 @@ export const JSP_BY_ROUTE = {
   '/utility-tools/game-server-status.html': 'utility/game-server-status.jsp',
   // foxit-pdf-editor-browser tool route retired 2026-08-30 -> aliased to client-side-pdf-editor-toolkit
   // (Phase 6 axis_F functional-duplicate merge). Comparison guides below are kept.
-  '/guides/foxit-pdf-editor-browser-when.html': 'guide/foxit-pdf-editor-browser-when.jsp',
-  '/guides/pt/foxit-pdf-editor-browser-when.html': 'guide/pt/foxit-pdf-editor-browser-when.jsp',
-  '/guides/es/foxit-pdf-editor-browser-when.html': 'guide/es/foxit-pdf-editor-browser-when.jsp',
-  '/guides/vi/foxit-pdf-editor-browser-when.html': 'guide/vi/foxit-pdf-editor-browser-when.jsp',
-  '/guides/id/foxit-pdf-editor-browser-when.html': 'guide/id/foxit-pdf-editor-browser-when.jsp',
-  '/guides/de/foxit-pdf-editor-browser-when.html': 'guide/de/foxit-pdf-editor-browser-when.jsp',
   '/guides/foxit-pdf-editor-browser-step-by-step.html': 'guide/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html': 'guide/pt/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/es/foxit-pdf-editor-browser-step-by-step.html': 'guide/es/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/vi/foxit-pdf-editor-browser-step-by-step.html': 'guide/vi/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/id/foxit-pdf-editor-browser-step-by-step.html': 'guide/id/foxit-pdf-editor-browser-step-by-step.jsp',
   '/guides/de/foxit-pdf-editor-browser-step-by-step.html': 'guide/de/foxit-pdf-editor-browser-step-by-step.jsp',
-  '/guides/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/foxit-pdf-editor-browser-vs-alternatives.jsp',
-  '/guides/pt/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/pt/foxit-pdf-editor-browser-vs-alternatives.jsp',
-  '/guides/es/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/es/foxit-pdf-editor-browser-vs-alternatives.jsp',
-  '/guides/vi/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/vi/foxit-pdf-editor-browser-vs-alternatives.jsp',
-  '/guides/id/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/id/foxit-pdf-editor-browser-vs-alternatives.jsp',
-  '/guides/de/foxit-pdf-editor-browser-vs-alternatives.html': 'guide/de/foxit-pdf-editor-browser-vs-alternatives.jsp',
   // '/image-converter-tools/adobe-pdf-editor-browser.html' retired 2026-09-19 -> ALIAS to /pdf-tools/pdf-editor-online.html (Phase 6 image-conversion consolidation).
   // content-consolidation fire144 (2026-09-20): the -when and -step-by-step angles (all 6 forms
   // each, 12 routes) are 301'd via ALIAS_ROUTES into their same-angle same-locale canonical twin
