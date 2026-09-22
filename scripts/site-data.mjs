@@ -490,23 +490,22 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/client-side-pdf-editor-toolkit-when.html',
   '/guides/id/client-side-pdf-editor-toolkit-when.html',
   '/guides/de/client-side-pdf-editor-toolkit-when.html',
-  '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
-  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives pt locale (create_new_guide_page 20260830-5)
-  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
-  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives es locale (create_new_guide_page 20260830-6)
-  '/guides/es/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
-  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives vi locale (create_new_guide_page 20260830-7)
-  '/guides/vi/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
-  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives id locale (create_new_guide_page 20260830-11)
-  '/guides/id/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
-  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives de locale (create_new_guide_page 20260831-4)
-  '/guides/de/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
-  '/guides/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
-  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
-  '/guides/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
-  '/guides/vi/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
-  '/guides/id/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
-  '/guides/de/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
+  // content-consolidation fire146 (2026-09-22): the -vs-alternatives and -step-by-step angles
+  // of the pdf-xchange-editor-browser-plugin-edge guide family were retired into their
+  // same-angle, same-locale canonical twins '/guides/{loc}/pdf-editor-{angle}.html' (see
+  // ALIAS_ROUTES). Their bodies were the same template as those twins, differing only in the
+  // tool name, an intro link pointing at the now-301'd '/image-converter-tools/pdf-xchange-
+  // editor-browser-plugin-edge.html', and a wrong-cluster '/image-converter-tools.html'
+  // backlink. Evidence: -vs-alternatives 0/0/0 loses to kept 0/0/58; -step-by-step 0/0/3 loses
+  // to kept 0/0/22; both 0 clicks / 0 citations / $0 revenue with ZERO inbound internal links,
+  // and every twin is live and non-alias, so there are no 301 chains.
+  // Unique facts were NOT zero here (unlike the adobe/foxit families): 5 of 6 -vs-alternatives
+  // twins (pt/es/vi/id/de) lacked the X%/Y% capability-and-limitation paragraph and the pt
+  // -step-by-step twin lacked the watermark/form-filler routing sentence. All 6 were folded
+  // into the twins IN THEIR OWN LANGUAGE before these 301s.
+  // The -when angle below is deliberately KEPT: runbook section-3.5 rule 2 found it INVERTED -
+  // excess carries 1 click / 106 impressions and OUT-RANKS kept 0 clicks / 45 impressions on
+  // the first ranking key, so retiring it would discard the family's only click-earning surface.
   '/guides/pdf-xchange-editor-browser-plugin-edge-when.html',
   // pdf-xchange-editor-browser-plugin-edge-when pt locale (create_new_guide_page 20260831-5)
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-when.html',
@@ -7801,16 +7800,11 @@ export const GUIDE_ROUTES = new Set([
   // (2026-09-20) into '/guides/{loc}/pdf-editor-when.html' - see ALIAS_ROUTES. The 3 bare-EN
   // forms were never literal members here; they arrived via the JSP_BY_ROUTE auto-merge at the
   // bottom of this file, so removing the JSP entries drops them from GUIDE_ROUTES too.
-  // pdf-xchange-editor-browser-plugin-edge-step-by-step pt locale (create_new_guide_page 20260829-3)
-  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
-  // pdf-xchange-editor-browser-plugin-edge-step-by-step es locale (create_new_guide_page 20260829-4)
-  '/guides/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
-  // pdf-xchange-editor-browser-plugin-edge-step-by-step vi locale (create_new_guide_page 20260829)
-  '/guides/vi/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
-  // pdf-xchange-editor-browser-plugin-edge-step-by-step id locale (create_new_guide_page 20260830-3)
-  '/guides/id/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
-  // pdf-xchange-editor-browser-plugin-edge-step-by-step de locale (create_new_guide_page 20260830-4)
-  '/guides/de/pdf-xchange-editor-browser-plugin-edge-step-by-step.html',
+  // pdf-xchange-editor-browser-plugin-edge-step-by-step (all 6 forms) retired by
+  // content-consolidation fire146 (2026-09-22) into '/guides/{loc}/pdf-editor-step-by-step.html'
+  // - see ALIAS_ROUTES + the INFO_ROUTES note. The bare-EN form was never a literal member
+  // here; it arrived via the JSP_BY_ROUTE auto-merge at the bottom of this file, so removing
+  // the JSP entry drops it from GUIDE_ROUTES too.
   // pdf-xchange-editor-browser-plugin-edge-when pt locale (create_new_guide_page 20260831-5)
   '/guides/pt/pdf-xchange-editor-browser-plugin-edge-when.html',
   // pdf-xchange-editor-browser-plugin-edge-when es locale (create_new_guide_page 20260831-6)
@@ -7821,16 +7815,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/pdf-xchange-editor-browser-plugin-edge-when.html',
   // pdf-xchange-editor-browser-plugin-edge-when de locale (create_new_guide_page 20260901-2)
   '/guides/de/pdf-xchange-editor-browser-plugin-edge-when.html',
-  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives pt locale (create_new_guide_page 20260830-5)
-  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
-  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives es locale (create_new_guide_page 20260830-6)
-  '/guides/es/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
-  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives vi locale (create_new_guide_page 20260830-7)
-  '/guides/vi/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
-  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives id locale (create_new_guide_page 20260830-11)
-  '/guides/id/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
-  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives de locale (create_new_guide_page 20260831-4)
-  '/guides/de/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html',
+  // pdf-xchange-editor-browser-plugin-edge-vs-alternatives (all 6 forms) retired by
+  // content-consolidation fire146 (2026-09-22) into
+  // '/guides/{loc}/pdf-editor-vs-alternatives.html' - see ALIAS_ROUTES + the INFO_ROUTES note.
+  // Same bare-EN-via-JSP-auto-merge note as the -step-by-step angle above.
   // adobe-pdf-editor-browser-vs-alternatives pt locale (create_new_guide_page 20260820-937)
   '/guides/pt/adobe-pdf-editor-browser-vs-alternatives.html',
   // adobe-pdf-editor-browser-vs-alternatives es locale (create_new_guide_page 20260820-939)
@@ -14631,6 +14619,38 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // content-consolidation fire146 (2026-09-22): orphan guide inventory of a RETIRED tool - the
+  // third family in the Amendment-2026-09-19-item-7 set (after adobe/fire144, foxit/fire145).
+  // '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html' was retired 2026-09-19
+  // into '/pdf-tools/pdf-editor-online.html', but its 18-URL companion guide family stayed
+  // live, indexable and self-canonical in all 6 sitemap-guides*.xml.
+  // Per-angle section-3.5 rule-2 member-evidence read (clicks > citations > impressions):
+  //   -vs-alternatives  excess 0/0/0   vs kept 0/0/58  -> kept wins, DRAINED
+  //   -step-by-step     excess 0/0/3   vs kept 0/0/22  -> kept wins, DRAINED
+  //   -when             excess 1/0/106 vs kept 0/0/45  -> INVERTED, NOT drained (see below)
+  // The -when angle is the family's ONLY click-earning surface, so it is left live. This is a
+  // third distinct angle pattern in three fires (fire144 drained -when + -step-by-step;
+  // fire145 drained -vs-alternatives + -when), which is why the per-angle read is load-bearing
+  // and the previous family's pattern must never be copied forward.
+  // Unlike the adobe/foxit families the unique-fact set here was NOT empty: 5 of 6
+  // -vs-alternatives twins (pt/es/vi/id/de) lacked the X%/Y% capability-and-limitation
+  // paragraph and the pt -step-by-step twin lacked the watermark/form-filler routing sentence.
+  // Each was folded into the twin in ITS OWN language, verbatim from the excess fragment, in
+  // the same commit and BEFORE these 301s - so no reader-facing fact is lost in any locale.
+  // All 12 carried 0 clicks / 0 citations / $0 revenue and ZERO inbound internal links; every
+  // twin is live and non-alias, so there are no 301 chains and no page loses a link.
+  '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': '/guides/pdf-editor-vs-alternatives.html', // consolidation 301 fire146
+  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': '/guides/pt/pdf-editor-vs-alternatives.html', // consolidation 301 fire146
+  '/guides/es/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': '/guides/es/pdf-editor-vs-alternatives.html', // consolidation 301 fire146
+  '/guides/vi/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': '/guides/vi/pdf-editor-vs-alternatives.html', // consolidation 301 fire146
+  '/guides/id/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': '/guides/id/pdf-editor-vs-alternatives.html', // consolidation 301 fire146
+  '/guides/de/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': '/guides/de/pdf-editor-vs-alternatives.html', // consolidation 301 fire146
+  '/guides/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': '/guides/pdf-editor-step-by-step.html', // consolidation 301 fire146
+  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': '/guides/pt/pdf-editor-step-by-step.html', // consolidation 301 fire146
+  '/guides/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': '/guides/es/pdf-editor-step-by-step.html', // consolidation 301 fire146
+  '/guides/vi/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': '/guides/vi/pdf-editor-step-by-step.html', // consolidation 301 fire146
+  '/guides/id/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': '/guides/id/pdf-editor-step-by-step.html', // consolidation 301 fire146
+  '/guides/de/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': '/guides/de/pdf-editor-step-by-step.html', // consolidation 301 fire146
   // content-consolidation fire144 (2026-09-20): orphan guide inventory of a RETIRED tool.
   // '/image-converter-tools/adobe-pdf-editor-browser.html' was retired 2026-09-19 into
   // '/pdf-tools/pdf-editor-online.html', but its 18-URL companion guide family stayed live,
@@ -29732,18 +29752,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/pdf-xchange-editor-browser-plugin-edge-when.html': 'guide/vi/pdf-xchange-editor-browser-plugin-edge-when.jsp',
   '/guides/id/pdf-xchange-editor-browser-plugin-edge-when.html': 'guide/id/pdf-xchange-editor-browser-plugin-edge-when.jsp',
   '/guides/de/pdf-xchange-editor-browser-plugin-edge-when.html': 'guide/de/pdf-xchange-editor-browser-plugin-edge-when.jsp',
-  '/guides/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
-  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/pt/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
-  '/guides/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/es/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
-  '/guides/vi/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/vi/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
-  '/guides/id/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/id/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
-  '/guides/de/pdf-xchange-editor-browser-plugin-edge-step-by-step.html': 'guide/de/pdf-xchange-editor-browser-plugin-edge-step-by-step.jsp',
-  '/guides/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
-  '/guides/pt/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/pt/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
-  '/guides/es/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/es/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
-  '/guides/vi/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/vi/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
-  '/guides/id/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/id/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
-  '/guides/de/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.html': 'guide/de/pdf-xchange-editor-browser-plugin-edge-vs-alternatives.jsp',
+  // content-consolidation fire146 (2026-09-22): the 12 JSP entries for the
+  // pdf-xchange-editor-browser-plugin-edge -step-by-step and -vs-alternatives angles (6 locale
+  // forms each) were removed here and 301'd via ALIAS_ROUTES into their same-angle,
+  // same-locale '/guides/{loc}/pdf-editor-{angle}.html' twins. Removing the JSP entry is what
+  // drops each route from GUIDE_ROUTES (auto-merge) and therefore from sitemap-guides*.xml.
+  // The JSP wrapper files + CMS fragments stay on disk (orphan, harmless) so the merge is
+  // revertible. The -when angle's 6 entries above are deliberately retained (section-3.5
+  // rule 2: INVERTED - the excess out-ranks the kept twin on clicks).
   // '/image-converter-tools/client-side-pdf-editor-toolkit.html' retired 2026-09-19 -> ALIAS to /pdf-tools/pdf-editor-online.html (Phase 6 image-conversion consolidation).
   '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
   '/guides/pt/client-side-pdf-editor-toolkit-when.html': 'guide/pt/client-side-pdf-editor-toolkit-when.jsp',
