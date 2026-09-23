@@ -475,21 +475,23 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/id/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/de/client-side-pdf-editor-toolkit-vs-alternatives.html',
-  '/guides/client-side-pdf-editor-toolkit-step-by-step.html',
-  '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html',
-  '/guides/es/client-side-pdf-editor-toolkit-step-by-step.html',
-  '/guides/vi/client-side-pdf-editor-toolkit-step-by-step.html',
-  '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html',
-  '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html',
-  '/guides/client-side-pdf-editor-toolkit-when.html',
-  // client-side-pdf-editor-toolkit-when pt locale (create_new_guide_page 20260824)
-  '/guides/pt/client-side-pdf-editor-toolkit-when.html',
-  // client-side-pdf-editor-toolkit-when es locale (create_new_guide_page 20260824)
-  '/guides/es/client-side-pdf-editor-toolkit-when.html',
-  // client-side-pdf-editor-toolkit-when vi locale (create_new_guide_page 20260824-3)
-  '/guides/vi/client-side-pdf-editor-toolkit-when.html',
-  '/guides/id/client-side-pdf-editor-toolkit-when.html',
-  '/guides/de/client-side-pdf-editor-toolkit-when.html',
+  // content-consolidation fire147 (2026-09-23): the -step-by-step and -when angles of the
+  // client-side-pdf-editor-toolkit guide family were retired into their same-angle,
+  // same-locale canonical twins '/guides/{loc}/pdf-editor-{angle}.html' (see ALIAS_ROUTES).
+  // Their bodies were the same template as those twins, differing only in the tool name, an
+  // intro link pointing at the now-301'd
+  // '/image-converter-tools/client-side-pdf-editor-toolkit.html', and a wrong-cluster
+  // '/image-converter-tools.html' backlink. Evidence: -step-by-step 0/0/0 loses to kept
+  // 0/0/20; -when 0/0/11 loses to kept 0/0/45; both 0 clicks / 0 citations / $0 revenue with
+  // ZERO inbound internal links, and every twin is live and non-alias, so no 301 chains.
+  // The unique-fact set was EMPTY in all 12 pairs: every own-language twin already carries the
+  // X%/Y% capability paragraph with all five limitations, the no-upload claim, and the
+  // watermark + form-filler routing sentence. The four apparent locale gaps were synonym
+  // artifacts of the verification regex, not content gaps (pt clique/clicar, es dibujo
+  // libre/mano alzada, vi danh dau/to sang, id stempel/cap gambar), so no fold was needed.
+  // The -vs-alternatives angle above is deliberately KEPT: runbook section-3.5 rule 2 found it
+  // INVERTED at the EN decision locus - the excess EN form carries 29 impressions against the
+  // kept twin's 6, so retiring it would discard the family's strongest EN surface.
   // content-consolidation fire146 (2026-09-22): the -vs-alternatives and -step-by-step angles
   // of the pdf-xchange-editor-browser-plugin-edge guide family were retired into their
   // same-angle, same-locale canonical twins '/guides/{loc}/pdf-editor-{angle}.html' (see
@@ -7745,14 +7747,11 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/file-viewer-when.html',
   '/guides/id/file-viewer-when.html',
   '/guides/de/file-viewer-when.html',
-  // client-side-pdf-editor-toolkit-when pt locale (create_new_guide_page 20260824)
-  '/guides/pt/client-side-pdf-editor-toolkit-when.html',
-  // client-side-pdf-editor-toolkit-when es locale (create_new_guide_page 20260824)
-  '/guides/es/client-side-pdf-editor-toolkit-when.html',
-  // client-side-pdf-editor-toolkit-when vi locale (create_new_guide_page 20260824-3)
-  '/guides/vi/client-side-pdf-editor-toolkit-when.html',
-  '/guides/id/client-side-pdf-editor-toolkit-when.html',
-  '/guides/de/client-side-pdf-editor-toolkit-when.html',
+  // client-side-pdf-editor-toolkit-when (all 6 forms) retired by content-consolidation
+  // fire147 (2026-09-23) into '/guides/{loc}/pdf-editor-when.html' - see ALIAS_ROUTES + the
+  // INFO_ROUTES note. The bare-EN form was never a literal member here; it arrived via the
+  // JSP_BY_ROUTE auto-merge at the bottom of this file, so removing the JSP entry drops it
+  // from GUIDE_ROUTES too.
   // devtools-style-pdf-element-inspector-editor-android-when pt locale (create_new_guide_page 20260825-3)
   '/guides/pt/devtools-style-pdf-element-inspector-editor-android-when.html',
   // devtools-style-pdf-element-inspector-editor-android-when es locale (create_new_guide_page 20260825-4)
@@ -7776,16 +7775,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/ai-watermarks-explained.html',
   // ai-watermarks-explained de locale (create_new_guide_page 20260823-5)
   '/guides/de/ai-watermarks-explained.html',
-  // client-side-pdf-editor-toolkit-step-by-step pt locale (create_new_guide_page 20260821-8)
-  '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html',
-  // client-side-pdf-editor-toolkit-step-by-step es locale (create_new_guide_page 20260822-2)
-  '/guides/es/client-side-pdf-editor-toolkit-step-by-step.html',
-  // client-side-pdf-editor-toolkit-step-by-step vi locale (create_new_guide_page 20260822-3)
-  '/guides/vi/client-side-pdf-editor-toolkit-step-by-step.html',
-  // client-side-pdf-editor-toolkit-step-by-step id locale (create_new_guide_page 20260822-4)
-  '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html',
-  // client-side-pdf-editor-toolkit-step-by-step de locale (create_new_guide_page 20260822-5)
-  '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html',
+  // client-side-pdf-editor-toolkit-step-by-step (all 6 forms) retired by
+  // content-consolidation fire147 (2026-09-23) into
+  // '/guides/{loc}/pdf-editor-step-by-step.html' - see ALIAS_ROUTES + the INFO_ROUTES note.
+  // Same bare-EN-via-JSP-auto-merge note as the -when angle above.
   // foxit-pdf-editor-browser-step-by-step pt locale (create_new_guide_page 20260819-4)
   '/guides/pt/foxit-pdf-editor-browser-step-by-step.html',
   // foxit-pdf-editor-browser-step-by-step es locale (create_new_guide_page 20260826-2)
@@ -14619,6 +14612,43 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // content-consolidation fire147 (2026-09-23): orphan guide inventory of a RETIRED tool - the
+  // FOURTH family in the Amendment-2026-09-19-item-7 set (after adobe/fire144, foxit/fire145,
+  // pdf-xchange/fire146). '/image-converter-tools/client-side-pdf-editor-toolkit.html' was
+  // retired 2026-09-19 into '/pdf-tools/pdf-editor-online.html', but its 18-URL companion
+  // guide family stayed live, indexable and self-canonical in all 6 sitemap-guides*.xml.
+  // Per-angle section-3.5 rule-2 member-evidence read (clicks > citations > impressions):
+  //   -step-by-step     excess 0/0/0  vs kept 0/0/20 (EN 0 vs 11) -> kept wins, DRAINED
+  //   -when             excess 0/0/11 vs kept 0/0/45 (EN 7 vs 11) -> kept wins, DRAINED
+  //   -vs-alternatives  excess 0/0/39 vs kept 0/0/58 (EN 29 vs 6) -> INVERTED, NOT drained
+  // The -vs-alternatives family aggregate favours the keeper, but its EN parent does NOT (29
+  // impressions against 6), and section-3.6 rule 2 puts the decision on the EN parent - so it
+  // is left live. This is a FOURTH distinct angle pattern in four fires (fire144 drained
+  // -when + -step-by-step; fire145 -vs-alternatives + -when; fire146 -vs-alternatives +
+  // -step-by-step), which is why the per-angle read is load-bearing and the previous family's
+  // pattern must never be copied forward.
+  // The unique-fact set was EMPTY in all 12 pairs (the adobe/foxit shape, not fire146's): each
+  // own-language twin already carries the X%/Y% capability paragraph with all five
+  // limitations, the no-upload claim and the watermark + form-filler routing sentence, so no
+  // fold was needed. Four apparent locale gaps were synonym artifacts of the verification
+  // regex, confirmed false by reading the rendered limitation sentence in each twin.
+  // All 12 carried 0 clicks / 0 citations / $0 revenue and ZERO inbound internal links; every
+  // twin is live and non-alias, so there are no 301 chains and no page loses a link. The only
+  // excess-only outbound link was the wrong-cluster '/image-converter-tools.html' backlink,
+  // which retains 299 other inbound edges, and the intro link to the already-301'd tool route
+  // is superseded by each twin's own link to '/pdf-tools/pdf-editor-online.html'.
+  '/guides/client-side-pdf-editor-toolkit-step-by-step.html': '/guides/pdf-editor-step-by-step.html', // consolidation 301 fire147
+  '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html': '/guides/pt/pdf-editor-step-by-step.html', // consolidation 301 fire147
+  '/guides/es/client-side-pdf-editor-toolkit-step-by-step.html': '/guides/es/pdf-editor-step-by-step.html', // consolidation 301 fire147
+  '/guides/vi/client-side-pdf-editor-toolkit-step-by-step.html': '/guides/vi/pdf-editor-step-by-step.html', // consolidation 301 fire147
+  '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html': '/guides/id/pdf-editor-step-by-step.html', // consolidation 301 fire147
+  '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html': '/guides/de/pdf-editor-step-by-step.html', // consolidation 301 fire147
+  '/guides/client-side-pdf-editor-toolkit-when.html': '/guides/pdf-editor-when.html', // consolidation 301 fire147
+  '/guides/pt/client-side-pdf-editor-toolkit-when.html': '/guides/pt/pdf-editor-when.html', // consolidation 301 fire147
+  '/guides/es/client-side-pdf-editor-toolkit-when.html': '/guides/es/pdf-editor-when.html', // consolidation 301 fire147
+  '/guides/vi/client-side-pdf-editor-toolkit-when.html': '/guides/vi/pdf-editor-when.html', // consolidation 301 fire147
+  '/guides/id/client-side-pdf-editor-toolkit-when.html': '/guides/id/pdf-editor-when.html', // consolidation 301 fire147
+  '/guides/de/client-side-pdf-editor-toolkit-when.html': '/guides/de/pdf-editor-when.html', // consolidation 301 fire147
   // content-consolidation fire146 (2026-09-22): orphan guide inventory of a RETIRED tool - the
   // third family in the Amendment-2026-09-19-item-7 set (after adobe/fire144, foxit/fire145).
   // '/image-converter-tools/pdf-xchange-editor-browser-plugin-edge.html' was retired 2026-09-19
@@ -29761,18 +29791,14 @@ export const JSP_BY_ROUTE = {
   // revertible. The -when angle's 6 entries above are deliberately retained (section-3.5
   // rule 2: INVERTED - the excess out-ranks the kept twin on clicks).
   // '/image-converter-tools/client-side-pdf-editor-toolkit.html' retired 2026-09-19 -> ALIAS to /pdf-tools/pdf-editor-online.html (Phase 6 image-conversion consolidation).
-  '/guides/client-side-pdf-editor-toolkit-when.html': 'guide/client-side-pdf-editor-toolkit-when.jsp',
-  '/guides/pt/client-side-pdf-editor-toolkit-when.html': 'guide/pt/client-side-pdf-editor-toolkit-when.jsp',
-  '/guides/id/client-side-pdf-editor-toolkit-when.html': 'guide/id/client-side-pdf-editor-toolkit-when.jsp',
-  '/guides/de/client-side-pdf-editor-toolkit-when.html': 'guide/de/client-side-pdf-editor-toolkit-when.jsp',
-  '/guides/es/client-side-pdf-editor-toolkit-when.html': 'guide/es/client-side-pdf-editor-toolkit-when.jsp',
-  '/guides/vi/client-side-pdf-editor-toolkit-when.html': 'guide/vi/client-side-pdf-editor-toolkit-when.jsp',
-  '/guides/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/client-side-pdf-editor-toolkit-step-by-step.jsp',
-  '/guides/pt/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/pt/client-side-pdf-editor-toolkit-step-by-step.jsp',
-  '/guides/es/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/es/client-side-pdf-editor-toolkit-step-by-step.jsp',
-  '/guides/vi/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/vi/client-side-pdf-editor-toolkit-step-by-step.jsp',
-  '/guides/id/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/id/client-side-pdf-editor-toolkit-step-by-step.jsp',
-  '/guides/de/client-side-pdf-editor-toolkit-step-by-step.html': 'guide/de/client-side-pdf-editor-toolkit-step-by-step.jsp',
+  // content-consolidation fire147 (2026-09-23): the 12 JSP entries for the
+  // client-side-pdf-editor-toolkit -when and -step-by-step angles (6 locale forms each) were
+  // removed here and 301'd via ALIAS_ROUTES into their same-angle, same-locale
+  // '/guides/{loc}/pdf-editor-{angle}.html' twins. Removing the JSP entry is what drops each
+  // route from GUIDE_ROUTES (auto-merge) and therefore from sitemap-guides*.xml.
+  // The JSP wrapper files + CMS fragments stay on disk (orphan, harmless) so the merge is
+  // revertible. The -vs-alternatives angle's 6 entries are deliberately retained
+  // (section-3.5 rule 2: INVERTED - the excess EN form out-ranks the kept twin, 29 vs 6).
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/pt/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/guides/es/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/es/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
