@@ -457,17 +457,18 @@ export const INFO_ROUTES = new Set([
   '/guides/de/is-it-down-step-by-step.html',
   '/guides/de/is-it-down-when.html',
   '/guides/de/is-it-down-vs-alternatives.html',
-  '/guides/devtools-style-pdf-element-inspector-editor-android-when.html',
-  // devtools-style-pdf-element-inspector-editor-android-when pt locale (create_new_guide_page 20260825-3)
-  '/guides/pt/devtools-style-pdf-element-inspector-editor-android-when.html',
-  // devtools-style-pdf-element-inspector-editor-android-when es locale (create_new_guide_page 20260825-4)
-  '/guides/es/devtools-style-pdf-element-inspector-editor-android-when.html',
-  // devtools-style-pdf-element-inspector-editor-android-when vi locale (create_new_guide_page 20260825-5)
-  '/guides/vi/devtools-style-pdf-element-inspector-editor-android-when.html',
-  // devtools-style-pdf-element-inspector-editor-android-when id locale (create_new_guide_page 20260825-6)
-  '/guides/id/devtools-style-pdf-element-inspector-editor-android-when.html',
-  // devtools-style-pdf-element-inspector-editor-android-when de locale (create_new_guide_page 20260826)
-  '/guides/de/devtools-style-pdf-element-inspector-editor-android-when.html',
+  // content-consolidation fire148 (2026-09-25): the -when angle of the
+  // devtools-style-pdf-element-inspector-editor-android guide family (all 6 locale forms) was
+  // retired into its same-angle, same-locale canonical twin '/guides/{loc}/pdf-editor-when.html'
+  // (see ALIAS_ROUTES). This is the FIFTH and LAST family in the Amendment-2026-09-19-item-7 set
+  // (after adobe/fire144, foxit/fire145, pdf-xchange/fire146, client-side/fire147) and the only
+  // one that ever shipped a single angle rather than three, which is why it is 6 URLs not 18.
+  // Their bodies were the same generated template as the twins, differing only in the tool name,
+  // an intro link pointing at the already-301'd
+  // '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html', and a
+  // wrong-cluster '/image-converter-tools.html' backlink. The unique-fact set was EMPTY in all 6
+  // pairs: every own-language twin already carries the X%/Y% capability paragraph with all five
+  // limitations, the no-upload claim and the watermark + form-filler routing sentence.
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   // client-side-pdf-editor-toolkit-vs-alternatives locale fanout (create_new_guide_page 20260823-7)
   '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html',
@@ -7752,16 +7753,10 @@ export const GUIDE_ROUTES = new Set([
   // INFO_ROUTES note. The bare-EN form was never a literal member here; it arrived via the
   // JSP_BY_ROUTE auto-merge at the bottom of this file, so removing the JSP entry drops it
   // from GUIDE_ROUTES too.
-  // devtools-style-pdf-element-inspector-editor-android-when pt locale (create_new_guide_page 20260825-3)
-  '/guides/pt/devtools-style-pdf-element-inspector-editor-android-when.html',
-  // devtools-style-pdf-element-inspector-editor-android-when es locale (create_new_guide_page 20260825-4)
-  '/guides/es/devtools-style-pdf-element-inspector-editor-android-when.html',
-  // devtools-style-pdf-element-inspector-editor-android-when vi locale (create_new_guide_page 20260825-5)
-  '/guides/vi/devtools-style-pdf-element-inspector-editor-android-when.html',
-  // devtools-style-pdf-element-inspector-editor-android-when id locale (create_new_guide_page 20260825-6)
-  '/guides/id/devtools-style-pdf-element-inspector-editor-android-when.html',
-  // devtools-style-pdf-element-inspector-editor-android-when de locale (create_new_guide_page 20260826)
-  '/guides/de/devtools-style-pdf-element-inspector-editor-android-when.html',
+  // devtools-style-pdf-element-inspector-editor-android-when (all 6 forms) retired by
+  // content-consolidation fire148 (2026-09-25) into '/guides/{loc}/pdf-editor-when.html' - see
+  // ALIAS_ROUTES + the INFO_ROUTES note. Same bare-EN-via-JSP-auto-merge note as the
+  // client-side-pdf-editor-toolkit-when angle above.
   // client-side-pdf-editor-toolkit-vs-alternatives EN + locale fanout (create_new_guide_page 20260823-7)
   '/guides/client-side-pdf-editor-toolkit-vs-alternatives.html',
   '/guides/pt/client-side-pdf-editor-toolkit-vs-alternatives.html',
@@ -14612,6 +14607,43 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // content-consolidation fire148 (2026-09-25): orphan guide inventory of a RETIRED tool - the
+  // FIFTH and FINAL family in the Amendment-2026-09-19-item-7 set (after adobe/fire144,
+  // foxit/fire145, pdf-xchange/fire146, client-side/fire147).
+  // '/image-converter-tools/devtools-style-pdf-element-inspector-editor-android.html' was retired
+  // 2026-09-19 into '/pdf-tools/pdf-editor-online.html', but its companion guide family stayed
+  // live, indexable and self-canonical in all 6 sitemap-guides*.xml. This base is the one that
+  // only ever shipped the -when angle, so it is 6 URLs rather than 18 - which is exactly why
+  // fire144's registry+sitemap enumeration corrected item 7's "5 routes x 3 angles x 6 locales
+  // = 90" to a measured 78.
+  // Section-3.5 rule-1 member-evidence read (clicks > citations > impressions) over all 6 excess
+  // members AND all 6 twins, taken from the content graph rather than the emitter's
+  // canonical_url / excess_family_slugs fields:
+  //   aggregate  excess 0/0/7  vs kept 0/0/43  -> kept wins 6x
+  //   EN parent  excess 0/0/0  vs kept 0/0/11  -> kept wins at the decision locus
+  //   per-locale kept wins en (0 vs 11) and vi (0 vs 30); de ties 0-0; pt (3 vs 2), es (2 vs 0)
+  //   and id (2 vs 0) invert on impression noise alone - 0 clicks and 0 citations on all three.
+  // NEW CASE SHAPE, recorded deliberately: this is the first family where a MAJORITY of locales
+  // (3 of 6) invert. It is still a DRAIN because section-3.6 rule 2 puts the decision on the EN
+  // parent (a non-EN guide may never be a keeper, and locale mirrors must follow the parent in
+  // the same push), and because the three inversions total +5 impressions against the keeper's
+  // +41 from en and vi. Section-3.5 rule 3 does not apply - the family is not a three-way zero,
+  // so there IS a basis to choose and it is not a coin flip.
+  // The unique-fact set was EMPTY in all 6 pairs, so no CMS fragment was edited: each
+  // own-language twin already carries the X%/Y% capability paragraph with all five limitations,
+  // the no-upload claim and the watermark + form-filler routing sentence. Inbound edges on all 6
+  // were locale_sibling_of ONLY - zero real links_to - so no page loses a link; every twin is
+  // live and non-alias, so there are no 301 chains. AdSense revenue is UNMEASURED (null), not
+  // zero: no URL channel exists for either family among the account's 50 channels.
+  // The only excess-only outbound link was the wrong-cluster '/image-converter-tools.html'
+  // backlink, and the intro link to the already-301'd tool route is superseded by each twin's own
+  // link to '/pdf-tools/pdf-editor-online.html'.
+  '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': '/guides/pdf-editor-when.html', // consolidation 301 fire148
+  '/guides/pt/devtools-style-pdf-element-inspector-editor-android-when.html': '/guides/pt/pdf-editor-when.html', // consolidation 301 fire148
+  '/guides/es/devtools-style-pdf-element-inspector-editor-android-when.html': '/guides/es/pdf-editor-when.html', // consolidation 301 fire148
+  '/guides/vi/devtools-style-pdf-element-inspector-editor-android-when.html': '/guides/vi/pdf-editor-when.html', // consolidation 301 fire148
+  '/guides/id/devtools-style-pdf-element-inspector-editor-android-when.html': '/guides/id/pdf-editor-when.html', // consolidation 301 fire148
+  '/guides/de/devtools-style-pdf-element-inspector-editor-android-when.html': '/guides/de/pdf-editor-when.html', // consolidation 301 fire148
   // content-consolidation fire147 (2026-09-23): orphan guide inventory of a RETIRED tool - the
   // FOURTH family in the Amendment-2026-09-19-item-7 set (after adobe/fire144, foxit/fire145,
   // pdf-xchange/fire146). '/image-converter-tools/client-side-pdf-editor-toolkit.html' was
@@ -29805,12 +29837,17 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/vi/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/guides/id/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/id/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
   '/guides/de/client-side-pdf-editor-toolkit-vs-alternatives.html': 'guide/de/client-side-pdf-editor-toolkit-vs-alternatives.jsp',
-  '/guides/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/devtools-style-pdf-element-inspector-editor-android-when.jsp',
-  '/guides/pt/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/pt/devtools-style-pdf-element-inspector-editor-android-when.jsp',
-  '/guides/es/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/es/devtools-style-pdf-element-inspector-editor-android-when.jsp',
-  '/guides/vi/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/vi/devtools-style-pdf-element-inspector-editor-android-when.jsp',
-  '/guides/id/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/id/devtools-style-pdf-element-inspector-editor-android-when.jsp',
-  '/guides/de/devtools-style-pdf-element-inspector-editor-android-when.html': 'guide/de/devtools-style-pdf-element-inspector-editor-android-when.jsp',
+  // content-consolidation fire148 (2026-09-25): the 6 JSP entries for the
+  // devtools-style-pdf-element-inspector-editor-android -when angle (6 locale forms, the only
+  // angle this base ever shipped) were removed here and 301'd via ALIAS_ROUTES into their
+  // same-locale '/guides/{loc}/pdf-editor-when.html' twins. Removing the JSP entry is what drops
+  // each route from GUIDE_ROUTES (auto-merge) and therefore from sitemap-guides*.xml, so the
+  // orphan-inventory defect cannot recur for these routes. The JSP wrapper files + CMS fragments
+  // stay on disk (orphan, harmless) so the merge is revertible.
+  // This completes the Amendment-2026-09-19-item-7 set: all 5 retired PDF-editor bases have now
+  // had every DRAINABLE angle retired. The 4 angles left live across the set are each blocked by
+  // section-3.5 rule 2 as INVERTED, not un-attempted - adobe -vs-alternatives (fire144), foxit
+  // -step-by-step (fire145), pdf-xchange -when (fire146), client-side -vs-alternatives (fire147).
   '/image-converter-tools/hilbert-editor.html': 'convert/hilbert-editor.jsp',
   '/utility-tools/is-it-down.html': 'utility/is-it-down.jsp',
   '/utility-tools/food-recall-lookup.html': 'utility/food-recall-lookup.jsp',
