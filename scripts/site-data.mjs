@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/fuel-cost-calculator-vs-alternatives.html',
+  '/guides/fuel-cost-calculator-step-by-step.html',
+  '/guides/fuel-cost-calculator-when.html',
+  '/guides/pt/fuel-cost-calculator-step-by-step.html',
+  '/guides/pt/fuel-cost-calculator-when.html',
+  '/guides/pt/fuel-cost-calculator-vs-alternatives.html',
+  '/guides/es/fuel-cost-calculator-step-by-step.html',
+  '/guides/es/fuel-cost-calculator-when.html',
+  '/guides/es/fuel-cost-calculator-vs-alternatives.html',
+  '/guides/vi/fuel-cost-calculator-step-by-step.html',
+  '/guides/vi/fuel-cost-calculator-when.html',
+  '/guides/vi/fuel-cost-calculator-vs-alternatives.html',
+  '/guides/id/fuel-cost-calculator-step-by-step.html',
+  '/guides/id/fuel-cost-calculator-when.html',
+  '/guides/id/fuel-cost-calculator-vs-alternatives.html',
+  '/guides/de/fuel-cost-calculator-step-by-step.html',
+  '/guides/de/fuel-cost-calculator-when.html',
+  '/guides/de/fuel-cost-calculator-vs-alternatives.html',
   // image-ascii-art companion guides RESTORED 2026-09-19 by new-tool-discovery fire757:
   // the same fire authored all 5 locked locale variants (pt/es/vi/id/de x 3 angles, 45 CMS
   // fragments + 15 JSP wrappers on disk), so the EN-only deferral reason is resolved -
@@ -17699,6 +17717,7 @@ export const ALIAS_ROUTES = {
   '/guides/de/uranus-tilt-vs-alternatives.html': '/guides/de/uranus-tilt-step-by-step.html',
   '/video-thumbnail-extractor.html': '/video-tools/video-thumbnail-extractor.html',
   '/image-to-ascii-art.html': '/image-converter-tools/image-to-ascii-art.html',
+  '/fuel-cost-calculator.html': '/utility-tools/fuel-cost-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30337,6 +30356,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/image-ascii-art-when.html': 'guide/de/image-ascii-art-when.jsp',
   '/guides/de/image-ascii-art-step-by-step.html': 'guide/de/image-ascii-art-step-by-step.jsp',
   '/guides/de/image-ascii-art-vs-alternatives.html': 'guide/de/image-ascii-art-vs-alternatives.jsp',
+  '/utility-tools/fuel-cost-calculator.html': 'utility/fuel-cost-calculator.jsp',
+  '/guides/fuel-cost-calculator-when.html': 'guide/fuel-cost-calculator-when.jsp',
+  '/guides/fuel-cost-calculator-step-by-step.html': 'guide/fuel-cost-calculator-step-by-step.jsp',
+  '/guides/fuel-cost-calculator-vs-alternatives.html': 'guide/fuel-cost-calculator-vs-alternatives.jsp',
+  '/guides/pt/fuel-cost-calculator-step-by-step.html': 'guide/pt/fuel-cost-calculator-step-by-step.jsp',
+  '/guides/pt/fuel-cost-calculator-when.html': 'guide/pt/fuel-cost-calculator-when.jsp',
+  '/guides/pt/fuel-cost-calculator-vs-alternatives.html': 'guide/pt/fuel-cost-calculator-vs-alternatives.jsp',
+  '/guides/es/fuel-cost-calculator-step-by-step.html': 'guide/es/fuel-cost-calculator-step-by-step.jsp',
+  '/guides/es/fuel-cost-calculator-when.html': 'guide/es/fuel-cost-calculator-when.jsp',
+  '/guides/es/fuel-cost-calculator-vs-alternatives.html': 'guide/es/fuel-cost-calculator-vs-alternatives.jsp',
+  '/guides/vi/fuel-cost-calculator-step-by-step.html': 'guide/vi/fuel-cost-calculator-step-by-step.jsp',
+  '/guides/vi/fuel-cost-calculator-when.html': 'guide/vi/fuel-cost-calculator-when.jsp',
+  '/guides/vi/fuel-cost-calculator-vs-alternatives.html': 'guide/vi/fuel-cost-calculator-vs-alternatives.jsp',
+  '/guides/id/fuel-cost-calculator-step-by-step.html': 'guide/id/fuel-cost-calculator-step-by-step.jsp',
+  '/guides/id/fuel-cost-calculator-when.html': 'guide/id/fuel-cost-calculator-when.jsp',
+  '/guides/id/fuel-cost-calculator-vs-alternatives.html': 'guide/id/fuel-cost-calculator-vs-alternatives.jsp',
+  '/guides/de/fuel-cost-calculator-step-by-step.html': 'guide/de/fuel-cost-calculator-step-by-step.jsp',
+  '/guides/de/fuel-cost-calculator-when.html': 'guide/de/fuel-cost-calculator-when.jsp',
+  '/guides/de/fuel-cost-calculator-vs-alternatives.html': 'guide/de/fuel-cost-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
