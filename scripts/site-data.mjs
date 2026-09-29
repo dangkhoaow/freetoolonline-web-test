@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/ovulation-calculator-vs-alternatives.html',
+  '/guides/ovulation-calculator-step-by-step.html',
+  '/guides/ovulation-calculator-when.html',
+  '/guides/pt/ovulation-calculator-step-by-step.html',
+  '/guides/pt/ovulation-calculator-when.html',
+  '/guides/pt/ovulation-calculator-vs-alternatives.html',
+  '/guides/es/ovulation-calculator-step-by-step.html',
+  '/guides/es/ovulation-calculator-when.html',
+  '/guides/es/ovulation-calculator-vs-alternatives.html',
+  '/guides/vi/ovulation-calculator-step-by-step.html',
+  '/guides/vi/ovulation-calculator-when.html',
+  '/guides/vi/ovulation-calculator-vs-alternatives.html',
+  '/guides/id/ovulation-calculator-step-by-step.html',
+  '/guides/id/ovulation-calculator-when.html',
+  '/guides/id/ovulation-calculator-vs-alternatives.html',
+  '/guides/de/ovulation-calculator-step-by-step.html',
+  '/guides/de/ovulation-calculator-when.html',
+  '/guides/de/ovulation-calculator-vs-alternatives.html',
   '/guides/fuel-cost-calculator-vs-alternatives.html',
   '/guides/fuel-cost-calculator-step-by-step.html',
   '/guides/fuel-cost-calculator-when.html',
@@ -17771,6 +17789,7 @@ export const ALIAS_ROUTES = {
   '/video-thumbnail-extractor.html': '/video-tools/video-thumbnail-extractor.html',
   '/image-to-ascii-art.html': '/image-converter-tools/image-to-ascii-art.html',
   '/fuel-cost-calculator.html': '/utility-tools/fuel-cost-calculator.html',
+  '/ovulation-calculator.html': '/utility-tools/ovulation-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30428,6 +30447,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/fuel-cost-calculator-step-by-step.html': 'guide/de/fuel-cost-calculator-step-by-step.jsp',
   '/guides/de/fuel-cost-calculator-when.html': 'guide/de/fuel-cost-calculator-when.jsp',
   '/guides/de/fuel-cost-calculator-vs-alternatives.html': 'guide/de/fuel-cost-calculator-vs-alternatives.jsp',
+  '/utility-tools/ovulation-calculator.html': 'utility/ovulation-calculator.jsp',
+  '/guides/ovulation-calculator-when.html': 'guide/ovulation-calculator-when.jsp',
+  '/guides/ovulation-calculator-step-by-step.html': 'guide/ovulation-calculator-step-by-step.jsp',
+  '/guides/ovulation-calculator-vs-alternatives.html': 'guide/ovulation-calculator-vs-alternatives.jsp',
+  '/guides/pt/ovulation-calculator-step-by-step.html': 'guide/pt/ovulation-calculator-step-by-step.jsp',
+  '/guides/pt/ovulation-calculator-when.html': 'guide/pt/ovulation-calculator-when.jsp',
+  '/guides/pt/ovulation-calculator-vs-alternatives.html': 'guide/pt/ovulation-calculator-vs-alternatives.jsp',
+  '/guides/es/ovulation-calculator-step-by-step.html': 'guide/es/ovulation-calculator-step-by-step.jsp',
+  '/guides/es/ovulation-calculator-when.html': 'guide/es/ovulation-calculator-when.jsp',
+  '/guides/es/ovulation-calculator-vs-alternatives.html': 'guide/es/ovulation-calculator-vs-alternatives.jsp',
+  '/guides/vi/ovulation-calculator-step-by-step.html': 'guide/vi/ovulation-calculator-step-by-step.jsp',
+  '/guides/vi/ovulation-calculator-when.html': 'guide/vi/ovulation-calculator-when.jsp',
+  '/guides/vi/ovulation-calculator-vs-alternatives.html': 'guide/vi/ovulation-calculator-vs-alternatives.jsp',
+  '/guides/id/ovulation-calculator-step-by-step.html': 'guide/id/ovulation-calculator-step-by-step.jsp',
+  '/guides/id/ovulation-calculator-when.html': 'guide/id/ovulation-calculator-when.jsp',
+  '/guides/id/ovulation-calculator-vs-alternatives.html': 'guide/id/ovulation-calculator-vs-alternatives.jsp',
+  '/guides/de/ovulation-calculator-step-by-step.html': 'guide/de/ovulation-calculator-step-by-step.jsp',
+  '/guides/de/ovulation-calculator-when.html': 'guide/de/ovulation-calculator-when.jsp',
+  '/guides/de/ovulation-calculator-vs-alternatives.html': 'guide/de/ovulation-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
