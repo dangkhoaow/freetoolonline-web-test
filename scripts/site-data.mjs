@@ -1436,12 +1436,20 @@ export const INFO_ROUTES = new Set([
   '/guides/jpg-avif-converter-vs-alternatives.html',
   '/guides/jpg-avif-converter-step-by-step.html',
   '/guides/jpg-avif-converter-when.html',
-  '/guides/white-noise-ambient-sound-generator-vs-alternatives.html',
-  '/guides/de/white-noise-ambient-sound-generator-vs-alternatives.html',
-  '/guides/id/white-noise-ambient-sound-generator-vs-alternatives.html',
-  '/guides/vi/white-noise-ambient-sound-generator-vs-alternatives.html',
-  '/guides/es/white-noise-ambient-sound-generator-vs-alternatives.html',
-  '/guides/pt/white-noise-ambient-sound-generator-vs-alternatives.html',
+  // content-consolidation fire151 (2026-09-29): the -vs-alternatives angle of the
+  // white-noise-ambient-sound-generator guide family (all 6 locale forms) was retired into its
+  // same-locale '/guides/{loc}/white-noise-ambient-sound-generator-when.html' twin (see
+  // ALIAS_ROUTES). Sourced from step 1b (section 3.6), not the backlog: the zero-click pool's
+  // #2 row was '/guides/id/...-when.html' (1,848 impr, pos 6.92), which is the family KEEPER,
+  // so rule 2 put the decision on the EN parent and the family was assessed as a whole.
+  // Section-3.5 rule-1 member evidence (clicks > citations > impressions, read from the content
+  // graph over all 18 URLs, never the emitter's fields): -when 0/0/2577, -step-by-step 0/0/237,
+  // -vs-alternatives 0/0/17. The -when keeper out-ranks by 150x, so rule 3 does not apply (not a
+  // three-way zero; a real basis exists). -step-by-step was NOT retired: its EN form carries
+  // evidence_allowlisted true, and fire52's recommended traffic floor treats allowlist presence
+  // as never-excess. The unique-fact set was NON-EMPTY, so all 6 -when twins were edited first
+  // to fold in the three-way app-vs-looping-video comparison, the data-location contrast, the
+  // single-fixed-track / rarely-a-sleep-timer facts and the offline-after-load claim.
   '/guides/white-noise-ambient-sound-generator-step-by-step.html',
   '/guides/de/white-noise-ambient-sound-generator-step-by-step.html',
   '/guides/id/white-noise-ambient-sound-generator-step-by-step.html',
@@ -14625,6 +14633,51 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // content-consolidation fire151 (2026-09-29): duplicate-intent guide angle retired into its
+  // same-locale twin. NOT an Amendment-item-7 orphan (that set completed at fire148) and NOT a
+  // backlog drain - step 1a was dry for the 10th consecutive fire, so this came from step 1b,
+  // the section-3.6 zero-click guide surface. The pool's #2 row was
+  // '/guides/id/white-noise-ambient-sound-generator-when.html' (1,848 impr, pos 6.92); rule 2
+  // sends a locale row's decision to the EN parent, so the whole 3-angle x 6-locale family was
+  // assessed together rather than the single row being touched.
+  // Section-3.5 rule-1 member evidence (clicks > citations > impressions, read via
+  // content-graph-query node over all 18 URLs, never the emitter's canonical_url /
+  // excess_family_slugs): aggregate -when 0/0/2577 vs -step-by-step 0/0/237 vs
+  // -vs-alternatives 0/0/17. Zero clicks and zero AI citations on all 18, so impressions are
+  // the only separator - but at 150x the keeper is unambiguous, so rule 3's "three-way zero,
+  // SKIP" does not apply and this is not a coin flip.
+  // -step-by-step was deliberately NOT retired even though it is the weaker of the two kept
+  // angles: its EN form carries evidence_allowlisted true, and fire52's recommended traffic
+  // floor (clicks >= 1 OR citations >= 1 OR allowlist presence -> never excess) is honoured
+  // here as a safety rule even though it is still unimplemented in the emitter.
+  // Shared-fact list (section 0.7 requires it to be NON-EMPTY before any merge): no install
+  // needed, four synthesized sounds, a 15-to-120-minute sleep timer, and synthesized-not-sampled
+  // audio - all four already on both pages. Unique to the retired angle, and therefore folded
+  // into all 6 -when twins in this same push: the three-way browser-tool / phone-or-desktop-app
+  // / looping-ambient-video framing, the data-location contrast (app and this tool stay on the
+  // device, a looping video is streamed from a server), the video's single fixed track and
+  // rarely-offered sleep timer, and the offline-after-load claim. The comparison TABLE was
+  // deliberately not copied: its middle column restates this tool's own no-install / four-sound
+  // / timer-range facts that the -when page already carries in prose, so copying it would have
+  // RAISED within-page redundancy and tripped the comprehend-before-adding gate. Every claim
+  // folded traces to tool-whitenoisegenerator/SKILL.md ## Implemented features (four
+  // synthesized sounds; Off/15/30/60/120 sleep timer; "no fetch, no file upload, and no
+  // external audio asset loaded").
+  // Inbound on all 6 retired routes was locale_sibling_of ONLY - zero real links_to - so no
+  // page loses a link, and the outbound sets of source and destination are identical
+  // (/editorial-team.html, /utility-tools/white-noise-generator.html, /utility-tools.html), so
+  // the kept set is a superset. All 6 twins are live and non-alias, so there are no 301 chains.
+  // NOTE the es pair is de-indexed -> de-indexed: the whole es white-noise family has been in
+  // GUIDE_SITEMAP_EXCLUDE since 2026-07-29 (zero-evidence prune). Section-3.6 rule 1 forbids
+  // EDITING a de-indexed row and explicitly allows folding its facts + 301'ing it, which is what
+  // happened - the de-indexed source was never edited, only its same-locale destination.
+  // AdSense revenue is UNMEASURED (null), not zero: no URL channel exists for either family.
+  '/guides/white-noise-ambient-sound-generator-vs-alternatives.html': '/guides/white-noise-ambient-sound-generator-when.html', // consolidation 301 fire151
+  '/guides/pt/white-noise-ambient-sound-generator-vs-alternatives.html': '/guides/pt/white-noise-ambient-sound-generator-when.html', // consolidation 301 fire151
+  '/guides/es/white-noise-ambient-sound-generator-vs-alternatives.html': '/guides/es/white-noise-ambient-sound-generator-when.html', // consolidation 301 fire151
+  '/guides/vi/white-noise-ambient-sound-generator-vs-alternatives.html': '/guides/vi/white-noise-ambient-sound-generator-when.html', // consolidation 301 fire151
+  '/guides/id/white-noise-ambient-sound-generator-vs-alternatives.html': '/guides/id/white-noise-ambient-sound-generator-when.html', // consolidation 301 fire151
+  '/guides/de/white-noise-ambient-sound-generator-vs-alternatives.html': '/guides/de/white-noise-ambient-sound-generator-when.html', // consolidation 301 fire151
   // content-consolidation fire148 (2026-09-25): orphan guide inventory of a RETIRED tool - the
   // FIFTH and FINAL family in the Amendment-2026-09-19-item-7 set (after adobe/fire144,
   // foxit/fire145, pdf-xchange/fire146, client-side/fire147).
@@ -28332,12 +28385,12 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/white-noise-ambient-sound-generator-step-by-step.html': 'guide/vi/white-noise-ambient-sound-generator-step-by-step.jsp',
   '/guides/es/white-noise-ambient-sound-generator-step-by-step.html': 'guide/es/white-noise-ambient-sound-generator-step-by-step.jsp',
   '/guides/pt/white-noise-ambient-sound-generator-step-by-step.html': 'guide/pt/white-noise-ambient-sound-generator-step-by-step.jsp',
-  '/guides/white-noise-ambient-sound-generator-vs-alternatives.html': 'guide/white-noise-ambient-sound-generator-vs-alternatives.jsp',
-  '/guides/de/white-noise-ambient-sound-generator-vs-alternatives.html': 'guide/de/white-noise-ambient-sound-generator-vs-alternatives.jsp',
-  '/guides/id/white-noise-ambient-sound-generator-vs-alternatives.html': 'guide/id/white-noise-ambient-sound-generator-vs-alternatives.jsp',
-  '/guides/vi/white-noise-ambient-sound-generator-vs-alternatives.html': 'guide/vi/white-noise-ambient-sound-generator-vs-alternatives.jsp',
-  '/guides/es/white-noise-ambient-sound-generator-vs-alternatives.html': 'guide/es/white-noise-ambient-sound-generator-vs-alternatives.jsp',
-  '/guides/pt/white-noise-ambient-sound-generator-vs-alternatives.html': 'guide/pt/white-noise-ambient-sound-generator-vs-alternatives.jsp',
+  // content-consolidation fire151 (2026-09-29): the 6 JSP entries for the
+  // white-noise-ambient-sound-generator -vs-alternatives angle were removed here and 301'd via
+  // ALIAS_ROUTES into their same-locale '...-when.html' twins. Removing the JSP entry is what
+  // drops each route from GUIDE_ROUTES (auto-merge at the bottom of this file) and therefore
+  // from sitemap-guides*.xml. The JSP wrapper files + CMS fragments stay on disk (orphan,
+  // harmless) so the merge is revertible.
   '/space-3d/bortle-scale-light-pollution.html': 'space/bortle-scale-light-pollution.jsp',
   '/guides/bortle-scale-light-pollution-step-by-step.html': 'guide/bortle-scale-light-pollution-step-by-step.jsp',
   '/guides/bortle-scale-light-pollution-when.html': 'guide/bortle-scale-light-pollution-when.jsp',
