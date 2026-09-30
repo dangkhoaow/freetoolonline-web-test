@@ -15,11 +15,11 @@
 <address class="author"><a rel="author" href="/editorial-team.html">Free Tool Online Editorial Team</a></address>
 <hr/>
 
-<br/><h2 class="text-uppercase"><b>Container vs codec - what each file actually holds</b></h2>
+<br/><h2 class="text-uppercase"><b>Container vs codec - what MP4 and WebM files actually hold</b></h2>
 <p>A <b>container</b> wraps video, audio, and metadata into a single file that a player can read. MP4 (ISO base media) and WebM (a restricted Matroska profile) are both containers. The <b>codec</b> is how the video pixels and audio samples are compressed. An MP4 can, in theory, carry almost any codec, but in practice the web ecosystem treats MP4 as an H.264 file. WebM is purpose-built for royalty-free codecs - VP8 (rare in 2026), VP9 (mainstream), and AV1 (newest, highest compression).</p>
 <p>When the decision is framed as "MP4 or WebM," the real decision is H.264 vs VP9 vs AV1 - which codec to encode. The container follows the codec. H.264 ships in MP4; VP9 and AV1 ship in WebM on the web.</p>
 
-<br/><h2 class="text-uppercase"><b>Codec size comparison for the same visual quality</b></h2>
+<br/><h2 class="text-uppercase"><b>MP4 vs WebM codec size comparison for the same visual quality</b></h2>
 <figure class="illustration"><img src="/img/illustrations/card-row-4/guidesmp4vswebmforweb-codecs__035510e9.svg" alt="Compare H.264 file sizes: 1080p ~12 MB, 720p ~6 MB, and encode time ~15 seconds per minute." loading="lazy" width="640" height="180"><figcaption>H.264 size reference: 1080p 30fps runs ~12 MB/min, 720p ~6 MB/min, encoding at ~15 seconds/min.</figcaption></figure>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small">
@@ -32,12 +32,12 @@
 </table>
 </div>
 
-<br/><h2 class="text-uppercase"><b>Browser support reality in 2026</b></h2>
+<br/><h2 class="text-uppercase"><b>MP4 and WebM browser support reality in 2026</b></h2>
 <p><b>MP4/H.264</b> plays in 100% of shipping browsers - Chrome, Firefox, Safari, Edge, every mobile WebView. Has for a decade. If a video playing matters more than bytes saved, ship H.264.</p>
 <p><b>WebM/VP9</b> plays in Chrome, Firefox, Edge, Opera, and Safari (since Safari 14, macOS Big Sur, 2020). Mobile Safari on iOS 14+ supports VP9. A very small residual audience on legacy iPhones below iOS 14 cannot decode VP9.</p>
 <p><b>WebM/AV1</b> plays in Chrome 70+, Firefox 67+, and Edge 75+. Safari added AV1 support in 17.4 (2024). Hardware AV1 decode requires relatively new silicon - Intel 11th gen (Tiger Lake) or later, Apple M3 or later, AMD 6000 series or later. Pre-2022 devices fall back to software decode, which drains battery and can drop frames on 4K content.</p>
 
-<br/><h2 class="text-uppercase"><b>The &lt;source&gt; fallback pattern</b></h2>
+<br/><h2 class="text-uppercase"><b>The MP4/WebM &lt;source&gt; fallback pattern</b></h2>
 <p>The canonical HTML5 video pattern serves a recommended codec the browser can decode and falls back down the list:</p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>&lt;video controls preload="metadata" poster="cover.jpg"&gt;
   &lt;source src="clip.av1.webm" type="video/webm; codecs=av01.0.05M.08"&gt;
@@ -47,12 +47,12 @@
 &lt;/video&gt;</code></pre>
 <p>The browser walks the <code>&lt;source&gt;</code> list top-down, picks the first <code>type</code> it recognises, and ignores the rest. Serving AV1 first captures the ~60% of 2026 devices that have hardware AV1 decode; VP9 catches most of the rest; H.264 guarantees 100% fallback.</p>
 
-<br/><h2 class="text-uppercase"><b>The three real production decisions</b></h2>
+<br/><h2 class="text-uppercase"><b>The three real MP4 vs WebM production decisions</b></h2>
 <p>The three real production decisions for MP4 vs WebM for web are hero autoplay, download compatibility, and archive masters - ship MP4 H.264 for reach, add WebM when you optimize Chrome-weight pages.</p>
 <p><b>Decision 2 - Background hero video on a marketing site at 1080p, 15-second loop.</b> &rarr; <b>MP4 (H.264) + WebM (VP9)</b>. The VP9 file ships at ~60% of the H.264 size, which means a faster page load for visitors on slow connections. The H.264 file is the fallback for anyone whose browser skips WebM. Encode time is small (one-time, 15-second clip).</p>
 <p><b>Decision 3 - Long-form streaming library (VOD service, course platform, 30+ minute videos).</b> &rarr; <b>AV1 (WebM) + VP9 (WebM) + H.264 (MP4)</b>. The AV1 files save substantial CDN egress at scale. The VP9 files cover every modern browser. The H.264 files are the universal fallback. Encode on GPU hardware or a batch pipeline; AV1's 10&times; encode time matters when the library has thousands of videos.</p>
 
-<br/><h2 class="text-uppercase"><b>Encoding recipes</b></h2>
+<br/><h2 class="text-uppercase"><b>MP4 and WebM encoding recipes</b></h2>
 <p>Encoding recipes on MP4 vs WebM for web: keep a short CRF ladder for H.264 MP4, export a VP9 WebM twin when page weight matters, and never publish only WebM without an MP4 fallback.</p>
 <p><b>VP9 (WebM) - best compression/compatibility balance.</b> Use two-pass encoding for consistent quality at a target bitrate. <code>-c:v libvpx-vp9 -b:v 0 -crf 31 -row-mt 1 -c:a libopus -b:a 96k</code>. The <code>-row-mt 1</code> flag enables row-based multi-threading that cuts encode time roughly in half on modern CPUs.</p>
 <p><b>AV1 (WebM) - maximum compression.</b> SVT-AV1 is the encoder the industry settled on: <code>-c:v libsvtav1 -crf 35 -preset 6 -c:a libopus -b:a 96k</code>. Preset 6 is the default balance between speed and compression; lower presets (4, 5) favour quality at the cost of much longer encodes.</p>
@@ -61,7 +61,7 @@
 <p>If your audience is primarily iOS &lt; 14, older Android WebView, or legacy enterprise browsers, WebM offers no benefit - those devices will fall through to the H.264 source anyway, and the WebM encode is wasted effort. If the video is user-generated content that viewers often save, re-share, or edit, H.264 MP4 is the format they expect their tools to accept.</p>
 <p>Email clients almost never render <code>&lt;video&gt;</code> natively. If the video is in an email newsletter, export a short animated <b>GIF</b> or an MP4 link to a landing page - neither WebM nor an inline HTML5 video tag help.</p>
 
-<br/><h2 class="text-uppercase"><b>Converting between formats</b></h2>
+<br/><h2 class="text-uppercase"><b>Converting between MP4 and WebM formats</b></h2>
 <p>Converting between formats for MP4 vs WebM for web: open Video Converter, pick the target container, and re-check audio - a silent WebM still needs an MP4 twin for Safari users.</p>
 
 <br/><h2 class="text-uppercase"><b>Related tools</b></h2>

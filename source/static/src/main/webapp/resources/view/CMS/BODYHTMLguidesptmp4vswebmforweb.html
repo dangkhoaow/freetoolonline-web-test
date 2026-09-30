@@ -7,7 +7,7 @@
 
 <p class="lead">MP4 (H.264) e WebM (VP9/AV1) são os dois formatos de vídeo para a web. MP4 é o padrão universal; WebM entrega ficheiros 30-40% menores nos navegadores modernos com codecs livres de royalties. Este guia cobre os compromissos de codec, suporte dos navegadores em 2026 e as três decisões de produção.</p>
 
-<br/><h2 class="text-uppercase"><b>Contentor vs codec - o que cada ficheiro realmente contém</b></h2>
+<br/><h2 class="text-uppercase"><b>Contentor vs codec - o que os ficheiros MP4 e WebM realmente contêm</b></h2>
 <p>Um <b>contentor</b> envolve vídeo, áudio e metadados num único ficheiro que um leitor pode ler. MP4 (ISO base media) e WebM (um perfil Matroska restrito) são ambos contentores. O <b>codec</b> é como os pixels do vídeo e as amostras de áudio são comprimidos. Um MP4 pode, em teoria, transportar quase qualquer codec, mas na prática o ecossistema web trata o MP4 como um ficheiro H.264. WebM é construído especificamente para codecs livres de royalties - VP8 (raro em 2026), VP9 (mainstream) e AV1 (mais recente, maior compressão).</p>
 <p>Quando a decisão é enquadrada como "MP4 ou WebM", a decisão real é H.264 vs VP9 vs AV1 - que codec codificar. O contentor segue o codec. H.264 sai em MP4; VP9 e AV1 saem em WebM na web.</p>
 
@@ -24,12 +24,12 @@
 </table>
 </div>
 
-<br/><h2 class="text-uppercase"><b>Realidade do suporte dos navegadores em 2026</b></h2>
+<br/><h2 class="text-uppercase"><b>Realidade do suporte dos navegadores para MP4 e WebM em 2026</b></h2>
 <p><b>MP4/H.264</b> reproduz em 100% dos navegadores em circulação - Chrome, Firefox, Safari, Edge, cada WebView móvel. Tem reproduzido há uma década. Se um vídeo a reproduzir importa mais do que bytes poupados, envie H.264.</p>
 <p><b>WebM/VP9</b> reproduz em Chrome, Firefox, Edge, Opera e Safari (desde Safari 14, macOS Big Sur, 2020). Safari móvel em iOS 14+ suporta VP9. Uma audiência residual muito pequena em iPhones legados abaixo de iOS 14 não consegue descodificar VP9.</p>
 <p><b>WebM/AV1</b> reproduz em Chrome 70+, Firefox 67+ e Edge 75+. Safari adicionou suporte AV1 na 17.4 (2024). A descodificação AV1 por hardware requer silício relativamente novo - Intel 11a gen (Tiger Lake) ou mais recente, Apple M3 ou mais recente, AMD série 6000 ou mais recente. Dispositivos pré-2022 caem para descodificação por software, que drena bateria e pode perder frames em conteúdo 4K.</p>
 
-<br/><h2 class="text-uppercase"><b>O padrão de fallback &lt;source&gt;</b></h2>
+<br/><h2 class="text-uppercase"><b>O padrão de fallback &lt;source&gt; de MP4 e WebM</b></h2>
 <p>O padrão HTML5 vídeo canônico serve um codec recomendado que o navegador consegue descodificar e cai de volta pela lista:</p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>&lt;video controls preload="metadata" poster="cover.jpg"&gt;
   &lt;source src="clip.av1.webm" type="video/webm; codecs=av01.0.05M.08"&gt;
@@ -44,7 +44,7 @@
 <p><b>Decisão 2 - Vídeo herói de fundo num site de marketing a 1080p, loop de 15 segundos.</b> &rarr; <b>MP4 (H.264) + WebM (VP9)</b>. O ficheiro VP9 sai a ~60% do tamanho H.264, o que significa carregamento de página mais rápido para visitantes com ligações lentas. O ficheiro H.264 é o fallback para quem o navegador salta WebM. Tempo de codificação é pequeno (uma vez, clip de 15 segundos).</p>
 <p><b>Decisão 3 - Biblioteca de streaming de formato longo (serviço VOD, plataforma de cursos, vídeos de 30+ minutos).</b> &rarr; <b>AV1 (WebM) + VP9 (WebM) + H.264 (MP4)</b>. Os ficheiros AV1 poupam egress de CDN substancial em escala. Os ficheiros VP9 cobrem todos os navegadores modernos. Os ficheiros H.264 são o fallback universal. Codifique em hardware GPU ou pipeline em batch; o tempo de codificação AV1 10&times; maior importa quando a biblioteca tem milhares de vídeos.</p>
 
-<br/><h2 class="text-uppercase"><b>Receitas de codificação</b></h2>
+<br/><h2 class="text-uppercase"><b>Receitas de codificação MP4 e WebM</b></h2>
 <p>Receitas de codificação em MP4 vs WebM para web: mantenha uma escada CRF curta para MP4 H.264, exporte um gémeo WebM VP9 quando o peso importar, e nunca publique só WebM sem fallback MP4.</p>
 <p><b>VP9 (WebM) - melhor equilíbrio compressão/compatibilidade.</b> Use codificação em duas passagens para qualidade consistente a um bitrate alvo. <code>-c:v libvpx-vp9 -b:v 0 -crf 31 -row-mt 1 -c:a libopus -b:a 96k</code>. A flag <code>-row-mt 1</code> ativa multi-threading por linha que corta o tempo de codificação aproximadamente para metade em CPUs modernos.</p>
 <p><b>AV1 (WebM) - compressão máxima.</b> SVT-AV1 é o encoder em que a indústria assentou: <code>-c:v libsvtav1 -crf 35 -preset 6 -c:a libopus -b:a 96k</code>. Preset 6 é o equilíbrio padrão entre velocidade e compressão; presets inferiores (4, 5) favorecem a qualidade ao custo de codificações muito mais longas.</p>
@@ -53,7 +53,7 @@
 <p>Se a sua audiência é principalmente iOS &lt; 14, Android WebView mais antigo ou navegadores empresariais legados, WebM não oferece benefício - esses dispositivos vão cair na fonte H.264 de qualquer forma, e a codificação WebM é esforço desperdiçado. Se o vídeo for conteúdo gerado por utilizadores que os visualizadores frequentemente guardam, re-partilham ou editam, H.264 MP4 é o formato que as suas ferramentas esperam aceitar.</p>
 <p>Os clientes de email quase nunca renderizam <code>&lt;video&gt;</code> nativamente. Se o vídeo estiver numa newsletter, exporte um curto <b>GIF</b> animado ou uma ligação MP4 para uma landing page - nem WebM nem um tag vídeo HTML5 inline ajudam.</p>
 
-<br/><h2 class="text-uppercase"><b>Converter entre formatos</b></h2>
+<br/><h2 class="text-uppercase"><b>Converter entre formatos MP4 e WebM</b></h2>
 <p>Converter entre formatos para MP4 vs WebM para web: abra Video Converter, escolha o contentor alvo e confira o áudio - um WebM silencioso ainda precisa de um gémeo MP4 para usuários Safari.</p>
 
 <br/><h2 class="text-uppercase"><b>Ferramentas relacionadas</b></h2>

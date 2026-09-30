@@ -7,7 +7,7 @@
 
 <p class="lead">MP4 (H.264) và WebM (VP9/AV1) là hai định dạng video cho web. MP4 là tùy chọn mặc định chạy trên mọi trình duyệt; WebM tạo file nhỏ hơn 30-40% trên trình duyệt hiện đại với codec miễn phí bản quyền. Hướng dẫn này phân tích đánh đổi codec, hỗ trợ trình duyệt năm 2026 và ba quyết định sản xuất.</p>
 
-<br/><h2 class="text-uppercase"><b>Container vs codec - mỗi tệp thực sự chứa gì</b></h2>
+<br/><h2 class="text-uppercase"><b>Container vs codec - tệp MP4 và WebM thực sự chứa gì</b></h2>
 <p><b>Container</b> bọc video, audio và metadata vào một tệp duy nhất mà trình phát có thể đọc. MP4 (ISO base media) và WebM (một profile Matroska hạn chế) đều là container. <b>Codec</b> là cách pixel video và mẫu audio được nén. MP4 có thể, về lý thuyết, mang gần như bất kỳ codec nào, nhưng trong thực tế hệ sinh thái web coi MP4 là tệp H.264. WebM được xây dựng cho codec miễn phí bản quyền - VP8 (hiếm trong 2026), VP9 (chính thống), và AV1 (mới nhất, nén cao nhất).</p>
 <p>Khi quyết định được đặt là "MP4 hoặc WebM", quyết định thực sự là H.264 vs VP9 vs AV1 - mã hóa codec nào. Container theo codec. H.264 đi trong MP4; VP9 và AV1 đi trong WebM trên web.</p>
 
@@ -24,12 +24,12 @@
 </table>
 </div>
 
-<br/><h2 class="text-uppercase"><b>Thực tế hỗ trợ trình duyệt năm 2026</b></h2>
+<br/><h2 class="text-uppercase"><b>Thực tế hỗ trợ trình duyệt cho MP4 và WebM năm 2026</b></h2>
 <p><b>MP4/H.264</b> phát ở 100% trình duyệt đang chạy - Chrome, Firefox, Safari, Edge, mọi WebView di động. Đã như vậy một thập kỷ. Nếu việc video phát được quan trọng hơn byte tiết kiệm, gửi H.264.</p>
 <p><b>WebM/VP9</b> phát ở Chrome, Firefox, Edge, Opera, và Safari (từ Safari 14, macOS Big Sur, 2020). Safari di động trên iOS 14+ hỗ trợ VP9. Một khán giả còn lại rất nhỏ trên iPhone cũ dưới iOS 14 không thể giải mã VP9.</p>
 <p><b>WebM/AV1</b> phát ở Chrome 70+, Firefox 67+, và Edge 75+. Safari thêm hỗ trợ AV1 trong 17.4 (2024). Giải mã AV1 phần cứng yêu cầu silicon tương đối mới - Intel gen 11 (Tiger Lake) trở lên, Apple M3 trở lên, AMD serie 6000 trở lên. Thiết bị trước 2022 chuyển về giải mã phần mềm, ngược pin và có thể mất khung trên nội dung 4K.</p>
 
-<br/><h2 class="text-uppercase"><b>Mẫu fallback &lt;source&gt;</b></h2>
+<br/><h2 class="text-uppercase"><b>Mẫu fallback &lt;source&gt; của MP4 và WebM</b></h2>
 <p>Mẫu HTML5 video chính tắc phục vụ một codec được khuyến nghị mà trình duyệt có thể giải mã và chuyển xuống danh sách:</p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>&lt;video controls preload="metadata" poster="cover.jpg"&gt;
   &lt;source src="clip.av1.webm" type="video/webm; codecs=av01.0.05M.08"&gt;
@@ -44,7 +44,7 @@
 <p><b>Quyết định 2 - Video hero nền trên trang marketing 1080p, loop 15 giây.</b> &rarr; <b>MP4 (H.264) + WebM (VP9)</b>. Tệp VP9 đi ở ~60% kích thước H.264, nghĩa là tải trang nhanh hơn cho khách có kết nối chậm. Tệp H.264 là fallback cho ai trình duyệt bỏ qua WebM. Thời gian mã hóa nhỏ (một lần, clip 15 giây).</p>
 <p><b>Quyết định 3 - Thư viện streaming định dạng dài (dịch vụ VOD, nền tảng khóa học, video 30+ phút).</b> &rarr; <b>AV1 (WebM) + VP9 (WebM) + H.264 (MP4)</b>. Tệp AV1 tiết kiệm CDN egress đáng kể ở quy mô. Tệp VP9 phủ mọi trình duyệt hiện đại. Tệp H.264 là fallback phổ thông. Mã hóa trên phần cứng GPU hoặc pipeline batch; thời gian mã hóa AV1 10&times; quan trọng khi thư viện có hàng ngàn video.</p>
 
-<br/><h2 class="text-uppercase"><b>Công thức mã hóa</b></h2>
+<br/><h2 class="text-uppercase"><b>Công thức mã hóa MP4 và WebM</b></h2>
 <p>Công thức mã hóa trên MP4 vs WebM cho web: giữ thẳng CRF ngắn cho MP4 H.264, xuất bản sao WebM VP9 khi trọng lượng trang quan trọng, và đừng bao giờ chỉ xuất WebM mà không có fallback MP4.</p>
 <p><b>VP9 (WebM) - cân bằng nén/tương thích tốt nhất.</b> Dùng mã hóa hai lượt cho chất lượng nhất quán ở bitrate mục tiêu. <code>-c:v libvpx-vp9 -b:v 0 -crf 31 -row-mt 1 -c:a libopus -b:a 96k</code>. Cờ <code>-row-mt 1</code> kích hoạt multi-threading theo hàng cắt thời gian mã hóa khoảng một nửa trên CPU hiện đại.</p>
 <p><b>AV1 (WebM) - nén tối đa.</b> SVT-AV1 là encoder mà ngành công nghiệp đã chọn: <code>-c:v libsvtav1 -crf 35 -preset 6 -c:a libopus -b:a 96k</code>. Preset 6 là cân bằng mặc định giữa tốc độ và nén; preset thấp hơn (4, 5) ưu tiên chất lượng với giá mã hóa lâu hơn nhiều.</p>
@@ -53,7 +53,7 @@
 <p>Nếu khán giả chủ yếu là iOS &lt; 14, Android WebView cũ, hoặc trình duyệt doanh nghiệp cũ, WebM không cung cấp lợi ích - các thiết bị đó sẽ chuyển xuống nguồn H.264 dù sao, và mã hóa WebM là công sức lãng phí. Nếu video là nội dung do người dùng tạo mà người xem thường lưu, chia sẻ lại, hoặc chỉnh sửa, H.264 MP4 là định dạng công cụ của họ mong đợi chấp nhận.</p>
 <p>Các ứng dụng email hầu như không bao giờ render <code>&lt;video&gt;</code> bản địa. Nếu video ở trong bản tin email, xuất <b>GIF</b> động ngắn hoặc liên kết MP4 tới landing page - cả WebM lẫn tag video HTML5 inline đều không giúp.</p>
 
-<br/><h2 class="text-uppercase"><b>Chuyển đổi giữa các định dạng</b></h2>
+<br/><h2 class="text-uppercase"><b>Chuyển đổi giữa các định dạng MP4 và WebM</b></h2>
 <p>Chuyển đổi giữa các định dạng cho MP4 vs WebM cho web: mở Video Converter, chọn container đích, và kiểm tra lại âm thanh - WebM cạm vẫn cần bản sao MP4 cho người dùng Safari.</p>
 
 <br/><h2 class="text-uppercase"><b>Công cụ liên quan</b></h2>
