@@ -1026,6 +1026,7 @@ try {
     { title: "Image to ASCII Art Online", url: "https://freetoolonline.com/image-converter-tools/image-to-ascii-art.html", include: !1, tags: "image-conversion" },
     { title: "Fuel Cost Calculator", url: "https://freetoolonline.com/utility-tools/fuel-cost-calculator.html", include: !1, tags: "utility" },
     { title: "Ovulation Calculator", url: "https://freetoolonline.com/utility-tools/ovulation-calculator.html", include: !1, tags: "utility" },
+    { title: "Hourly to Salary Calculator", url: "https://freetoolonline.com/utility-tools/hourly-to-salary-calculator.html", include: !1, tags: "utility" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

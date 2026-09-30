@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/hourly-to-salary-calculator-vs-alternatives.html',
+  '/guides/hourly-to-salary-calculator-step-by-step.html',
+  '/guides/hourly-to-salary-calculator-when.html',
+  '/guides/pt/hourly-to-salary-calculator-step-by-step.html',
+  '/guides/pt/hourly-to-salary-calculator-when.html',
+  '/guides/pt/hourly-to-salary-calculator-vs-alternatives.html',
+  '/guides/es/hourly-to-salary-calculator-step-by-step.html',
+  '/guides/es/hourly-to-salary-calculator-when.html',
+  '/guides/es/hourly-to-salary-calculator-vs-alternatives.html',
+  '/guides/vi/hourly-to-salary-calculator-step-by-step.html',
+  '/guides/vi/hourly-to-salary-calculator-when.html',
+  '/guides/vi/hourly-to-salary-calculator-vs-alternatives.html',
+  '/guides/id/hourly-to-salary-calculator-step-by-step.html',
+  '/guides/id/hourly-to-salary-calculator-when.html',
+  '/guides/id/hourly-to-salary-calculator-vs-alternatives.html',
+  '/guides/de/hourly-to-salary-calculator-step-by-step.html',
+  '/guides/de/hourly-to-salary-calculator-when.html',
+  '/guides/de/hourly-to-salary-calculator-vs-alternatives.html',
   '/guides/ovulation-calculator-vs-alternatives.html',
   '/guides/ovulation-calculator-step-by-step.html',
   '/guides/ovulation-calculator-when.html',
@@ -17790,6 +17808,7 @@ export const ALIAS_ROUTES = {
   '/image-to-ascii-art.html': '/image-converter-tools/image-to-ascii-art.html',
   '/fuel-cost-calculator.html': '/utility-tools/fuel-cost-calculator.html',
   '/ovulation-calculator.html': '/utility-tools/ovulation-calculator.html',
+  '/hourly-to-salary-calculator.html': '/utility-tools/hourly-to-salary-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30466,6 +30485,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/ovulation-calculator-step-by-step.html': 'guide/de/ovulation-calculator-step-by-step.jsp',
   '/guides/de/ovulation-calculator-when.html': 'guide/de/ovulation-calculator-when.jsp',
   '/guides/de/ovulation-calculator-vs-alternatives.html': 'guide/de/ovulation-calculator-vs-alternatives.jsp',
+  '/utility-tools/hourly-to-salary-calculator.html': 'utility/hourly-to-salary-calculator.jsp',
+  '/guides/hourly-to-salary-calculator-when.html': 'guide/hourly-to-salary-calculator-when.jsp',
+  '/guides/hourly-to-salary-calculator-step-by-step.html': 'guide/hourly-to-salary-calculator-step-by-step.jsp',
+  '/guides/hourly-to-salary-calculator-vs-alternatives.html': 'guide/hourly-to-salary-calculator-vs-alternatives.jsp',
+  '/guides/pt/hourly-to-salary-calculator-step-by-step.html': 'guide/pt/hourly-to-salary-calculator-step-by-step.jsp',
+  '/guides/pt/hourly-to-salary-calculator-when.html': 'guide/pt/hourly-to-salary-calculator-when.jsp',
+  '/guides/pt/hourly-to-salary-calculator-vs-alternatives.html': 'guide/pt/hourly-to-salary-calculator-vs-alternatives.jsp',
+  '/guides/es/hourly-to-salary-calculator-step-by-step.html': 'guide/es/hourly-to-salary-calculator-step-by-step.jsp',
+  '/guides/es/hourly-to-salary-calculator-when.html': 'guide/es/hourly-to-salary-calculator-when.jsp',
+  '/guides/es/hourly-to-salary-calculator-vs-alternatives.html': 'guide/es/hourly-to-salary-calculator-vs-alternatives.jsp',
+  '/guides/vi/hourly-to-salary-calculator-step-by-step.html': 'guide/vi/hourly-to-salary-calculator-step-by-step.jsp',
+  '/guides/vi/hourly-to-salary-calculator-when.html': 'guide/vi/hourly-to-salary-calculator-when.jsp',
+  '/guides/vi/hourly-to-salary-calculator-vs-alternatives.html': 'guide/vi/hourly-to-salary-calculator-vs-alternatives.jsp',
+  '/guides/id/hourly-to-salary-calculator-step-by-step.html': 'guide/id/hourly-to-salary-calculator-step-by-step.jsp',
+  '/guides/id/hourly-to-salary-calculator-when.html': 'guide/id/hourly-to-salary-calculator-when.jsp',
+  '/guides/id/hourly-to-salary-calculator-vs-alternatives.html': 'guide/id/hourly-to-salary-calculator-vs-alternatives.jsp',
+  '/guides/de/hourly-to-salary-calculator-step-by-step.html': 'guide/de/hourly-to-salary-calculator-step-by-step.jsp',
+  '/guides/de/hourly-to-salary-calculator-when.html': 'guide/de/hourly-to-salary-calculator-when.jsp',
+  '/guides/de/hourly-to-salary-calculator-vs-alternatives.html': 'guide/de/hourly-to-salary-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
