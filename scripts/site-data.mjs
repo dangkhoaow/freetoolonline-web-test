@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/discount-calculator-vs-alternatives.html',
+  '/guides/discount-calculator-step-by-step.html',
+  '/guides/discount-calculator-when.html',
+  '/guides/pt/discount-calculator-step-by-step.html',
+  '/guides/pt/discount-calculator-when.html',
+  '/guides/pt/discount-calculator-vs-alternatives.html',
+  '/guides/es/discount-calculator-step-by-step.html',
+  '/guides/es/discount-calculator-when.html',
+  '/guides/es/discount-calculator-vs-alternatives.html',
+  '/guides/vi/discount-calculator-step-by-step.html',
+  '/guides/vi/discount-calculator-when.html',
+  '/guides/vi/discount-calculator-vs-alternatives.html',
+  '/guides/id/discount-calculator-step-by-step.html',
+  '/guides/id/discount-calculator-when.html',
+  '/guides/id/discount-calculator-vs-alternatives.html',
+  '/guides/de/discount-calculator-step-by-step.html',
+  '/guides/de/discount-calculator-when.html',
+  '/guides/de/discount-calculator-vs-alternatives.html',
   '/guides/hourly-to-salary-calculator-vs-alternatives.html',
   '/guides/hourly-to-salary-calculator-step-by-step.html',
   '/guides/hourly-to-salary-calculator-when.html',
@@ -17809,6 +17827,7 @@ export const ALIAS_ROUTES = {
   '/fuel-cost-calculator.html': '/utility-tools/fuel-cost-calculator.html',
   '/ovulation-calculator.html': '/utility-tools/ovulation-calculator.html',
   '/hourly-to-salary-calculator.html': '/utility-tools/hourly-to-salary-calculator.html',
+  '/discount-calculator.html': '/utility-tools/discount-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30506,6 +30525,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/hourly-to-salary-calculator-step-by-step.html': 'guide/de/hourly-to-salary-calculator-step-by-step.jsp',
   '/guides/de/hourly-to-salary-calculator-when.html': 'guide/de/hourly-to-salary-calculator-when.jsp',
   '/guides/de/hourly-to-salary-calculator-vs-alternatives.html': 'guide/de/hourly-to-salary-calculator-vs-alternatives.jsp',
+  '/utility-tools/discount-calculator.html': 'utility/discount-calculator.jsp',
+  '/guides/discount-calculator-when.html': 'guide/discount-calculator-when.jsp',
+  '/guides/discount-calculator-step-by-step.html': 'guide/discount-calculator-step-by-step.jsp',
+  '/guides/discount-calculator-vs-alternatives.html': 'guide/discount-calculator-vs-alternatives.jsp',
+  '/guides/pt/discount-calculator-step-by-step.html': 'guide/pt/discount-calculator-step-by-step.jsp',
+  '/guides/pt/discount-calculator-when.html': 'guide/pt/discount-calculator-when.jsp',
+  '/guides/pt/discount-calculator-vs-alternatives.html': 'guide/pt/discount-calculator-vs-alternatives.jsp',
+  '/guides/es/discount-calculator-step-by-step.html': 'guide/es/discount-calculator-step-by-step.jsp',
+  '/guides/es/discount-calculator-when.html': 'guide/es/discount-calculator-when.jsp',
+  '/guides/es/discount-calculator-vs-alternatives.html': 'guide/es/discount-calculator-vs-alternatives.jsp',
+  '/guides/vi/discount-calculator-step-by-step.html': 'guide/vi/discount-calculator-step-by-step.jsp',
+  '/guides/vi/discount-calculator-when.html': 'guide/vi/discount-calculator-when.jsp',
+  '/guides/vi/discount-calculator-vs-alternatives.html': 'guide/vi/discount-calculator-vs-alternatives.jsp',
+  '/guides/id/discount-calculator-step-by-step.html': 'guide/id/discount-calculator-step-by-step.jsp',
+  '/guides/id/discount-calculator-when.html': 'guide/id/discount-calculator-when.jsp',
+  '/guides/id/discount-calculator-vs-alternatives.html': 'guide/id/discount-calculator-vs-alternatives.jsp',
+  '/guides/de/discount-calculator-step-by-step.html': 'guide/de/discount-calculator-step-by-step.jsp',
+  '/guides/de/discount-calculator-when.html': 'guide/de/discount-calculator-when.jsp',
+  '/guides/de/discount-calculator-vs-alternatives.html': 'guide/de/discount-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
