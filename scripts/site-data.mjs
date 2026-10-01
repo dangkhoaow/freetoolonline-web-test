@@ -18104,6 +18104,8 @@ export const JSP_BY_ROUTE = {
   // Phase 16 Cycle B P16.G1 hub + P16.N11 + P16.N16.
   '/guides.html': 'utility/guides.jsp',
   '/guides/en/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/en/how-to-convert-heic-to-jpg-step-by-step.jsp',
+  // cycle 20261001-6: wire the locale JSP mappings for this guide (routes were list-registered 2026-07-29 but never JSP-mapped -> 404). JSP wrappers + CMS fragments already present.
+  '/guides/pt/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/pt/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/es/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/es/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/vi/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/vi/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/de/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/de/how-to-convert-heic-to-jpg-step-by-step.jsp',
   '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html': 'guide/en/what-an-lcd-test-does-and-when-to-run-one.jsp',
   // Cycle 20260517-6 create_new_guide_page - "ms to date" synonym-coverage guide.
   '/guides/en/ms-to-date.html': 'guide/en/ms-to-date.jsp',
