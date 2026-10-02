@@ -1028,6 +1028,7 @@ try {
     { title: "Ovulation Calculator", url: "https://freetoolonline.com/utility-tools/ovulation-calculator.html", include: !1, tags: "utility" },
     { title: "Hourly to Salary Calculator", url: "https://freetoolonline.com/utility-tools/hourly-to-salary-calculator.html", include: !1, tags: "utility" },
     { title: "Discount Calculator", url: "https://freetoolonline.com/utility-tools/discount-calculator.html", include: !1, tags: "utility" },
+    { title: "Time Card Calculator", url: "https://freetoolonline.com/utility-tools/time-card-calculator.html", include: !1, tags: "utility" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
