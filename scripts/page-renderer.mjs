@@ -326,6 +326,8 @@ const HOWTO_ROUTES = new Set([
   '/developer-tools/sort-text-lines.html',
   // geo-batch-123: remove-duplicate-lines has a 3-step <ol> in BODYHTML (extractHowToSteps fallback path)
   '/developer-tools/remove-duplicate-lines.html',
+  // 2026-10-02 video-merger rebuild: 5-step w3-pale-green "How to merge videos" panel in BODYHTML
+  '/video-tools/video-merger.html',
 ]);
 
 // P10.3.1 - Per-tool og:image differentiation (Phase 10 Cycle 4).

@@ -17362,6 +17362,9 @@ export const ALIAS_ROUTES = {
   '/photo-restoration.html': '/image-tools/photo-restoration.html',
   '/video-splitter.html': '/video-tools/video-splitter.html',
   '/video-merger.html': '/video-tools/video-merger.html',
+  // 2026-10-02 video-merger rebuild (operator session): head-term alias; CloudFront 301 twin
+  // patched into url-migration-301.js via patchCloudFront301().
+  '/merge-videos.html': '/video-tools/video-merger.html',
   '/json-to-typescript.html': '/developer-tools/json-to-typescript.html',
   '/html-to-markdown.html': '/developer-tools/html-to-markdown.html',
   '/wcag-contrast-checker.html': '/developer-tools/wcag-contrast-checker.html',
