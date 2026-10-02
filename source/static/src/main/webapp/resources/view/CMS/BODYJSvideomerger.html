@@ -63,6 +63,7 @@
         { v: 'crossfade', label: 'Crossfade' },
         { v: 'fade', label: 'Fade through black' }
     ];
+    var VM_ROTATIONS = [0, 90, 180, 270]; // degrees clockwise, per clip
     var VM_AUDIO_EXT_RE = /\.(mp3|wav|m4a|aac|flac|ogg|oga|opus|weba|wma|aif|aiff)$/i;
 
     /* Two tiny built-in demo clips (VP8 + Opus WebM, generated with ffmpeg) so a reader can
@@ -132,6 +133,23 @@
         return /AppleWebKit/.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|FxiOS|Android/.test(ua);
     }
     function vmOrientation(w, h) { return w > h ? 'landscape' : (h > w ? 'portrait' : 'square'); }
+    // The reader's rotation for a clip (degrees clockwise, applied on top of the file's own
+    // rotation metadata) and the clip's display size once that rotation is applied.
+    function vmRotOf(c) { return (c && c.rotate) || 0; }
+    function vmDispOf(c) {
+        var w = (c.info && c.info.displayW) || 0, h = (c.info && c.info.displayH) || 0;
+        return vmRotOf(c) % 180 ? { w: h, h: w } : { w: w, h: h };
+    }
+    // CanvasSink's rotation REPLACES the file's (default = file rotation), so a rotated clip asks
+    // for the total, clockwise; width/height are the size after turning. The file's flip is
+    // applied after rotation, so on a mirrored track the reader's turn is subtracted.
+    function vmSinkRotation(c, opts) {
+        var U = vmRotOf(c), R = c.info.rotation || 0;
+        if (U) opts.rotation = (((c.info.flip ? R - U : R + U) % 360) + 360) % 360;
+        return opts;
+    }
+    // FFmpeg filters that turn an already-upright frame by the reader's rotation.
+    function vmFfTurn(rot) { return rot === 90 ? 'transpose=1,' : (rot === 180 ? 'hflip,vflip,' : (rot === 270 ? 'transpose=2,' : '')); }
     function vmStdFps(f) {
         var std = [24, 25, 30, 48, 50, 60], best = 30, bestD = 1e9;
         if (!isFinite(f) || f <= 0) return 30;
@@ -262,7 +280,7 @@
     function vmNewInfo() {
         return {
             durationS: 0, firstTs: 0, hasVideo: false, hasAudio: false, vCodec: null, aCodec: null,
-            displayW: 0, displayH: 0, rotation: 0, fps: 30, hdr: false, canDecodeVideo: false,
+            displayW: 0, displayH: 0, rotation: 0, flip: false, fps: 30, hdr: false, canDecodeVideo: false,
             canDecodeAudio: false, sampleRate: 0, channels: 0, vSig: null, aSig: null,
             mbReadable: false, needsCompat: false, compatReason: ''
         };
@@ -284,6 +302,7 @@
         info.displayW = await v.getDisplayWidth();
         info.displayH = await v.getDisplayHeight();
         info.rotation = await v.getRotation();
+        try { info.flip = !!(await v.getFlip()); } catch (eF) { info.flip = false; }
         try { info.hdr = await v.hasHighDynamicRange(); } catch (e2) { info.hdr = false; }
         try {
             var frm = await v.computeFrameRateMetrics();
@@ -293,7 +312,7 @@
         }
         info.canDecodeVideo = vmHasWebCodecsVideo() ? !!(await v.canDecode().catch(function () { return false; })) : false;
         var vcfg = await v.getDecoderConfig().catch(function () { return null; });
-        info.vSig = vcfg ? { codec: vcfg.codec, w: vcfg.codedWidth, h: vcfg.codedHeight, desc: vmBytes(vcfg.description), rot: info.rotation } : null;
+        info.vSig = vcfg ? { codec: vcfg.codec, w: vcfg.codedWidth, h: vcfg.codedHeight, desc: vmBytes(vcfg.description), rot: info.rotation, flip: info.flip } : null;
         if (a) {
             info.hasAudio = true;
             info.aCodec = await a.getCodec();
@@ -394,10 +413,11 @@
         });
     }
 
+    // Fits a 160 x 160 box, so a thumbnail turned by "Rotate" still has enough pixels for the
+    // card's 160 x 96 slot (the card scales it down with max-width / max-height).
     function vmThumbSize(w, h) {
-        var tw = 160, th = Math.round(160 * h / Math.max(1, w));
-        if (th > 96) { th = 96; tw = Math.round(96 * w / Math.max(1, h)); }
-        return { w: vmEven(tw), h: vmEven(th) };
+        var k = 160 / Math.max(1, w, h);
+        return { w: vmEven(w * k), h: vmEven(h * k) };
     }
 
     async function vmMakeThumb(clip) {
@@ -445,7 +465,8 @@
                     await vmProbeClip(clip);
                     clip.kind = 'ready';
                     vmRenderStrip();
-                    clip.thumb = await vmMakeThumb(clip);
+                    clip.thumb0 = clip.thumb = await vmMakeThumb(clip);
+                    if (vmRotOf(clip) && clip.thumb0) await vmRotateThumb(clip); // rotated before its thumbnail arrived
                 } catch (e) {
                     clip.kind = 'error';
                     clip.error = (e && e.message) ? e.message : 'This file could not be read.';
@@ -481,8 +502,8 @@
             if (isAudio) { skipped.push(f.name); return; }
             vm.clips.push({
                 id: vm.nextId++, file: f, name: f.name || ('clip-' + vm.nextId), size: f.size,
-                url: URL.createObjectURL(f), kind: 'probing', info: null, thumb: null,
-                trimStart: 0, trimEnd: 0, muted: false, status: ''
+                url: URL.createObjectURL(f), kind: 'probing', info: null, thumb: null, thumb0: null,
+                trimStart: 0, trimEnd: 0, muted: false, rotate: 0, status: ''
             });
         });
         while (vm.gaps.length < Math.max(0, vm.clips.length - 1)) vm.gaps.push('none');
@@ -497,9 +518,10 @@
     function vmReleaseClip(c) {
         try { if (c.url) URL.revokeObjectURL(c.url); } catch (e) { /* ignore */ }
         try { if (c.thumb) URL.revokeObjectURL(c.thumb); } catch (e) { /* ignore */ }
-        if (c.strip) c.strip.urls.forEach(function (u) { try { if (u) URL.revokeObjectURL(u); } catch (e) { /* ignore */ } });
+        try { if (c.thumb0 && c.thumb0 !== c.thumb) URL.revokeObjectURL(c.thumb0); } catch (e) { /* ignore */ }
+        vmDropStrip(c);
         try { if (c.input && c.input.dispose) c.input.dispose(); } catch (e) { /* ignore */ }
-        c.url = null; c.thumb = null; c.strip = null; c.input = null; c.vTrack = null; c.aTrack = null; c.fullPcm = null;
+        c.url = null; c.thumb = null; c.thumb0 = null; c.input = null; c.vTrack = null; c.aTrack = null; c.fullPcm = null;
     }
 
     function vmIndexOf(id) {
@@ -585,7 +607,7 @@
         for (var g = 0; g < vm.gaps.length; g++) if (vm.gaps[g] !== 'none') return true;
         for (var i = 0; i < vm.clips.length; i++) {
             var c = vm.clips[i];
-            if (c.muted || c.trimStart > 0.001 || (c.info && c.trimEnd < c.info.durationS - 0.001)) return true;
+            if (c.muted || vmRotOf(c) || c.trimStart > 0.001 || (c.info && c.trimEnd < c.info.durationS - 0.001)) return true;
         }
         return false;
     }
@@ -602,7 +624,7 @@
             var b = clips[i].info;
             if (!b || !b.mbReadable || !b.vSig) return null;
             if (b.vCodec !== a.vCodec || b.vSig.codec !== a.vSig.codec || b.vSig.w !== a.vSig.w || b.vSig.h !== a.vSig.h) return null;
-            if (b.vSig.rot !== a.vSig.rot || !vmSameBytes(b.vSig.desc, a.vSig.desc)) return null;
+            if (b.vSig.rot !== a.vSig.rot || b.vSig.flip !== a.vSig.flip || !vmSameBytes(b.vSig.desc, a.vSig.desc)) return null;
             if (!!a.aSig !== !!b.aSig || a.hasAudio !== b.hasAudio) return null;
             if (a.aSig && (b.aCodec !== a.aCodec || b.aSig.codec !== a.aSig.codec || b.aSig.sr !== a.aSig.sr || b.aSig.ch !== a.aSig.ch || !vmSameBytes(b.aSig.desc, a.aSig.desc))) return null;
         }
@@ -610,13 +632,16 @@
             var okAudio = fam === 'mp4' ? ['aac', 'opus', 'mp3', 'flac', 'ac3', 'eac3'] : ['opus', 'vorbis'];
             if (okAudio.indexOf(a.aCodec) < 0) return null;
         }
+        // A WebM output cannot carry the clips' rotation / mirror transform, so such clips are
+        // re-encoded (turned in the pixels) rather than joined with their orientation lost.
+        if (fam === 'webm' && (a.vSig.rot || a.vSig.flip)) return null;
         return fam;
     }
 
     function vmGeometry(compat) {
-        var first = vm.clips[0].info;
+        var first = vmDispOf(vm.clips[0]); // "Original" follows the first clip as rotated
         var shortOf = function (c) { return Math.min(c.info.displayW || 0, c.info.displayH || 0) || 720; };
-        var aspect = vm.frame === 'original' ? ((first.displayW || 16) / (first.displayH || 9)) : VM_ASPECT[vm.frame];
+        var aspect = vm.frame === 'original' ? ((first.w || 16) / (first.h || 9)) : VM_ASPECT[vm.frame];
         var S;
         if (vm.quality === 'auto') {
             if (vm.frame === 'original') S = Math.min(shortOf(vm.clips[0]), VM_AUTO_MAX_SHORT);
@@ -689,7 +714,7 @@
         var s = 'Output: ' + fmt + ' (' + codecs + '), ' + p.W + 'x' + p.H + ', ' + p.F + ' fps';
         if (p.engine === 'webcodecs' && p.vcodec !== 'avc') s += ' - this browser cannot encode H.264';
         if (p.engine === 'ffmpeg') s += ' - compatibility mode (slower)' + (p.reason ? ': ' + p.reason : '');
-        if (p.remuxPossible && p.edited) s += '. These clips could be joined losslessly, but trimming, muting, transitions, music or a new frame shape or quality need a re-encode.';
+        if (p.remuxPossible && p.edited) s += '. These clips could be joined losslessly, but trimming, rotating, muting, transitions, music or a new frame shape or quality need a re-encode.';
         return s;
     }
 
@@ -700,6 +725,8 @@
     // ------------------------------------------------------------------ engine 1: lossless join
 
     async function vmRunRemux(plan, job) {
+        // Packet copy cannot turn pixels; vmIsEdited keeps rotated clips away from this engine.
+        if (vm.clips.some(vmRotOf)) throw new Error('Rotated clips need a re-encode.');
         var mb = await vmLoadMb();
         var clips = vm.clips.slice();
         var first = clips[0].info;
@@ -709,7 +736,7 @@
         });
         job.output = output;
         var vSrc = new mb.EncodedVideoPacketSource(first.vCodec);
-        output.addVideoTrack(vSrc, plan.container === 'mp4' && first.rotation ? { rotation: first.rotation } : {});
+        output.addVideoTrack(vSrc, plan.container === 'mp4' && (first.rotation || first.flip) ? { rotation: first.rotation || 0, flip: !!first.flip } : {});
         var aSrc = null;
         if (first.hasAudio) { aSrc = new mb.EncodedAudioPacketSource(first.aCodec); output.addAudioTrack(aSrc); }
         await output.start();
@@ -917,7 +944,7 @@
         var ts = [];
         var lo = info.firstTs + it.clip.trimStart, hi = info.firstTs + it.clip.trimEnd - 0.0005;
         for (var k = ks; k <= ke; k++) ts.push(vmClamp(lo + (k / F - it.start), lo, hi));
-        var dw = info.displayW || plan.W, dh = info.displayH || plan.H, opts, dx = 0, dy = 0;
+        var ds = vmDispOf(it.clip), dw = ds.w || plan.W, dh = ds.h || plan.H, opts, dx = 0, dy = 0;
         if (vm.fit === 'cover') {
             opts = { width: plan.W, height: plan.H, fit: 'cover', poolSize: 3 };
         } else {
@@ -926,6 +953,7 @@
             opts = { width: cw, height: ch, fit: 'fill', poolSize: 3 };
             dx = Math.round((plan.W - cw) / 2); dy = Math.round((plan.H - ch) / 2);
         }
+        vmSinkRotation(it.clip, opts);
         return { ks: ks, ke: ke, ts: ts, opts: opts, dx: dx, dy: dy, gen: null, last: null, done: false };
     }
 
@@ -938,7 +966,10 @@
         canvas.width = W; canvas.height = H;
         var ctx = canvas.getContext('2d', { alpha: false });
         var packets = 0;
-        var vSrc = new mb.CanvasSource(canvas, {
+        // Each frame goes to the encoder as its own bitmap snapshot. A VideoFrame made from a live
+        // OffscreenCanvas (CanvasSource) is not always a copy in Firefox, so drawing the next frame
+        // leaked into frames still queued in the encoder - stray black frames in the output.
+        var vSrc = new mb.VideoSampleSource({
             codec: plan.vcodec, bitrate: mb.QUALITY_HIGH, keyFrameInterval: 2, latencyMode: plan.latencyMode,
             onEncodedPacket: function () { packets++; }
         });
@@ -988,7 +1019,13 @@
                 if (k === fr.ke && fr.gen) { try { await fr.gen.return(); } catch (e) { /* ignore */ } fr.done = true; fr.last = null; }
             }
             ctx.globalAlpha = 1;
-            await vmWithTimeout(vSrc.add(T, 1 / F), VM_ENCODER_STALL_MS, 'The video encoder stopped responding.');
+            var snap = canvas.transferToImageBitmap ? canvas.transferToImageBitmap() : await createImageBitmap(canvas);
+            var sample = new mb.VideoSample(snap, { timestamp: T, duration: 1 / F });
+            try {
+                await vmWithTimeout(vSrc.add(sample), VM_ENCODER_STALL_MS, 'The video encoder stopped responding.');
+            } finally {
+                sample.close(); snap.close();
+            }
             // An encoder that accepts frames but never emits any (seen with some Safari H.264
             // settings) is caught here without slowing healthy encoders down.
             if (packets === 0 && k > 120 && performance.now() - started > VM_ENCODER_STALL_MS) {
@@ -1021,8 +1058,10 @@
             : 'scale=' + W + ':' + H + ':force_original_aspect_ratio=decrease,pad=' + W + ':' + H + ':(ow-iw)/2:(oh-ih)/2:color=black';
         tl.items.forEach(function (it, i) {
             var c = it.clip, d = vmNum(it.dur);
+            // FFmpeg already turns each input upright for its rotation metadata; the reader's
+            // rotation is added before scaling so letterbox / crop see the turned shape.
             var v = '[' + i + ':v:0]setpts=PTS-STARTPTS,trim=start=' + vmNum(c.trimStart) + ':end=' + vmNum(c.trimEnd) +
-                ',setpts=PTS-STARTPTS,' + scale + ',setsar=1,fps=' + F + ',format=yuv420p' +
+                ',setpts=PTS-STARTPTS,' + vmFfTurn(vmRotOf(c)) + scale + ',setsar=1,fps=' + F + ',format=yuv420p' +
                 ',tpad=stop_mode=clone:stop_duration=1,trim=duration=' + d;
             if (it.inType === 'fade') v += ',fade=t=in:st=0:d=' + vmNum(it.inLen / 2);
             if (it.outType === 'fade') v += ',fade=t=out:st=' + vmNum(it.dur - it.outLen / 2) + ':d=' + vmNum(it.outLen / 2);
@@ -1257,10 +1296,10 @@
     function vmCardMeta(c) {
         if (c.kind === 'probing') return c.status || 'Waiting...';
         if (c.kind === 'error') return c.error || 'Could not be read';
-        var info = c.info;
+        var info = c.info, ds = vmDispOf(c);
         var trimmed = c.trimStart > 0.001 || c.trimEnd < info.durationS - 0.001;
         var m = (trimmed ? 'Keeps ' + vmFmtTime(c.trimEnd - c.trimStart) + ' of ' + vmFmtTime(info.durationS) : vmFmtTime(info.durationS)) +
-            ' - ' + (info.displayW && info.displayH ? info.displayW + 'x' + info.displayH + ' ' + vmOrientation(info.displayW, info.displayH) : 'size unknown');
+            ' - ' + (ds.w && ds.h ? ds.w + 'x' + ds.h + ' ' + vmOrientation(ds.w, ds.h) : 'size unknown');
         if (info.hasAudio === false) m += ' - no sound';
         return m;
     }
@@ -1277,7 +1316,8 @@
         var dis = vm.job ? ' disabled' : '';
         var n = vm.clips.length;
         return '<div class="' + cls + '" data-id="' + c.id + '" role="listitem">' +
-            '<div class="vm-thumb" title="' + (c.kind === 'ready' ? 'Tap to trim, drag to reorder' : 'Drag to reorder') + '">' + thumb + '<span class="vm-idx">' + (i + 1) + '</span>' + (c.muted ? '<span class="vm-mutedtag">muted</span>' : '') + '</div>' +
+            '<div class="vm-thumb" title="' + (c.kind === 'ready' ? 'Tap to trim or rotate, drag to reorder' : 'Drag to reorder') + '">' + thumb + '<span class="vm-idx">' + (i + 1) + '</span>' +
+                (vmRotOf(c) ? '<span class="vm-rottag">rotated ' + vmRotOf(c) + '&deg;</span>' : '') + (c.muted ? '<span class="vm-mutedtag">muted</span>' : '') + '</div>' +
             '<div class="vm-name" title="' + vmEsc(c.name) + '">' + vmEsc(c.name) + '</div>' +
             '<div class="vm-meta">' + vmEsc(vmCardMeta(c)) + '</div>' + range +
             '<div class="vm-btns">' +
@@ -1438,8 +1478,25 @@
         vm.clips.forEach(vmReleaseClip);
         vm.clips = []; vm.gaps = [];
         vm.music = null;
+        vmResetSettings();
         vmHideError();
         vmRenderAll();
+    }
+
+    // "Start over" clears everything, settings included ("Merge again" is the way to keep them).
+    function vmResetSettings() {
+        vm.frame = 'original'; vm.fit = 'contain'; vm.quality = 'auto'; vm.transLen = 1;
+        vm.musicVolume = 0.8; vm.clipAudio = 'keep'; vm.clipAudioTouched = false; vm.musicLoop = true; vm.musicFade = true;
+        var set = function (sel, prop, val) { var el = document.querySelector(sel); if (el) el[prop] = val; };
+        set('#videoMergerTool input[name="vmFrame"][value="original"]', 'checked', true);
+        set('#videoMergerTool input[name="vmFit"][value="contain"]', 'checked', true);
+        set('#vmQuality', 'value', 'auto');
+        set('#vmTransLen', 'value', '1');
+        set('#vmAllTrans', 'value', 'none');
+        set('#vmMusicVol', 'value', '80');
+        set('#vmMusicVolTxt', 'textContent', '80%');
+        set('#vmMusicLoop', 'checked', true);
+        set('#vmMusicFade', 'checked', true);
     }
 
     function vmShowError(msg) {
@@ -1461,6 +1518,98 @@
 
     // ------------------------------------------------------------------ clip panel (trim + preview)
 
+    // ------------------------------------------------------------------ rotation (per clip, 90-degree steps)
+
+    // src is already upright for its own file rotation; returns it turned rot degrees clockwise.
+    function vmTurnedCanvas(src, srcW, srcH, rot) {
+        var cv = document.createElement('canvas');
+        cv.width = rot % 180 ? srcH : srcW;
+        cv.height = rot % 180 ? srcW : srcH;
+        var g = cv.getContext('2d');
+        g.translate(cv.width / 2, cv.height / 2);
+        g.rotate(rot * Math.PI / 180); // canvas angles are clockwise
+        g.drawImage(src, -srcW / 2, -srcH / 2, srcW, srcH);
+        return cv;
+    }
+
+    // Draws src into a dstW x dstH box filling it, cropping the overflow from the centre.
+    function vmDrawCover(g, src, srcW, srcH, dstW, dstH) {
+        var da = dstW / dstH, sx = 0, sy = 0, sw = srcW, sh = srcH;
+        if (srcW / srcH > da) { sw = srcH * da; sx = (srcW - sw) / 2; } else { sh = srcW / da; sy = (srcH - sh) / 2; }
+        g.drawImage(src, sx, sy, sw, sh, 0, 0, dstW, dstH);
+    }
+
+    function vmLoadImage(url) {
+        return new Promise(function (resolve, reject) {
+            var im = new Image();
+            im.onload = function () { resolve(im); };
+            im.onerror = function () { reject(new Error('image')); };
+            im.src = url;
+        });
+    }
+
+    // Card thumbnail for the clip's current rotation, turned from the unrotated original.
+    async function vmRotateThumb(c) {
+        var tok = c.thumbTok = (c.thumbTok || 0) + 1;
+        var rot = vmRotOf(c), base = c.thumb0, next = base;
+        if (rot && base) {
+            try {
+                var im = await vmLoadImage(base);
+                if (tok !== c.thumbTok) return;
+                var u = await vmCanvasToUrl(vmTurnedCanvas(im, im.naturalWidth, im.naturalHeight, rot));
+                if (tok !== c.thumbTok || !c.url) { URL.revokeObjectURL(u); return; }
+                next = u;
+            } catch (e) { next = base; }
+        }
+        var old = c.thumb;
+        c.thumb = next;
+        if (old && old !== base && old !== next) { try { URL.revokeObjectURL(old); } catch (e) { /* ignore */ } }
+    }
+
+    function vmDropStrip(c) {
+        var st = c.strip;
+        if (!st) return;
+        st.dead = true; // an in-flight generation for this strip stops and frees what it makes
+        st.urls.forEach(function (u) { try { if (u) URL.revokeObjectURL(u); } catch (e) { /* ignore */ } });
+        c.strip = null;
+    }
+
+    function vmSetRotate(c, deg) {
+        deg = ((deg % 360) + 360) % 360;
+        if (VM_ROTATIONS.indexOf(deg) < 0 || vmRotOf(c) === deg || vm.job) return;
+        c.rotate = deg;
+        vmDropStrip(c);
+        vmClearResult();
+        if (vm.selectedId === c.id) { vmPreviewLayout(c); vmSyncRotRadios(c); }
+        vmRenderStrip();
+        vmScheduleOutputLine();
+        vmRotateThumb(c).then(function () {
+            if (vmRotOf(c) !== deg || !c.url) return;
+            vmRenderStrip();
+            if (vm.selectedId === c.id) vmTlFrames(c);
+        });
+    }
+
+    function vmSyncRotRadios(c) {
+        var r = document.querySelectorAll('#vmRotBox input[name="vmRot"]');
+        for (var i = 0; i < r.length; i++) r[i].checked = (parseInt(r[i].value, 10) || 0) === vmRotOf(c);
+    }
+
+    // The preview element keeps the clip's own shape and is turned with CSS; its box is sized so
+    // the turned picture fits the stage.
+    function vmPreviewLayout(c) {
+        var v = vmEl('vmPreview'), wrap = vmEl('vmPreviewWrap');
+        if (!v || !wrap || !c) return;
+        var rot = vmRotOf(c), turned = rot % 180 !== 0;
+        var vw = c.info.displayW || v.videoWidth || 16, vh = c.info.displayH || v.videoHeight || 9;
+        var Wc = wrap.clientWidth || 560, Hc = wrap.clientHeight || 300;
+        var r = turned ? vh / vw : vw / vh;
+        var visW = Math.min(Wc, Hc * r), visH = visW / r;
+        v.style.width = Math.round(turned ? visH : visW) + 'px';
+        v.style.height = Math.round(turned ? visW : visH) + 'px';
+        v.style.transform = 'translate(-50%, -50%) rotate(' + rot + 'deg)';
+    }
+
     // The editor shows the whole clip as a strip of frames: two handles mark the part to keep,
     // the shaded ends are cut, and the playhead follows the preview. Trim values move in 0.1 s
     // steps (the precision shown everywhere) and snap to the clip's exact end.
@@ -1477,6 +1626,8 @@
         vm.selectedId = id;
         p.hidden = false;
         vmEl('vmPanelName').textContent = (vmIndexOf(id) + 1) + '. ' + c.name;
+        vmSyncRotRadios(c);
+        vmPreviewLayout(c);
         if (!same) {
             vmTl.drag = null;
             vmTl.shown = c.trimStart;
@@ -1596,8 +1747,8 @@
     function vmTlFrames(c) {
         var box = vmEl('vmTlFrames'), tr = vmEl('vmTlTrack');
         var w = Math.max(120, tr.clientWidth || 600), h = Math.max(24, tr.clientHeight || 56);
-        var ar = c.info.displayW && c.info.displayH ? c.info.displayW / c.info.displayH : 16 / 9;
-        if (!c.strip) c.strip = { n: vmClamp(Math.round(w / Math.max(24, h * ar)), 4, 16), urls: [], busy: false, done: false };
+        var ds = vmDispOf(c), ar = ds.w && ds.h ? ds.w / ds.h : 16 / 9;
+        if (!c.strip) c.strip = { n: vmClamp(Math.round(w / Math.max(24, h * ar)), 4, 16), urls: [], busy: false, done: false, dead: false };
         var html = '';
         for (var k = 0; k < c.strip.n; k++) {
             var u = c.strip.urls[k] || c.thumb;
@@ -1614,7 +1765,7 @@
     }
 
     async function vmMakeStrip(c, w, h) {
-        var st = c.strip, info = c.info, n = st.n;
+        var st = c.strip, info = c.info, n = st.n, rot = vmRotOf(c);
         st.busy = true;
         var dpr = Math.min(2, window.devicePixelRatio || 1);
         var sw = vmEven(Math.ceil(w / n * dpr)), sh = vmEven(Math.ceil(h * dpr));
@@ -1623,13 +1774,13 @@
         try {
             if (c.vTrack && info.canDecodeVideo && vm.mb) {
                 try {
-                    var sink = new vm.mb.CanvasSink(c.vTrack, { width: sw, height: sh, fit: 'cover' });
+                    var sink = new vm.mb.CanvasSink(c.vTrack, vmSinkRotation(c, { width: sw, height: sh, fit: 'cover' }));
                     var i = 0;
                     for await (var wc of sink.canvasesAtTimestamps(ts.map(function (t) { return info.firstTs + t; }))) {
-                        if (!c.url) return;
+                        if (!c.url || st.dead) return;
                         if (wc && wc.canvas) {
                             var u = await vmCanvasToUrl(wc.canvas);
-                            if (!c.url) { URL.revokeObjectURL(u); return; }
+                            if (!c.url || st.dead) { URL.revokeObjectURL(u); return; }
                             st.urls[i] = u;
                             vmTlPaintFrame(c, i);
                         }
@@ -1637,13 +1788,13 @@
                     }
                 } catch (e) { /* fall back to the video element */ }
             }
-            if (c.url && st.urls.filter(Boolean).length < n) await vmStripFromVideoEl(c, st, ts, sw, sh);
+            if (c.url && !st.dead && st.urls.filter(Boolean).length < n) await vmStripFromVideoEl(c, st, ts, sw, sh, rot);
         } finally {
             st.busy = false; st.done = true;
         }
     }
 
-    function vmStripFromVideoEl(c, st, ts, sw, sh) {
+    function vmStripFromVideoEl(c, st, ts, sw, sh, rot) {
         return new Promise(function (resolve) {
             var el = document.createElement('video'), k = -1, done = false, timer = 0;
             var cv = document.createElement('canvas'); cv.width = sw; cv.height = sh;
@@ -1652,7 +1803,7 @@
             function next() {
                 k++;
                 while (k < ts.length && st.urls[k]) k++;
-                if (k >= ts.length || !c.url) { fin(); return; }
+                if (k >= ts.length || !c.url || st.dead) { fin(); return; }
                 clearTimeout(timer); timer = setTimeout(fin, 6000);
                 try { el.currentTime = ts[k]; } catch (e) { fin(); }
             }
@@ -1661,12 +1812,12 @@
             el.onseeked = function () {
                 var kk = k;
                 try {
-                    var vw = el.videoWidth, vh = el.videoHeight, da = sw / sh;
-                    var cw = vw, ch = vh, sx = 0, sy = 0;
-                    if (vw / vh > da) { cw = vh * da; sx = (vw - cw) / 2; } else { ch = vw / da; sy = (vh - ch) / 2; }
-                    g.drawImage(el, sx, sy, cw, ch, 0, 0, sw, sh);
+                    // The element shows the frame upright for the file's own rotation; the
+                    // reader's rotation is added on a canvas.
+                    var src = rot ? vmTurnedCanvas(el, el.videoWidth, el.videoHeight, rot) : el;
+                    vmDrawCover(g, src, rot ? src.width : el.videoWidth, rot ? src.height : el.videoHeight, sw, sh);
                     vmCanvasToUrl(cv).then(function (u) {
-                        if (!c.url) { URL.revokeObjectURL(u); fin(); return; }
+                        if (!c.url || st.dead) { URL.revokeObjectURL(u); fin(); return; }
                         st.urls[kk] = u; vmTlPaintFrame(c, kk); next();
                     }, next);
                 } catch (e) { next(); }
@@ -1800,6 +1951,7 @@
         vmTl.seeking = false; vmTl.pending = null; vmTl.ready = false;
         v.onerror = function () { note.textContent = 'Preview is not available for this clip in this browser - it will still be merged.'; vmTlPlayIcon(); };
         v.onloadedmetadata = function () {
+            vmPreviewLayout(c);
             vmTl.ready = true;
             vmTl.pending = vmTl.shown;
             vmTlSeekNow(v);
@@ -1815,14 +1967,13 @@
             if (vmTl.ready && !vmTl.drag && !vmTl.seeking && vmTl.pending == null) vmTlHead(v.currentTime);
         };
         v.onended = v.onpause;
-        v.onclick = function () { vmTlPlayToggle(false); };
         v.src = c.url;
         vmTlPlayIcon();
     }
 
     // ------------------------------------------------------------------ drag to reorder (mouse + touch)
 
-    var vmDrag = null, vmDragEndedAt = 0;
+    var vmDrag = null, vmDragEndedAt = -Infinity; // never dragged: no tap is suppressed
     // Cards wrap in rows on wide screens and stack in one column on phones, so "before/after"
     // is decided horizontally or vertically to match the layout.
     function vmDragTarget(x, y) {
@@ -1899,12 +2050,19 @@
                 '<div class="vm-drop-sub">MP4, MOV, WebM, MKV and more - files stay on your device. <a href="#" id="vmSamples">Try two sample clips</a></div>' +
             '</div>' +
             '<div id="vmFlash" class="vm-flash" hidden></div>' +
-            '<div class="vm-row-head"><b>Clips</b> <span id="vmCount" class="vm-muted"></span><span class="vm-muted vm-reorder-hint">Drag a thumbnail or use the arrows to change the order. Tap a clip to trim it.</span></div>' +
+            '<div class="vm-row-head"><b>Clips</b> <span id="vmCount" class="vm-muted"></span><span class="vm-muted vm-reorder-hint">Drag a thumbnail or use the arrows to change the order. Tap a clip to trim or rotate it.</span></div>' +
             '<div id="vmStrip" class="vm-strip" role="list"></div>' +
             '<div id="vmClipPanel" class="vm-panel" hidden>' +
                 '<div class="vm-panel-head"><b id="vmPanelName"></b> <button type="button" id="vmPanelClose" class="w3-button w3-small w3-light-grey">Done</button></div>' +
-                '<video id="vmPreview" class="vm-preview" playsinline preload="auto"></video>' +
+                '<div id="vmPreviewWrap" class="vm-preview-wrap"><video id="vmPreview" class="vm-preview" playsinline preload="auto"></video></div>' +
                 '<div id="vmPreviewNote" class="vm-muted"></div>' +
+                '<div id="vmRotBox" class="vm-rot" role="radiogroup" aria-label="Rotate this clip clockwise">' +
+                    '<span class="vm-rot-label">Rotate</span>' +
+                    VM_ROTATIONS.map(function (d) {
+                        return '<label class="vm-pill vm-rot-pill"><input type="radio" class="vm-lockable" name="vmRot" value="' + d + '"' + (d ? '' : ' checked') + '> ' + d + '&deg;</label>';
+                    }).join('') +
+                    '<span class="vm-muted">clockwise</span>' +
+                '</div>' +
                 '<div id="vmTrimBox" class="vm-trim">' +
                     '<div class="vm-tl-bar">' +
                         '<span id="vmTlCur" class="vm-tl-cur">0:00.0</span>' +
@@ -2062,12 +2220,25 @@
             if (!c || vm.job) return;
             vmSetTrim(c, 0, c.info.durationS, 'both');
         });
+        // The whole stage toggles playback, including the black bars beside a portrait or turned picture.
+        vmEl('vmPreviewWrap').addEventListener('click', function () { vmTlPlayToggle(false); });
+        vmEl('vmRotBox').addEventListener('change', function (e) {
+            if (e.target.name !== 'vmRot') return;
+            var c = vmClipById(vm.selectedId);
+            if (c) vmSetRotate(c, parseInt(e.target.value, 10) || 0);
+        });
         if (window.ResizeObserver) {
             var tlW = 0;
             new ResizeObserver(function () {
                 var c = vmClipById(vm.selectedId), w = vmEl('vmTlTrack').clientWidth;
                 if (c && w && Math.abs(w - tlW) > 2) { tlW = w; vmTlRuler(c); }
             }).observe(vmEl('vmTlTrack'));
+            new ResizeObserver(function () {
+                var c = vmClipById(vm.selectedId);
+                if (c) vmPreviewLayout(c);
+            }).observe(vmEl('vmPreviewWrap'));
+        } else {
+            window.addEventListener('resize', function () { var c = vmClipById(vm.selectedId); if (c) vmPreviewLayout(c); });
         }
 
         root.addEventListener('change', function (e) {
