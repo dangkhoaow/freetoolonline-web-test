@@ -497,8 +497,9 @@
     function vmReleaseClip(c) {
         try { if (c.url) URL.revokeObjectURL(c.url); } catch (e) { /* ignore */ }
         try { if (c.thumb) URL.revokeObjectURL(c.thumb); } catch (e) { /* ignore */ }
+        if (c.strip) c.strip.urls.forEach(function (u) { try { if (u) URL.revokeObjectURL(u); } catch (e) { /* ignore */ } });
         try { if (c.input && c.input.dispose) c.input.dispose(); } catch (e) { /* ignore */ }
-        c.url = null; c.thumb = null; c.input = null; c.vTrack = null; c.aTrack = null; c.fullPcm = null;
+        c.url = null; c.thumb = null; c.strip = null; c.input = null; c.vTrack = null; c.aTrack = null; c.fullPcm = null;
     }
 
     function vmIndexOf(id) {
@@ -1157,12 +1158,16 @@
         if (vm.job) return;
         vmHideError();
         var job = { cancelled: false, hidden: false, output: null };
+        // Claim the job before the first await: planning reads the trims and settings, and the
+        // engines keep reading them, so edits (or a second click) must be locked out from here.
+        vm.job = job;
+        vmSetBusy(true, null);
         var plan;
         try {
             plan = await vmPlan(false);
-        } catch (e) { vmShowError(e && e.message ? e.message : String(e)); return; }
-        if (!(await vmEstimateOk(plan))) return;
-        vm.job = job;
+            if (!(await vmEstimateOk(plan))) { vm.job = null; vmSetBusy(false); return; }
+        } catch (e) { vm.job = null; vmSetBusy(false); vmShowError(job.cancelled ? 'Merge cancelled.' : (e && e.message ? e.message : String(e))); return; }
+        if (job.cancelled) { vm.job = null; vmSetBusy(false); vmShowError('Merge cancelled.'); return; }
         vmClearResult();
         vmSetBusy(true, plan.engine);
         vmWakeLock();
@@ -1249,27 +1254,32 @@
 
     // ------------------------------------------------------------------ rendering
 
+    function vmCardMeta(c) {
+        if (c.kind === 'probing') return c.status || 'Waiting...';
+        if (c.kind === 'error') return c.error || 'Could not be read';
+        var info = c.info;
+        var trimmed = c.trimStart > 0.001 || c.trimEnd < info.durationS - 0.001;
+        var m = (trimmed ? 'Keeps ' + vmFmtTime(c.trimEnd - c.trimStart) + ' of ' + vmFmtTime(info.durationS) : vmFmtTime(info.durationS)) +
+            ' - ' + (info.displayW && info.displayH ? info.displayW + 'x' + info.displayH + ' ' + vmOrientation(info.displayW, info.displayH) : 'size unknown');
+        if (info.hasAudio === false) m += ' - no sound';
+        return m;
+    }
+
     function vmCardHtml(c, i) {
         var cls = 'vm-card' + (vm.selectedId === c.id ? ' vm-selected' : '') + (c.kind === 'error' ? ' vm-err' : '');
         var thumb;
         if (c.thumb) thumb = '<img src="' + c.thumb + '" alt="" draggable="false">';
         else if (c.kind === 'probing') thumb = '<span class="vm-spin" aria-hidden="true"></span>';
         else thumb = '<span class="vm-film" aria-hidden="true">&#9654;</span>';
-        var meta;
-        if (c.kind === 'probing') meta = c.status || 'Waiting...';
-        else if (c.kind === 'error') meta = c.error || 'Could not be read';
-        else {
-            var info = c.info;
-            meta = vmFmtTime(c.trimEnd - c.trimStart) + (c.trimStart > 0.001 || c.trimEnd < info.durationS - 0.001 ? ' (trimmed)' : '') +
-                ' - ' + (info.displayW && info.displayH ? info.displayW + 'x' + info.displayH + ' ' + vmOrientation(info.displayW, info.displayH) : 'size unknown');
-            if (info.hasAudio === false) meta += ' - no sound';
-        }
+        // Kept part of the clip at a glance; tapping it opens the trim editor.
+        var range = c.kind === 'ready' ? '<div class="vm-range" data-act="trim" title="Choose the part of this clip to keep">' +
+            '<span class="vm-range-kept" style="left:' + vmPct(c.trimStart, c.info.durationS) + ';width:' + vmPct(c.trimEnd - c.trimStart, c.info.durationS) + '"></span></div>' : '';
         var dis = vm.job ? ' disabled' : '';
         var n = vm.clips.length;
         return '<div class="' + cls + '" data-id="' + c.id + '" role="listitem">' +
-            '<div class="vm-thumb" title="Drag to reorder">' + thumb + '<span class="vm-idx">' + (i + 1) + '</span>' + (c.muted ? '<span class="vm-mutedtag">muted</span>' : '') + '</div>' +
+            '<div class="vm-thumb" title="' + (c.kind === 'ready' ? 'Tap to trim, drag to reorder' : 'Drag to reorder') + '">' + thumb + '<span class="vm-idx">' + (i + 1) + '</span>' + (c.muted ? '<span class="vm-mutedtag">muted</span>' : '') + '</div>' +
             '<div class="vm-name" title="' + vmEsc(c.name) + '">' + vmEsc(c.name) + '</div>' +
-            '<div class="vm-meta">' + vmEsc(meta) + '</div>' +
+            '<div class="vm-meta">' + vmEsc(vmCardMeta(c)) + '</div>' + range +
             '<div class="vm-btns">' +
                 '<button type="button" data-act="left" aria-label="Move left" title="Move left"' + (i === 0 ? ' disabled' : dis) + '>&#9664;</button>' +
                 '<button type="button" data-act="right" aria-label="Move right" title="Move right"' + (i === n - 1 ? ' disabled' : dis) + '>&#9654;</button>' +
@@ -1298,14 +1308,17 @@
         }
         var pn = vmEl('vmPanelName'), sel = vmClipById(vm.selectedId);
         if (pn && sel) pn.textContent = (vmIndexOf(sel.id) + 1) + '. ' + sel.name;
-        var count = vmEl('vmCount');
-        if (count) {
-            var ready = vm.clips.filter(function (c) { return c.kind === 'ready'; });
-            var total = 0;
-            if (ready.length === vm.clips.length && vm.clips.length) total = vmTimeline().total;
-            count.textContent = vm.clips.length ? (vm.clips.length + ' clip' + (vm.clips.length > 1 ? 's' : '') + (total ? ' - merged length about ' + vmFmtTime(total) : '')) : '';
-        }
+        vmRenderCount();
         vmUpdateButtons();
+    }
+
+    function vmRenderCount() {
+        var count = vmEl('vmCount');
+        if (!count) return;
+        var ready = vm.clips.filter(function (c) { return c.kind === 'ready'; });
+        var total = 0;
+        if (ready.length === vm.clips.length && vm.clips.length) total = vmTimeline().total;
+        count.textContent = vm.clips.length ? (vm.clips.length + ' clip' + (vm.clips.length > 1 ? 's' : '') + (total ? ' - merged length about ' + vmFmtTime(total) : '')) : '';
     }
 
     function vmRenderMusic() {
@@ -1369,12 +1382,17 @@
             vmEl('vmProgressTxt').textContent = 'Starting...';
             vmEl('vmHiddenWarn').hidden = true;
             badge.textContent = vmEngineLabel(engine);
-            badge.hidden = false;
+            badge.hidden = !badge.textContent;
         } else {
             prog.hidden = true;
         }
         var ctl = document.querySelectorAll('#videoMergerTool .vm-lockable');
         for (var i = 0; i < ctl.length; i++) ctl[i].disabled = !!busy;
+        // Trim edits during a merge would change clips the running job is still reading.
+        var tl = vmEl('vmTl');
+        if (tl) tl.classList.toggle('vm-tl-locked', !!busy);
+        var sel = vmClipById(vm.selectedId);
+        if (sel && tl && !vmEl('vmClipPanel').hidden) vmTlLayout(sel);
         vmRenderStrip();
     }
 
@@ -1385,17 +1403,25 @@
         vm.result = { url: url };
         var summary = 'Merged ' + vm.clips.length + ' clips - ' + vmFmtTime(res.durationS) + ' - ' +
             (res.W && res.H ? res.W + 'x' + res.H + ' - ' : '') + vmFmtBytes(res.blob.size) + ' - ' + vmEngineLabel(plan.engine);
+        // Actions come first so they are on screen as soon as the merge ends; the preview below
+        // gets its aspect ratio up front, so the layout does not jump when its metadata loads.
+        var ratio = res.W && res.H ? ' style="aspect-ratio:' + res.W + ' / ' + res.H + '"' : '';
         vmEl('vmResult').innerHTML =
             '<div class="vm-result-box">' +
-                '<video class="vm-result-video" controls playsinline preload="metadata" src="' + url + '"></video>' +
-                '<p class="vm-summary">' + vmEsc(summary) + '</p>' +
-                '<a id="vmDownload" class="w3-button w3-blue imgOutDownBtn" href="' + url + '" download="' + name + '" style="visibility:visible;opacity:1">Download merged video</a> ' +
-                '<button type="button" id="vmAgain" class="w3-button w3-light-grey w3-border">Merge again</button> ' +
-                '<button type="button" id="vmStartOver" class="w3-button w3-light-grey w3-border">Start over</button>' +
+                '<p class="vm-summary"><b>Your merged video is ready.</b> ' + vmEsc(summary) + '</p>' +
+                '<div class="vm-result-actions">' +
+                    // Not the site's .imgOutDownBtn: that class is an absolute hover overlay for
+                    // image thumbnails and stretched this link over the whole tool.
+                    '<a id="vmDownload" class="w3-button w3-blue vm-download" href="' + url + '" download="' + name + '">Download merged video</a>' +
+                    '<button type="button" id="vmAgain" class="w3-button w3-light-grey w3-border">Merge again</button>' +
+                    '<button type="button" id="vmStartOver" class="w3-button w3-light-grey w3-border">Start over</button>' +
+                '</div>' +
+                '<video class="vm-result-video" controls playsinline preload="metadata" src="' + url + '"' + ratio + '></video>' +
             '</div>';
         vmEl('vmAgain').addEventListener('click', function () { vmClearResult(); vmEl('vmSettings').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
         vmEl('vmStartOver').addEventListener('click', vmStartOver);
-        vmEl('vmResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        var box = vmEl('vmResult').firstChild;
+        try { box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) { box.scrollIntoView(false); }
     }
 
     function vmClearResult() {
@@ -1435,76 +1461,368 @@
 
     // ------------------------------------------------------------------ clip panel (trim + preview)
 
+    // The editor shows the whole clip as a strip of frames: two handles mark the part to keep,
+    // the shaded ends are cut, and the playhead follows the preview. Trim values move in 0.1 s
+    // steps (the precision shown everywhere) and snap to the clip's exact end.
+    var VM_TRIM_STEP = 0.1;
+    var vmTl = { drag: null, shown: 0, seeking: false, seekAt: 0, pending: null, raf: 0, ready: false };
+
+    function vmPct(t, d) { return (vmClamp(d > 0 ? t / d : 0, 0, 1) * 100).toFixed(3) + '%'; }
+
     function vmOpenPanel(id, mode) {
         var c = vmClipById(id);
         if (!c || c.kind !== 'ready') return;
-        vm.selectedId = id;
         var p = vmEl('vmClipPanel');
+        var same = vm.selectedId === id && !p.hidden;
+        vm.selectedId = id;
         p.hidden = false;
         vmEl('vmPanelName').textContent = (vmIndexOf(id) + 1) + '. ' + c.name;
-        var s = vmEl('vmTrimStart'), e = vmEl('vmTrimEnd'), d = c.info.durationS;
-        s.max = e.max = String(Math.max(0.1, Math.floor(d * 10) / 10));
-        s.value = String(c.trimStart); e.value = String(c.trimEnd);
-        vmTrimLabels(c);
-        vmEl('vmTrimBox').hidden = mode !== 'trim' && mode !== 'both';
-        vmPreview(c);
+        if (!same) {
+            vmTl.drag = null;
+            vmTl.shown = c.trimStart;
+            vmPreview(c);
+        }
+        // Called inside the click, so phones allow playback with sound.
+        if (mode === 'preview') vmTlPlayToggle(true);
+        vmTlLayout(c);
+        vmTlRuler(c);
+        vmTlFrames(c);
         vmRenderStrip();
+        try { p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) { p.scrollIntoView(false); }
+        if (mode === 'trim') { try { vmEl('vmTlStart').focus({ preventScroll: true }); } catch (e2) { /* ignore */ } }
     }
 
     function vmClosePanel() {
+        var id = vm.selectedId;
         vm.selectedId = null;
+        vmTl.drag = null; vmTl.pending = null; vmTl.seeking = false; vmTl.ready = false;
+        if (vmTl.raf) { cancelAnimationFrame(vmTl.raf); vmTl.raf = 0; }
         var p = vmEl('vmClipPanel');
         if (p) p.hidden = true;
         var v = vmEl('vmPreview');
         if (v) { try { v.pause(); } catch (e) { /* ignore */ } v.removeAttribute('src'); try { v.load(); } catch (e2) { /* ignore */ } }
         vmRenderStrip();
+        var card = id == null ? null : document.querySelector('#vmStrip .vm-card[data-id="' + id + '"]');
+        if (card) { try { card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e3) { /* ignore */ } }
     }
 
-    function vmTrimLabels(c) {
-        vmEl('vmTrimStartTxt').textContent = vmFmtTime(c.trimStart);
-        vmEl('vmTrimEndTxt').textContent = vmFmtTime(c.trimEnd);
-        vmEl('vmTrimLen').textContent = 'Clip length after trim: ' + vmFmtTime(c.trimEnd - c.trimStart);
+    // Applies a new trim range. which = 'start' | 'end' | 'both'.
+    function vmSetTrim(c, s, e, which) {
+        var d = c.info.durationS;
+        function q(t) { return t >= d - 0.001 ? d : Math.round(t / VM_TRIM_STEP) * VM_TRIM_STEP; }
+        s = vmClamp(q(vmClamp(s, 0, d)), 0, d);
+        e = vmClamp(q(vmClamp(e, 0, d)), 0, d);
+        if (d <= VM_MIN_CLIP_S) { s = 0; e = d; }
+        else if (which === 'start') s = vmClamp(s, 0, Math.max(0, e - VM_MIN_CLIP_S));
+        else if (which === 'end') e = vmClamp(e, Math.min(d, s + VM_MIN_CLIP_S), d);
+        else { s = vmClamp(s, 0, Math.max(0, d - VM_MIN_CLIP_S)); e = vmClamp(e, Math.min(d, s + VM_MIN_CLIP_S), d); }
+        if (Math.abs(s - c.trimStart) < 1e-6 && Math.abs(e - c.trimEnd) < 1e-6) return false;
+        c.trimStart = s; c.trimEnd = e;
+        if (vm.selectedId === c.id) vmTlLayout(c);
+        vmCardSync(c);
+        vmClearResult();
+        vmRenderCount();
+        vmScheduleOutputLine();
+        return true;
     }
 
-    function vmOnTrimInput(which) {
+    // Updates one card in place (meta line + kept-range bar) so dragging never rebuilds the strip.
+    function vmCardSync(c) {
+        var card = document.querySelector('#vmStrip .vm-card[data-id="' + c.id + '"]');
+        if (!card) return;
+        var meta = card.querySelector('.vm-meta');
+        if (meta) meta.textContent = vmCardMeta(c);
+        var kept = card.querySelector('.vm-range-kept');
+        if (kept) { kept.style.left = vmPct(c.trimStart, c.info.durationS); kept.style.width = vmPct(c.trimEnd - c.trimStart, c.info.durationS); }
+    }
+
+    function vmTlLayout(c) {
+        var d = c.info.durationS, s = c.trimStart, e = c.trimEnd;
+        vmEl('vmTlShadeL').style.width = vmPct(s, d);
+        var r = vmEl('vmTlShadeR');
+        r.style.left = vmPct(e, d); r.style.width = vmPct(d - e, d);
+        var sel = vmEl('vmTlSel');
+        sel.style.left = vmPct(s, d); sel.style.width = vmPct(e - s, d);
+        vmEl('vmTlStart').style.left = vmPct(s, d);
+        vmEl('vmTlEnd').style.left = vmPct(e, d);
+        vmTlAria(vmEl('vmTlStart'), s, 0, Math.max(0, e - VM_MIN_CLIP_S));
+        vmTlAria(vmEl('vmTlEnd'), e, Math.min(d, s + VM_MIN_CLIP_S), d);
+        vmEl('vmTrimStartTxt').textContent = vmFmtTime(s);
+        vmEl('vmTrimEndTxt').textContent = vmFmtTime(e);
+        vmEl('vmTrimLen').textContent = 'Keeps ' + vmFmtTime(e - s) + ' of ' + vmFmtTime(d);
+        vmEl('vmTlDur').textContent = vmFmtTime(d);
+        vmTlHead(vmTl.shown);
+    }
+
+    function vmTlAria(el, v, lo, hi) {
+        el.setAttribute('aria-valuemin', lo.toFixed(1));
+        el.setAttribute('aria-valuemax', hi.toFixed(1));
+        el.setAttribute('aria-valuenow', v.toFixed(1));
+        el.setAttribute('aria-valuetext', vmFmtTime(v));
+        el.setAttribute('aria-disabled', vm.job ? 'true' : 'false');
+    }
+
+    function vmTlHead(t) {
         var c = vmClipById(vm.selectedId);
         if (!c) return;
-        var d = c.info.durationS;
-        var s = parseFloat(vmEl('vmTrimStart').value) || 0;
-        var e = parseFloat(vmEl('vmTrimEnd').value);
-        if (!isFinite(e)) e = d;
-        if (e >= Math.floor(d * 10) / 10) e = d;
-        if (which === 'start' && s > e - VM_MIN_CLIP_S) { s = Math.max(0, e - VM_MIN_CLIP_S); vmEl('vmTrimStart').value = String(s); }
-        if (which === 'end' && e < s + VM_MIN_CLIP_S) { e = Math.min(d, s + VM_MIN_CLIP_S); vmEl('vmTrimEnd').value = String(e); }
-        c.trimStart = vmClamp(s, 0, d); c.trimEnd = vmClamp(e, c.trimStart + VM_MIN_CLIP_S, d);
-        vmTrimLabels(c);
-        vmClearResult();
-        var card = document.querySelector('.vm-card[data-id="' + c.id + '"] .vm-meta');
-        if (card) card.textContent = vmFmtTime(c.trimEnd - c.trimStart) + ' (trimmed)';
-        vmScheduleOutputLine();
+        vmTl.shown = vmClamp(t, 0, c.info.durationS);
+        vmEl('vmTlHead').style.left = vmPct(vmTl.shown, c.info.durationS);
+        vmEl('vmTlCur').textContent = vmFmtTime(vmTl.shown);
+    }
+
+    // Time ruler above the strip: labelled major ticks about every 64 px, unlabelled minor ticks.
+    function vmTlRuler(c) {
+        var el = vmEl('vmTlRuler'), tr = vmEl('vmTlTrack');
+        if (!el || !tr) return;
+        var d = Math.max(0.1, c.info.durationS), w = Math.max(120, tr.clientWidth || 600);
+        var steps = [0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600];
+        var step = steps[steps.length - 1];
+        for (var i = 0; i < steps.length; i++) { if (steps[i] * w / d >= 64) { step = steps[i]; break; } }
+        var parts = step / 5 * w / d >= 9 ? 5 : (step / 2 * w / d >= 9 ? 2 : 1);
+        var html = '';
+        for (var k = 0; k * step / parts <= d + 1e-6; k++) {
+            var t = k * step / parts, x = t / d;
+            if (k % parts) { html += '<span class="vm-tl-tick" style="left:' + vmPct(t, d) + '"></span>'; continue; }
+            html += '<span class="vm-tl-tick vm-tl-major" style="left:' + vmPct(t, d) + '">' + (x <= 0.9 ? '<span>' + vmTlLabel(t, step) + '</span>' : '') + '</span>';
+        }
+        el.innerHTML = html;
+    }
+    function vmTlLabel(t, step) {
+        if (step >= 60 || t >= 60) { var m = Math.floor(t / 60), s = Math.round(t - m * 60); return m + ':' + (s < 10 ? '0' : '') + s; }
+        return (Math.abs(t - Math.round(t)) < 1e-6 ? String(Math.round(t)) : t.toFixed(1)) + 's';
+    }
+
+    // Filmstrip: the card thumbnail fills every slot until the real frames arrive.
+    function vmTlFrames(c) {
+        var box = vmEl('vmTlFrames'), tr = vmEl('vmTlTrack');
+        var w = Math.max(120, tr.clientWidth || 600), h = Math.max(24, tr.clientHeight || 56);
+        var ar = c.info.displayW && c.info.displayH ? c.info.displayW / c.info.displayH : 16 / 9;
+        if (!c.strip) c.strip = { n: vmClamp(Math.round(w / Math.max(24, h * ar)), 4, 16), urls: [], busy: false, done: false };
+        var html = '';
+        for (var k = 0; k < c.strip.n; k++) {
+            var u = c.strip.urls[k] || c.thumb;
+            html += '<span class="vm-tl-frame' + (c.strip.urls[k] ? '' : ' vm-tl-wait') + '"' + (u ? ' style="background-image:url(\'' + u + '\')"' : '') + '></span>';
+        }
+        box.innerHTML = html;
+        if (!c.strip.busy && !c.strip.done) vmMakeStrip(c, w, h);
+    }
+
+    function vmTlPaintFrame(c, k) {
+        if (vm.selectedId !== c.id || !c.strip || !c.strip.urls[k]) return;
+        var el = document.querySelectorAll('#vmTlFrames .vm-tl-frame')[k];
+        if (el) { el.style.backgroundImage = 'url(\'' + c.strip.urls[k] + '\')'; el.classList.remove('vm-tl-wait'); }
+    }
+
+    async function vmMakeStrip(c, w, h) {
+        var st = c.strip, info = c.info, n = st.n;
+        st.busy = true;
+        var dpr = Math.min(2, window.devicePixelRatio || 1);
+        var sw = vmEven(Math.ceil(w / n * dpr)), sh = vmEven(Math.ceil(h * dpr));
+        var ts = [];
+        for (var k = 0; k < n; k++) ts.push(Math.min(Math.max(0, info.durationS - 0.05), (k + 0.5) * info.durationS / n));
+        try {
+            if (c.vTrack && info.canDecodeVideo && vm.mb) {
+                try {
+                    var sink = new vm.mb.CanvasSink(c.vTrack, { width: sw, height: sh, fit: 'cover' });
+                    var i = 0;
+                    for await (var wc of sink.canvasesAtTimestamps(ts.map(function (t) { return info.firstTs + t; }))) {
+                        if (!c.url) return;
+                        if (wc && wc.canvas) {
+                            var u = await vmCanvasToUrl(wc.canvas);
+                            if (!c.url) { URL.revokeObjectURL(u); return; }
+                            st.urls[i] = u;
+                            vmTlPaintFrame(c, i);
+                        }
+                        i++;
+                    }
+                } catch (e) { /* fall back to the video element */ }
+            }
+            if (c.url && st.urls.filter(Boolean).length < n) await vmStripFromVideoEl(c, st, ts, sw, sh);
+        } finally {
+            st.busy = false; st.done = true;
+        }
+    }
+
+    function vmStripFromVideoEl(c, st, ts, sw, sh) {
+        return new Promise(function (resolve) {
+            var el = document.createElement('video'), k = -1, done = false, timer = 0;
+            var cv = document.createElement('canvas'); cv.width = sw; cv.height = sh;
+            var g = cv.getContext('2d');
+            function fin() { if (done) return; done = true; clearTimeout(timer); el.removeAttribute('src'); try { el.load(); } catch (e) { /* ignore */ } resolve(); }
+            function next() {
+                k++;
+                while (k < ts.length && st.urls[k]) k++;
+                if (k >= ts.length || !c.url) { fin(); return; }
+                clearTimeout(timer); timer = setTimeout(fin, 6000);
+                try { el.currentTime = ts[k]; } catch (e) { fin(); }
+            }
+            el.muted = true; el.playsInline = true; el.preload = 'auto';
+            el.onloadeddata = function () { next(); };
+            el.onseeked = function () {
+                var kk = k;
+                try {
+                    var vw = el.videoWidth, vh = el.videoHeight, da = sw / sh;
+                    var cw = vw, ch = vh, sx = 0, sy = 0;
+                    if (vw / vh > da) { cw = vh * da; sx = (vw - cw) / 2; } else { ch = vw / da; sy = (vh - ch) / 2; }
+                    g.drawImage(el, sx, sy, cw, ch, 0, 0, sw, sh);
+                    vmCanvasToUrl(cv).then(function (u) {
+                        if (!c.url) { URL.revokeObjectURL(u); fin(); return; }
+                        st.urls[kk] = u; vmTlPaintFrame(c, kk); next();
+                    }, next);
+                } catch (e) { next(); }
+            };
+            el.onerror = fin;
+            timer = setTimeout(fin, 8000);
+            el.src = c.url;
+        });
+    }
+
+    function vmTlTimeAt(x) {
+        var c = vmClipById(vm.selectedId), r = vmEl('vmTlTrack').getBoundingClientRect();
+        return vmClamp((x - r.left) / Math.max(1, r.width), 0, 1) * c.info.durationS;
+    }
+
+    function vmTlDown(e) {
+        var c = vmClipById(vm.selectedId);
+        if (!c || vm.job || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        var r = vmEl('vmTlTrack').getBoundingClientRect(), d = c.info.durationS;
+        var xs = r.left + c.trimStart / d * r.width, xe = r.left + c.trimEnd / d * r.width;
+        var h = e.target.closest ? e.target.closest('.vm-tl-handle') : null, which;
+        if (h) which = h.id === 'vmTlStart' ? 'start' : 'end';
+        else {
+            // Fat-finger help: a press close to a handle grabs it instead of seeking.
+            var ds = Math.abs(e.clientX - xs), de = Math.abs(e.clientX - xe), grab = e.pointerType === 'touch' ? 24 : 12;
+            which = Math.min(ds, de) <= grab ? (ds < de ? 'start' : 'end') : 'seek';
+        }
+        vmTl.drag = { which: which, pid: e.pointerId, off: which === 'start' ? xs - e.clientX : (which === 'end' ? xe - e.clientX : 0) };
+        try { vmEl('vmTl').setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        e.preventDefault();
+        if (which !== 'seek') { try { vmEl(which === 'start' ? 'vmTlStart' : 'vmTlEnd').focus({ preventScroll: true }); } catch (err2) { /* ignore */ } }
+        vmTlPause();
+        vmTlApply(e.clientX);
+    }
+    function vmTlMove(e) {
+        if (!vmTl.drag || e.pointerId !== vmTl.drag.pid) return;
+        e.preventDefault();
+        vmTlApply(e.clientX);
+    }
+    function vmTlUp(e) {
+        if (!vmTl.drag || e.pointerId !== vmTl.drag.pid) return;
+        vmTl.drag = null;
+    }
+    function vmTlApply(x) {
+        var c = vmClipById(vm.selectedId), d = vmTl.drag;
+        if (!c || !d) return;
+        var t = vmTlTimeAt(x + d.off);
+        if (d.which === 'start') { vmSetTrim(c, t, c.trimEnd, 'start'); vmTlScrub(c.trimStart); }
+        else if (d.which === 'end') { vmSetTrim(c, c.trimStart, t, 'end'); vmTlScrub(vmTlLastKept(c)); }
+        else vmTlScrub(t);
+    }
+    function vmTlLastKept(c) { return Math.max(c.trimStart, c.trimEnd - 0.04); }
+
+    function vmTlKey(e) {
+        var c = vmClipById(vm.selectedId);
+        if (!c || vm.job) return;
+        var which = e.currentTarget.id === 'vmTlStart' ? 'start' : 'end';
+        var cur = which === 'start' ? c.trimStart : c.trimEnd, d = c.info.durationS, big = Math.max(1, Math.round(d / 10)), nv;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') nv = cur - (e.shiftKey ? 1 : VM_TRIM_STEP);
+        else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') nv = cur + (e.shiftKey ? 1 : VM_TRIM_STEP);
+        else if (e.key === 'PageDown') nv = cur - big;
+        else if (e.key === 'PageUp') nv = cur + big;
+        else if (e.key === 'Home') nv = 0;
+        else if (e.key === 'End') nv = d;
+        else return;
+        e.preventDefault();
+        vmTlPause();
+        if (which === 'start') { vmSetTrim(c, nv, c.trimEnd, 'start'); vmTlScrub(c.trimStart); }
+        else { vmSetTrim(c, c.trimStart, nv, 'end'); vmTlScrub(vmTlLastKept(c)); }
+    }
+
+    // Seeks are coalesced: while one is in flight only the latest target is kept, so dragging
+    // stays smooth even on slow decoders.
+    function vmTlScrub(t) {
+        vmTlHead(t);
         var v = vmEl('vmPreview');
-        if (v && v.readyState >= 1) { try { v.currentTime = which === 'end' ? Math.max(c.trimStart, c.trimEnd - 1) : c.trimStart; } catch (err) { /* ignore */ } }
+        if (!v || !vmTl.ready || v.error) return;
+        vmTl.pending = vmTl.shown;
+        if (!vmTl.seeking || performance.now() - vmTl.seekAt > 1500) vmTlSeekNow(v);
+    }
+    function vmTlSeekNow(v) {
+        var t = vmTl.pending;
+        vmTl.pending = null;
+        if (t == null) return;
+        vmTl.seeking = true; vmTl.seekAt = performance.now();
+        try { v.currentTime = t; } catch (e) { vmTl.seeking = false; }
+    }
+
+    function vmTlPause() { var v = vmEl('vmPreview'); if (v && !v.paused) { try { v.pause(); } catch (e) { /* ignore */ } } }
+
+    function vmTlPlayToggle(forcePlay) {
+        var v = vmEl('vmPreview'), c = vmClipById(vm.selectedId);
+        if (!v || !c || v.error) return;
+        if (!v.paused && !forcePlay) { v.pause(); return; }
+        var from = vmTl.shown;
+        if (from < c.trimStart - 0.02 || from >= c.trimEnd - 0.05) from = c.trimStart;
+        vmTlHead(from);
+        if (vmTl.ready) {
+            vmTl.pending = null;
+            if (Math.abs(v.currentTime - from) > 0.03) { try { v.currentTime = from; } catch (e) { /* ignore */ } }
+        } // otherwise loadedmetadata seeks to the playhead before playback starts
+        var pr = v.play();
+        if (pr && pr.catch) pr.catch(function () { vmTlPlayIcon(); });
+    }
+
+    function vmTlTick() {
+        vmTl.raf = 0;
+        var v = vmEl('vmPreview'), c = vmClipById(vm.selectedId);
+        if (!v || !c || v.paused || !vmTl.ready) return;
+        if (v.currentTime >= c.trimEnd - 0.02) { v.pause(); vmTlHead(c.trimEnd); return; }
+        vmTlHead(v.currentTime);
+        vmTl.raf = requestAnimationFrame(vmTlTick);
+    }
+
+    function vmTlPlayIcon() {
+        var b = vmEl('vmTlPlay'), v = vmEl('vmPreview');
+        if (!b || !v) return;
+        var playing = !v.paused && !v.ended;
+        b.innerHTML = playing ? '&#10074;&#10074;' : '&#9654;';
+        b.setAttribute('aria-label', playing ? 'Pause' : 'Play the part you keep');
+        b.disabled = !!v.error;
     }
 
     function vmPreview(c) {
         var v = vmEl('vmPreview'), note = vmEl('vmPreviewNote');
         note.textContent = '';
-        v.onerror = function () { note.textContent = 'Preview is not available for this clip in this browser - it will still be merged.'; };
-        v.onloadedmetadata = function () { try { v.currentTime = c.trimStart; } catch (e) { /* ignore */ } };
-        v.ontimeupdate = function () {
-            var cur = vmClipById(vm.selectedId);
-            if (cur && v.currentTime >= cur.trimEnd - 0.05 && !v.paused) v.pause();
+        try { v.pause(); } catch (e) { /* ignore */ }
+        if (vmTl.raf) { cancelAnimationFrame(vmTl.raf); vmTl.raf = 0; }
+        // ready stays false until this clip's metadata loads, so events left over from the
+        // previous clip cannot move this clip's playhead.
+        vmTl.seeking = false; vmTl.pending = null; vmTl.ready = false;
+        v.onerror = function () { note.textContent = 'Preview is not available for this clip in this browser - it will still be merged.'; vmTlPlayIcon(); };
+        v.onloadedmetadata = function () {
+            vmTl.ready = true;
+            vmTl.pending = vmTl.shown;
+            vmTlSeekNow(v);
         };
-        v.onplay = function () {
-            var cur = vmClipById(vm.selectedId);
-            if (cur && (v.currentTime < cur.trimStart - 0.05 || v.currentTime >= cur.trimEnd - 0.05)) { try { v.currentTime = cur.trimStart; } catch (e) { /* ignore */ } }
+        v.onseeked = function () {
+            vmTl.seeking = false;
+            if (vmTl.pending != null) vmTlSeekNow(v);
         };
+        v.onplay = function () { vmTlPlayIcon(); if (!vmTl.raf) vmTl.raf = requestAnimationFrame(vmTlTick); };
+        v.onpause = function () {
+            vmTlPlayIcon();
+            if (vmTl.raf) { cancelAnimationFrame(vmTl.raf); vmTl.raf = 0; }
+            if (vmTl.ready && !vmTl.drag && !vmTl.seeking && vmTl.pending == null) vmTlHead(v.currentTime);
+        };
+        v.onended = v.onpause;
+        v.onclick = function () { vmTlPlayToggle(false); };
         v.src = c.url;
+        vmTlPlayIcon();
     }
 
     // ------------------------------------------------------------------ drag to reorder (mouse + touch)
 
-    var vmDrag = null;
+    var vmDrag = null, vmDragEndedAt = 0;
     // Cards wrap in rows on wide screens and stack in one column on phones, so "before/after"
     // is decided horizontally or vertically to match the layout.
     function vmDragTarget(x, y) {
@@ -1551,7 +1869,9 @@
         vmDrag = null;
         vmDragMarks(null);
         if (d.card) d.card.classList.remove('vm-dragging');
-        if (!d.active || !d.target || d.target.idx < 0 || (e && e.type === 'pointercancel')) return;
+        if (!d.active) return; // a tap: the thumbnail's click opens the trim editor
+        vmDragEndedAt = performance.now();
+        if (!d.target || d.target.idx < 0 || (e && e.type === 'pointercancel')) return;
         var from = vmIndexOf(d.id);
         var to = d.target.idx + (d.target.after ? 1 : 0);
         if (to > from) to--;
@@ -1579,16 +1899,36 @@
                 '<div class="vm-drop-sub">MP4, MOV, WebM, MKV and more - files stay on your device. <a href="#" id="vmSamples">Try two sample clips</a></div>' +
             '</div>' +
             '<div id="vmFlash" class="vm-flash" hidden></div>' +
-            '<div class="vm-row-head"><b>Clips</b> <span id="vmCount" class="vm-muted"></span><span class="vm-muted vm-reorder-hint">Drag a thumbnail or use the arrows to change the order.</span></div>' +
+            '<div class="vm-row-head"><b>Clips</b> <span id="vmCount" class="vm-muted"></span><span class="vm-muted vm-reorder-hint">Drag a thumbnail or use the arrows to change the order. Tap a clip to trim it.</span></div>' +
             '<div id="vmStrip" class="vm-strip" role="list"></div>' +
             '<div id="vmClipPanel" class="vm-panel" hidden>' +
-                '<div class="vm-panel-head"><b id="vmPanelName"></b> <button type="button" id="vmPanelClose" class="w3-button w3-small w3-light-grey">Close</button></div>' +
-                '<video id="vmPreview" class="vm-preview" controls playsinline preload="metadata"></video>' +
+                '<div class="vm-panel-head"><b id="vmPanelName"></b> <button type="button" id="vmPanelClose" class="w3-button w3-small w3-light-grey">Done</button></div>' +
+                '<video id="vmPreview" class="vm-preview" playsinline preload="auto"></video>' +
                 '<div id="vmPreviewNote" class="vm-muted"></div>' +
                 '<div id="vmTrimBox" class="vm-trim">' +
-                    '<label>Start <input type="range" id="vmTrimStart" min="0" step="0.1"> <span id="vmTrimStartTxt"></span></label>' +
-                    '<label>End <input type="range" id="vmTrimEnd" min="0" step="0.1"> <span id="vmTrimEndTxt"></span></label>' +
-                    '<div><span id="vmTrimLen" class="vm-muted"></span> <button type="button" id="vmTrimReset" class="w3-button w3-small w3-light-grey">Reset trim</button></div>' +
+                    '<div class="vm-tl-bar">' +
+                        '<span id="vmTlCur" class="vm-tl-cur">0:00.0</span>' +
+                        '<button type="button" id="vmTlPlay" class="vm-tl-play" aria-label="Play the part you keep">&#9654;</button>' +
+                        '<span id="vmTlDur" class="vm-tl-dur">0:00.0</span>' +
+                    '</div>' +
+                    '<div id="vmTl" class="vm-tl">' +
+                        '<div id="vmTlRuler" class="vm-tl-ruler" aria-hidden="true"></div>' +
+                        '<div id="vmTlTrack" class="vm-tl-track">' +
+                            '<div id="vmTlFrames" class="vm-tl-frames" aria-hidden="true"></div>' +
+                            '<div id="vmTlShadeL" class="vm-tl-shade"></div><div id="vmTlShadeR" class="vm-tl-shade"></div>' +
+                            '<div id="vmTlSel" class="vm-tl-sel"></div>' +
+                            '<div id="vmTlHead" class="vm-tl-head"></div>' +
+                            '<div id="vmTlStart" class="vm-tl-handle vm-tl-hs" role="slider" tabindex="0" aria-label="Trim start"></div>' +
+                            '<div id="vmTlEnd" class="vm-tl-handle vm-tl-he" role="slider" tabindex="0" aria-label="Trim end"></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="vm-tl-info"><span>Start <b id="vmTrimStartTxt"></b></span><span>End <b id="vmTrimEndTxt"></b></span><span id="vmTrimLen" class="vm-muted"></span></div>' +
+                    '<div class="vm-tl-btns">' +
+                        '<button type="button" id="vmSetStart" class="w3-button w3-small w3-light-grey vm-lockable">Start at playhead</button>' +
+                        '<button type="button" id="vmSetEnd" class="w3-button w3-small w3-light-grey vm-lockable">End at playhead</button>' +
+                        '<button type="button" id="vmTrimReset" class="w3-button w3-small w3-light-grey vm-lockable">Reset trim</button>' +
+                    '</div>' +
+                    '<div class="vm-muted">Drag the blue handles to keep only the part you need. Tap the strip to jump to a moment; arrow keys move a selected handle by 0.1 s.</div>' +
                 '</div>' +
             '</div>' +
             '<div id="vmSettings" class="vm-settings">' +
@@ -1669,14 +2009,19 @@
 
         var strip = vmEl('vmStrip');
         strip.addEventListener('click', function (e) {
-            var btn = e.target.closest ? e.target.closest('button[data-act]') : null;
-            if (!btn) return;
+            if (!e.target.closest) return;
+            var btn = e.target.closest('[data-act]');
+            var th = btn ? null : e.target.closest('.vm-thumb');
+            // Tapping a thumbnail opens the trim editor; the click that can follow a reorder
+            // drag is ignored.
+            if (th) { if (performance.now() - vmDragEndedAt > 400) vmOpenPanel(+th.closest('.vm-card').getAttribute('data-id'), 'tap'); return; }
+            if (!btn || btn.disabled) return;
             var card = btn.closest('.vm-card'), id = +card.getAttribute('data-id'), i = vmIndexOf(id), act = btn.getAttribute('data-act');
             if (act === 'left') vmMoveClip(i, i - 1);
             else if (act === 'right') vmMoveClip(i, i + 1);
             else if (act === 'remove') vmRemoveClip(id);
             else if (act === 'trim') vmOpenPanel(id, 'trim');
-            else if (act === 'preview') vmOpenPanel(id, vm.selectedId === id && !vmEl('vmTrimBox').hidden ? 'trim' : 'preview');
+            else if (act === 'preview') vmOpenPanel(id, 'preview');
             else if (act === 'mute') { var c = vm.clips[i]; c.muted = !c.muted; vmClearResult(); vmRenderStrip(); vmScheduleOutputLine(); }
         });
         strip.addEventListener('change', function (e) {
@@ -1691,15 +2036,39 @@
         document.addEventListener('pointercancel', vmDragEnd);
 
         vmEl('vmPanelClose').addEventListener('click', vmClosePanel);
-        vmEl('vmTrimStart').addEventListener('input', function () { vmOnTrimInput('start'); });
-        vmEl('vmTrimEnd').addEventListener('input', function () { vmOnTrimInput('end'); });
+        var tl = vmEl('vmTl');
+        tl.addEventListener('pointerdown', vmTlDown);
+        tl.addEventListener('pointermove', vmTlMove, { passive: false });
+        tl.addEventListener('pointerup', vmTlUp);
+        tl.addEventListener('pointercancel', vmTlUp);
+        vmEl('vmTlStart').addEventListener('keydown', vmTlKey);
+        vmEl('vmTlEnd').addEventListener('keydown', vmTlKey);
+        vmEl('vmTlPlay').addEventListener('click', function () { vmTlPlayToggle(false); });
+        vmEl('vmSetStart').addEventListener('click', function () {
+            var c = vmClipById(vm.selectedId);
+            if (!c || vm.job) return;
+            var t = vmTl.shown;
+            // A start past the current end keeps everything from there to the clip's end.
+            vmSetTrim(c, t, t > c.trimEnd - VM_MIN_CLIP_S ? c.info.durationS : c.trimEnd, 'start');
+        });
+        vmEl('vmSetEnd').addEventListener('click', function () {
+            var c = vmClipById(vm.selectedId);
+            if (!c || vm.job) return;
+            var t = vmTl.shown;
+            vmSetTrim(c, t < c.trimStart + VM_MIN_CLIP_S ? 0 : c.trimStart, t, 'end');
+        });
         vmEl('vmTrimReset').addEventListener('click', function () {
             var c = vmClipById(vm.selectedId);
-            if (!c) return;
-            c.trimStart = 0; c.trimEnd = c.info.durationS;
-            vmEl('vmTrimStart').value = '0'; vmEl('vmTrimEnd').value = vmEl('vmTrimEnd').max;
-            vmTrimLabels(c); vmClearResult(); vmRenderStrip(); vmScheduleOutputLine();
+            if (!c || vm.job) return;
+            vmSetTrim(c, 0, c.info.durationS, 'both');
         });
+        if (window.ResizeObserver) {
+            var tlW = 0;
+            new ResizeObserver(function () {
+                var c = vmClipById(vm.selectedId), w = vmEl('vmTlTrack').clientWidth;
+                if (c && w && Math.abs(w - tlW) > 2) { tlW = w; vmTlRuler(c); }
+            }).observe(vmEl('vmTlTrack'));
+        }
 
         root.addEventListener('change', function (e) {
             var t = e.target;
