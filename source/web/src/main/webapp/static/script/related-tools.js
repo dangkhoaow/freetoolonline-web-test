@@ -1030,6 +1030,7 @@ try {
     { title: "Discount Calculator", url: "https://freetoolonline.com/utility-tools/discount-calculator.html", include: !1, tags: "utility" },
     { title: "Time Card Calculator", url: "https://freetoolonline.com/utility-tools/time-card-calculator.html", include: !1, tags: "utility" },
     { title: "Pace Calculator", url: "https://freetoolonline.com/utility-tools/pace-calculator.html", include: !1, tags: "utility" },
+    { title: "Markup Calculator", url: "https://freetoolonline.com/utility-tools/markup-calculator.html", include: !1, tags: "utility" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

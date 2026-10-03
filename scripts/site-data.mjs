@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/markup-calculator-vs-alternatives.html',
+  '/guides/markup-calculator-step-by-step.html',
+  '/guides/markup-calculator-when.html',
+  '/guides/pt/markup-calculator-step-by-step.html',
+  '/guides/pt/markup-calculator-when.html',
+  '/guides/pt/markup-calculator-vs-alternatives.html',
+  '/guides/es/markup-calculator-step-by-step.html',
+  '/guides/es/markup-calculator-when.html',
+  '/guides/es/markup-calculator-vs-alternatives.html',
+  '/guides/vi/markup-calculator-step-by-step.html',
+  '/guides/vi/markup-calculator-when.html',
+  '/guides/vi/markup-calculator-vs-alternatives.html',
+  '/guides/id/markup-calculator-step-by-step.html',
+  '/guides/id/markup-calculator-when.html',
+  '/guides/id/markup-calculator-vs-alternatives.html',
+  '/guides/de/markup-calculator-step-by-step.html',
+  '/guides/de/markup-calculator-when.html',
+  '/guides/de/markup-calculator-vs-alternatives.html',
   '/guides/discount-calculator-vs-alternatives.html',
   '/guides/discount-calculator-step-by-step.html',
   '/guides/discount-calculator-when.html',
@@ -17869,6 +17887,7 @@ export const ALIAS_ROUTES = {
   '/discount-calculator.html': '/utility-tools/discount-calculator.html',
   '/time-card-calculator.html': '/utility-tools/time-card-calculator.html',
   '/pace-calculator.html': '/utility-tools/pace-calculator.html',
+  '/markup-calculator.html': '/utility-tools/markup-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30623,6 +30642,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/pace-calculator-step-by-step.html': 'guide/de/pace-calculator-step-by-step.jsp',
   '/guides/de/pace-calculator-when.html': 'guide/de/pace-calculator-when.jsp',
   '/guides/de/pace-calculator-vs-alternatives.html': 'guide/de/pace-calculator-vs-alternatives.jsp',
+  '/utility-tools/markup-calculator.html': 'utility/markup-calculator.jsp',
+  '/guides/markup-calculator-when.html': 'guide/markup-calculator-when.jsp',
+  '/guides/markup-calculator-step-by-step.html': 'guide/markup-calculator-step-by-step.jsp',
+  '/guides/markup-calculator-vs-alternatives.html': 'guide/markup-calculator-vs-alternatives.jsp',
+  '/guides/pt/markup-calculator-step-by-step.html': 'guide/pt/markup-calculator-step-by-step.jsp',
+  '/guides/pt/markup-calculator-when.html': 'guide/pt/markup-calculator-when.jsp',
+  '/guides/pt/markup-calculator-vs-alternatives.html': 'guide/pt/markup-calculator-vs-alternatives.jsp',
+  '/guides/es/markup-calculator-step-by-step.html': 'guide/es/markup-calculator-step-by-step.jsp',
+  '/guides/es/markup-calculator-when.html': 'guide/es/markup-calculator-when.jsp',
+  '/guides/es/markup-calculator-vs-alternatives.html': 'guide/es/markup-calculator-vs-alternatives.jsp',
+  '/guides/vi/markup-calculator-step-by-step.html': 'guide/vi/markup-calculator-step-by-step.jsp',
+  '/guides/vi/markup-calculator-when.html': 'guide/vi/markup-calculator-when.jsp',
+  '/guides/vi/markup-calculator-vs-alternatives.html': 'guide/vi/markup-calculator-vs-alternatives.jsp',
+  '/guides/id/markup-calculator-step-by-step.html': 'guide/id/markup-calculator-step-by-step.jsp',
+  '/guides/id/markup-calculator-when.html': 'guide/id/markup-calculator-when.jsp',
+  '/guides/id/markup-calculator-vs-alternatives.html': 'guide/id/markup-calculator-vs-alternatives.jsp',
+  '/guides/de/markup-calculator-step-by-step.html': 'guide/de/markup-calculator-step-by-step.jsp',
+  '/guides/de/markup-calculator-when.html': 'guide/de/markup-calculator-when.jsp',
+  '/guides/de/markup-calculator-vs-alternatives.html': 'guide/de/markup-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
