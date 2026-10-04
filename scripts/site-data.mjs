@@ -14,10 +14,12 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html',
   '/guides/hevc-converter-mov-vs-alternatives.html',
   '/guides/hevc-converter-mov-step-by-step.html',
   '/guides/hevc-converter-mov-when.html',
   '/guides/pt/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step pt locale fanout (create_new_guide_page 20261004-5)
+  '/guides/es/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step es locale fanout (locale completion 20261005)
   '/guides/markup-calculator-vs-alternatives.html',
   '/guides/markup-calculator-step-by-step.html',
   '/guides/markup-calculator-when.html',
@@ -7700,6 +7702,8 @@ export const INFO_ROUTES = new Set([
 export const GUIDE_ROUTES = new Set([
   // hevc-converter-mov-step-by-step pt locale fanout (create_new_guide_page 20261004-5)
   '/guides/pt/hevc-converter-mov-step-by-step.html',
+  // hevc-converter-mov-step-by-step es locale fanout (locale completion 20261005)
+  '/guides/es/hevc-converter-mov-step-by-step.html',
   // color-palette-generator-vs-alternatives locale fanout (create_new_guide_page 20260906-2)
   '/guides/pt/color-palette-generator-vs-alternatives.html',
   '/guides/es/color-palette-generator-vs-alternatives.html',
@@ -17896,6 +17900,7 @@ export const ALIAS_ROUTES = {
   '/markup-calculator.html': '/utility-tools/markup-calculator.html',
   '/commission-calculator.html': '/utility-tools/commission-calculator.html',
   '/hevc-converter-mov.html': '/image-converter-tools/hevc-converter-mov.html',
+  '/pcfg-password-cracking-patterns-generator-pure-go-2026.html': '/developer-tools/pcfg-password-cracking-patterns-generator-pure-go-2026.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30675,6 +30680,9 @@ export const JSP_BY_ROUTE = {
   '/guides/hevc-converter-mov-step-by-step.html': 'guide/hevc-converter-mov-step-by-step.jsp',
   '/guides/hevc-converter-mov-vs-alternatives.html': 'guide/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/pt/hevc-converter-mov-step-by-step.html': 'guide/pt/hevc-converter-mov-step-by-step.jsp',
+  '/guides/es/hevc-converter-mov-step-by-step.html': 'guide/es/hevc-converter-mov-step-by-step.jsp',
+  '/developer-tools/pcfg-password-cracking-patterns-generator-pure-go-2026.html': 'utility/pcfg-password-cracking-patterns-generator-pure-go-2026.jsp',
+  '/guides/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
