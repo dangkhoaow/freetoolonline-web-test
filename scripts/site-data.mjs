@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/hevc-converter-mov-vs-alternatives.html',
+  '/guides/hevc-converter-mov-step-by-step.html',
+  '/guides/hevc-converter-mov-when.html',
   '/guides/markup-calculator-vs-alternatives.html',
   '/guides/markup-calculator-step-by-step.html',
   '/guides/markup-calculator-when.html',
@@ -17889,6 +17892,7 @@ export const ALIAS_ROUTES = {
   '/pace-calculator.html': '/utility-tools/pace-calculator.html',
   '/markup-calculator.html': '/utility-tools/markup-calculator.html',
   '/commission-calculator.html': '/utility-tools/commission-calculator.html',
+  '/hevc-converter-mov.html': '/image-converter-tools/hevc-converter-mov.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30663,6 +30667,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/markup-calculator-when.html': 'guide/de/markup-calculator-when.jsp',
   '/guides/de/markup-calculator-vs-alternatives.html': 'guide/de/markup-calculator-vs-alternatives.jsp',
   '/utility-tools/commission-calculator.html': 'utility/commission-calculator.jsp',
+  '/image-converter-tools/hevc-converter-mov.html': 'convert/hevc-converter-mov.jsp',
+  '/guides/hevc-converter-mov-when.html': 'guide/hevc-converter-mov-when.jsp',
+  '/guides/hevc-converter-mov-step-by-step.html': 'guide/hevc-converter-mov-step-by-step.jsp',
+  '/guides/hevc-converter-mov-vs-alternatives.html': 'guide/hevc-converter-mov-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

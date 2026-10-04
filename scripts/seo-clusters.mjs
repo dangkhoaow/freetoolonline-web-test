@@ -34,7 +34,7 @@ const SEO_CLUSTER_GROUPS = [
     // axis_E+F CONSENSUS-FAIL): removed 6 non-image-conversion members. The 3 PDF-text
     // editors (adobe / pdf-xchange / client-side) consolidated to /pdf-tools/pdf-editor-online.html
     // via ALIAS+301; audio-converter -> video, hilbert-editor + handwriting-to-text -> developer.
-    routes: ['/heic-to-jpg.html', '/svg-to-png.html', '/png-to-svg.html', '/image-to-base64.html', '/base64-to-image.html', '/extract-gif-to-image-frames.html', '/image-converter-tools/png-to-webp.html', '/image-converter-tools/jpg-to-webp.html', '/image-converter-tools/webp-to-png.html', '/image-converter-tools/webp-to-jpg.html', '/image-converter-tools/image-to-webp.html', '/image-converter-tools/png-to-jpg.html', '/image-converter-tools/image-format-converter.html', '/image-converter-tools/jpg-to-avif-converter.html', '/image-converter-tools/avif-to-jpg.html', '/image-converter-tools/avif-to-png.html', '/image-converter-tools/image-to-ascii-art.html'],
+    routes: ['/heic-to-jpg.html', '/svg-to-png.html', '/png-to-svg.html', '/image-to-base64.html', '/base64-to-image.html', '/extract-gif-to-image-frames.html', '/image-converter-tools/png-to-webp.html', '/image-converter-tools/jpg-to-webp.html', '/image-converter-tools/webp-to-png.html', '/image-converter-tools/webp-to-jpg.html', '/image-converter-tools/image-to-webp.html', '/image-converter-tools/png-to-jpg.html', '/image-converter-tools/image-format-converter.html', '/image-converter-tools/jpg-to-avif-converter.html', '/image-converter-tools/avif-to-jpg.html', '/image-converter-tools/avif-to-png.html', '/image-converter-tools/image-to-ascii-art.html', '/image-converter-tools/hevc-converter-mov.html'],
   },
   {
     cluster: 'pdf',

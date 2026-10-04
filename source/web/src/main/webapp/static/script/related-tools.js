@@ -1032,6 +1032,7 @@ try {
     { title: "Pace Calculator", url: "https://freetoolonline.com/utility-tools/pace-calculator.html", include: !1, tags: "utility" },
     { title: "Markup Calculator", url: "https://freetoolonline.com/utility-tools/markup-calculator.html", include: !1, tags: "utility" },
     { title: "Commission Calculator", url: "https://freetoolonline.com/utility-tools/commission-calculator.html", include: !1, tags: "utility" },
+    { title: "Hevc Converter To Mov", url: "https://freetoolonline.com/image-converter-tools/hevc-converter-mov.html", include: !1, tags: "image-conversion" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
