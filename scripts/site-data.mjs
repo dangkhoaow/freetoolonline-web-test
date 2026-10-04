@@ -17,6 +17,7 @@ export const INFO_ROUTES = new Set([
   '/guides/hevc-converter-mov-vs-alternatives.html',
   '/guides/hevc-converter-mov-step-by-step.html',
   '/guides/hevc-converter-mov-when.html',
+  '/guides/pt/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step pt locale fanout (create_new_guide_page 20261004-5)
   '/guides/markup-calculator-vs-alternatives.html',
   '/guides/markup-calculator-step-by-step.html',
   '/guides/markup-calculator-when.html',
@@ -7697,6 +7698,8 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // hevc-converter-mov-step-by-step pt locale fanout (create_new_guide_page 20261004-5)
+  '/guides/pt/hevc-converter-mov-step-by-step.html',
   // color-palette-generator-vs-alternatives locale fanout (create_new_guide_page 20260906-2)
   '/guides/pt/color-palette-generator-vs-alternatives.html',
   '/guides/es/color-palette-generator-vs-alternatives.html',
@@ -30671,6 +30674,7 @@ export const JSP_BY_ROUTE = {
   '/guides/hevc-converter-mov-when.html': 'guide/hevc-converter-mov-when.jsp',
   '/guides/hevc-converter-mov-step-by-step.html': 'guide/hevc-converter-mov-step-by-step.jsp',
   '/guides/hevc-converter-mov-vs-alternatives.html': 'guide/hevc-converter-mov-vs-alternatives.jsp',
+  '/guides/pt/hevc-converter-mov-step-by-step.html': 'guide/pt/hevc-converter-mov-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
