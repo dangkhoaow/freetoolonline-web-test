@@ -17888,6 +17888,7 @@ export const ALIAS_ROUTES = {
   '/time-card-calculator.html': '/utility-tools/time-card-calculator.html',
   '/pace-calculator.html': '/utility-tools/pace-calculator.html',
   '/markup-calculator.html': '/utility-tools/markup-calculator.html',
+  '/commission-calculator.html': '/utility-tools/commission-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30661,6 +30662,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/markup-calculator-step-by-step.html': 'guide/de/markup-calculator-step-by-step.jsp',
   '/guides/de/markup-calculator-when.html': 'guide/de/markup-calculator-when.jsp',
   '/guides/de/markup-calculator-vs-alternatives.html': 'guide/de/markup-calculator-vs-alternatives.jsp',
+  '/utility-tools/commission-calculator.html': 'utility/commission-calculator.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
