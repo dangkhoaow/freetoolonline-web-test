@@ -64,6 +64,13 @@
         { v: 'fade', label: 'Fade through black' }
     ];
     var VM_ROTATIONS = [0, 90, 180, 270]; // degrees clockwise, per clip
+    // "Format" choices: the video codecs tried in order (the container follows the codec).
+    var VM_FORMATS = {
+        auto: { label: 'Auto (best for this browser)', codecs: ['avc', 'vp9', 'av1', 'vp8'] },
+        mp4: { label: 'MP4 (H.264)', codecs: ['avc'] },
+        vp9: { label: 'WebM (VP9)', codecs: ['vp9'] },
+        av1: { label: 'WebM (AV1)', codecs: ['av1'] }
+    };
     var VM_AUDIO_EXT_RE = /\.(mp3|wav|m4a|aac|flac|ogg|oga|opus|weba|wma|aif|aiff)$/i;
 
     /* Two tiny built-in demo clips (VP8 + Opus WebM, generated with ffmpeg) so a reader can
@@ -73,7 +80,7 @@
 
     var vm = {
         clips: [], gaps: [],
-        frame: 'original', fit: 'contain', quality: 'auto', transLen: 1,
+        frame: 'original', fit: 'contain', quality: 'auto', format: 'auto', transLen: 1,
         music: null, musicVolume: 0.8, clipAudio: 'keep', clipAudioTouched: false, musicLoop: true, musicFade: true,
         selectedId: null, job: null, result: null, nextId: 1,
         mb: null, mbFailed: false, can4k: false, probing: false, planToken: 0, wake: null
@@ -479,7 +486,28 @@
             vmProbeRunning = false;
             vmUpdateButtons();
             vmMaybeEnable4k();
+            vmDetectFormats();
         }
+    }
+
+    // Marks the Format choices this browser cannot encode (checked once, at 1280x720 30 fps).
+    // Without WebCodecs only compatibility mode runs, and it makes MP4 (H.264).
+    var vmFormatsChecked = false;
+    function vmDetectFormats() {
+        if (vmFormatsChecked) return;
+        var mark = function (k, ok) {
+            var opt = document.querySelector('#vmFormat option[value="' + k + '"]');
+            if (!opt) return;
+            opt.disabled = !ok;
+            opt.textContent = VM_FORMATS[k].label + (ok ? '' : ' - not available in this browser');
+            if (!ok && vm.format === k) { vm.format = 'auto'; vmEl('vmFormat').value = 'auto'; vmScheduleOutputLine(); }
+        };
+        if (!vmHasWebCodecsVideo()) { vmFormatsChecked = true; mark('vp9', false); mark('av1', false); return; }
+        if (!vm.mb) return;
+        vmFormatsChecked = true;
+        ['vp9', 'av1'].forEach(function (k) {
+            vm.mb.canEncodeVideo(k, { width: 1280, height: 720, frameRate: 30 }).then(function (ok) { mark(k, !!ok); }, function () { mark(k, false); });
+        });
     }
 
     function vmMaybeEnable4k() {
@@ -673,7 +701,8 @@
         if (clips.some(function (c) { return c.kind === 'error'; })) throw vmUserErr('Remove the clips marked with an error first.');
         var edited = vmIsEdited();
         var fam = vmRemuxFamily();
-        if (fam && !edited) {
+        var formatBlocksRemux = !!fam && !vmFormatKeeps(fam, clips[0].info.vCodec);
+        if (fam && !edited && !formatBlocksRemux) {
             return { engine: 'remux', container: fam, vcodec: clips[0].info.vCodec, acodec: clips[0].info.hasAudio ? clips[0].info.aCodec : null, W: clips[0].info.displayW, H: clips[0].info.displayH, edited: false, remuxPossible: true };
         }
         var needAudio = vmNeedAudio();
@@ -681,7 +710,15 @@
         if (allWc) {
             var mb = await vmLoadMb();
             var geo = vmGeometry(false);
-            var vcodec = await mb.getFirstEncodableVideoCodec(['avc', 'vp9', 'av1', 'vp8'], { width: geo.W, height: geo.H, frameRate: geo.F }).catch(function () { return null; });
+            var vcodec = await mb.getFirstEncodableVideoCodec(VM_FORMATS[vm.format].codecs, { width: geo.W, height: geo.H, frameRate: geo.F }).catch(function () { return null; });
+            if (!vcodec && vm.format === 'mp4') {
+                var cp = vmPlanCompat(edited || formatBlocksRemux, !!fam);
+                cp.reason = 'this browser cannot encode H.264 itself';
+                return cp;
+            }
+            if (!vcodec && vm.format !== 'auto') {
+                throw vmUserErr('This browser cannot encode ' + VM_FORMATS[vm.format].label + ' at ' + geo.W + 'x' + geo.H + '. Choose another Format, or Auto.');
+            }
             if (vcodec) {
                 var container = vcodec === 'avc' ? 'mp4' : 'webm';
                 var acodec = null;
@@ -690,11 +727,19 @@
                     else acodec = (await vmOpusEncodable(mb)) ? 'opus' : null;
                 }
                 if (!needAudio || acodec) {
-                    return { engine: 'webcodecs', container: container, vcodec: vcodec, acodec: acodec, W: geo.W, H: geo.H, F: geo.F, needAudio: needAudio, edited: edited, remuxPossible: !!fam, latencyMode: vmIsAppleWebKit() ? 'realtime' : 'quality' };
+                    return { engine: 'webcodecs', container: container, vcodec: vcodec, acodec: acodec, W: geo.W, H: geo.H, F: geo.F, needAudio: needAudio, edited: edited || formatBlocksRemux, formatBlocksRemux: formatBlocksRemux && !edited, remuxPossible: !!fam, latencyMode: vmIsAppleWebKit() ? 'realtime' : 'quality' };
                 }
             }
         }
-        return vmPlanCompat(edited, !!fam);
+        return vmPlanCompat(edited || formatBlocksRemux, !!fam);
+    }
+
+    // Lossless join keeps the clips' codec and container, so it only fits the chosen Format
+    // when they already match it.
+    function vmFormatKeeps(fam, vcodec) {
+        if (vm.format === 'auto') return true;
+        if (vm.format === 'mp4') return fam === 'mp4' && vcodec === 'avc';
+        return fam === 'webm' && vcodec === vm.format;
     }
 
     function vmPlanCompat(edited, remuxPossible) {
@@ -712,9 +757,13 @@
         var codecs = vmCodecLabel(p.vcodec) + (p.acodec ? ' + ' + vmCodecLabel(p.acodec) : '');
         if (p.engine === 'remux') return 'Output: ' + fmt + ' (' + codecs + ') - lossless join, no re-encode.';
         var s = 'Output: ' + fmt + ' (' + codecs + '), ' + p.W + 'x' + p.H + ', ' + p.F + ' fps';
-        if (p.engine === 'webcodecs' && p.vcodec !== 'avc') s += ' - this browser cannot encode H.264';
-        if (p.engine === 'ffmpeg') s += ' - compatibility mode (slower)' + (p.reason ? ': ' + p.reason : '');
-        if (p.remuxPossible && p.edited) s += '. These clips could be joined losslessly, but trimming, rotating, muting, transitions, music or a new frame shape or quality need a re-encode.';
+        if (p.engine === 'webcodecs' && p.vcodec !== 'avc' && vm.format === 'auto') s += ' - this browser cannot encode H.264';
+        if (p.engine === 'ffmpeg') {
+            s += ' - compatibility mode (slower)' + (p.reason ? ': ' + p.reason : '');
+            if (vm.format !== 'auto' && vm.format !== 'mp4') s += '; compatibility mode always makes MP4 (H.264)';
+        }
+        if (p.formatBlocksRemux) s += '. These clips could be joined losslessly in their own format, but the chosen Format needs a re-encode.';
+        else if (p.remuxPossible && p.edited) s += '. These clips could be joined losslessly, but trimming, rotating, muting, transitions, music or a new frame shape, quality or format need a re-encode.';
         return s;
     }
 
@@ -1239,6 +1288,46 @@
         }
     }
 
+    // ------------------------------------------------------------------ hand-off to the Video Editor
+
+    // The multi-track editor (OpenCut, self-hosted on our asset host) opens in a new tab and asks
+    // this tab for the clips with a data-free "ready" message; the reply goes only to the editor's
+    // origin and carries the File objects themselves (the browser shares them between the tabs -
+    // nothing is uploaded) with each clip's trim, mute and rotation, the music and the frame size.
+    var VM_EDITOR_BASE = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && window.VM_EDITOR_BASE) || 'https://gh-static.freetool.online/opencut/';
+
+    function vmEditorPayload() {
+        var ready = vm.clips.filter(function (c) { return c.kind === 'ready'; });
+        var geo = null;
+        try { if (vm.clips.every(function (c) { return c.kind === 'ready'; })) geo = vmGeometry(false); } catch (e) { geo = null; }
+        return {
+            type: 'ftol-merger-clips', v: 1,
+            clips: ready.map(function (c) {
+                return { file: c.file, name: c.name, trimStart: c.trimStart, trimEnd: c.trimEnd, muted: !!c.muted, rotate: vmRotOf(c) };
+            }),
+            music: vm.music ? { file: vm.music.file, volume: vm.musicVolume } : null,
+            canvas: geo ? { width: geo.W, height: geo.H } : null
+        };
+    }
+
+    function vmOpenInEditor() {
+        if (vm.job || !vm.clips.some(function (c) { return c.kind === 'ready'; })) return;
+        var origin;
+        try { origin = new URL(VM_EDITOR_BASE).origin; } catch (e) { return; }
+        var tab = window.open(VM_EDITOR_BASE + 'projects/?from=merger', '_blank');
+        if (!tab) { vmFlash('The browser blocked the new tab. Allow pop-ups for this page, then press "Edit in Video Editor" again.'); return; }
+        var sent = false;
+        var onMessage = function (e) {
+            if (sent || e.source !== tab || e.origin !== origin || !e.data || e.data.type !== 'ftol-editor-ready') return;
+            sent = true;
+            window.removeEventListener('message', onMessage);
+            tab.postMessage(vmEditorPayload(), origin);
+            vmFlash('Your clips are opening in the Video Editor tab. Keep this tab open until they appear there.');
+        };
+        window.addEventListener('message', onMessage);
+        setTimeout(function () { window.removeEventListener('message', onMessage); }, 120000);
+    }
+
     function vmFriendly(e) {
         var m = e && e.message ? e.message : String(e);
         if (e && e.vmUser) return m;
@@ -1378,6 +1467,8 @@
     function vmUpdateButtons() {
         var btn = vmEl('vmMerge');
         if (!btn) return;
+        var ed = vmEl('vmEditor');
+        if (ed) ed.disabled = !!vm.job || !vm.clips.some(function (c) { return c.kind === 'ready'; });
         var ready = vm.clips.length >= 2 && vm.clips.every(function (c) { return c.kind === 'ready'; });
         btn.disabled = !ready || !!vm.job;
         var hint = vmEl('vmMergeHint');
@@ -1485,12 +1576,13 @@
 
     // "Start over" clears everything, settings included ("Merge again" is the way to keep them).
     function vmResetSettings() {
-        vm.frame = 'original'; vm.fit = 'contain'; vm.quality = 'auto'; vm.transLen = 1;
+        vm.frame = 'original'; vm.fit = 'contain'; vm.quality = 'auto'; vm.format = 'auto'; vm.transLen = 1;
         vm.musicVolume = 0.8; vm.clipAudio = 'keep'; vm.clipAudioTouched = false; vm.musicLoop = true; vm.musicFade = true;
         var set = function (sel, prop, val) { var el = document.querySelector(sel); if (el) el[prop] = val; };
         set('#videoMergerTool input[name="vmFrame"][value="original"]', 'checked', true);
         set('#videoMergerTool input[name="vmFit"][value="contain"]', 'checked', true);
         set('#vmQuality', 'value', 'auto');
+        set('#vmFormat', 'value', 'auto');
         set('#vmTransLen', 'value', '1');
         set('#vmAllTrans', 'value', 'none');
         set('#vmMusicVol', 'value', '80');
@@ -2096,6 +2188,7 @@
                     '<label class="vm-pill"><input type="radio" class="vm-lockable" name="vmFit" value="cover"> Crop to fill</label>' +
                 '</fieldset>' +
                 '<div class="vm-inline">' +
+                    '<label>Format <select id="vmFormat" class="vm-lockable">' + Object.keys(VM_FORMATS).map(function (k) { return '<option value="' + k + '"' + (k === 'auto' ? ' selected' : '') + '>' + VM_FORMATS[k].label + '</option>'; }).join('') + '</select></label>' +
                     '<label>Quality <select id="vmQuality" class="vm-lockable"><option value="auto" selected>Auto</option><option value="1080">1080p</option><option value="720">720p</option><option value="2160" hidden disabled>4K</option></select></label>' +
                     '<label>Transition length <select id="vmTransLen" class="vm-lockable"><option value="0.5">0.5 s</option><option value="1" selected>1 s</option><option value="1.5">1.5 s</option></select></label>' +
                     '<label>Every gap <select id="vmAllTrans" class="vm-lockable">' + allTrans + '</select></label> ' +
@@ -2121,6 +2214,7 @@
             '<div id="vmOutputLine" class="vm-output-line" aria-live="polite"></div>' +
             '<div class="vm-actions">' +
                 '<button type="button" id="vmMerge" class="w3-button w3-blue vm-merge" disabled>Merge videos</button> ' +
+                '<button type="button" id="vmEditor" class="w3-button w3-light-grey w3-border vm-lockable" disabled title="Opens these clips, with their trims, rotations, mute and music, in our multi-track Video Editor">Edit in Video Editor</button> ' +
                 '<span id="vmMergeHint" class="vm-muted">Add at least 2 clips to merge.</span>' +
                 '<span id="vmEngineBadge" class="vm-badge" hidden></span>' +
             '</div>' +
@@ -2247,6 +2341,7 @@
             else if (t.name === 'vmFit') vm.fit = t.value;
             else if (t.name === 'vmClipAudio') { vm.clipAudio = t.value; vm.clipAudioTouched = true; }
             else if (t.id === 'vmQuality') vm.quality = t.value;
+            else if (t.id === 'vmFormat') vm.format = t.value;
             else if (t.id === 'vmTransLen') vm.transLen = parseFloat(t.value) || 1;
             else if (t.id === 'vmMusicLoop') vm.musicLoop = t.checked;
             else if (t.id === 'vmMusicFade') vm.musicFade = t.checked;
@@ -2272,6 +2367,7 @@
         });
 
         vmEl('vmMerge').addEventListener('click', vmStartMerge);
+        vmEl('vmEditor').addEventListener('click', vmOpenInEditor);
         vmEl('vmCancel').addEventListener('click', vmCancelMerge);
         document.addEventListener('visibilitychange', function () {
             if (document.hidden && vm.job) { vm.job.hidden = true; var w = vmEl('vmHiddenWarn'); if (w) w.hidden = false; }
