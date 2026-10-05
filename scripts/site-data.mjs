@@ -20,6 +20,7 @@ export const INFO_ROUTES = new Set([
   '/guides/hevc-converter-mov-when.html',
   '/guides/pt/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step pt locale fanout (create_new_guide_page 20261004-5)
   '/guides/pt/hevc-converter-mov-vs-alternatives.html', // hevc-converter-mov-vs-alternatives pt locale fanout (locale completion 20261005-aquarium-fire2)
+  '/guides/es/hevc-converter-mov-vs-alternatives.html', // hevc-converter-mov-vs-alternatives es locale fanout (locale completion 20261005-5)
   '/guides/es/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step es locale fanout (locale completion 20261005)
   '/guides/vi/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step vi locale fanout (locale completion 20261005-2)
   '/guides/id/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step id locale fanout (locale completion 20261005-3)
@@ -7700,6 +7701,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/hevc-converter-mov-step-by-step.html',
   // hevc-converter-mov-vs-alternatives pt locale fanout (locale completion 20261005-aquarium-fire2)
   '/guides/pt/hevc-converter-mov-vs-alternatives.html',
+  // hevc-converter-mov-vs-alternatives es locale fanout (locale completion 20261005-5)
+  '/guides/es/hevc-converter-mov-vs-alternatives.html',
   // hevc-converter-mov-step-by-step es locale fanout (locale completion 20261005)
   '/guides/es/hevc-converter-mov-step-by-step.html',
   // hevc-converter-mov-step-by-step vi locale fanout (locale completion 20261005-2)
@@ -30714,6 +30717,7 @@ export const JSP_BY_ROUTE = {
   '/guides/hevc-converter-mov-vs-alternatives.html': 'guide/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/pt/hevc-converter-mov-step-by-step.html': 'guide/pt/hevc-converter-mov-step-by-step.jsp',
   '/guides/pt/hevc-converter-mov-vs-alternatives.html': 'guide/pt/hevc-converter-mov-vs-alternatives.jsp',
+  '/guides/es/hevc-converter-mov-vs-alternatives.html': 'guide/es/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/es/hevc-converter-mov-step-by-step.html': 'guide/es/hevc-converter-mov-step-by-step.jsp',
   '/guides/vi/hevc-converter-mov-step-by-step.html': 'guide/vi/hevc-converter-mov-step-by-step.jsp',
   '/guides/id/hevc-converter-mov-step-by-step.html': 'guide/id/hevc-converter-mov-step-by-step.jsp',
