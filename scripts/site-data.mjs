@@ -935,24 +935,16 @@ export const INFO_ROUTES = new Set([
   '/guides/de/holiday-countdown-date-lookup-when.html',
   '/guides/de/holiday-countdown-date-lookup-step-by-step.html',
   '/guides/de/holiday-countdown-date-lookup-vs-alternatives.html',
-  '/guides/what-national-day-is-today-step-by-step.html',
+  // content-consolidation fire159 (2026-10-05): the -step-by-step and -vs-alternatives angles of
+  // the what-national-day-is-today guide family (all 6 locale forms each, 12 routes) were retired
+  // into their same-locale '/guides/{loc}/what-national-day-is-today-when.html' twin - see
+  // ALIAS_ROUTES for the evidence and the merge record. Only the -when keeper remains.
   '/guides/what-national-day-is-today-when.html',
-  '/guides/what-national-day-is-today-vs-alternatives.html',
-  '/guides/pt/what-national-day-is-today-step-by-step.html',
   '/guides/pt/what-national-day-is-today-when.html',
-  '/guides/pt/what-national-day-is-today-vs-alternatives.html',
-  '/guides/es/what-national-day-is-today-step-by-step.html',
   '/guides/es/what-national-day-is-today-when.html',
-  '/guides/es/what-national-day-is-today-vs-alternatives.html',
-  '/guides/de/what-national-day-is-today-step-by-step.html',
   '/guides/de/what-national-day-is-today-when.html',
-  '/guides/de/what-national-day-is-today-vs-alternatives.html',
-  '/guides/vi/what-national-day-is-today-step-by-step.html',
   '/guides/vi/what-national-day-is-today-when.html',
-  '/guides/vi/what-national-day-is-today-vs-alternatives.html',
-  '/guides/id/what-national-day-is-today-step-by-step.html',
   '/guides/id/what-national-day-is-today-when.html',
-  '/guides/id/what-national-day-is-today-vs-alternatives.html',
   '/guides/pdf-editor-vs-alternatives.html',
   '/guides/pdf-editor-step-by-step.html',
   '/guides/pdf-editor-when.html',
@@ -7973,24 +7965,16 @@ export const GUIDE_ROUTES = new Set([
   // adobe-pdf-editor-browser-step-by-step (all 6 forms) retired by content-consolidation
   // fire144 (2026-09-20) into '/guides/{loc}/pdf-editor-step-by-step.html' - see ALIAS_ROUTES.
   // what-national-day-is-today companion guides (new-tool-discovery-loop-runbook fire718)
-  '/guides/what-national-day-is-today-step-by-step.html',
+  // content-consolidation fire159 (2026-10-05): the -step-by-step and -vs-alternatives angles of
+  // the what-national-day-is-today guide family (all 6 locale forms each, 12 routes) were retired
+  // into their same-locale '/guides/{loc}/what-national-day-is-today-when.html' twin - see
+  // ALIAS_ROUTES for the evidence and the merge record. Only the -when keeper remains.
   '/guides/what-national-day-is-today-when.html',
-  '/guides/what-national-day-is-today-vs-alternatives.html',
-  '/guides/pt/what-national-day-is-today-step-by-step.html',
   '/guides/pt/what-national-day-is-today-when.html',
-  '/guides/pt/what-national-day-is-today-vs-alternatives.html',
-  '/guides/es/what-national-day-is-today-step-by-step.html',
   '/guides/es/what-national-day-is-today-when.html',
-  '/guides/es/what-national-day-is-today-vs-alternatives.html',
-  '/guides/de/what-national-day-is-today-step-by-step.html',
   '/guides/de/what-national-day-is-today-when.html',
-  '/guides/de/what-national-day-is-today-vs-alternatives.html',
-  '/guides/vi/what-national-day-is-today-step-by-step.html',
   '/guides/vi/what-national-day-is-today-when.html',
-  '/guides/vi/what-national-day-is-today-vs-alternatives.html',
-  '/guides/id/what-national-day-is-today-step-by-step.html',
   '/guides/id/what-national-day-is-today-when.html',
-  '/guides/id/what-national-day-is-today-vs-alternatives.html',
   // planet-interior-cutaways companion guides (space-3d-discovery-loop-runbook, 2026-08-04)
   '/guides/planet-interior-cutaways-when.html',
   '/guides/pt/planet-interior-cutaways-when.html',
@@ -14760,6 +14744,55 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // content-consolidation fire159 (2026-10-05): TWO duplicate-intent guide angles retired into
+  // their same-locale -when twin. Sourced from step 1b (section 3.6 zero-click guide surface),
+  // NOT the backlog - step 1a was dry for the 18th consecutive fire, and NO backlog item covers
+  // this family (verified: 0 of 141 items mention 'national'), so this is work-order movement and
+  // it deliberately does NOT touch items[] (section 3.4's forbidden fix: never create an item in
+  // order to resolve it). The entry point was '/guides/pt/what-national-day-is-today-when.html'
+  // (192 impr, pos 2.58, 0 clicks) - a locale row, so section-3.6 rule 2 sent the decision to the
+  // EN parent and the whole 3-angle x 6-locale family (18 URLs) was assessed together.
+  // Section-3.5 rule-1 member evidence (clicks > citations > impressions, read via
+  // content-graph-query node over all 18 URLs, never the emitter's canonical_url /
+  // excess_family_slugs): aggregate -when 0/0/203 vs -step-by-step 0/0/5 vs -vs-alternatives
+  // 0/0/3. Zero clicks AND zero AI citations on all 18, so impressions are the only separator -
+  // but the -when keeper leads 40x, so rule 3's "three-way zero, SKIP" does not apply and this is
+  // not a coin flip. Unlike fire151's white-noise case, NO member of this family carries
+  // evidence_allowlisted (0 of 18) and none has revenue, so fire52's recommended never-excess
+  // traffic floor (clicks >= 1 OR citations >= 1 OR allowlist presence) clears BOTH weaker angles
+  // as admissible excess rather than only one.
+  // Shared-fact list (section 0.7 requires NON-EMPTY before any merge): the sentence "computes
+  // locally in the browser from a curated static list - no upload, no account, and no network
+  // request" is VERBATIM on both -when and -step-by-step; the "~35 curated observances" count and
+  // the no-install claim are on all three angles. Unique facts folded into all 6 -when twins in
+  // this same push: no input at all / the check runs as the page finishes loading, the "no listed
+  // national day for today" fallback message, and the full ~35-entry table sorted by calendar
+  // date below the result (from -step-by-step), plus the routing advice that the list is curated
+  // rather than exhaustive so a dedicated calendar site is better for an unlisted date (from
+  // -vs-alternatives). Every folded claim traces to tool-nationaldaytoday/SKILL.md ## Implemented
+  // features, and the routing advice to its ## NOT implemented anti-claim #1.
+  // The -vs-alternatives comparison TABLE was deliberately NOT copied: its competitor columns
+  // ("often hundreds to thousands", "1 or more network requests (page and ads)", "usually behind
+  // navigation or search") are unverifiable third-party claims traceable to no truth source, and
+  // its own-tool column restates no-install / ~35-entry / zero-network facts the -when page
+  // already carries in prose, so copying it would have RAISED within-page redundancy and tripped
+  // the comprehend-before-adding gate. Same discipline as fire151.
+  // Inbound on all 12 retired routes was locale_sibling_of ONLY - zero real links_to - so no page
+  // loses a link; outbound on every retired route is {/utility-tools/national-day-today.html,
+  // /utility-tools.html}, both of which the -when destination also carries, so the kept set is a
+  // superset. No 301 chains (every destination is a live JSP_BY_ROUTE route, not another alias).
+  '/guides/what-national-day-is-today-step-by-step.html': '/guides/what-national-day-is-today-when.html',
+  '/guides/what-national-day-is-today-vs-alternatives.html': '/guides/what-national-day-is-today-when.html',
+  '/guides/pt/what-national-day-is-today-step-by-step.html': '/guides/pt/what-national-day-is-today-when.html',
+  '/guides/pt/what-national-day-is-today-vs-alternatives.html': '/guides/pt/what-national-day-is-today-when.html',
+  '/guides/es/what-national-day-is-today-step-by-step.html': '/guides/es/what-national-day-is-today-when.html',
+  '/guides/es/what-national-day-is-today-vs-alternatives.html': '/guides/es/what-national-day-is-today-when.html',
+  '/guides/de/what-national-day-is-today-step-by-step.html': '/guides/de/what-national-day-is-today-when.html',
+  '/guides/de/what-national-day-is-today-vs-alternatives.html': '/guides/de/what-national-day-is-today-when.html',
+  '/guides/vi/what-national-day-is-today-step-by-step.html': '/guides/vi/what-national-day-is-today-when.html',
+  '/guides/vi/what-national-day-is-today-vs-alternatives.html': '/guides/vi/what-national-day-is-today-when.html',
+  '/guides/id/what-national-day-is-today-step-by-step.html': '/guides/id/what-national-day-is-today-when.html',
+  '/guides/id/what-national-day-is-today-vs-alternatives.html': '/guides/id/what-national-day-is-today-when.html',
   // content-consolidation fire151 (2026-09-29): duplicate-intent guide angle retired into its
   // same-locale twin. NOT an Amendment-item-7 orphan (that set completed at fire148) and NOT a
   // backlog drain - step 1a was dry for the 10th consecutive fire, so this came from step 1b,
@@ -17960,24 +17993,12 @@ export const JSP_BY_ROUTE = {
   '/guides/de/game-server-status-when.html': 'guide/de/game-server-status-when.jsp',
   '/guides/de/game-server-status-vs-alternatives.html': 'guide/de/game-server-status-vs-alternatives.jsp',
 
-  '/guides/what-national-day-is-today-step-by-step.html': 'guide/what-national-day-is-today-step-by-step.jsp',
   '/guides/what-national-day-is-today-when.html': 'guide/what-national-day-is-today-when.jsp',
-  '/guides/what-national-day-is-today-vs-alternatives.html': 'guide/what-national-day-is-today-vs-alternatives.jsp',
-  '/guides/pt/what-national-day-is-today-step-by-step.html': 'guide/pt/what-national-day-is-today-step-by-step.jsp',
   '/guides/pt/what-national-day-is-today-when.html': 'guide/pt/what-national-day-is-today-when.jsp',
-  '/guides/pt/what-national-day-is-today-vs-alternatives.html': 'guide/pt/what-national-day-is-today-vs-alternatives.jsp',
-  '/guides/es/what-national-day-is-today-step-by-step.html': 'guide/es/what-national-day-is-today-step-by-step.jsp',
   '/guides/es/what-national-day-is-today-when.html': 'guide/es/what-national-day-is-today-when.jsp',
-  '/guides/es/what-national-day-is-today-vs-alternatives.html': 'guide/es/what-national-day-is-today-vs-alternatives.jsp',
-  '/guides/de/what-national-day-is-today-step-by-step.html': 'guide/de/what-national-day-is-today-step-by-step.jsp',
   '/guides/de/what-national-day-is-today-when.html': 'guide/de/what-national-day-is-today-when.jsp',
-  '/guides/de/what-national-day-is-today-vs-alternatives.html': 'guide/de/what-national-day-is-today-vs-alternatives.jsp',
-  '/guides/vi/what-national-day-is-today-step-by-step.html': 'guide/vi/what-national-day-is-today-step-by-step.jsp',
   '/guides/vi/what-national-day-is-today-when.html': 'guide/vi/what-national-day-is-today-when.jsp',
-  '/guides/vi/what-national-day-is-today-vs-alternatives.html': 'guide/vi/what-national-day-is-today-vs-alternatives.jsp',
-  '/guides/id/what-national-day-is-today-step-by-step.html': 'guide/id/what-national-day-is-today-step-by-step.jsp',
   '/guides/id/what-national-day-is-today-when.html': 'guide/id/what-national-day-is-today-when.jsp',
-  '/guides/id/what-national-day-is-today-vs-alternatives.html': 'guide/id/what-national-day-is-today-vs-alternatives.jsp',
   '/guides/pt/uuid-generator-when.html': 'guide/pt/uuid-generator-when.jsp',
   '/guides/pt/uuid-generator-step-by-step.html': 'guide/pt/uuid-generator-step-by-step.jsp',
   '/guides/pt/uuid-generator-vs-alternatives.html': 'guide/pt/uuid-generator-vs-alternatives.jsp',
