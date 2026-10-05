@@ -28,7 +28,14 @@
 
     var GSS_PLATFORMS = [
         { id: 'epic', name: 'Fortnite / Epic Games services', api: 'https://status.epicgames.com/api/v2/status.json', page: 'https://status.epicgames.com' },
-        { id: 'roblox', name: 'Roblox', api: 'https://status.roblox.com/api/v2/status.json', page: 'https://status.roblox.com' },
+        // 2026-10-06 root-cause fix: Roblox retired its public statuspage.io
+        // feed (confirmed durably 404 since at least 2026-08-30, see
+        // tool-gameserverstatus/SKILL.md E2E flow note). Calling a
+        // permanently-dead endpoint only produces a browser-level console
+        // error on every load with no reader benefit - known_dead skips the
+        // fetch entirely in gssRefreshPlatform and renders the honest static
+        // message below instead.
+        { id: 'roblox', name: 'Roblox', api: 'https://status.roblox.com/api/v2/status.json', page: 'https://status.roblox.com', known_dead: true },
         { id: 'discord', name: 'Discord', api: 'https://discordstatus.com/api/v2/status.json', page: 'https://discordstatus.com' }
     ];
     var GSS_MC_API = 'https://api.mcstatus.io/v2/status/';
@@ -80,6 +87,12 @@
         var card = root.querySelector('#gssCard-' + p.id);
         if (!card) return;
         var body = card.querySelector('.gss-card-body');
+        if (p.known_dead) {
+            if (body) {
+                body.innerHTML = '<span style="color:#777;">This platform retired the public status feed this card reads, so no live indicator is available here. The official status page linked below is the best source.</span>';
+            }
+            return;
+        }
         gssFetchJson(p.api).then(function (data) {
             var st = (data && data.status) ? data.status : {};
             if (body) {

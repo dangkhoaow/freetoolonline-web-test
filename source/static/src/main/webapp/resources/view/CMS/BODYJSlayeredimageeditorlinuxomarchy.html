@@ -1,0 +1,46 @@
+<script>
+    web.localUpload = true;
+
+    var BACKEND_ENDPOINT = '/api/image-conversion/layered-image-editor-linux-omarchy'; // wired during wire-up cycle
+    var USE_MOCK = (typeof window.FTO_BACKEND_READY === 'undefined') || !window.FTO_BACKEND_READY['layered-image-editor-linux-omarchy'];
+
+    function processFileForSlug(file, opts) {
+        if (USE_MOCK) {
+            return Promise.resolve({
+                output_blob_url: '/static/mock/layered-image-editor-linux-omarchy-demo-output.svg',
+                _is_mock: true,
+                mock_note: 'Demo output - real processing coming soon.'
+            });
+        }
+        var fd = new FormData();
+        fd.append('file', file);
+        return fetch(BACKEND_ENDPOINT, { method: 'POST', body: fd }).then(function(r){ return r.json(); });
+    }
+
+    function loadUploadHandlersByPage() {
+        var onFileCompleteOrigin = onFileComplete;
+        onFileComplete = function(e, file, response) {
+            onFileCompleteOrigin.call(this, e, file, response);
+            file = file.file;
+            $('.downloadC').addClass('w3-hide');
+            processFileForSlug(file, {}).then(function(res) {
+                if (res._is_mock) {
+                    console.log('layered-image-editor-linux-omarchy: preview mode -', res.mock_note);
+                }
+                // Render res.output_blob_url into .outputImgs. The wire-up cycle
+                // patches this same hook to consume the real backend response.
+                try {
+                    if (res.output_blob_url) {
+                        $('.outputImgs').html(
+                            '<a href="' + res.output_blob_url + '" download class="w3-button w3-blue">Download preview output</a>'
+                        );
+                    }
+                } catch (err) {
+                    console.error('layered-image-editor-linux-omarchy: render error', err);
+                }
+            }).catch(function(err){
+                console.error('layered-image-editor-linux-omarchy: backend call failed', err);
+            });
+        };
+    }
+</script>

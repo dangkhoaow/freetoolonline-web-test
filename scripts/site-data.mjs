@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/layered-image-editor-linux-omarchy-vs-alternatives.html',
+  '/guides/layered-image-editor-linux-omarchy-step-by-step.html',
+  '/guides/layered-image-editor-linux-omarchy-when.html',
   '/guides/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html',
   '/guides/hevc-converter-mov-vs-alternatives.html',
   '/guides/hevc-converter-mov-step-by-step.html',
@@ -22,6 +25,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/hevc-converter-mov-vs-alternatives.html', // hevc-converter-mov-vs-alternatives pt locale fanout (locale completion 20261005-aquarium-fire2)
   '/guides/es/hevc-converter-mov-vs-alternatives.html', // hevc-converter-mov-vs-alternatives es locale fanout (locale completion 20261005-5)
   '/guides/vi/hevc-converter-mov-vs-alternatives.html', // hevc-converter-mov-vs-alternatives vi locale fanout (locale completion 20261005-6)
+  '/guides/id/hevc-converter-mov-vs-alternatives.html', // hevc-converter-mov-vs-alternatives id locale fanout (locale completion 20261006)
   '/guides/es/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step es locale fanout (locale completion 20261005)
   '/guides/vi/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step vi locale fanout (locale completion 20261005-2)
   '/guides/id/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step id locale fanout (locale completion 20261005-3)
@@ -7706,6 +7710,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/hevc-converter-mov-vs-alternatives.html',
   // hevc-converter-mov-vs-alternatives vi locale fanout (locale completion 20261005-6)
   '/guides/vi/hevc-converter-mov-vs-alternatives.html',
+  // hevc-converter-mov-vs-alternatives id locale fanout (locale completion 20261006)
+  '/guides/id/hevc-converter-mov-vs-alternatives.html',
   // hevc-converter-mov-step-by-step es locale fanout (locale completion 20261005)
   '/guides/es/hevc-converter-mov-step-by-step.html',
   // hevc-converter-mov-step-by-step vi locale fanout (locale completion 20261005-2)
@@ -17952,6 +17958,7 @@ export const ALIAS_ROUTES = {
   '/commission-calculator.html': '/utility-tools/commission-calculator.html',
   '/hevc-converter-mov.html': '/image-converter-tools/hevc-converter-mov.html',
   '/pcfg-password-cracking-patterns-generator-pure-go-2026.html': '/developer-tools/pcfg-password-cracking-patterns-generator-pure-go-2026.html',
+  '/layered-image-editor-linux-omarchy.html': '/image-converter-tools/layered-image-editor-linux-omarchy.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30722,12 +30729,17 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/hevc-converter-mov-vs-alternatives.html': 'guide/pt/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/es/hevc-converter-mov-vs-alternatives.html': 'guide/es/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/vi/hevc-converter-mov-vs-alternatives.html': 'guide/vi/hevc-converter-mov-vs-alternatives.jsp',
+  '/guides/id/hevc-converter-mov-vs-alternatives.html': 'guide/id/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/es/hevc-converter-mov-step-by-step.html': 'guide/es/hevc-converter-mov-step-by-step.jsp',
   '/guides/vi/hevc-converter-mov-step-by-step.html': 'guide/vi/hevc-converter-mov-step-by-step.jsp',
   '/guides/id/hevc-converter-mov-step-by-step.html': 'guide/id/hevc-converter-mov-step-by-step.jsp',
   '/guides/de/hevc-converter-mov-step-by-step.html': 'guide/de/hevc-converter-mov-step-by-step.jsp',
   '/developer-tools/pcfg-password-cracking-patterns-generator-pure-go-2026.html': 'utility/pcfg-password-cracking-patterns-generator-pure-go-2026.jsp',
   '/guides/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
+  '/image-converter-tools/layered-image-editor-linux-omarchy.html': 'convert/layered-image-editor-linux-omarchy.jsp',
+  '/guides/layered-image-editor-linux-omarchy-when.html': 'guide/layered-image-editor-linux-omarchy-when.jsp',
+  '/guides/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/layered-image-editor-linux-omarchy-step-by-step.jsp',
+  '/guides/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
