@@ -1,44 +1,55 @@
 <div class="w3-container">
-    <p>Drop two photos of the same aquarium - one from before, one from now - and this page measures which one is clearer, names the cloudiness pattern it sees, and lists what to do next. Every pixel is read on this device, in your browser: neither photo is uploaded anywhere.</p>
+    <p>Drop two photos of the same aquarium - one from before, one from now - and this page measures which one is clearer, names the cloudiness pattern and lists what to do next. Or drop a short clip to see how active your fish are and where they swim. Everything is read on this device: nothing is uploaded.</p>
 </div>
 
 <div class="w3-container awc-tool">
     <div class="w3-row-padding">
         <div class="w3-col m6 s12">
-            <div id="awcDropA" class="awc-drop w3-border w3-round" role="button" tabindex="0" aria-label="Add the earlier photo">
-                <p><b>Image 1 - earlier state (before)</b></p>
-                <p class="w3-text-grey">Drag a photo here or click to choose</p>
+            <div id="awcDropA" class="awc-drop w3-border w3-round" role="button" tabindex="0" aria-label="Add the earlier photo, or one short video">
+                <p><b id="awcTitleA">Image 1 - earlier state (before)</b></p>
+                <p class="w3-text-grey" id="awcHintA">Drag a photo here or click to choose</p>
                 <img id="awcThumbA" class="awc-thumb" alt="Earlier photo preview" style="display:none">
                 <div id="awcNameA" class="w3-small"></div>
                 <div id="awcWhenA" class="w3-small w3-text-grey"></div>
             </div>
-            <input type="file" id="awcFileA" accept="image/*" class="w3-hide" aria-hidden="true">
+            <input type="file" id="awcFileA" accept="image/*,video/*,.mov,.m4v,.mp4,.webm,.hevc" class="w3-hide" aria-hidden="true">
         </div>
         <div class="w3-col m6 s12">
-            <div id="awcDropB" class="awc-drop w3-border w3-round" role="button" tabindex="0" aria-label="Add the current photo">
-                <p><b>Image 2 - current state (after)</b></p>
-                <p class="w3-text-grey">Drag a photo here or click to choose</p>
+            <div id="awcDropB" class="awc-drop w3-border w3-round" role="button" tabindex="0" aria-label="Add the current photo, or one short video">
+                <p><b id="awcTitleB">Image 2 - current state (after)</b></p>
+                <p class="w3-text-grey" id="awcHintB">Drag a photo here or click to choose</p>
                 <img id="awcThumbB" class="awc-thumb" alt="Current photo preview" style="display:none">
                 <div id="awcNameB" class="w3-small"></div>
                 <div id="awcWhenB" class="w3-small w3-text-grey"></div>
             </div>
-            <input type="file" id="awcFileB" accept="image/*" class="w3-hide" aria-hidden="true">
+            <input type="file" id="awcFileB" accept="image/*,video/*,.mov,.m4v,.mp4,.webm,.hevc" class="w3-hide" aria-hidden="true">
         </div>
     </div>
+    <div class="w3-row-padding awc-vrow">
+        <div class="w3-col s12">
+            <div id="awcDropV" class="awc-drop awc-drop-v w3-border w3-round" role="button" tabindex="0" aria-label="Add one short video of your fish">
+                <p><b id="awcDropVTitle">Or one short video of your fish (MP4, MOV, M4V or WebM, including iPhone HEVC)</b></p>
+                <p class="w3-text-grey" id="awcDropVHint">Drag a clip here or click to choose - 15 to 30 seconds from a steady phone works best.</p>
+                <div id="awcNameV" class="w3-small"></div>
+                <div id="awcInfoV" class="w3-small w3-text-grey"></div>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="awcFileAny" multiple accept="image/*,video/*,.mov,.m4v,.mp4,.webm,.hevc" class="w3-hide" aria-label="Choose two photos or one video">
 
     <div class="w3-row-padding w3-margin-top awc-params">
         <div class="w3-col m4 s12">
-            <label for="awcVolume"><b>Tank volume</b> (optional)</label>
+            <label for="awcVolume"><b id="awcVolLblB">Tank volume</b> <span id="awcVolOpt">(optional)</span></label>
             <div class="awc-volrow">
                 <input type="number" min="1" id="awcVolume" class="w3-input w3-border" placeholder="e.g. 60">
                 <select id="awcVolUnit" class="w3-select w3-border" aria-label="Volume unit">
-                    <option value="l" selected>liters</option>
-                    <option value="gal">US gallons</option>
+                    <option value="l" id="awcUnitL" selected>liters</option>
+                    <option value="gal" id="awcUnitGal">US gallons</option>
                 </select>
             </div>
         </div>
         <div class="w3-col m8 s12">
-            <label><b>Fish in the tank</b> (optional - counts you enter, or let the AI suggest below)</label>
+            <label><b id="awcFishLblB">Fish in the tank</b> <span id="awcFishOpt">(optional - counts you enter, or let the AI suggest below)</span></label>
             <div class="awc-stock">
                 <span class="awc-sp"><label for="awcN_goldfish">Goldfish</label><input id="awcN_goldfish" type="number" min="0" class="w3-input w3-border"></span>
                 <span class="awc-sp"><label for="awcN_betta">Betta</label><input id="awcN_betta" type="number" min="0" class="w3-input w3-border"></span>
@@ -54,34 +65,51 @@
         </div>
     </div>
 
-    <div class="w3-row w3-margin-top">
+    <div class="w3-row w3-margin-top awc-langrow">
+        <label for="awcLang"><b id="awcLangLbl">Report language</b></label>
+        <select id="awcLang" class="w3-select w3-border awc-lang"></select>
+        <div id="awcLangStatus" class="w3-small" aria-live="polite"></div>
+    </div>
+
+    <div class="w3-row w3-margin-top awc-actrow">
         <button type="button" id="awcAnalyze" class="w3-button w3-red" disabled>Compare the two photos</button>
+        <button type="button" id="awcDeclineBtn" class="w3-button w3-light-grey w3-hide">Not now</button>
+        <button type="button" id="awcAbortBtn" class="w3-button w3-light-grey w3-hide">Stop</button>
+        <button type="button" id="awcChooseBtn" class="w3-button w3-light-grey">Choose files</button>
         <button type="button" id="awcDemoBtn" class="w3-button w3-light-grey">Try with the sample photos</button>
-        <div id="awcStatus" class="w3-small w3-text-grey" style="margin-top:6px">Add two photos of the same tank - nothing leaves this device.</div>
+        <button type="button" id="awcDemoClipBtn" class="w3-button w3-light-grey">Try with the sample clip</button>
+        <div id="awcVidProgress" class="w3-light-grey w3-round w3-hide awc-vprog"><div id="awcVidBar" class="w3-container w3-teal w3-round" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="awcStatus" style="width:0%;height:18px;font-size:11px">0%</div></div>
+        <div id="awcStatus" class="w3-small w3-text-grey" role="status" aria-live="polite" style="margin-top:6px">Add two photos of the same tank, or one short clip - nothing leaves this device.</div>
     </div>
 
     <div id="awcResult" class="w3-row w3-margin-top w3-hide">
-        <div id="awcBadge" class="awc-badge"></div>
-        <div id="awcGauges" class="awc-gauges"></div>
-        <div id="awcElapsed" class="w3-small w3-text-grey"></div>
-        <div id="awcJuxta" class="awc-juxta"></div>
-        <table class="w3-table w3-bordered w3-small awc-cmp-table">
-            <thead><tr><th>Metric</th><th>Before</th><th>After</th><th>Delta</th></tr></thead>
-            <tbody id="awcTable"></tbody>
-        </table>
-        <p id="awcNote" class="awc-note"></p>
-        <div id="awcBio" class="awc-bio"></div>
-        <h3 class="awc-h3">What to do next</h3>
-        <ol id="awcActions"></ol>
+        <div id="awcReport" class="awc-report" lang="en" data-run="0" data-mode="photos">
+            <p id="awcMachine" class="w3-small w3-text-grey awc-machine w3-hide"></p>
+            <div id="awcPhotoReport">
+                <div id="awcBadge" class="awc-badge"></div>
+                <div id="awcGauges" class="awc-gauges"></div>
+                <div id="awcElapsed" class="w3-small w3-text-grey"></div>
+                <div id="awcJuxta" class="awc-juxta"></div>
+                <table class="w3-table w3-bordered w3-small awc-cmp-table">
+                    <thead><tr><th id="awcThMetric">Metric</th><th id="awcThBefore">Before</th><th id="awcThAfter">After</th><th id="awcThDelta">Delta</th></tr></thead>
+                    <tbody id="awcTable"></tbody>
+                </table>
+                <p id="awcNote" class="awc-note"></p>
+                <div id="awcBio" class="awc-bio"></div>
+                <h3 class="awc-h3" id="awcActionsH">What to do next</h3>
+                <ol id="awcActions"></ol>
 
-        <div class="awc-ai w3-border-top">
-            <div id="awcBuiltinRow" class="w3-hide">
-                <button type="button" id="awcBuiltinBtn" class="w3-button w3-light-grey w3-small">Rewrite the report with the browser's built-in AI (on-device, no download)</button>
-                <p id="awcAiProse" class="awc-prose"></p>
+                <div class="awc-ai w3-border-top">
+                    <div id="awcBuiltinRow" class="w3-hide">
+                        <button type="button" id="awcBuiltinBtn" class="w3-button w3-light-grey w3-small">Rewrite the report with the browser's built-in AI (on-device, no download)</button>
+                        <p id="awcAiProse" class="awc-prose"></p>
+                    </div>
+                    <button type="button" id="awcClipBtn" class="w3-button w3-light-grey w3-small">Run the on-device AI photo check (downloads about 147 MB once, stays on this device)</button>
+                    <div id="awcClipProgress" class="w3-light-grey w3-round w3-hide" style="margin-top:6px"><div id="awcClipBar" class="w3-container w3-teal w3-round" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="awcClipBtn" style="width:0%;height:18px;font-size:11px">0%</div></div>
+                    <div id="awcClipOut" class="awc-prose"></div>
+                </div>
             </div>
-            <button type="button" id="awcClipBtn" class="w3-button w3-light-grey w3-small">Run the on-device AI photo check (downloads about 147 MB once, stays on this device)</button>
-            <div id="awcClipProgress" class="w3-light-grey w3-round w3-hide" style="margin-top:6px"><div id="awcClipBar" class="w3-container w3-teal w3-round" style="width:0%;height:18px;font-size:11px">0%</div></div>
-            <div id="awcClipOut" class="awc-prose"></div>
+            <div id="awcVideoReport" class="awc-vid w3-hide"></div>
         </div>
     </div>
 </div>
@@ -97,11 +125,24 @@
             <thead><tr><th>Metric</th><th>Day 1</th><th>Day 4</th><th>Delta</th></tr></thead>
             <tbody>
                 <tr><td><b>Optical state</b></td><td>Uniform milky haze (bloom pattern)</td><td>Crystal clear</td><td>Improved</td></tr>
-                <tr><td>Clarity score (0-100)</td><td>15</td><td>67</td><td>+52 pts</td></tr>
+                <tr><td>Clarity score <span style="white-space:nowrap">(0-100)</span></td><td>15</td><td>67</td><td>+52 pts</td></tr>
                 <tr><td>Haze (shadow lift)</td><td>100%</td><td>26%</td><td>Less scatter</td></tr>
                 <tr><td>Edge sharpness</td><td>5</td><td>94</td><td>Background crisper</td></tr>
             </tbody>
         </table>
-        <p class="w3-small">Verdict for day 1: even, low-texture haze across the frame - the classic look of a heterotrophic bacterial bloom. Suggested steps at that point: halve feeding for 48 hours, keep surface agitation high, and do not deep-clean the filter. By day 4 the numbers confirm it cleared on its own.</p>
+        <p class="w3-small">Verdict for day 1: even, low-texture haze across the frame - the classic look of a heterotrophic bacterial bloom. Suggested steps at that point: halve feeding for 48 hours, keep surface agitation high, and do not deep-clean the filter. By day 4 the numbers show it had cleared.</p>
+    </div>
+    <div class="w3-panel w3-pale-blue w3-round awc-demo-clip">
+        <p><b>Example clip report (bundled sample clip).</b> A 14-second synthetic clip of fish holding just under the surface, as the sample clip button reports it:</p>
+        <table class="w3-table w3-bordered w3-small">
+            <thead><tr><th>Measure</th><th>Sample clip</th></tr></thead>
+            <tbody>
+                <tr><td><b>Pattern</b></td><td>Surface crowding pattern</td></tr>
+                <tr><td>Moving fish visible at once (approximate)</td><td>4 (range 3-4)</td></tr>
+                <tr><td>Share of movement in the surface band (top 12% of the water)</td><td>100%</td></tr>
+                <tr><td>Median swimming speed</td><td>0.33 body lengths per second</td></tr>
+            </tbody>
+        </table>
+        <p class="w3-small">First steps for that pattern: more surface agitation, then test ammonia and nitrite and check the temperature.</p>
     </div>
 </div>
