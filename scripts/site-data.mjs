@@ -14,6 +14,32 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/pt/hevc-converter-mov-when.html', // hevc-converter-mov-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/es/hevc-converter-mov-when.html', // hevc-converter-mov-when es locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/vi/hevc-converter-mov-when.html', // hevc-converter-mov-when vi locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/id/hevc-converter-mov-when.html', // hevc-converter-mov-when id locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/hevc-converter-mov-when.html', // hevc-converter-mov-when de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/pt/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html', // pcfg-password-cracking-patterns-generator-pure-go-2026-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/es/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html', // pcfg-password-cracking-patterns-generator-pure-go-2026-when es locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/vi/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html', // pcfg-password-cracking-patterns-generator-pure-go-2026-when vi locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/id/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html', // pcfg-password-cracking-patterns-generator-pure-go-2026-when id locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html', // pcfg-password-cracking-patterns-generator-pure-go-2026-when de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/pt/layered-image-editor-linux-omarchy-when.html', // layered-image-editor-linux-omarchy-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/es/layered-image-editor-linux-omarchy-when.html', // layered-image-editor-linux-omarchy-when es locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/vi/layered-image-editor-linux-omarchy-when.html', // layered-image-editor-linux-omarchy-when vi locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/id/layered-image-editor-linux-omarchy-when.html', // layered-image-editor-linux-omarchy-when id locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/layered-image-editor-linux-omarchy-when.html', // layered-image-editor-linux-omarchy-when de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/pt/layered-image-editor-linux-omarchy-step-by-step.html', // layered-image-editor-linux-omarchy-step-by-step pt locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/es/layered-image-editor-linux-omarchy-step-by-step.html', // layered-image-editor-linux-omarchy-step-by-step es locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/vi/layered-image-editor-linux-omarchy-step-by-step.html', // layered-image-editor-linux-omarchy-step-by-step vi locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/id/layered-image-editor-linux-omarchy-step-by-step.html', // layered-image-editor-linux-omarchy-step-by-step id locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/layered-image-editor-linux-omarchy-step-by-step.html', // layered-image-editor-linux-omarchy-step-by-step de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/pt/layered-image-editor-linux-omarchy-vs-alternatives.html', // layered-image-editor-linux-omarchy-vs-alternatives pt locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/es/layered-image-editor-linux-omarchy-vs-alternatives.html', // layered-image-editor-linux-omarchy-vs-alternatives es locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/vi/layered-image-editor-linux-omarchy-vs-alternatives.html', // layered-image-editor-linux-omarchy-vs-alternatives vi locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/id/layered-image-editor-linux-omarchy-vs-alternatives.html', // layered-image-editor-linux-omarchy-vs-alternatives id locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/layered-image-editor-linux-omarchy-vs-alternatives.html', // layered-image-editor-linux-omarchy-vs-alternatives de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/hevc-converter-mov-vs-alternatives.html', // hevc-converter-mov-vs-alternatives de locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/layered-image-editor-linux-omarchy-vs-alternatives.html',
   '/guides/layered-image-editor-linux-omarchy-step-by-step.html',
   '/guides/layered-image-editor-linux-omarchy-when.html',
@@ -7702,6 +7728,58 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // hevc-converter-mov-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/pt/hevc-converter-mov-when.html',
+  // hevc-converter-mov-when es locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/es/hevc-converter-mov-when.html',
+  // hevc-converter-mov-when vi locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/vi/hevc-converter-mov-when.html',
+  // hevc-converter-mov-when id locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/id/hevc-converter-mov-when.html',
+  // hevc-converter-mov-when de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/hevc-converter-mov-when.html',
+  // pcfg-password-cracking-patterns-generator-pure-go-2026-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/pt/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html',
+  // pcfg-password-cracking-patterns-generator-pure-go-2026-when es locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/es/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html',
+  // pcfg-password-cracking-patterns-generator-pure-go-2026-when vi locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/vi/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html',
+  // pcfg-password-cracking-patterns-generator-pure-go-2026-when id locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/id/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html',
+  // pcfg-password-cracking-patterns-generator-pure-go-2026-when de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html',
+  // layered-image-editor-linux-omarchy-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/pt/layered-image-editor-linux-omarchy-when.html',
+  // layered-image-editor-linux-omarchy-when es locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/es/layered-image-editor-linux-omarchy-when.html',
+  // layered-image-editor-linux-omarchy-when vi locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/vi/layered-image-editor-linux-omarchy-when.html',
+  // layered-image-editor-linux-omarchy-when id locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/id/layered-image-editor-linux-omarchy-when.html',
+  // layered-image-editor-linux-omarchy-when de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/layered-image-editor-linux-omarchy-when.html',
+  // layered-image-editor-linux-omarchy-step-by-step pt locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/pt/layered-image-editor-linux-omarchy-step-by-step.html',
+  // layered-image-editor-linux-omarchy-step-by-step es locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/es/layered-image-editor-linux-omarchy-step-by-step.html',
+  // layered-image-editor-linux-omarchy-step-by-step vi locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/vi/layered-image-editor-linux-omarchy-step-by-step.html',
+  // layered-image-editor-linux-omarchy-step-by-step id locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/id/layered-image-editor-linux-omarchy-step-by-step.html',
+  // layered-image-editor-linux-omarchy-step-by-step de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/layered-image-editor-linux-omarchy-step-by-step.html',
+  // layered-image-editor-linux-omarchy-vs-alternatives pt locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/pt/layered-image-editor-linux-omarchy-vs-alternatives.html',
+  // layered-image-editor-linux-omarchy-vs-alternatives es locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/es/layered-image-editor-linux-omarchy-vs-alternatives.html',
+  // layered-image-editor-linux-omarchy-vs-alternatives vi locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/vi/layered-image-editor-linux-omarchy-vs-alternatives.html',
+  // layered-image-editor-linux-omarchy-vs-alternatives id locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/id/layered-image-editor-linux-omarchy-vs-alternatives.html',
+  // layered-image-editor-linux-omarchy-vs-alternatives de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/layered-image-editor-linux-omarchy-vs-alternatives.html',
+  // hevc-converter-mov-vs-alternatives de locale fanout (new_guide_locale_completeness backfill 20261006)
+  '/guides/de/hevc-converter-mov-vs-alternatives.html',
   // hevc-converter-mov-step-by-step pt locale fanout (create_new_guide_page 20261004-5)
   '/guides/pt/hevc-converter-mov-step-by-step.html',
   // hevc-converter-mov-vs-alternatives pt locale fanout (locale completion 20261005-aquarium-fire2)
@@ -30729,6 +30807,32 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/hevc-converter-mov-vs-alternatives.html': 'guide/pt/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/es/hevc-converter-mov-vs-alternatives.html': 'guide/es/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/vi/hevc-converter-mov-vs-alternatives.html': 'guide/vi/hevc-converter-mov-vs-alternatives.jsp',
+  '/guides/pt/hevc-converter-mov-when.html': 'guide/pt/hevc-converter-mov-when.jsp',
+  '/guides/es/hevc-converter-mov-when.html': 'guide/es/hevc-converter-mov-when.jsp',
+  '/guides/vi/hevc-converter-mov-when.html': 'guide/vi/hevc-converter-mov-when.jsp',
+  '/guides/id/hevc-converter-mov-when.html': 'guide/id/hevc-converter-mov-when.jsp',
+  '/guides/de/hevc-converter-mov-when.html': 'guide/de/hevc-converter-mov-when.jsp',
+  '/guides/pt/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/pt/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
+  '/guides/es/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/es/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
+  '/guides/vi/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/vi/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
+  '/guides/id/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/id/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
+  '/guides/de/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/de/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
+  '/guides/pt/layered-image-editor-linux-omarchy-when.html': 'guide/pt/layered-image-editor-linux-omarchy-when.jsp',
+  '/guides/es/layered-image-editor-linux-omarchy-when.html': 'guide/es/layered-image-editor-linux-omarchy-when.jsp',
+  '/guides/vi/layered-image-editor-linux-omarchy-when.html': 'guide/vi/layered-image-editor-linux-omarchy-when.jsp',
+  '/guides/id/layered-image-editor-linux-omarchy-when.html': 'guide/id/layered-image-editor-linux-omarchy-when.jsp',
+  '/guides/de/layered-image-editor-linux-omarchy-when.html': 'guide/de/layered-image-editor-linux-omarchy-when.jsp',
+  '/guides/pt/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/pt/layered-image-editor-linux-omarchy-step-by-step.jsp',
+  '/guides/es/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/es/layered-image-editor-linux-omarchy-step-by-step.jsp',
+  '/guides/vi/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/vi/layered-image-editor-linux-omarchy-step-by-step.jsp',
+  '/guides/id/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/id/layered-image-editor-linux-omarchy-step-by-step.jsp',
+  '/guides/de/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/de/layered-image-editor-linux-omarchy-step-by-step.jsp',
+  '/guides/pt/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/pt/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
+  '/guides/es/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/es/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
+  '/guides/vi/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/vi/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
+  '/guides/id/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/id/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
+  '/guides/de/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/de/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
+  '/guides/de/hevc-converter-mov-vs-alternatives.html': 'guide/de/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/id/hevc-converter-mov-vs-alternatives.html': 'guide/id/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/es/hevc-converter-mov-step-by-step.html': 'guide/es/hevc-converter-mov-step-by-step.jsp',
   '/guides/vi/hevc-converter-mov-step-by-step.html': 'guide/vi/hevc-converter-mov-step-by-step.jsp',
