@@ -21,6 +21,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step pt locale fanout (create_new_guide_page 20261004-5)
   '/guides/es/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step es locale fanout (locale completion 20261005)
   '/guides/vi/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step vi locale fanout (locale completion 20261005-2)
+  '/guides/id/hevc-converter-mov-step-by-step.html', // hevc-converter-mov-step-by-step id locale fanout (locale completion 20261005-3)
   '/guides/markup-calculator-vs-alternatives.html',
   '/guides/markup-calculator-step-by-step.html',
   '/guides/markup-calculator-when.html',
@@ -7707,6 +7708,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/hevc-converter-mov-step-by-step.html',
   // hevc-converter-mov-step-by-step vi locale fanout (locale completion 20261005-2)
   '/guides/vi/hevc-converter-mov-step-by-step.html',
+  // hevc-converter-mov-step-by-step id locale fanout (locale completion 20261005-3)
+  '/guides/id/hevc-converter-mov-step-by-step.html',
   // color-palette-generator-vs-alternatives locale fanout (create_new_guide_page 20260906-2)
   '/guides/pt/color-palette-generator-vs-alternatives.html',
   '/guides/es/color-palette-generator-vs-alternatives.html',
@@ -30685,6 +30688,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/hevc-converter-mov-step-by-step.html': 'guide/pt/hevc-converter-mov-step-by-step.jsp',
   '/guides/es/hevc-converter-mov-step-by-step.html': 'guide/es/hevc-converter-mov-step-by-step.jsp',
   '/guides/vi/hevc-converter-mov-step-by-step.html': 'guide/vi/hevc-converter-mov-step-by-step.jsp',
+  '/guides/id/hevc-converter-mov-step-by-step.html': 'guide/id/hevc-converter-mov-step-by-step.jsp',
   '/developer-tools/pcfg-password-cracking-patterns-generator-pure-go-2026.html': 'utility/pcfg-password-cracking-patterns-generator-pure-go-2026.jsp',
   '/guides/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
 };
