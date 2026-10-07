@@ -3,4 +3,5 @@
 	<freetoolonline:loading/>
 	<!-- BODYHTML -->
 	${pageBodyHTML}
+	<freetoolonline:welcome welcomeTest='${pageBodyWelcome}'/>
 </freetoolonline:page>
