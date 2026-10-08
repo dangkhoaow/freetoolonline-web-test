@@ -17745,7 +17745,6 @@ export const ALIAS_ROUTES = {
   '/guides/id/how-to-play-voxel-fps-arena.html': '/games/voxel-fps-arena.html', // consolidation-fire89 2026-08-31: how-to-play excess guide family merged into canonical
   '/guides/de/how-to-play-voxel-fps-arena.html': '/games/voxel-fps-arena.html', // consolidation-fire89 2026-08-31: how-to-play excess guide family merged into canonical
   '/guides/vi/how-to-play-wash-the-cat.html': '/guides/how-to-play-wash-the-cat.html',
-  '/guides/vi/how-to-record-your-screen-online.html': '/guides/how-to-record-your-screen-online.html',
   '/guides/vi/how-to-reduce-zip-file-size-online.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
   '/guides/vi/how-to-run-a-private-ai-chat-in-your-browser.html': '/guides/how-to-run-a-private-ai-chat-in-your-browser.html',
   '/guides/vi/how-to-sign-pdf-after-removing-a-password.html': '/guides/en/how-to-sign-pdf-after-removing-a-password.html',
@@ -19004,6 +19003,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-visualize-data-online.html': 'guide/de/how-to-visualize-data-online.jsp',
   '/device-test-tools/screen-recorder.html': 'convert/screen-recorder.jsp',
   '/guides/how-to-record-your-screen-online.html': 'guide/how-to-record-your-screen-online.jsp',
+  '/guides/vi/how-to-record-your-screen-online.html': 'guide/vi/how-to-record-your-screen-online.jsp',
   '/guides/pt/how-to-record-your-screen-online.html': 'guide/pt/how-to-record-your-screen-online.jsp',
   '/guides/es/how-to-record-your-screen-online.html': 'guide/es/how-to-record-your-screen-online.jsp',
   '/guides/id/how-to-record-your-screen-online.html': 'guide/id/how-to-record-your-screen-online.jsp',
