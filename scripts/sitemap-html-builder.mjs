@@ -96,6 +96,15 @@ const TOOL_CLUSTER_BLURBS = {
 // runs against the slug under /guides/. Anything that fails to match falls
 // into the trailing "Editorial and other" bucket so nothing is silently
 // dropped.
+//
+// Ordering note (Phase-6 reader-walkthrough axis_A fix): task-matched
+// routing topics - the groups a reader lands here looking to solve a
+// specific file or device problem - are listed FIRST, so the fifteen-second
+// scan promised in the intro paragraph actually lands on the right block
+// before any non-routing browse-for-fun topic (games, space, dinosaurs) or
+// the large unsorted catch-all. "Utilities" is task-matched (VM/Linux
+// how-tos) so it moved up alongside the other routing topics; the catch-all
+// stays last by definition.
 const GUIDE_TOPIC_ORDER = [
   'zip-and-file-compression',
   'heic-and-image-conversion',
@@ -104,10 +113,10 @@ const GUIDE_TOPIC_ORDER = [
   'video',
   'device-tests',
   'developer-and-encoding',
+  'utilities',
   'games',
   'space',
   'dinosaurs',
-  'utilities',
   'editorial-and-other',
 ];
 
@@ -307,7 +316,7 @@ function renderGuideHubItem({ route, title, description }) {
 
 function renderGuideHubTopicSection(topic, items) {
   const lines = [];
-  lines.push(`    <h2 class="text-uppercase"><b>${escapeHtml(GUIDE_TOPIC_LABELS[topic] ?? topic)}</b></h2>`);
+  lines.push(`    <h2 id="topic-${topic}" class="text-uppercase"><b>${escapeHtml(GUIDE_TOPIC_LABELS[topic] ?? topic)}</b></h2>`);
   lines.push('    <ul>');
   for (const item of items) {
     lines.push(renderGuideHubItem(item));
@@ -351,10 +360,18 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
   }
   const totalGuides = guideRoutes.length;
 
+  // Jump-nav entries are built in lockstep with sections - same loop, same
+  // non-empty filter - so a link never points at a heading that did not
+  // render (and a heading never renders without a matching link). Mirrors
+  // the "Jump to" pattern already shipped on /sitemap.html.
   const sections = [];
+  const jumpNavItems = [];
   for (const topic of GUIDE_TOPIC_ORDER) {
     const items = guideMetaByTopic.get(topic);
     if (!items || items.length === 0) continue;
+    jumpNavItems.push(
+      `        <li><a href="#topic-${topic}">${escapeHtml(GUIDE_TOPIC_LABELS[topic] ?? topic)}</a> (${items.length})</li>`,
+    );
     sections.push(renderGuideHubTopicSection(topic, items));
     if (topic === 'developer-and-encoding') {
       sections.push(`    <figure class="illustration">
@@ -367,6 +384,13 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
     </figure>`);
     }
   }
+  const jumpNavHtml = jumpNavItems.length
+    ? `    <h2 class="text-uppercase"><b>Jump to a topic</b></h2>
+    <ul class="guide-hub-jumpnav">
+${jumpNavItems.join('\n')}
+    </ul>
+`
+    : '';
 
   const html = `<div class='w3-container'>
     <h1><b class="text-uppercase">All Guides - Browser Tool Library</b></h1>
@@ -374,6 +398,7 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
 
     <p>${totalGuides} English guides grouped by the kind of task you came to do. Where a guide also has an Indonesian or Portuguese edition, the language link sits on the guide page itself. If you are not sure which group your question lives in, the search box on the home page covers every guide and tool by keyword.</p>
 
+${jumpNavHtml}
     <figure class="illustration">
       <img src="/img/illustrations/decision-tree-2branch/guides__12f3a7f9.svg"
            alt="Decision tree showing how readers pick a guide by the input they already have"
