@@ -356,6 +356,16 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
     const items = guideMetaByTopic.get(topic);
     if (!items || items.length === 0) continue;
     sections.push(renderGuideHubTopicSection(topic, items));
+    if (topic === 'developer-and-encoding') {
+      sections.push(`    <figure class="illustration">
+      <img src="/img/illustrations/comparison-card-pair/guides__caec21ab.svg"
+           alt="Compare MD5 and SHA-256 checksum length and speed before picking the matching hash guide below."
+           loading="lazy"
+           width="640"
+           height="240">
+      <figcaption>Hold a hash question, a JSON task, or a PDF merge/split/password case? The Developer and PDF groups above sort by exactly that, so you find the matching guide fast.</figcaption>
+    </figure>`);
+    }
   }
 
   const html = `<div class='w3-container'>
