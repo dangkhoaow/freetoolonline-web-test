@@ -317,6 +317,19 @@ function renderGuideHubItem({ route, title, description }) {
 function renderGuideHubTopicSection(topic, items) {
   const lines = [];
   lines.push(`    <h2 id="topic-${topic}" class="text-uppercase"><b>${escapeHtml(GUIDE_TOPIC_LABELS[topic] ?? topic)}</b></h2>`);
+  // Phase-6 reader-walkthrough axis_A fix (cycle 20261010): the
+  // "editorial-and-other" catch-all runs into the thousands of entries -
+  // far past anything a fifteen-second scan can cover, since by definition
+  // it is everything classifyGuide() could NOT route to a specific
+  // job-to-be-done topic above. Rather than risk mis-sorting that many
+  // slugs into new sub-buckets in one pass, give the reader a faster way
+  // to find a specific title than scrolling: find-in-page or the home
+  // page's keyword search (already promised in the page intro).
+  if (topic === 'editorial-and-other') {
+    lines.push(
+      `    <p>${items.length} guides that did not fit a specific topic above - calculators, text/format utilities, comparisons, and more. Use your browser's find-in-page (Ctrl or Cmd+F) with a keyword from your task, or the search box on the home page, to jump straight to a title instead of scrolling the full list.</p>`,
+    );
+  }
   lines.push('    <ul>');
   for (const item of items) {
     lines.push(renderGuideHubItem(item));
