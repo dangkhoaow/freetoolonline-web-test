@@ -117,6 +117,9 @@ const GUIDE_TOPIC_ORDER = [
   'games',
   'space',
   'dinosaurs',
+  'how-to-step-by-step',
+  'when-to-use',
+  'vs-alternatives-comparisons',
   'editorial-and-other',
 ];
 
@@ -132,6 +135,9 @@ const GUIDE_TOPIC_LABELS = {
   space: 'Space 3D',
   dinosaurs: 'Dinosaurs 3D',
   utilities: 'Utilities',
+  'how-to-step-by-step': 'Step-by-step how-to guides',
+  'when-to-use': 'When should I use this?',
+  'vs-alternatives-comparisons': 'Comparisons and alternatives',
   'editorial-and-other': 'Editorial and other',
 };
 
@@ -188,6 +194,29 @@ function classifyGuide(slug) {
   // edits here.
   if (/(^|-)(dinosaur|dino|rex|raptor|saurus|ceratops|triceratops|stegosaur|ankylosaur|mosasaur|pterosaur|pteranodon|fossil|jurassic|cretaceous|prehistoric)/.test(slug)) {
     return 'dinosaurs';
+  }
+  // Phase-6 reader-walkthrough axis_D fix (cycle 20261010-5): the
+  // "editorial-and-other" catch-all had grown to ~1,430 entries (81% of all
+  // EN guides) - far past a fifteen-second scan, per the two-model gate's
+  // CRITICAL finding on /guides.html ("flat alphabetical dump ... breaks
+  // the index's scan-in-15-seconds flow"). The topical-map loop generates
+  // three guide variants per intent node with a fixed query-shape suffix
+  // (-step-by-step / -when / -vs-alternatives) regardless of the node's
+  // subject, so most of the catch-all shares one of these three suffixes.
+  // Splitting by suffix (query intent) is a real, honest grouping - "how do
+  // I do X" vs "when should I use X" vs "X vs alternatives" are genuinely
+  // different reader questions - and is a mechanical, zero-mis-sort-risk cut
+  // (regex on the suffix, not a guess at the topic). This drops the
+  // catch-all to ~260 entries (82% reduction) without touching any other
+  // bucket's membership.
+  if (/-step-by-step$/.test(slug)) {
+    return 'how-to-step-by-step';
+  }
+  if (/-when$/.test(slug)) {
+    return 'when-to-use';
+  }
+  if (/-vs-alternatives$/.test(slug)) {
+    return 'vs-alternatives-comparisons';
   }
   return 'editorial-and-other';
 }
@@ -843,6 +872,9 @@ const GUIDE_TOPIC_TO_CLUSTER = {
   space: 'space-3d',
   dinosaurs: 'dinosaur-3d',
   utilities: 'utility',
+  'how-to-step-by-step': 'utility',
+  'when-to-use': 'utility',
+  'vs-alternatives-comparisons': 'utility',
   'editorial-and-other': 'utility',
 };
 
