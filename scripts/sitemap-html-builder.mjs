@@ -393,7 +393,7 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
            loading="lazy"
            width="640"
            height="240">
-      <figcaption>Hold a hash question, a JSON task, or a PDF merge/split/password case? The Developer and PDF groups above sort by exactly that, so you find the matching guide fast.</figcaption>
+      <figcaption>Developer-utility and PDF guides sit in their own blocks above: hold a hash question (MD5 vs SHA-256), a JSON pretty-print task, or a merge, split, compress, password, or flatten case, and find the matching walkthrough without scanning every block.</figcaption>
     </figure>`);
     }
   }
