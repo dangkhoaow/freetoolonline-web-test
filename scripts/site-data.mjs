@@ -14,6 +14,7 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // layered-image-editor-linux-omarchy mock tool + 18 guide routes retired 2026-10-11 (operator decision 2026-10-10) - see ALIAS_ROUTES.
   '/guides/pt/hevc-converter-mov-when.html', // hevc-converter-mov-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/es/hevc-converter-mov-when.html', // hevc-converter-mov-when es locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/vi/hevc-converter-mov-when.html', // hevc-converter-mov-when vi locale fanout (new_guide_locale_completeness backfill 20261006)
@@ -24,25 +25,7 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html', // pcfg-password-cracking-patterns-generator-pure-go-2026-when vi locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/id/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html', // pcfg-password-cracking-patterns-generator-pure-go-2026-when id locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/de/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html', // pcfg-password-cracking-patterns-generator-pure-go-2026-when de locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/pt/layered-image-editor-linux-omarchy-when.html', // layered-image-editor-linux-omarchy-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/es/layered-image-editor-linux-omarchy-when.html', // layered-image-editor-linux-omarchy-when es locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/vi/layered-image-editor-linux-omarchy-when.html', // layered-image-editor-linux-omarchy-when vi locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/id/layered-image-editor-linux-omarchy-when.html', // layered-image-editor-linux-omarchy-when id locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/de/layered-image-editor-linux-omarchy-when.html', // layered-image-editor-linux-omarchy-when de locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/pt/layered-image-editor-linux-omarchy-step-by-step.html', // layered-image-editor-linux-omarchy-step-by-step pt locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/es/layered-image-editor-linux-omarchy-step-by-step.html', // layered-image-editor-linux-omarchy-step-by-step es locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/vi/layered-image-editor-linux-omarchy-step-by-step.html', // layered-image-editor-linux-omarchy-step-by-step vi locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/id/layered-image-editor-linux-omarchy-step-by-step.html', // layered-image-editor-linux-omarchy-step-by-step id locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/de/layered-image-editor-linux-omarchy-step-by-step.html', // layered-image-editor-linux-omarchy-step-by-step de locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/pt/layered-image-editor-linux-omarchy-vs-alternatives.html', // layered-image-editor-linux-omarchy-vs-alternatives pt locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/es/layered-image-editor-linux-omarchy-vs-alternatives.html', // layered-image-editor-linux-omarchy-vs-alternatives es locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/vi/layered-image-editor-linux-omarchy-vs-alternatives.html', // layered-image-editor-linux-omarchy-vs-alternatives vi locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/id/layered-image-editor-linux-omarchy-vs-alternatives.html', // layered-image-editor-linux-omarchy-vs-alternatives id locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/de/layered-image-editor-linux-omarchy-vs-alternatives.html', // layered-image-editor-linux-omarchy-vs-alternatives de locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/de/hevc-converter-mov-vs-alternatives.html', // hevc-converter-mov-vs-alternatives de locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/layered-image-editor-linux-omarchy-vs-alternatives.html',
-  '/guides/layered-image-editor-linux-omarchy-step-by-step.html',
-  '/guides/layered-image-editor-linux-omarchy-when.html',
   '/guides/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html',
   '/guides/hevc-converter-mov-vs-alternatives.html',
   '/guides/hevc-converter-mov-step-by-step.html',
@@ -7728,6 +7711,7 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // layered-image-editor-linux-omarchy mock tool + 18 guide routes retired 2026-10-11 (operator decision 2026-10-10) - see ALIAS_ROUTES.
   // hevc-converter-mov-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/pt/hevc-converter-mov-when.html',
   // hevc-converter-mov-when es locale fanout (new_guide_locale_completeness backfill 20261006)
@@ -7748,36 +7732,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html',
   // pcfg-password-cracking-patterns-generator-pure-go-2026-when de locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/de/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html',
-  // layered-image-editor-linux-omarchy-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/pt/layered-image-editor-linux-omarchy-when.html',
-  // layered-image-editor-linux-omarchy-when es locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/es/layered-image-editor-linux-omarchy-when.html',
-  // layered-image-editor-linux-omarchy-when vi locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/vi/layered-image-editor-linux-omarchy-when.html',
-  // layered-image-editor-linux-omarchy-when id locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/id/layered-image-editor-linux-omarchy-when.html',
-  // layered-image-editor-linux-omarchy-when de locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/de/layered-image-editor-linux-omarchy-when.html',
-  // layered-image-editor-linux-omarchy-step-by-step pt locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/pt/layered-image-editor-linux-omarchy-step-by-step.html',
-  // layered-image-editor-linux-omarchy-step-by-step es locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/es/layered-image-editor-linux-omarchy-step-by-step.html',
-  // layered-image-editor-linux-omarchy-step-by-step vi locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/vi/layered-image-editor-linux-omarchy-step-by-step.html',
-  // layered-image-editor-linux-omarchy-step-by-step id locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/id/layered-image-editor-linux-omarchy-step-by-step.html',
-  // layered-image-editor-linux-omarchy-step-by-step de locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/de/layered-image-editor-linux-omarchy-step-by-step.html',
-  // layered-image-editor-linux-omarchy-vs-alternatives pt locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/pt/layered-image-editor-linux-omarchy-vs-alternatives.html',
-  // layered-image-editor-linux-omarchy-vs-alternatives es locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/es/layered-image-editor-linux-omarchy-vs-alternatives.html',
-  // layered-image-editor-linux-omarchy-vs-alternatives vi locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/vi/layered-image-editor-linux-omarchy-vs-alternatives.html',
-  // layered-image-editor-linux-omarchy-vs-alternatives id locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/id/layered-image-editor-linux-omarchy-vs-alternatives.html',
-  // layered-image-editor-linux-omarchy-vs-alternatives de locale fanout (new_guide_locale_completeness backfill 20261006)
-  '/guides/de/layered-image-editor-linux-omarchy-vs-alternatives.html',
   // hevc-converter-mov-vs-alternatives de locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/de/hevc-converter-mov-vs-alternatives.html',
   // hevc-converter-mov-step-by-step pt locale fanout (create_new_guide_page 20261004-5)
@@ -14837,6 +14791,38 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // operator retire 2026-10-10 (executed 2026-10-11): the MOCK tool /image-converter-tools/layered-image-editor-linux-omarchy.html
+  // + its 18 companion guides (3 angles x 6 locales) + the root alias. FORCING EXAMPLE: the tool shipped 2026-10-05 by the
+  // new_tool_page_discovery strategy as a mock-data preview ("Preview mode: output is a mock until the backend endpoint
+  // deploys") with 5 ad units and 18 guides promising an output that never existed - thin content wrapped in ad slots, the
+  // doorway shape the Aug/Sep-2026 spam updates target. The operator decided "Retire han mock tool" on 2026-10-10
+  // (mapping: tool -> photo-editor, guide -> same-locale guide; see .agent/skills/_lib/mock-tool-guard.mjs for the ship-side
+  // refusal). Tool and old root alias -> the real client-side editor /image-tools/photo-editor.html. Each locale
+  // -when and -step-by-step -> '/guides/{loc}/photo-editor-online-pixlr.html'; each -vs-alternatives ->
+  // '/guides/{loc}/photo-editor-vs-graphics-app-vs-batch-processor.html' (EN form is '/guides/en/...': the bare EN path is
+  // itself an alias, and an alias must never point at another alias). The 19 routes are removed from INFO_ROUTES +
+  // GUIDE_ROUTES + JSP_BY_ROUTE in the same push; JSP wrappers and CMS fragments are left on disk like every prior retire.
+  // The old root alias is RETARGETED here (it pointed at the now-retired tool, which would have been an alias chain).
+  '/image-converter-tools/layered-image-editor-linux-omarchy.html': '/image-tools/photo-editor.html',
+  '/layered-image-editor-linux-omarchy.html': '/image-tools/photo-editor.html',
+  '/guides/layered-image-editor-linux-omarchy-when.html': '/guides/photo-editor-online-pixlr.html',
+  '/guides/layered-image-editor-linux-omarchy-step-by-step.html': '/guides/photo-editor-online-pixlr.html',
+  '/guides/layered-image-editor-linux-omarchy-vs-alternatives.html': '/guides/en/photo-editor-vs-graphics-app-vs-batch-processor.html',
+  '/guides/pt/layered-image-editor-linux-omarchy-when.html': '/guides/pt/photo-editor-online-pixlr.html',
+  '/guides/pt/layered-image-editor-linux-omarchy-step-by-step.html': '/guides/pt/photo-editor-online-pixlr.html',
+  '/guides/pt/layered-image-editor-linux-omarchy-vs-alternatives.html': '/guides/pt/photo-editor-vs-graphics-app-vs-batch-processor.html',
+  '/guides/es/layered-image-editor-linux-omarchy-when.html': '/guides/es/photo-editor-online-pixlr.html',
+  '/guides/es/layered-image-editor-linux-omarchy-step-by-step.html': '/guides/es/photo-editor-online-pixlr.html',
+  '/guides/es/layered-image-editor-linux-omarchy-vs-alternatives.html': '/guides/es/photo-editor-vs-graphics-app-vs-batch-processor.html',
+  '/guides/vi/layered-image-editor-linux-omarchy-when.html': '/guides/vi/photo-editor-online-pixlr.html',
+  '/guides/vi/layered-image-editor-linux-omarchy-step-by-step.html': '/guides/vi/photo-editor-online-pixlr.html',
+  '/guides/vi/layered-image-editor-linux-omarchy-vs-alternatives.html': '/guides/vi/photo-editor-vs-graphics-app-vs-batch-processor.html',
+  '/guides/id/layered-image-editor-linux-omarchy-when.html': '/guides/id/photo-editor-online-pixlr.html',
+  '/guides/id/layered-image-editor-linux-omarchy-step-by-step.html': '/guides/id/photo-editor-online-pixlr.html',
+  '/guides/id/layered-image-editor-linux-omarchy-vs-alternatives.html': '/guides/id/photo-editor-vs-graphics-app-vs-batch-processor.html',
+  '/guides/de/layered-image-editor-linux-omarchy-when.html': '/guides/de/photo-editor-online-pixlr.html',
+  '/guides/de/layered-image-editor-linux-omarchy-step-by-step.html': '/guides/de/photo-editor-online-pixlr.html',
+  '/guides/de/layered-image-editor-linux-omarchy-vs-alternatives.html': '/guides/de/photo-editor-vs-graphics-app-vs-batch-processor.html',
   // content-consolidation fire159 (2026-10-05): TWO duplicate-intent guide angles retired into
   // their same-locale -when twin. Sourced from step 1b (section 3.6 zero-click guide surface),
   // NOT the backlog - step 1a was dry for the 18th consecutive fire, and NO backlog item covers
@@ -18035,7 +18021,6 @@ export const ALIAS_ROUTES = {
   '/commission-calculator.html': '/utility-tools/commission-calculator.html',
   '/hevc-converter-mov.html': '/image-converter-tools/hevc-converter-mov.html',
   '/pcfg-password-cracking-patterns-generator-pure-go-2026.html': '/developer-tools/pcfg-password-cracking-patterns-generator-pure-go-2026.html',
-  '/layered-image-editor-linux-omarchy.html': '/image-converter-tools/layered-image-editor-linux-omarchy.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -18064,6 +18049,7 @@ export const ALIAS_ROUTES = {
 // non-kebab entries to this map.
 // ─────────────────────────────────────────────────────────────────────────
 export const JSP_BY_ROUTE = {
+  // layered-image-editor-linux-omarchy mock tool + 18 guide routes retired 2026-10-11 (operator decision 2026-10-10) - see ALIAS_ROUTES.
   '/places-3d/angel-falls.html': 'place/angel-falls.jsp',
   '/places-3d/yosemite-falls.html': 'place/yosemite-falls.jsp',
   // game-server-status companion guides (new-tool-discovery-loop fire728)
@@ -30817,21 +30803,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/vi/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
   '/guides/id/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/id/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
   '/guides/de/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/de/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
-  '/guides/pt/layered-image-editor-linux-omarchy-when.html': 'guide/pt/layered-image-editor-linux-omarchy-when.jsp',
-  '/guides/es/layered-image-editor-linux-omarchy-when.html': 'guide/es/layered-image-editor-linux-omarchy-when.jsp',
-  '/guides/vi/layered-image-editor-linux-omarchy-when.html': 'guide/vi/layered-image-editor-linux-omarchy-when.jsp',
-  '/guides/id/layered-image-editor-linux-omarchy-when.html': 'guide/id/layered-image-editor-linux-omarchy-when.jsp',
-  '/guides/de/layered-image-editor-linux-omarchy-when.html': 'guide/de/layered-image-editor-linux-omarchy-when.jsp',
-  '/guides/pt/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/pt/layered-image-editor-linux-omarchy-step-by-step.jsp',
-  '/guides/es/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/es/layered-image-editor-linux-omarchy-step-by-step.jsp',
-  '/guides/vi/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/vi/layered-image-editor-linux-omarchy-step-by-step.jsp',
-  '/guides/id/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/id/layered-image-editor-linux-omarchy-step-by-step.jsp',
-  '/guides/de/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/de/layered-image-editor-linux-omarchy-step-by-step.jsp',
-  '/guides/pt/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/pt/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
-  '/guides/es/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/es/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
-  '/guides/vi/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/vi/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
-  '/guides/id/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/id/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
-  '/guides/de/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/de/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
   '/guides/de/hevc-converter-mov-vs-alternatives.html': 'guide/de/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/id/hevc-converter-mov-vs-alternatives.html': 'guide/id/hevc-converter-mov-vs-alternatives.jsp',
   '/guides/es/hevc-converter-mov-step-by-step.html': 'guide/es/hevc-converter-mov-step-by-step.jsp',
@@ -30840,10 +30811,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/hevc-converter-mov-step-by-step.html': 'guide/de/hevc-converter-mov-step-by-step.jsp',
   '/developer-tools/pcfg-password-cracking-patterns-generator-pure-go-2026.html': 'utility/pcfg-password-cracking-patterns-generator-pure-go-2026.jsp',
   '/guides/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
-  '/image-converter-tools/layered-image-editor-linux-omarchy.html': 'convert/layered-image-editor-linux-omarchy.jsp',
-  '/guides/layered-image-editor-linux-omarchy-when.html': 'guide/layered-image-editor-linux-omarchy-when.jsp',
-  '/guides/layered-image-editor-linux-omarchy-step-by-step.html': 'guide/layered-image-editor-linux-omarchy-step-by-step.jsp',
-  '/guides/layered-image-editor-linux-omarchy-vs-alternatives.html': 'guide/layered-image-editor-linux-omarchy-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
