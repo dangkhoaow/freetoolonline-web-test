@@ -192,7 +192,21 @@ function classifyGuide(slug) {
   // dinosaur-loop (2026-07-15): guides for the /dinosaur-3d cluster. Species
   // tokens + generic paleo words so future dinosaur guides classify without
   // edits here.
-  if (/(^|-)(dinosaur|dino|rex|raptor|saurus|ceratops|triceratops|stegosaur|ankylosaur|mosasaur|pterosaur|pteranodon|fossil|jurassic|cretaceous|prehistoric)/.test(slug)) {
+  //
+  // Phase-6 reader-walkthrough axis_A/C fix (cycle 20261011-4): most dinosaur
+  // genus names are single unhyphenated compound words (abelisaurus,
+  // acrocanthosaurus, velociraptor, pentaceratops) where the matching root
+  // ("saurus" / "raptor" / "ceratops") sits mid-word, not at the slug start
+  // or right after a hyphen. The `(^|-)` anchor only caught species whose
+  // name happens to START with the exact listed token (stegosaurus,
+  // ankylosaurus, mosasaurus, triceratops) - every other "-saurus"/"-raptor"/
+  // "-ceratops" genus fell through to "editorial-and-other", which grew to
+  // 262 entries "dominated by dinosaur 3D viewers and prehistoric-animal
+  // size comparisons" per the two-model gate's MEDIUM finding on /guides.html.
+  // These three suffixes are dinosaur-specific enough to match anywhere in
+  // the slug (no collision with any zip/image/pdf/video/device/developer
+  // keyword above, which all run first); the rest stay hyphen-anchored.
+  if (/saurus|raptor|ceratops|(^|-)(dinosaur|dino|rex|stegosaur|ankylosaur|mosasaur|pterosaur|pteranodon|fossil|jurassic|cretaceous|prehistoric)/.test(slug)) {
     return 'dinosaurs';
   }
   // Phase-6 reader-walkthrough axis_D fix (cycle 20261010-5): the
