@@ -1035,6 +1035,7 @@ try {
     { title: "Commission Calculator", url: "https://freetoolonline.com/utility-tools/commission-calculator.html", include: !1, tags: "utility" },
     { title: "Hevc Converter To Mov", url: "https://freetoolonline.com/image-converter-tools/hevc-converter-mov.html", include: !1, tags: "image-conversion" },
     { title: "PCFG Password Cracking Patterns Generator in Pure Go 2026", url: "https://freetoolonline.com/developer-tools/pcfg-password-cracking-patterns-generator-pure-go-2026.html", include: !1, tags: "developer" },
+    { title: "Final Grade Calculator", url: "https://freetoolonline.com/utility-tools/final-grade-calculator.html", include: !1, tags: "utility" },
     { title: "OCR PDF - Make a Scanned PDF Searchable in Your Browser", url: "https://freetoolonline.com/pdf-tools/ocr-pdf.html", include: !1, tags: "pdf" },  ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
