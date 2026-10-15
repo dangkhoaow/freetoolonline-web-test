@@ -1,0 +1,1139 @@
+<script>
+    /* Video Cropper (built 2026-10-15) - crops every frame of a video to one rectangle, entirely
+     * in the visitor's browser. Nothing is uploaded: the only network requests are same-origin
+     * downloads of the code below, loaded lazily on first use.
+     *
+     * The crop is drawn on the picture as it is shown (the file's own rotation applied), after
+     * the reader's "Rotate" and "Flip". The crop rectangle is kept in those shown pixels, which
+     * is exactly the space both engines crop in:
+     *   1. Browser encode - Mediabunny Conversion (demux, WebCodecs decode + encode). Mediabunny
+     *                       applies the rotation and flip; every frame then goes through the
+     *                       `process` hook, which draws it whole on a canvas and copies the crop
+     *                       rectangle, scaled to the output size, onto the output canvas (WebKit
+     *                       ignores the source offset when a VideoFrame is drawn with a source
+     *                       rectangle, so the crop is always taken from a canvas). The sound is
+     *                       copied unchanged when the output container can carry it, otherwise
+     *                       re-encoded (AAC for MP4 - WebCodecs, else the vendored AAC WASM
+     *                       encoder - or Opus for WebM).
+     *   2. Compatibility  - FFmpeg.wasm (single-thread, vendored), when WebCodecs is missing, the
+     *                       browser cannot decode the file, or the browser encode fails. One
+     *                       filter chain: transpose / hflip, crop, scale; H.264 + AAC in MP4.
+     * The crop rectangle UI is the shared /script/crop-box.js (FtolCropBox).
+     *
+     * Vendored libs (both site repos, static/vendor/): mediabunny/1.61.0 (MPL-2.0, plus the AAC
+     * WASM encoder), ffmpeg/ (@ffmpeg/ffmpeg 0.12.10 + @ffmpeg/core 0.12.6).
+     * Framework contract: doAfterPageRendered(); no top-level DOM access. Feature contract and
+     * truth source: .agent/skills/tool-videocropper/SKILL.md. ASCII-only CMS fragment.
+     */
+
+    web.localUpload = false;
+
+    var VC_BASE = (typeof BASE_PATH === 'string' ? BASE_PATH : '');
+    var VC_LIB_BASE = VC_BASE + '/vendor/mediabunny/1.61.0/';
+    var VC_FFMPEG_BASE = VC_BASE + '/vendor/ffmpeg';
+    var VC_CROPBOX_URL = VC_BASE + '/script/crop-box.js?v=20261015';
+    var VC_SR = 48000;
+    var VC_COMPAT_MAX_SHORT = 1080;
+    var VC_STALL_MS = 30000;
+    var VC_RATIOS = [
+        { v: 'free', label: 'Free' },
+        { v: 'original', label: 'Original' },
+        { v: '1:1', label: 'Square' },
+        { v: '16:9', label: '16:9' },
+        { v: '9:16', label: '9:16' },
+        { v: '4:3', label: '4:3' },
+        { v: '3:4', label: '3:4' },
+        { v: '4:5', label: '4:5' },
+        { v: '5:4', label: '5:4' },
+        { v: '3:2', label: '3:2' },
+        { v: '2:3', label: '2:3' },
+        { v: '21:9', label: '21:9' }
+    ];
+    var VC_FORMATS = {
+        auto: { label: 'Auto (best for this browser)', codecs: ['avc', 'vp9', 'av1', 'vp8'] },
+        mp4: { label: 'MP4 (H.264)', codecs: ['avc'] },
+        vp9: { label: 'WebM (VP9)', codecs: ['vp9'] },
+        av1: { label: 'WebM (AV1)', codecs: ['av1'] }
+    };
+    var VC_SIZES = [
+        { v: 'crop', label: 'Same as the crop' },
+        { v: '1080', label: 'Up to 1080p' },
+        { v: '720', label: 'Up to 720p' },
+        { v: '480', label: 'Up to 480p' }
+    ];
+    // Sound copied unchanged into MP4 only when every common player handles it there.
+    var VC_MP4_AUDIO = ['aac', 'mp3'];
+    var VC_WEBM_AUDIO = ['opus', 'vorbis'];
+
+    /* Built-in demo clip (VP8 + Opus WebM, 1.5 s, 256x144, generated with ffmpeg) so a reader can
+     * try the cropper without their own file. */
+    var VC_DEMO_B64 = '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';
+
+    var vc = {
+        file: null, url: null, name: '', info: null, input: null, vTrack: null,
+        rot: 0, flip: false, ratio: 'free', rect: null,
+        format: 'auto', size: 'crop', sound: 'keep',
+        box: null, job: null, result: null, mb: null, mbFailed: false,
+        still: false, stillTok: 0, stillUrl: null, planToken: 0, wake: null, loadTok: 0
+    };
+
+    // ------------------------------------------------------------------ small utilities
+
+    function vcEl(id) { return document.getElementById(id); }
+    function vcEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function vcFmtTime(t) {
+        if (!isFinite(t) || t < 0) t = 0;
+        var m = Math.floor(t / 60), s = t - m * 60;
+        return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1);
+    }
+    function vcFmtBytes(b) {
+        if (!isFinite(b) || b <= 0) return '0 KB';
+        if (b < 1024 * 1024) return Math.max(1, Math.round(b / 1024)) + ' KB';
+        if (b < 1024 * 1024 * 1024) return (b / 1048576).toFixed(1) + ' MB';
+        return (b / 1073741824).toFixed(2) + ' GB';
+    }
+    function vcClamp(x, a, b) { return Math.min(b, Math.max(a, x)); }
+    // Even sizes for the encoders, never rounded up past the crop.
+    function vcEvenDown(n) { return Math.max(2, 2 * Math.floor(n / 2)); }
+    function vcExtOf(name) { var m = /\.([a-z0-9]{1,5})$/i.exec(name || ''); return m ? '.' + m[1].toLowerCase() : '.bin'; }
+    function vcBaseName(name) { return String(name || 'video').replace(/\.[a-z0-9]{1,5}$/i, '').replace(/[^\w.-]+/g, '-').slice(0, 60) || 'video'; }
+    function vcUserErr(msg) { var e = new Error(msg); e.vcUser = true; return e; }
+    function vcCancelErr() { var e = new Error('Crop cancelled.'); e.vcCancel = true; return e; }
+    function vcHasWebCodecsVideo() {
+        return typeof VideoEncoder === 'function' && typeof VideoDecoder === 'function' && typeof VideoFrame === 'function';
+    }
+    function vcIsAppleWebKit() {
+        var ua = navigator.userAgent || '';
+        return /AppleWebKit/.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|FxiOS|Android/.test(ua);
+    }
+    function vcCodecLabel(c) {
+        return { avc: 'H.264', hevc: 'HEVC', vp8: 'VP8', vp9: 'VP9', av1: 'AV1', aac: 'AAC', opus: 'Opus', vorbis: 'Vorbis', mp3: 'MP3', flac: 'FLAC' }[c] || String(c || '?').toUpperCase();
+    }
+    function vcFfTurn(rot) { return rot === 90 ? 'transpose=1,' : (rot === 180 ? 'hflip,vflip,' : (rot === 270 ? 'transpose=2,' : '')); }
+    function vcNum(x) { return (Math.round(x * 1e6) / 1e6).toFixed(6); }
+
+    // The picture as shown: the file's own rotation applied, then the reader's rotation.
+    function vcBaseSize() { return { w: (vc.info && vc.info.displayW) || 0, h: (vc.info && vc.info.displayH) || 0 }; }
+    function vcDisp() { var b = vcBaseSize(); return vc.rot % 180 ? { w: b.h, h: b.w } : b; }
+    function vcRatioValue(v) {
+        if (v === 'free') return null;
+        if (v === 'original') { var d = vcDisp(); return d.w && d.h ? d.w / d.h : null; }
+        var m = /^(\d+):(\d+)$/.exec(v);
+        return m ? (+m[1]) / (+m[2]) : null;
+    }
+    function vcIsFullCrop() {
+        var d = vcDisp(), r = vc.rect;
+        return !r || (r.x === 0 && r.y === 0 && r.w === d.w && r.h === d.h);
+    }
+
+    // ------------------------------------------------------------------ library loaders
+
+    var vcMbPromise = null;
+    function vcLoadMb() {
+        if (vc.mb) return Promise.resolve(vc.mb);
+        if (!vcMbPromise) {
+            vcMbPromise = import(VC_LIB_BASE + 'mediabunny.min.mjs').then(function (m) { vc.mb = m; return m; },
+                function (e) { vcMbPromise = null; vc.mbFailed = true; throw e; });
+        }
+        return vcMbPromise;
+    }
+
+    var vcAacPromise = null;
+    function vcAacEncodable(mb) {
+        return mb.canEncodeAudio('aac', { numberOfChannels: 2, sampleRate: VC_SR }).catch(function () { return false; });
+    }
+    function vcEnsureAac(mb) {
+        return vcAacEncodable(mb).then(function (ok) {
+            if (ok) return true;
+            if (!vcAacPromise) {
+                vcAacPromise = import(VC_LIB_BASE + 'aac-encoder.min.mjs').then(function (m) { m.registerAacEncoder(); return true; },
+                    function () { vcAacPromise = null; return false; });
+            }
+            return vcAacPromise.then(function (loaded) { return loaded ? vcAacEncodable(mb) : false; });
+        });
+    }
+    function vcOpusEncodable(mb) {
+        return mb.canEncodeAudio('opus', { numberOfChannels: 2, sampleRate: VC_SR }).catch(function () { return false; });
+    }
+
+    var vcCropBoxPromise = null;
+    function vcLoadCropBox() {
+        if (window.FtolCropBox) return Promise.resolve(window.FtolCropBox);
+        if (!vcCropBoxPromise) {
+            vcCropBoxPromise = new Promise(function (resolve, reject) {
+                var s = document.createElement('script');
+                s.src = VC_CROPBOX_URL;
+                s.async = true;
+                s.onload = function () { window.FtolCropBox ? resolve(window.FtolCropBox) : reject(new Error('crop box missing')); };
+                s.onerror = function () { vcCropBoxPromise = null; reject(new Error('Could not load the crop tool.')); };
+                document.head.appendChild(s);
+            });
+        }
+        return vcCropBoxPromise;
+    }
+
+    var vcFf = null, vcFfPromise = null, vcFfScript = null;
+    function vcInjectFfmpegUmd() {
+        if (vcFfScript) return vcFfScript;
+        vcFfScript = new Promise(function (resolve, reject) {
+            if (typeof globalThis.FFmpegWASM !== 'undefined') return resolve();
+            var s = document.createElement('script');
+            s.src = VC_FFMPEG_BASE + '/ffmpeg.js';
+            s.async = true;
+            s.onload = function () { typeof globalThis.FFmpegWASM !== 'undefined' ? resolve() : reject(new Error('FFmpeg library did not initialise.')); };
+            s.onerror = function () { vcFfScript = null; reject(new Error('Could not download the compatibility engine (FFmpeg.wasm).')); };
+            document.head.appendChild(s);
+        });
+        return vcFfScript;
+    }
+    function vcLoadFfmpeg(status) {
+        if (vcFf) return Promise.resolve(vcFf);
+        if (!vcFfPromise) {
+            vcFfPromise = (async function () {
+                status && status('Downloading the compatibility engine (about 31 MB, once)...');
+                await vcInjectFfmpegUmd();
+                var Ctor = globalThis.FFmpegWASM && globalThis.FFmpegWASM.FFmpeg;
+                if (!Ctor) throw new Error('FFmpeg library is missing.');
+                var ff = new Ctor();
+                await ff.load({ coreURL: VC_FFMPEG_BASE + '/ffmpeg-core.js', wasmURL: VC_FFMPEG_BASE + '/ffmpeg-core.wasm' });
+                vcFf = ff;
+                return ff;
+            })().catch(function (e) { vcFfPromise = null; throw e; });
+        }
+        return vcFfPromise;
+    }
+    function vcKillFfmpeg() {
+        try { if (vcFf) vcFf.terminate(); } catch (e) { /* already gone */ }
+        vcFf = null; vcFfPromise = null; vcFfMounted = false;
+    }
+    // The file stays mounted read-only (WORKERFS, no copy into wasm memory) while it is loaded.
+    var vcFfMounted = false;
+    async function vcFfMount(ff) {
+        if (vcFfMounted) return '/vcin/' + vc.ffName;
+        try { await ff.createDir('/vcin'); } catch (e) { /* exists */ }
+        await ff.mount('WORKERFS', { blobs: [{ name: vc.ffName, data: vc.file }] }, '/vcin');
+        vcFfMounted = true;
+        return '/vcin/' + vc.ffName;
+    }
+    async function vcFfUnmount() {
+        if (!vcFf || !vcFfMounted) return;
+        vcFfMounted = false;
+        try { await vcFf.unmount('/vcin'); } catch (e) { /* ignore */ }
+    }
+
+    // ------------------------------------------------------------------ probing
+
+    function vcNewInfo() {
+        return {
+            durationS: 0, firstTs: 0, vCodec: null, aCodec: null, hasAudio: false, displayW: 0, displayH: 0,
+            rotation: 0, fileFlip: false, fps: 30, canDecodeVideo: false, mbReadable: false, needsCompat: false, compatReason: ''
+        };
+    }
+
+    async function vcProbeWithMediabunny(info) {
+        var mb = await vcLoadMb();
+        var input = new mb.Input({ formats: mb.ALL_FORMATS, source: new mb.BlobSource(vc.file) });
+        if (!(await input.canRead())) throw new Error('unreadable container');
+        var v = await input.getPrimaryVideoTrack();
+        var a = await input.getPrimaryAudioTrack();
+        if (!v) {
+            var e = vcUserErr(a ? 'This file has no video track (it is audio only), so there is nothing to crop.' : 'No video track found in this file.');
+            e.vcFinal = true;
+            throw e;
+        }
+        info.vCodec = await v.getCodec();
+        info.displayW = await v.getDisplayWidth();
+        info.displayH = await v.getDisplayHeight();
+        info.rotation = await v.getRotation();
+        try { info.fileFlip = !!(await v.getFlip()); } catch (eF) { info.fileFlip = false; }
+        try {
+            var frm = await v.computeFrameRateMetrics();
+            info.fps = frm.bestGuessFrameRate || frm.averageFrameRate || 30;
+        } catch (e3) { info.fps = 30; }
+        info.canDecodeVideo = vcHasWebCodecsVideo() ? !!(await v.canDecode().catch(function () { return false; })) : false;
+        if (a) {
+            info.hasAudio = true;
+            info.aCodec = await a.getCodec();
+        }
+        info.firstTs = await v.getFirstTimestamp();
+        var end = await v.computeDuration().catch(function () { return input.computeDuration(); });
+        info.durationS = Math.max(0, end - info.firstTs);
+        info.mbReadable = true;
+        if (!info.canDecodeVideo) {
+            info.needsCompat = true;
+            info.compatReason = vcHasWebCodecsVideo() ? vcCodecLabel(info.vCodec) + ' cannot be decoded by this browser\'s built-in decoder' : 'this browser has no built-in video encoder (WebCodecs)';
+        }
+        // Kept on info, applied by vcLoadFile only if this file is still the current one.
+        info.mbInput = input; info.mbTrack = v;
+    }
+
+    function vcProbeWithVideoEl() {
+        return new Promise(function (resolve) {
+            var el = document.createElement('video');
+            var done = false;
+            function fin(res) { if (done) return; done = true; clearTimeout(timer); el.removeAttribute('src'); try { el.load(); } catch (e) { /* ignore */ } resolve(res); }
+            el.preload = 'metadata'; el.muted = true; el.playsInline = true;
+            el.onloadedmetadata = function () { fin(isFinite(el.duration) && el.videoWidth > 0 ? { d: el.duration, w: el.videoWidth, h: el.videoHeight } : null); };
+            el.onerror = function () { fin(null); };
+            var timer = setTimeout(function () { fin(null); }, 8000);
+            el.src = vc.url;
+        });
+    }
+
+    // Parses `ffmpeg -i` log output: duration, video size/rotation/fps and audio presence.
+    async function vcFfProbe(ff, path) {
+        var lines = [];
+        var cb = function (ev) { lines.push(ev && ev.message ? ev.message : ''); };
+        ff.on('log', cb);
+        try { await ff.exec(['-hide_banner', '-i', path]); } catch (e) { /* no output file is expected */ } finally { ff.off('log', cb); }
+        var txt = lines.join('\n');
+        var dm = /Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/.exec(txt);
+        var vm2 = /Stream #\d+:\d+[^\n]*?Video: ([a-z0-9_]+)[^\n]*?, (\d{2,5})x(\d{2,5})/i.exec(txt);
+        var fm = /, (\d+(?:\.\d+)?) fps/.exec(txt);
+        var rm = /rotation of (-?\d+(?:\.\d+)?) degrees/.exec(txt);
+        var res = {
+            durationS: dm ? (+dm[1] * 3600 + +dm[2] * 60 + parseFloat(dm[3])) : 0,
+            hasVideo: !!vm2, hasAudio: /Stream #\d+:\d+[^\n]*?Audio:/.test(txt),
+            w: vm2 ? +vm2[2] : 0, h: vm2 ? +vm2[3] : 0, fps: fm ? parseFloat(fm[1]) : 30,
+            rotation: rm ? Math.round(Math.abs(parseFloat(rm[1]))) % 360 : 0, codec: vm2 ? vm2[1] : null
+        };
+        if (res.rotation === 90 || res.rotation === 270) { var t = res.w; res.w = res.h; res.h = t; }
+        return res;
+    }
+
+    async function vcProbe() {
+        var info = vcNewInfo();
+        var mbError = null;
+        try {
+            await vcProbeWithMediabunny(info);
+        } catch (e) {
+            if (e && e.vcFinal) throw e;
+            mbError = e;
+        }
+        if (!info.mbReadable) {
+            info.needsCompat = true;
+            info.compatReason = 'this file type is opened with the compatibility engine';
+            var meta = await vcProbeWithVideoEl();
+            if (meta) {
+                info.durationS = meta.d; info.displayW = meta.w; info.displayH = meta.h; info.hasAudio = null;
+            } else {
+                var ff = await vcLoadFfmpeg(function (m) { vcStatus(m); });
+                var r = await vcFfProbe(ff, await vcFfMount(ff));
+                if (!r.hasVideo || !r.durationS) throw vcUserErr('This file could not be read as a video' + (mbError && mbError.message ? ' (' + mbError.message + ')' : '') + '.');
+                info.durationS = r.durationS; info.displayW = r.w; info.displayH = r.h; info.fps = r.fps; info.hasAudio = r.hasAudio; info.rotation = r.rotation;
+            }
+        }
+        if (!(info.durationS > 0)) throw vcUserErr('Could not determine how long this video is.');
+        if (!(info.displayW > 1 && info.displayH > 1)) throw vcUserErr('Could not determine the picture size of this video.');
+        return info;
+    }
+
+    // ------------------------------------------------------------------ loading a file
+
+    function vcReleaseFile() {
+        vcStopPreview();
+        if (vc.url) { try { URL.revokeObjectURL(vc.url); } catch (e) { /* ignore */ } }
+        if (vc.stillUrl) { try { URL.revokeObjectURL(vc.stillUrl); } catch (e2) { /* ignore */ } }
+        vcFfUnmount();
+        vc.file = null; vc.url = null; vc.info = null; vc.input = null; vc.vTrack = null; vc.stillUrl = null; vc.still = false;
+        vc.stillTok++; clearTimeout(vcStillTimer); // a queued still frame of the old file is dropped
+    }
+
+    async function vcLoadFile(file) {
+        if (!file || vc.job) return;
+        if (!/^video\//.test(file.type || '') && !/\.(mp4|mov|m4v|webm|mkv|avi|3gp|mts|m2ts|ts|ogv|wmv|flv|mpg|mpeg)$/i.test(file.name || '')) {
+            vcFlash('"' + (file.name || 'This file') + '" does not look like a video. Choose an MP4, MOV, WebM or another video file.');
+            return;
+        }
+        var tok = ++vc.loadTok;
+        vcClearResult();
+        vcHideError();
+        vcReleaseFile();
+        vc.file = file; vc.name = file.name || 'video'; vc.url = URL.createObjectURL(file);
+        vc.ffName = 'in' + vcExtOf(vc.name);
+        vc.rot = 0; vc.flip = false; vc.ratio = 'free'; vc.rect = null;
+        vcSyncFlipBtn();
+        vcEl('vcEditor').hidden = false;
+        vcCompactDrop(true);
+        vcEl('vcFileName').textContent = vc.name;
+        vcEl('vcFileMeta').textContent = 'Reading...';
+        vcEl('vcStage').classList.add('vc-loading');
+        vcUpdateButtons();
+        try {
+            var info = await vcProbe();
+            if (tok !== vc.loadTok) return;
+            vc.info = info;
+            vc.input = info.mbInput || null; vc.vTrack = info.mbTrack || null;
+            var d = vcDisp();
+            vc.rect = { x: 0, y: 0, w: d.w, h: d.h };
+            vcEl('vcFileMeta').textContent = vcFmtTime(info.durationS) + ' - ' + info.displayW + 'x' + info.displayH +
+                (info.hasAudio === false ? ' - no sound' : '') + ' - ' + vcFmtBytes(file.size);
+            await vcLoadCropBox();
+            if (tok !== vc.loadTok) return;
+            vcSetupBox();
+            vcSyncRatioPills();
+            vcLayout();
+            vcStartPreview();
+            vcSyncInputs();
+            vcScheduleOutputLine();
+        } catch (e) {
+            if (tok !== vc.loadTok) return;
+            vcEl('vcFileMeta').textContent = '';
+            vcShowError(e && e.vcUser ? e.message : 'This file could not be opened: ' + (e && e.message ? e.message : String(e)));
+            vcReleaseFile();
+            vcEl('vcEditor').hidden = true;
+            vcCompactDrop(false);
+        } finally {
+            if (tok === vc.loadTok) { vcEl('vcStage').classList.remove('vc-loading'); vcUpdateButtons(); }
+        }
+    }
+
+    // Once a video is open, the drop zone shrinks to one line so the picture sits higher.
+    function vcCompactDrop(on) {
+        var d = vcEl('vcDrop');
+        d.classList.toggle('vc-compact', !!on);
+        d.querySelector('.vc-drop-title').textContent = on ? 'Drop another video here, or' : 'Drop a video here';
+        vcEl('vcChoose').textContent = on ? 'Choose another video' : 'Choose video';
+    }
+
+    function vcStatus(msg) { var m = vcEl('vcFileMeta'); if (m) m.textContent = msg; }
+
+    // ------------------------------------------------------------------ crop box + stage
+
+    function vcSetupBox() {
+        var d = vcDisp();
+        if (vc.box) vc.box.destroy();
+        vc.box = window.FtolCropBox.create(vcEl('vcStage'), {
+            srcW: d.w, srcH: d.h, rect: vc.rect, minPx: Math.max(16, Math.round(Math.min(d.w, d.h) / 40)),
+            onChange: function (r, phase) {
+                vc.rect = r;
+                vcSyncInputs();
+                if (phase === 'end') { vcClearResult(); vcScheduleOutputLine(); }
+            }
+        });
+        vc.box.setInteractive(!vc.job);
+    }
+
+    // The stage is the picture's box as shown; the video (or still frame) inside it keeps the
+    // file's shape and is turned / mirrored with CSS, so the crop box lines up with what is drawn.
+    function vcLayout() {
+        var wrap = vcEl('vcStageWrap'), stage = vcEl('vcStage');
+        if (!wrap || !stage || !vc.info) return;
+        var d = vcDisp();
+        // Room around the picture for the crop handles, which reach past its edges.
+        var pad = window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 26 : 18;
+        var maxW = Math.max(160, wrap.clientWidth - 2 * pad);
+        var maxH = Math.max(180, Math.min(window.innerHeight * 0.62, 560));
+        var k = Math.min(maxW / d.w, maxH / d.h);
+        var sw = Math.max(40, Math.round(d.w * k)), sh = Math.max(40, Math.round(d.h * k));
+        stage.style.width = sw + 'px';
+        stage.style.height = sh + 'px';
+        var turned = vc.rot % 180 !== 0;
+        var tf = 'translate(-50%, -50%)' + (vc.flip ? ' scaleX(-1)' : '') + ' rotate(' + vc.rot + 'deg)';
+        ['vcVideo', 'vcStill'].forEach(function (id) {
+            var el = vcEl(id);
+            el.style.width = (turned ? sh : sw) + 'px';
+            el.style.height = (turned ? sw : sh) + 'px';
+            el.style.transform = tf;
+        });
+    }
+
+    function vcSyncRatioPills() {
+        var r = document.querySelectorAll('#vcRatios input[name="vcRatio"]');
+        for (var i = 0; i < r.length; i++) r[i].checked = r[i].value === vc.ratio;
+    }
+
+    function vcSetRatio(v) {
+        if (!vc.box || vc.job) return;
+        vc.ratio = v;
+        vc.box.setAspect(vcRatioValue(v), true);
+        vc.rect = vc.box.getRect();
+        vcSyncRatioPills();
+        vcSyncInputs();
+        vcClearResult();
+        vcScheduleOutputLine();
+    }
+
+    // Turns the shown picture 90 degrees (dir = 1 clockwise, -1 counter-clockwise). With "Flip"
+    // on, the stored rotation turns the other way so the picture on screen still turns the way
+    // the button says. The crop turns with the picture.
+    function vcRotate(dir) {
+        if (!vc.info || vc.job) return;
+        var d = vcDisp(), r = vc.rect;
+        var nr = dir > 0 ? { x: d.h - r.y - r.h, y: r.x, w: r.h, h: r.w } : { x: r.y, y: d.w - r.x - r.w, w: r.h, h: r.w };
+        var step = (vc.flip ? -dir : dir) * 90;
+        vc.rot = (((vc.rot + step) % 360) + 360) % 360;
+        if (vc.ratio !== 'free' && vc.ratio !== 'original') {
+            var m = /^(\d+):(\d+)$/.exec(vc.ratio), sw = m ? m[2] + ':' + m[1] : 'free';
+            vc.ratio = VC_RATIOS.some(function (x) { return x.v === sw; }) ? sw : 'free';
+        }
+        vcApplyGeometry(nr);
+    }
+
+    function vcFlip() {
+        if (!vc.info || vc.job) return;
+        var d = vcDisp(), r = vc.rect;
+        vc.flip = !vc.flip;
+        vcApplyGeometry({ x: d.w - r.x - r.w, y: r.y, w: r.w, h: r.h });
+    }
+
+    function vcApplyGeometry(rect) {
+        var d = vcDisp();
+        vc.box.setSource(d.w, d.h, rect);
+        vc.box.setAspect(vcRatioValue(vc.ratio), true, true);
+        vc.rect = vc.box.getRect();
+        vcSyncRatioPills();
+        vcLayout();
+        vcSyncInputs();
+        vcClearResult();
+        vcScheduleOutputLine();
+        vcSyncFlipBtn();
+    }
+    function vcSyncFlipBtn() { var b = vcEl('vcFlipBtn'); if (b) b.setAttribute('aria-pressed', vc.flip ? 'true' : 'false'); }
+
+    function vcResetCrop() {
+        if (!vc.info || vc.job) return;
+        vc.rot = 0; vc.flip = false; vc.ratio = 'free';
+        var d = vcDisp();
+        vcApplyGeometry({ x: 0, y: 0, w: d.w, h: d.h });
+    }
+
+    // Exact numbers: width, height, left and top in pixels of the shown picture.
+    function vcSyncInputs() {
+        var r = vc.rect, d = vcDisp();
+        if (!r) return;
+        var set = function (id, v, max) { var el = vcEl(id); if (el && document.activeElement !== el) el.value = v; if (el) el.max = max; };
+        set('vcW', r.w, d.w); set('vcH', r.h, d.h); set('vcX', r.x, d.w - 1); set('vcY', r.y, d.h - 1);
+        var out = vcOutSize();
+        vcEl('vcCropTxt').textContent = 'Keeps ' + r.w + 'x' + r.h + ' of ' + d.w + 'x' + d.h + (out.W !== r.w || out.H !== r.h ? ' - saved as ' + out.W + 'x' + out.H : '');
+    }
+
+    function vcInputChanged(id) {
+        if (!vc.box || vc.job) return;
+        var d = vcDisp(), r = vc.box.getRect(), a = vcRatioValue(vc.ratio);
+        var v = parseInt(vcEl(id).value, 10);
+        if (!isFinite(v)) { vcSyncInputs(); return; }
+        var n = { x: r.x, y: r.y, w: r.w, h: r.h };
+        if (id === 'vcW') { n.w = vcClamp(v, 2, d.w); if (a) { n.h = n.w / a; if (n.h > d.h) { n.h = d.h; n.w = n.h * a; } } }
+        else if (id === 'vcH') { n.h = vcClamp(v, 2, d.h); if (a) { n.w = n.h * a; if (n.w > d.w) { n.w = d.w; n.h = n.w / a; } } }
+        else if (id === 'vcX') n.x = v;
+        else if (id === 'vcY') n.y = v;
+        n.x = vcClamp(n.x, 0, d.w - n.w); n.y = vcClamp(n.y, 0, d.h - n.h);
+        vc.box.setRect(n, true);
+        vc.rect = vc.box.getRect();
+        var el = vcEl(id);
+        if (el) el.value = id === 'vcW' ? vc.rect.w : (id === 'vcH' ? vc.rect.h : (id === 'vcX' ? vc.rect.x : vc.rect.y));
+        vcSyncInputs();
+        vcClearResult();
+        vcScheduleOutputLine();
+    }
+
+    // ------------------------------------------------------------------ preview (video, or still frames)
+
+    function vcStopPreview() {
+        var v = vcEl('vcVideo');
+        if (v) { try { v.pause(); } catch (e) { /* ignore */ } v.onerror = null; v.removeAttribute('src'); try { v.load(); } catch (e2) { /* ignore */ } }
+    }
+
+    function vcStartPreview() {
+        var v = vcEl('vcVideo'), img = vcEl('vcStill'), seek = vcEl('vcSeek');
+        vc.still = false;
+        img.hidden = true; v.hidden = false;
+        vcEl('vcPreviewNote').textContent = '';
+        seek.max = String(Math.max(0.01, vc.info.durationS));
+        seek.value = '0';
+        vcTimeText(0);
+        v.onloadedmetadata = function () { vcLayout(); try { v.currentTime = Math.min(0.05, vc.info.durationS / 2); } catch (e) { /* ignore */ } };
+        v.onerror = function () { vcGoStill(); };
+        v.ontimeupdate = function () { if (!vc.still && !vcSeeking) { seek.value = String(v.currentTime); vcTimeText(v.currentTime); } };
+        v.onplay = v.onpause = v.onended = vcPlayIcon;
+        v.src = vc.url;
+        vcPlayIcon();
+    }
+
+    // The browser cannot play this file: show still frames from the decoder instead.
+    function vcGoStill() {
+        if (!vc.info || vc.still) return;
+        vc.still = true;
+        vcStopPreview();
+        vcEl('vcVideo').hidden = true;
+        vcEl('vcStill').hidden = false;
+        vcEl('vcPreviewNote').textContent = 'This browser cannot play this file, so the preview shows still frames - move the slider to look through the video. Cropping still works.';
+        vcPlayIcon();
+        vcStillAt(parseFloat(vcEl('vcSeek').value) || 0);
+    }
+
+    async function vcStillAt(t) {
+        var tok = ++vc.stillTok;
+        var url = null;
+        try {
+            if (vc.vTrack && vc.info.canDecodeVideo && vc.mb) {
+                var b = vcBaseSize(), k = Math.min(1, 960 / Math.max(b.w, b.h));
+                var sink = new vc.mb.CanvasSink(vc.vTrack, { width: Math.max(2, Math.round(b.w * k)), height: Math.max(2, Math.round(b.h * k)), fit: 'fill', poolSize: 1 });
+                var wc = await sink.getCanvas(vc.info.firstTs + t);
+                if (wc && wc.canvas) url = await vcCanvasToUrl(wc.canvas);
+            } else if (!vc.job) {
+                var ff = await vcLoadFfmpeg(function (m) { vcEl('vcPreviewNote').textContent = m; });
+                if (tok !== vc.stillTok || vc.job) return;
+                var path = await vcFfMount(ff);
+                var rc = await ff.exec(['-hide_banner', '-ss', vcNum(t), '-i', path, '-frames:v', '1', '-vf', 'scale=960:960:force_original_aspect_ratio=decrease', '-q:v', '4', '-y', '/vcstill.jpg']);
+                if (rc === 0) {
+                    var data = await ff.readFile('/vcstill.jpg');
+                    url = URL.createObjectURL(new Blob([data.buffer], { type: 'image/jpeg' }));
+                }
+            }
+        } catch (e) { url = null; }
+        if (tok !== vc.stillTok || !url) { if (url) URL.revokeObjectURL(url); return; }
+        if (vc.stillUrl) { try { URL.revokeObjectURL(vc.stillUrl); } catch (e2) { /* ignore */ } }
+        vc.stillUrl = url;
+        vcEl('vcStill').src = url;
+        if (vc.still) vcEl('vcPreviewNote').textContent = 'This browser cannot play this file, so the preview shows still frames - move the slider to look through the video. Cropping still works.';
+    }
+
+    function vcCanvasToUrl(c) {
+        if (c.convertToBlob) return c.convertToBlob({ type: 'image/jpeg', quality: 0.8 }).then(function (b) { return URL.createObjectURL(b); });
+        return new Promise(function (resolve, reject) {
+            c.toBlob(function (b) { b ? resolve(URL.createObjectURL(b)) : reject(new Error('still failed')); }, 'image/jpeg', 0.8);
+        });
+    }
+
+    var vcSeeking = false, vcStillTimer = null;
+    function vcSeekTo(t) {
+        if (!vc.info) return;
+        vcTimeText(t);
+        if (vc.still) {
+            clearTimeout(vcStillTimer);
+            vcStillTimer = setTimeout(function () { vcStillAt(t); }, 200);
+            return;
+        }
+        var v = vcEl('vcVideo');
+        vcSeeking = true;
+        try { v.currentTime = t; } catch (e) { /* ignore */ }
+        setTimeout(function () { vcSeeking = false; }, 120);
+    }
+    function vcTimeText(t) { vcEl('vcTime').textContent = vcFmtTime(t) + ' / ' + vcFmtTime(vc.info ? vc.info.durationS : 0); }
+    function vcPlayToggle() {
+        var v = vcEl('vcVideo');
+        if (!vc.info || vc.still || !v.src) return;
+        if (v.paused || v.ended) { var p = v.play(); if (p && p.catch) p.catch(function () { /* ignore */ }); } else v.pause();
+    }
+    function vcPlayIcon() {
+        var b = vcEl('vcPlay'), v = vcEl('vcVideo');
+        if (!b) return;
+        var playing = v && !v.paused && !v.ended;
+        b.innerHTML = playing ? '&#10074;&#10074;' : '&#9654;';
+        b.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+        b.disabled = !vc.info || vc.still;
+    }
+
+    // ------------------------------------------------------------------ planning
+
+    function vcOutSize(compat) {
+        var r = vc.rect || { w: 2, h: 2 };
+        var s = 1;
+        if (vc.size !== 'crop') s = Math.min(1, (parseInt(vc.size, 10) || 1080) / Math.min(r.w, r.h));
+        if (compat) s = Math.min(s, VC_COMPAT_MAX_SHORT / Math.min(r.w, r.h));
+        return { W: vcEvenDown(r.w * s), H: vcEvenDown(r.h * s) };
+    }
+
+    function vcIsEdited() { return !vcIsFullCrop() || vc.rot !== 0 || vc.flip; }
+
+    async function vcPlan() {
+        if (!vc.info || !vc.rect) throw vcUserErr('Choose a video first.');
+        var info = vc.info;
+        var keepSound = vc.sound === 'keep' && info.hasAudio !== false;
+        var wc = vcHasWebCodecsVideo() && !vc.mbFailed && info.mbReadable && info.canDecodeVideo;
+        if (wc) {
+            var mb = await vcLoadMb();
+            var out = vcOutSize(false);
+            var vcodec = await mb.getFirstEncodableVideoCodec(VC_FORMATS[vc.format].codecs, { width: out.W, height: out.H }).catch(function () { return null; });
+            if (!vcodec && vc.format === 'mp4') return vcPlanCompat('this browser cannot encode H.264 itself');
+            if (!vcodec) {
+                var any = vc.format === 'auto' ? null : await mb.getFirstEncodableVideoCodec(VC_FORMATS.auto.codecs, { width: out.W, height: out.H }).catch(function () { return null; });
+                throw vcUserErr(vc.format === 'auto' || !any
+                    ? 'This browser cannot encode a ' + out.W + 'x' + out.H + ' video. Choose a smaller "Size", or a smaller crop.'
+                    : 'This browser cannot encode ' + VC_FORMATS[vc.format].label + ' at ' + out.W + 'x' + out.H + '. Choose another "Format", or Auto.');
+            }
+            var container = vcodec === 'avc' ? 'mp4' : 'webm';
+            var audio = { discard: true }, acodec = null, aCopy = false;
+            if (keepSound) {
+                if ((container === 'mp4' ? VC_MP4_AUDIO : VC_WEBM_AUDIO).indexOf(info.aCodec) >= 0) {
+                    audio = {}; acodec = info.aCodec; aCopy = true;
+                } else if (container === 'mp4' && await vcEnsureAac(mb)) {
+                    audio = { codec: 'aac', bitrate: 160000 }; acodec = 'aac';
+                } else if (await vcOpusEncodable(mb)) {
+                    audio = { codec: 'opus', bitrate: 128000 }; acodec = 'opus';
+                } else {
+                    return vcPlanCompat('this browser cannot encode the sound');
+                }
+            }
+            return {
+                engine: 'webcodecs', container: container, vcodec: vcodec, acodec: acodec, aCopy: aCopy, audio: audio, keepSound: keepSound,
+                W: out.W, H: out.H, rect: { x: vc.rect.x, y: vc.rect.y, w: vc.rect.w, h: vc.rect.h }, disp: vcDisp(), rot: vc.rot, flip: vc.flip
+            };
+        }
+        return vcPlanCompat(info.compatReason || 'this browser has no built-in video encoder (WebCodecs)');
+    }
+
+    function vcPlanCompat(reason) {
+        var out = vcOutSize(true);
+        var keepSound = vc.sound === 'keep' && vc.info.hasAudio !== false;
+        return {
+            engine: 'ffmpeg', container: 'mp4', vcodec: 'avc', acodec: keepSound ? 'aac' : null, keepSound: keepSound, reason: reason,
+            W: out.W, H: out.H, capped: out.W !== vcOutSize(false).W, rect: { x: vc.rect.x, y: vc.rect.y, w: vc.rect.w, h: vc.rect.h }, disp: vcDisp(), rot: vc.rot, flip: vc.flip
+        };
+    }
+
+    function vcDescribePlan(p) {
+        var fmt = p.container === 'mp4' ? 'MP4' : 'WebM';
+        var codecs = vcCodecLabel(p.vcodec) + (p.acodec ? ' + ' + vcCodecLabel(p.acodec) : '');
+        var s = 'Output: ' + fmt + ' (' + codecs + '), ' + p.W + 'x' + p.H;
+        if (!p.keepSound) s += ', no sound';
+        else if (p.aCopy) s += ', sound copied unchanged';
+        if (p.engine === 'webcodecs' && p.vcodec !== 'avc' && vc.format === 'auto') s += ' - this browser cannot encode H.264';
+        if (p.engine === 'ffmpeg') {
+            s += ' - compatibility mode (slower)' + (p.reason ? ': ' + p.reason : '');
+            if (vc.format !== 'auto' && vc.format !== 'mp4') s += '; compatibility mode always makes MP4 (H.264)';
+            if (p.capped) s += '; compatibility mode makes at most 1080p';
+        }
+        if (!vcIsEdited()) s += '. The crop covers the whole picture - drag a corner or pick a shape to crop.';
+        return s + (/\.$/.test(s) ? '' : '.');
+    }
+
+    function vcEngineLabel(e) {
+        return { webcodecs: 'Encoding in your browser (WebCodecs)', ffmpeg: 'Compatibility mode (slower)' }[e] || '';
+    }
+
+    // ------------------------------------------------------------------ engine 1: browser encode
+
+    async function vcRunWebCodecs(plan, job) {
+        var mb = await vcLoadMb();
+        if (job.cancelled) throw vcCancelErr();
+        var input = new mb.Input({ formats: mb.ALL_FORMATS, source: new mb.BlobSource(vc.file) });
+        var output = new mb.Output({
+            format: plan.container === 'mp4' ? new mb.Mp4OutputFormat({ fastStart: 'in-memory' }) : new mb.WebMOutputFormat(),
+            target: new mb.BufferTarget()
+        });
+        job.output = output;
+        var r = plan.rect, W = plan.W, H = plan.H;
+        var mk = function (w, h) {
+            var c = (typeof OffscreenCanvas !== 'undefined') ? new OffscreenCanvas(w, h) : document.createElement('canvas');
+            c.width = w; c.height = h;
+            return c;
+        };
+        var outC = mk(W, H), octx = outC.getContext('2d', { alpha: false });
+        octx.imageSmoothingEnabled = true;
+        try { octx.imageSmoothingQuality = 'high'; } catch (e) { /* older engines */ }
+        var full = null, fctx = null, frames = 0, started = 0, last = 0, shownAt = 0;
+        var conv = await mb.Conversion.init({
+            input: input, output: output,
+            video: {
+                codec: plan.vcodec, bitrate: mb.QUALITY_HIGH, forceTranscode: true, keyFrameInterval: 2,
+                rotate: plan.rot, flip: plan.flip, processedWidth: W, processedHeight: H,
+                hardwareAcceleration: 'no-preference',
+                process: function (sample) {
+                    var w = sample.displayWidth, h = sample.displayHeight;
+                    if (!full || full.width !== w || full.height !== h) { full = mk(w, h); fctx = full.getContext('2d', { alpha: false }); }
+                    sample.draw(fctx, 0, 0, w, h);
+                    // The crop is in the shown picture's pixels; frames come at that size.
+                    var kx = w / plan.disp.w, ky = h / plan.disp.h;
+                    octx.drawImage(full, r.x * kx, r.y * ky, r.w * kx, r.h * ky, 0, 0, W, H);
+                    frames++;
+                    // Frames are the liveness signal (Mediabunny's onProgress stops moving once a
+                    // shorter sound track ends) and drive the progress bar, a few times a second.
+                    last = performance.now();
+                    if (last - shownAt > 250) {
+                        shownAt = last;
+                        vcProgress(job, Math.min(0.99, Math.max(0, sample.timestamp - vc.info.firstTs) / Math.max(0.1, vc.info.durationS)), 'Cropping frame ' + frames, started);
+                    }
+                    return outC;
+                }
+            },
+            audio: plan.audio,
+            showWarnings: false
+        });
+        if (!conv.isValid) {
+            throw new Error('the browser cannot convert this file (' + conv.discardedTracks.map(function (d) { return d.reason; }).join(', ') + ')');
+        }
+        if (plan.keepSound && conv.discardedTracks.some(function (d) { return d.track && (d.track.type === 'audio' || (typeof d.track.isAudioTrack === 'function' && d.track.isAudioTrack())); })) {
+            throw new Error('the sound could not be converted');
+        }
+        job.conv = conv;
+        if (job.cancelled) throw vcCancelErr();
+        started = performance.now(); last = started;
+        // A stalled encoder may never let execute() settle, even after cancel(), so the run is
+        // raced against an abort that the watchdog (and "Cancel") can fire on their own.
+        var abortRun = null;
+        var aborted = new Promise(function (_, reject) { abortRun = reject; });
+        aborted.catch(function () { /* handled by the race */ });
+        job.abortRun = function (err) { try { Promise.resolve(conv.cancel()).catch(function () { /* ignore */ }); } catch (e) { /* ignore */ } abortRun(err); };
+        var watchdog = setInterval(function () {
+            if (performance.now() - last > VC_STALL_MS) { clearInterval(watchdog); job.stalled = true; job.abortRun(new Error('The video encoder stopped responding.')); }
+        }, 2000);
+        try {
+            await Promise.race([conv.execute(), aborted]);
+        } catch (e) {
+            if (job.cancelled) throw vcCancelErr();
+            if (job.stalled) throw new Error('The video encoder stopped responding.');
+            throw e;
+        } finally { clearInterval(watchdog); job.abortRun = null; }
+        if (job.cancelled) throw vcCancelErr();
+        if (!frames) throw new Error('no frames were produced');
+        return { blob: new Blob([output.target.buffer], { type: plan.container === 'mp4' ? 'video/mp4' : 'video/webm' }), ext: plan.container, W: W, H: H, durationS: vc.info.durationS };
+    }
+
+    // ------------------------------------------------------------------ engine 2: compatibility (FFmpeg.wasm)
+
+    function vcBuildFfArgs(plan, path) {
+        var r = plan.rect, d = plan.disp;
+        // FFmpeg turns the input upright for its rotation metadata first; then the reader's turn
+        // and mirror, then the crop as fractions of the frame (robust to a 1-pixel size mismatch).
+        var vf = vcFfTurn(plan.rot) + (plan.flip ? 'hflip,' : '') +
+            'crop=w=iw*' + vcNum(r.w / d.w) + ':h=ih*' + vcNum(r.h / d.h) + ':x=iw*' + vcNum(r.x / d.w) + ':y=ih*' + vcNum(r.y / d.h) + ':exact=1' +
+            ',scale=' + plan.W + ':' + plan.H + ':flags=bicubic,setsar=1,format=yuv420p';
+        var args = ['-hide_banner', '-i', path, '-map', '0:v:0', '-vf', vf, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-pix_fmt', 'yuv420p'];
+        if (plan.keepSound) args.push('-map', '0:a:0?', '-c:a', 'aac', '-b:a', '160k');
+        else args.push('-an');
+        args.push('-movflags', '+faststart', '-y', '/vcout.mp4');
+        return args;
+    }
+
+    async function vcRunFfmpeg(plan, job) {
+        var ff = await vcLoadFfmpeg(function (m) { vcProgress(job, 0, m); });
+        if (job.cancelled) throw vcCancelErr();
+        var path = await vcFfMount(ff);
+        var onLog = null;
+        try {
+            var lastErr = '', started = performance.now(), total = Math.max(0.1, vc.info.durationS);
+            onLog = function (ev) {
+                var m = ev && ev.message ? ev.message : '';
+                var tm = /time=(\d+):(\d+):(\d+(?:\.\d+)?)/.exec(m);
+                if (tm) vcProgress(job, Math.min(0.99, (+tm[1] * 3600 + +tm[2] * 60 + parseFloat(tm[3])) / total), 'Cropping in compatibility mode...', started);
+                else if (/error|invalid|failed/i.test(m)) lastErr = m;
+            };
+            ff.on('log', onLog);
+            var rc;
+            try { rc = await ff.exec(vcBuildFfArgs(plan, path)); } catch (eX) { if (!job.cancelled) vcKillFfmpeg(); throw eX; }
+            if (job.cancelled) throw vcCancelErr();
+            if (rc !== 0) {
+                // An aborted run (e.g. out of memory) skips FFmpeg's clean-up, so a retry starts on a fresh copy.
+                vcKillFfmpeg();
+                throw new Error('The compatibility engine could not crop this video' + (lastErr ? ' (' + lastErr.trim().slice(0, 160) + ')' : '') + '.');
+            }
+            var data = await ff.readFile('/vcout.mp4');
+            try { await ff.deleteFile('/vcout.mp4'); } catch (e2) { /* ignore */ }
+            return { blob: new Blob([data.buffer], { type: 'video/mp4' }), ext: 'mp4', W: plan.W, H: plan.H, durationS: vc.info.durationS };
+        } finally {
+            if (onLog && vcFf) { try { vcFf.off('log', onLog); } catch (e3) { /* ignore */ } }
+        }
+    }
+
+    // ------------------------------------------------------------------ orchestration
+
+    function vcProgress(job, frac, text, started) {
+        if (!job || job !== vc.job) return;
+        var pct = Math.round(vcClamp(frac, 0, 1) * 100);
+        vcEl('vcBarFill').style.width = pct + '%';
+        var eta = '';
+        if (started && frac > 0.03 && frac < 1) {
+            var el = (performance.now() - started) / 1000;
+            eta = ' - about ' + vcFmtTime(el * (1 - frac) / frac).replace(/\.\d$/, '') + ' left';
+        }
+        vcEl('vcProgressTxt').textContent = pct + '%' + eta + (text ? ' - ' + text : '');
+    }
+
+    async function vcStart() {
+        if (vc.job || !vc.info) return;
+        vcHideError();
+        var job = { cancelled: false, output: null, conv: null };
+        vc.job = job;
+        vcSetBusy(true, null);
+        var plan;
+        try {
+            plan = await vcPlan();
+        } catch (e) { vc.job = null; vcSetBusy(false); vcShowError(e && e.message ? e.message : String(e)); return; }
+        if (job.cancelled) { vc.job = null; vcSetBusy(false); vcShowError('Crop cancelled.'); return; }
+        vcClearResult();
+        vcSetBusy(true, plan.engine);
+        vcWakeLock();
+        try {
+            var res;
+            if (plan.engine === 'webcodecs') {
+                try {
+                    res = await vcRunWebCodecs(plan, job);
+                } catch (e) {
+                    if (job.cancelled || (e && (e.vcUser || e.vcCancel))) throw e;
+                    console.warn('video-cropper: browser encode failed, switching to compatibility mode', e);
+                    plan = vcPlanCompat('the browser encoder failed (' + (e && e.message ? e.message : 'unknown error') + ')');
+                    vcSetBusy(true, 'ffmpeg');
+                    res = await vcRunFfmpeg(plan, job);
+                }
+            } else res = await vcRunFfmpeg(plan, job);
+            if (job.cancelled) throw vcCancelErr();
+            vcShowResult(res, plan);
+        } catch (e) {
+            if (!(e && (e.vcUser || e.vcCancel)) && !job.cancelled) console.error('video-cropper:', e);
+            vcShowError(job.cancelled || (e && e.vcCancel) ? 'Crop cancelled.' : vcFriendly(e));
+        } finally {
+            vc.job = null;
+            vcWakeRelease();
+            vcSetBusy(false);
+        }
+    }
+
+    function vcFriendly(e) {
+        var m = e && e.message ? e.message : String(e);
+        if (e && e.vcUser) return m;
+        if (/memory|allocation|RangeError|out of bounds/i.test(m)) return 'This device ran out of memory while cropping. Try a smaller "Size", a shorter video, or a desktop browser.';
+        return 'The crop failed: ' + m;
+    }
+
+    function vcCancel() {
+        var job = vc.job;
+        if (!job) return;
+        job.cancelled = true;
+        try { if (job.abortRun) job.abortRun(vcCancelErr()); else if (job.conv) job.conv.cancel(); } catch (e) { /* ignore */ }
+        if (vcFf) vcKillFfmpeg(); // terminate() is the only way to stop a running FFmpeg command
+        vcEl('vcProgressTxt').textContent = 'Cancelling...';
+    }
+
+    async function vcWakeLock() {
+        try { if (navigator.wakeLock && navigator.wakeLock.request) vc.wake = await navigator.wakeLock.request('screen'); } catch (e) { vc.wake = null; }
+    }
+    function vcWakeRelease() { try { if (vc.wake) vc.wake.release(); } catch (e) { /* ignore */ } vc.wake = null; }
+
+    // ------------------------------------------------------------------ rendering
+
+    function vcUpdateButtons() {
+        var run = vcEl('vcRun');
+        if (!run) return;
+        run.disabled = !vc.info || !!vc.job;
+        var hint = vcEl('vcHint');
+        if (hint) hint.textContent = vc.job ? '' : (!vc.file ? 'Choose a video to start.' : (!vc.info ? 'Reading the video...' : ''));
+        vcPlayIcon();
+    }
+
+    var vcOutTimer = null;
+    function vcScheduleOutputLine() { clearTimeout(vcOutTimer); vcOutTimer = setTimeout(vcUpdateOutputLine, 200); }
+    async function vcUpdateOutputLine() {
+        var el = vcEl('vcOutputLine');
+        if (!el) return;
+        var token = ++vc.planToken;
+        if (!vc.info) { el.textContent = ''; return; }
+        try {
+            var plan = await vcPlan();
+            if (token === vc.planToken) el.textContent = vcDescribePlan(plan);
+        } catch (e) {
+            if (token === vc.planToken) el.textContent = e && e.vcUser ? e.message : '';
+        }
+    }
+
+    function vcSetBusy(busy, engine) {
+        var prog = vcEl('vcProgress'), badge = vcEl('vcEngineBadge');
+        if (busy) {
+            prog.hidden = false;
+            vcEl('vcBarFill').style.width = '0%';
+            vcEl('vcProgressTxt').textContent = 'Starting...';
+            badge.textContent = vcEngineLabel(engine);
+            badge.hidden = !badge.textContent;
+        } else {
+            prog.hidden = true;
+            badge.hidden = true;
+        }
+        var ctl = document.querySelectorAll('#videoCropperTool .vc-lockable');
+        for (var i = 0; i < ctl.length; i++) ctl[i].disabled = !!busy;
+        if (vc.box) vc.box.setInteractive(!busy);
+        vcUpdateButtons();
+    }
+
+    function vcShowResult(res, plan) {
+        vcClearResult();
+        var url = URL.createObjectURL(res.blob);
+        var name = vcBaseName(vc.name) + '-cropped.' + res.ext;
+        vc.result = { url: url };
+        var summary = vcFmtTime(res.durationS) + ' - ' + res.W + 'x' + res.H + ' - ' + vcFmtBytes(res.blob.size) + ' - ' + vcEngineLabel(plan.engine);
+        var ratio = ' style="aspect-ratio:' + res.W + ' / ' + res.H + '"';
+        vcEl('vcResult').innerHTML =
+            '<div class="vc-result-box">' +
+                '<p class="vc-summary"><b>Your cropped video is ready.</b> ' + vcEsc(summary) + '</p>' +
+                '<div class="vc-result-actions">' +
+                    '<a id="vcDownload" class="w3-button w3-blue vc-download" href="' + url + '" download="' + vcEsc(name) + '">Download cropped video</a>' +
+                    '<button type="button" id="vcAgain" class="w3-button w3-light-grey w3-border">Change the crop</button>' +
+                    '<button type="button" id="vcStartOver" class="w3-button w3-light-grey w3-border">Crop another video</button>' +
+                '</div>' +
+                '<video class="vc-result-video" controls playsinline preload="metadata" src="' + url + '"' + ratio + '></video>' +
+            '</div>';
+        vcEl('vcAgain').addEventListener('click', function () { vcClearResult(); vcEl('vcStageWrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+        vcEl('vcStartOver').addEventListener('click', vcStartOver);
+        var box = vcEl('vcResult').firstChild;
+        try { box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) { box.scrollIntoView(false); }
+    }
+
+    function vcClearResult() {
+        if (vc.result && vc.result.url) { try { URL.revokeObjectURL(vc.result.url); } catch (e) { /* ignore */ } }
+        vc.result = null;
+        var r = vcEl('vcResult');
+        if (r) r.innerHTML = '';
+    }
+
+    function vcStartOver() {
+        if (vc.job) return;
+        vc.loadTok++;
+        vcClearResult();
+        vcHideError();
+        if (vc.box) { vc.box.destroy(); vc.box = null; }
+        vcReleaseFile();
+        vc.rot = 0; vc.flip = false; vc.ratio = 'free'; vc.rect = null;
+        vcSyncFlipBtn();
+        vcEl('vcEditor').hidden = true;
+        vcCompactDrop(false);
+        vcEl('vcOutputLine').textContent = '';
+        vcUpdateButtons();
+        try { vcEl('vcDrop').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) { /* ignore */ }
+    }
+
+    function vcShowError(msg) {
+        var el = vcEl('vcError');
+        el.innerHTML = '<p><b>Video Cropper:</b> ' + vcEsc(msg) + '</p>';
+        el.hidden = false;
+    }
+    function vcHideError() { var el = vcEl('vcError'); if (el) { el.hidden = true; el.innerHTML = ''; } }
+
+    var vcFlashTimer = null;
+    function vcFlash(msg) {
+        var el = vcEl('vcFlash');
+        el.textContent = msg; el.hidden = false;
+        clearTimeout(vcFlashTimer);
+        vcFlashTimer = setTimeout(function () { el.hidden = true; }, 9000);
+    }
+
+    // ------------------------------------------------------------------ page wiring
+
+    function vcB64ToFile(b64, name) {
+        var bin = atob(b64), u8 = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        return new File([u8], name, { type: 'video/webm' });
+    }
+
+    function vcToolHtml() {
+        var ratios = VC_RATIOS.map(function (r) {
+            return '<label class="vc-pill"><input type="radio" class="vc-lockable" name="vcRatio" value="' + r.v + '"' + (r.v === 'free' ? ' checked' : '') + '> ' + r.label + '</label>';
+        }).join('');
+        var num = function (id, label) {
+            return '<label class="vc-num">' + label + ' <input type="number" id="' + id + '" class="vc-lockable" min="0" step="1" inputmode="numeric"></label>';
+        };
+        return '' +
+            '<div class="vc-drop" id="vcDrop" tabindex="0" role="button" aria-label="Choose a video">' +
+                '<div class="vc-drop-title">Drop a video here</div>' +
+                '<button type="button" id="vcChoose" class="w3-button w3-blue vc-lockable">Choose video</button>' +
+                '<input type="file" id="vcFile" class="vc-file" accept="video/*,.mp4,.mov,.m4v,.webm,.mkv,.avi,.3gp,.mts,.m2ts,.ts,.ogv,.wmv,.flv">' +
+                '<div class="vc-drop-sub">MP4, MOV, WebM, MKV and more - the file stays on your device. <a href="#" id="vcSample">Try a sample clip</a></div>' +
+            '</div>' +
+            '<div id="vcFlash" class="vc-flash" hidden></div>' +
+            '<div id="vcEditor" class="vc-editor" hidden>' +
+                '<div class="vc-file-row"><b id="vcFileName"></b> <span id="vcFileMeta" class="vc-muted"></span></div>' +
+                '<div id="vcStageWrap" class="vc-stage-wrap"><div id="vcStage" class="vc-stage">' +
+                    '<video id="vcVideo" class="vc-media" playsinline preload="auto"></video>' +
+                    '<img id="vcStill" class="vc-media" alt="" hidden>' +
+                '</div></div>' +
+                '<div id="vcPreviewNote" class="vc-muted vc-note"></div>' +
+                '<div class="vc-scrub">' +
+                    '<button type="button" id="vcPlay" class="vc-play" aria-label="Play">&#9654;</button>' +
+                    '<input type="range" id="vcSeek" min="0" max="1" step="0.01" value="0" aria-label="Preview position">' +
+                    '<span id="vcTime" class="vc-time">0:00.0 / 0:00.0</span>' +
+                '</div>' +
+                '<div id="vcRatios" class="vc-ratios" role="radiogroup" aria-label="Crop shape"><span class="vc-label">Shape</span>' + ratios + '</div>' +
+                '<div class="vc-tools">' +
+                    '<button type="button" id="vcRotL" class="w3-button w3-small w3-light-grey vc-lockable" title="Turn the picture 90 degrees counter-clockwise">&#8634; Rotate left</button>' +
+                    '<button type="button" id="vcRotR" class="w3-button w3-small w3-light-grey vc-lockable" title="Turn the picture 90 degrees clockwise">&#8635; Rotate right</button>' +
+                    '<button type="button" id="vcFlipBtn" class="w3-button w3-small w3-light-grey vc-lockable" aria-pressed="false" title="Mirror the picture left to right">&#8646; Flip</button>' +
+                    '<button type="button" id="vcReset" class="w3-button w3-small w3-light-grey vc-lockable">Reset</button>' +
+                '</div>' +
+                '<div class="vc-exact">' + num('vcW', 'Width') + num('vcH', 'Height') + num('vcX', 'Left') + num('vcY', 'Top') + '<span class="vc-muted">pixels</span></div>' +
+                '<div id="vcCropTxt" class="vc-crop-txt"></div>' +
+                '<div class="vc-settings">' +
+                    '<label>Format <select id="vcFormat" class="vc-lockable">' + Object.keys(VC_FORMATS).map(function (k) { return '<option value="' + k + '"' + (k === 'auto' ? ' selected' : '') + '>' + VC_FORMATS[k].label + '</option>'; }).join('') + '</select></label>' +
+                    '<label>Size <select id="vcSize" class="vc-lockable">' + VC_SIZES.map(function (s) { return '<option value="' + s.v + '"' + (s.v === 'crop' ? ' selected' : '') + '>' + s.label + '</option>'; }).join('') + '</select></label>' +
+                    '<label>Sound <select id="vcSound" class="vc-lockable"><option value="keep" selected>Keep the sound</option><option value="remove">Remove the sound</option></select></label>' +
+                '</div>' +
+            '</div>' +
+            '<div id="vcOutputLine" class="vc-output-line" aria-live="polite"></div>' +
+            '<div class="vc-actions">' +
+                '<button type="button" id="vcRun" class="w3-button w3-blue vc-run" disabled>Crop video</button> ' +
+                '<span id="vcHint" class="vc-muted">Choose a video to start.</span>' +
+                '<span id="vcEngineBadge" class="vc-badge" hidden></span>' +
+            '</div>' +
+            '<div id="vcProgress" class="vc-progress" hidden>' +
+                '<div class="vc-bar"><div id="vcBarFill" class="vc-bar-fill"></div></div>' +
+                '<div id="vcProgressTxt" class="vc-progress-txt" aria-live="polite"></div>' +
+                '<button type="button" id="vcCancel" class="w3-button w3-small w3-light-grey">Cancel</button> ' +
+                '<span class="vc-muted">Keep this tab open until the crop finishes.</span>' +
+            '</div>' +
+            '<div id="vcError" class="w3-panel w3-pale-red vc-error" hidden></div>' +
+            '<div id="vcResult" class="w3-row outputImgs" style="visibility:visible !important;"></div>';
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('videoCropperTool');
+        if (!root || root.getAttribute('data-vc-ready')) return;
+        root.setAttribute('data-vc-ready', '1');
+        root.innerHTML = vcToolHtml();
+        vcLoadCropBox().catch(function () { /* retried when a file is chosen */ });
+
+        var fileEl = vcEl('vcFile'), drop = vcEl('vcDrop');
+        vcEl('vcChoose').addEventListener('click', function (e) { e.stopPropagation(); fileEl.click(); });
+        drop.addEventListener('click', function (e) { if (e.target === drop || e.target.className === 'vc-drop-title') fileEl.click(); });
+        drop.addEventListener('keydown', function (e) { if (e.target !== drop) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileEl.click(); } });
+        fileEl.addEventListener('change', function () { if (fileEl.files && fileEl.files[0]) vcLoadFile(fileEl.files[0]); fileEl.value = ''; });
+        ['dragenter', 'dragover'].forEach(function (t) {
+            root.addEventListener(t, function (e) {
+                if (!e.dataTransfer || Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') < 0) return;
+                e.preventDefault(); drop.classList.add('vc-over');
+            });
+        });
+        root.addEventListener('dragleave', function (e) { if (e.target === drop) drop.classList.remove('vc-over'); });
+        root.addEventListener('drop', function (e) {
+            if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+            e.preventDefault(); drop.classList.remove('vc-over');
+            if (!vc.job) vcLoadFile(e.dataTransfer.files[0]);
+        });
+        vcEl('vcSample').addEventListener('click', function (e) {
+            e.preventDefault();
+            if (vc.job) return;
+            vcLoadFile(vcB64ToFile(VC_DEMO_B64, 'sample-landscape.webm'));
+        });
+
+        vcEl('vcRatios').addEventListener('change', function (e) { if (e.target.name === 'vcRatio') vcSetRatio(e.target.value); });
+        vcEl('vcRotL').addEventListener('click', function () { vcRotate(-1); });
+        vcEl('vcRotR').addEventListener('click', function () { vcRotate(1); });
+        vcEl('vcFlipBtn').addEventListener('click', vcFlip);
+        vcEl('vcReset').addEventListener('click', vcResetCrop);
+        ['vcW', 'vcH', 'vcX', 'vcY'].forEach(function (id) {
+            vcEl(id).addEventListener('change', function () { vcInputChanged(id); });
+        });
+        vcEl('vcPlay').addEventListener('click', vcPlayToggle);
+        vcEl('vcSeek').addEventListener('input', function () { vcSeekTo(parseFloat(vcEl('vcSeek').value) || 0); });
+        root.addEventListener('change', function (e) {
+            var t = e.target;
+            if (t.id === 'vcFormat') vc.format = t.value;
+            else if (t.id === 'vcSize') vc.size = t.value;
+            else if (t.id === 'vcSound') vc.sound = t.value;
+            else return;
+            vcSyncInputs();
+            vcClearResult();
+            vcScheduleOutputLine();
+        });
+        vcEl('vcRun').addEventListener('click', vcStart);
+        vcEl('vcCancel').addEventListener('click', vcCancel);
+        if (window.ResizeObserver) new ResizeObserver(function () { vcLayout(); }).observe(vcEl('vcStageWrap'));
+        else window.addEventListener('resize', vcLayout);
+        document.addEventListener('visibilitychange', function () { if (!document.hidden && vc.job && !vc.wake) vcWakeLock(); });
+        // A page kept in the back-forward cache comes back as it was; only a real unload frees the file.
+        window.addEventListener('pagehide', function (e) { if (e && e.persisted) return; vcClearResult(); vcReleaseFile(); });
+        vcUpdateButtons();
+    }
+</script>

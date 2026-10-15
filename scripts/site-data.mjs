@@ -17532,6 +17532,10 @@ export const ALIAS_ROUTES = {
   // 2026-10-02 video-merger rebuild (operator session): head-term alias; CloudFront 301 twin
   // patched into url-migration-301.js via patchCloudFront301().
   '/merge-videos.html': '/video-tools/video-merger.html',
+  // 2026-10-15 Video Cropper: short + head-term aliases; CloudFront 301 twins patched into
+  // url-migration-301.js via patchCloudFront301().
+  '/video-cropper.html': '/video-tools/video-cropper.html',
+  '/crop-video.html': '/video-tools/video-cropper.html',
   '/json-to-typescript.html': '/developer-tools/json-to-typescript.html',
   '/html-to-markdown.html': '/developer-tools/html-to-markdown.html',
   '/wcag-contrast-checker.html': '/developer-tools/wcag-contrast-checker.html',
@@ -27202,6 +27206,9 @@ export const JSP_BY_ROUTE = {
   // gate-h-registry-starvation-video-merger-1784295044378.json) + its 3 EN
   // companion guide angles x pt/es/vi/id/de locale fanout.
   '/video-tools/video-merger.html': 'convert/video-merger.jsp',
+  // 2026-10-15 operator session: Video Cropper (iOS-style crop box: free / fixed-ratio shapes,
+  // rotate, flip; every frame cropped in the browser). Truth source: tool-videocropper/SKILL.md.
+  '/video-tools/video-cropper.html': 'convert/video-cropper.jsp',
   '/guides/video-merger-when.html': 'guide/video-merger-when.jsp',
   '/guides/video-merger-step-by-step.html': 'guide/video-merger-step-by-step.jsp',
   '/guides/video-merger-vs-alternatives.html': 'guide/video-merger-vs-alternatives.jsp',

@@ -64,6 +64,13 @@
         { v: 'fade', label: 'Fade through black' }
     ];
     var VM_ROTATIONS = [0, 90, 180, 270]; // degrees clockwise, per clip
+    // Per-clip crop shapes (width:height of the kept rectangle); 'free' = any shape.
+    var VM_CROP_RATIOS = [
+        { v: 'free', label: 'Free' }, { v: 'original', label: 'Original' }, { v: '1:1', label: 'Square' },
+        { v: '16:9', label: '16:9' }, { v: '9:16', label: '9:16' }, { v: '4:3', label: '4:3' }, { v: '3:4', label: '3:4' },
+        { v: '4:5', label: '4:5' }, { v: '5:4', label: '5:4' }, { v: '3:2', label: '3:2' }, { v: '2:3', label: '2:3' }, { v: '21:9', label: '21:9' }
+    ];
+    var VM_CROPBOX_URL = VM_BASE + '/script/crop-box.js?v=20261015';
     // "Format" choices: the video codecs tried in order (the container follows the codec).
     var VM_FORMATS = {
         auto: { label: 'Auto (best for this browser)', codecs: ['avc', 'vp9', 'av1', 'vp8'] },
@@ -141,11 +148,31 @@
     }
     function vmOrientation(w, h) { return w > h ? 'landscape' : (h > w ? 'portrait' : 'square'); }
     // The reader's rotation for a clip (degrees clockwise, applied on top of the file's own
-    // rotation metadata) and the clip's display size once that rotation is applied.
+    // rotation metadata), the clip's size once that rotation is applied (vmTurnedOf), and the
+    // size of the part it keeps after its crop (vmDispOf - what every engine lays out).
     function vmRotOf(c) { return (c && c.rotate) || 0; }
-    function vmDispOf(c) {
+    function vmTurnedOf(c) {
         var w = (c.info && c.info.displayW) || 0, h = (c.info && c.info.displayH) || 0;
         return vmRotOf(c) % 180 ? { w: h, h: w } : { w: w, h: h };
+    }
+    function vmDispOf(c) {
+        var k = c && c.crop;
+        return k ? { w: k.w, h: k.h } : vmTurnedOf(c);
+    }
+    // A clip's crop rectangle is in pixels of the turned picture, so turning the clip by `steps`
+    // quarter turns clockwise turns the rectangle with it (W x H = the picture before the turn).
+    function vmTurnRect(r, W, H, steps) {
+        for (var i = 0; i < ((steps % 4) + 4) % 4; i++) {
+            r = { x: H - r.y - r.h, y: r.x, w: r.h, h: r.w };
+            var t = W; W = H; H = t;
+        }
+        return r;
+    }
+    function vmCropRatioValue(c, v) {
+        if (!v || v === 'free') return null;
+        if (v === 'original') { var t = vmTurnedOf(c); return t.w && t.h ? t.w / t.h : null; }
+        var m = /^(\d+):(\d+)$/.exec(v);
+        return m ? (+m[1]) / (+m[2]) : null;
     }
     // CanvasSink's rotation REPLACES the file's (default = file rotation), so a rotated clip asks
     // for the total, clockwise; width/height are the size after turning. The file's flip is
@@ -473,7 +500,7 @@
                     clip.kind = 'ready';
                     vmRenderStrip();
                     clip.thumb0 = clip.thumb = await vmMakeThumb(clip);
-                    if (vmRotOf(clip) && clip.thumb0) await vmRotateThumb(clip); // rotated before its thumbnail arrived
+                    if ((vmRotOf(clip) || clip.crop) && clip.thumb0) await vmRotateThumb(clip); // edited before its thumbnail arrived
                 } catch (e) {
                     clip.kind = 'error';
                     clip.error = (e && e.message) ? e.message : 'This file could not be read.';
@@ -531,7 +558,7 @@
             vm.clips.push({
                 id: vm.nextId++, file: f, name: f.name || ('clip-' + vm.nextId), size: f.size,
                 url: URL.createObjectURL(f), kind: 'probing', info: null, thumb: null, thumb0: null,
-                trimStart: 0, trimEnd: 0, muted: false, rotate: 0, status: ''
+                trimStart: 0, trimEnd: 0, muted: false, rotate: 0, crop: null, cropRatio: 'free', status: ''
             });
         });
         while (vm.gaps.length < Math.max(0, vm.clips.length - 1)) vm.gaps.push('none');
@@ -547,6 +574,7 @@
         try { if (c.url) URL.revokeObjectURL(c.url); } catch (e) { /* ignore */ }
         try { if (c.thumb) URL.revokeObjectURL(c.thumb); } catch (e) { /* ignore */ }
         try { if (c.thumb0 && c.thumb0 !== c.thumb) URL.revokeObjectURL(c.thumb0); } catch (e) { /* ignore */ }
+        try { if (c.stillUrl) URL.revokeObjectURL(c.stillUrl); } catch (e) { /* ignore */ }
         vmDropStrip(c);
         try { if (c.input && c.input.dispose) c.input.dispose(); } catch (e) { /* ignore */ }
         c.url = null; c.thumb = null; c.thumb0 = null; c.input = null; c.vTrack = null; c.aTrack = null; c.fullPcm = null;
@@ -635,7 +663,7 @@
         for (var g = 0; g < vm.gaps.length; g++) if (vm.gaps[g] !== 'none') return true;
         for (var i = 0; i < vm.clips.length; i++) {
             var c = vm.clips[i];
-            if (c.muted || vmRotOf(c) || c.trimStart > 0.001 || (c.info && c.trimEnd < c.info.durationS - 0.001)) return true;
+            if (c.muted || vmRotOf(c) || c.crop || c.trimStart > 0.001 || (c.info && c.trimEnd < c.info.durationS - 0.001)) return true;
         }
         return false;
     }
@@ -666,9 +694,12 @@
         return fam;
     }
 
-    function vmGeometry(compat) {
-        var first = vmDispOf(vm.clips[0]); // "Original" follows the first clip as rotated
-        var shortOf = function (c) { return Math.min(c.info.displayW || 0, c.info.displayH || 0) || 720; };
+    // uncropped = size the frame from the clips without their crops (the Video Editor hand-off,
+    // which receives the whole clips).
+    function vmGeometry(compat, uncropped) {
+        var sizeOf = uncropped ? vmTurnedOf : vmDispOf;
+        var first = sizeOf(vm.clips[0]); // "Original" follows the first clip as rotated and cropped
+        var shortOf = function (c) { var d = sizeOf(c); return Math.min(d.w || 0, d.h || 0) || 720; };
         var aspect = vm.frame === 'original' ? ((first.w || 16) / (first.h || 9)) : VM_ASPECT[vm.frame];
         var S;
         if (vm.quality === 'auto') {
@@ -763,7 +794,7 @@
             if (vm.format !== 'auto' && vm.format !== 'mp4') s += '; compatibility mode always makes MP4 (H.264)';
         }
         if (p.formatBlocksRemux) s += '. These clips could be joined losslessly in their own format, but the chosen Format needs a re-encode.';
-        else if (p.remuxPossible && p.edited) s += '. These clips could be joined losslessly, but trimming, rotating, muting, transitions, music or a new frame shape, quality or format need a re-encode.';
+        else if (p.remuxPossible && p.edited) s += '. These clips could be joined losslessly, but trimming, rotating, cropping, muting, transitions, music or a new frame shape, quality or format need a re-encode.';
         return s;
     }
 
@@ -774,8 +805,8 @@
     // ------------------------------------------------------------------ engine 1: lossless join
 
     async function vmRunRemux(plan, job) {
-        // Packet copy cannot turn pixels; vmIsEdited keeps rotated clips away from this engine.
-        if (vm.clips.some(vmRotOf)) throw new Error('Rotated clips need a re-encode.');
+        // Packet copy cannot turn or crop pixels; vmIsEdited keeps such clips away from this engine.
+        if (vm.clips.some(function (c) { return vmRotOf(c) || c.crop; })) throw new Error('Rotated or cropped clips need a re-encode.');
         var mb = await vmLoadMb();
         var clips = vm.clips.slice();
         var first = clips[0].info;
@@ -993,8 +1024,28 @@
         var ts = [];
         var lo = info.firstTs + it.clip.trimStart, hi = info.firstTs + it.clip.trimEnd - 0.0005;
         for (var k = ks; k <= ke; k++) ts.push(vmClamp(lo + (k / F - it.start), lo, hi));
-        var ds = vmDispOf(it.clip), dw = ds.w || plan.W, dh = ds.h || plan.H, opts, dx = 0, dy = 0;
-        if (vm.fit === 'cover') {
+        var ds = vmDispOf(it.clip), dw = ds.w || plan.W, dh = ds.h || plan.H, opts, dx = 0, dy = 0, src = null, dst = null;
+        var k = it.clip.crop;
+        if (k) {
+            // Cropped clip: the sink gives the whole turned frame (never upscaled) and the kept
+            // rectangle is copied from that canvas (a canvas source keeps its offset in WebKit,
+            // a VideoFrame does not). Cover trims the kept part further to the frame's shape.
+            var full = vmTurnedOf(it.clip), sx = k.x, sy = k.y, sw = k.w, sh = k.h, scale;
+            if (vm.fit === 'cover') {
+                scale = Math.max(plan.W / k.w, plan.H / k.h);
+                sw = plan.W / scale; sh = plan.H / scale;
+                sx = k.x + (k.w - sw) / 2; sy = k.y + (k.h - sh) / 2;
+                dst = { x: 0, y: 0, w: plan.W, h: plan.H };
+            } else {
+                scale = Math.min(plan.W / k.w, plan.H / k.h);
+                var kw = Math.min(plan.W, vmEven(k.w * scale)), kh = Math.min(plan.H, vmEven(k.h * scale));
+                dst = { x: Math.round((plan.W - kw) / 2), y: Math.round((plan.H - kh) / 2), w: kw, h: kh };
+            }
+            var s1 = Math.min(1, scale);
+            opts = { width: Math.max(2, Math.round(full.w * s1)), height: Math.max(2, Math.round(full.h * s1)), fit: 'fill', poolSize: 3 };
+            var fx = opts.width / full.w, fy = opts.height / full.h;
+            src = { x: sx * fx, y: sy * fy, w: sw * fx, h: sh * fy };
+        } else if (vm.fit === 'cover') {
             opts = { width: plan.W, height: plan.H, fit: 'cover', poolSize: 3 };
         } else {
             var sc = Math.min(plan.W / dw, plan.H / dh);
@@ -1003,7 +1054,7 @@
             dx = Math.round((plan.W - cw) / 2); dy = Math.round((plan.H - ch) / 2);
         }
         vmSinkRotation(it.clip, opts);
-        return { ks: ks, ke: ke, ts: ts, opts: opts, dx: dx, dy: dy, gen: null, last: null, done: false };
+        return { ks: ks, ke: ke, ts: ts, opts: opts, dx: dx, dy: dy, src: src, dst: dst, gen: null, last: null, done: false };
     }
 
     async function vmRunWebCodecs(plan, job) {
@@ -1063,7 +1114,8 @@
                 var alpha = vmVideoAlpha(it, T - it.start);
                 if (fr.last && alpha > 0) {
                     ctx.globalAlpha = alpha;
-                    ctx.drawImage(fr.last, fr.dx, fr.dy);
+                    if (fr.src) ctx.drawImage(fr.last, fr.src.x, fr.src.y, fr.src.w, fr.src.h, fr.dst.x, fr.dst.y, fr.dst.w, fr.dst.h);
+                    else ctx.drawImage(fr.last, fr.dx, fr.dy);
                 }
                 if (k === fr.ke && fr.gen) { try { await fr.gen.return(); } catch (e) { /* ignore */ } fr.done = true; fr.last = null; }
             }
@@ -1096,6 +1148,7 @@
     // ------------------------------------------------------------------ engine 3: compatibility (FFmpeg.wasm)
 
     function vmNum(x) { return (Math.round(x * 1000) / 1000).toFixed(3); }
+    function vmFrac(x) { return (Math.round(x * 1e6) / 1e6).toFixed(6); }
 
     function vmBuildFfArgs(tl, plan, names, musicName) {
         var W = plan.W, H = plan.H, F = plan.F, graph = [], args = ['-hide_banner'];
@@ -1108,9 +1161,12 @@
         tl.items.forEach(function (it, i) {
             var c = it.clip, d = vmNum(it.dur);
             // FFmpeg already turns each input upright for its rotation metadata; the reader's
-            // rotation is added before scaling so letterbox / crop see the turned shape.
+            // rotation and crop are added before scaling so letterbox / crop see the kept shape.
+            // The crop is given as fractions of the turned frame (robust to a 1-pixel mismatch).
+            var t = vmTurnedOf(c), k = c.crop;
+            var crop = k ? 'crop=w=iw*' + vmFrac(k.w / t.w) + ':h=ih*' + vmFrac(k.h / t.h) + ':x=iw*' + vmFrac(k.x / t.w) + ':y=ih*' + vmFrac(k.y / t.h) + ':exact=1,' : '';
             var v = '[' + i + ':v:0]setpts=PTS-STARTPTS,trim=start=' + vmNum(c.trimStart) + ':end=' + vmNum(c.trimEnd) +
-                ',setpts=PTS-STARTPTS,' + vmFfTurn(vmRotOf(c)) + scale + ',setsar=1,fps=' + F + ',format=yuv420p' +
+                ',setpts=PTS-STARTPTS,' + vmFfTurn(vmRotOf(c)) + crop + scale + ',setsar=1,fps=' + F + ',format=yuv420p' +
                 ',tpad=stop_mode=clone:stop_duration=1,trim=duration=' + d;
             if (it.inType === 'fade') v += ',fade=t=in:st=0:d=' + vmNum(it.inLen / 2);
             if (it.outType === 'fade') v += ',fade=t=out:st=' + vmNum(it.dur - it.outLen / 2) + ':d=' + vmNum(it.outLen / 2);
@@ -1299,7 +1355,7 @@
     function vmEditorPayload() {
         var ready = vm.clips.filter(function (c) { return c.kind === 'ready'; });
         var geo = null;
-        try { if (vm.clips.every(function (c) { return c.kind === 'ready'; })) geo = vmGeometry(false); } catch (e) { geo = null; }
+        try { if (vm.clips.every(function (c) { return c.kind === 'ready'; })) geo = vmGeometry(false, true); } catch (e) { geo = null; }
         return {
             type: 'ftol-merger-clips', v: 1,
             clips: ready.map(function (c) {
@@ -1322,7 +1378,8 @@
             sent = true;
             window.removeEventListener('message', onMessage);
             tab.postMessage(vmEditorPayload(), origin);
-            vmFlash('Your clips are opening in the Video Editor tab. Keep this tab open until they appear there.');
+            vmFlash('Your clips are opening in the Video Editor tab. Keep this tab open until they appear there.' +
+                (vm.clips.some(function (c) { return c.crop; }) ? ' Crops are not carried over - crop those clips again in the editor if you need to.' : ''));
         };
         window.addEventListener('message', onMessage);
         setTimeout(function () { window.removeEventListener('message', onMessage); }, 120000);
@@ -1405,8 +1462,8 @@
         var dis = vm.job ? ' disabled' : '';
         var n = vm.clips.length;
         return '<div class="' + cls + '" data-id="' + c.id + '" role="listitem">' +
-            '<div class="vm-thumb" title="' + (c.kind === 'ready' ? 'Tap to trim or rotate, drag to reorder' : 'Drag to reorder') + '">' + thumb + '<span class="vm-idx">' + (i + 1) + '</span>' +
-                (vmRotOf(c) ? '<span class="vm-rottag">rotated ' + vmRotOf(c) + '&deg;</span>' : '') + (c.muted ? '<span class="vm-mutedtag">muted</span>' : '') + '</div>' +
+            '<div class="vm-thumb" title="' + (c.kind === 'ready' ? 'Tap to trim, rotate or crop, drag to reorder' : 'Drag to reorder') + '">' + thumb + '<span class="vm-idx">' + (i + 1) + '</span>' +
+                (vmRotOf(c) ? '<span class="vm-rottag">rotated ' + vmRotOf(c) + '&deg;</span>' : '') + (c.crop ? '<span class="vm-croptag">cropped</span>' : '') + (c.muted ? '<span class="vm-mutedtag">muted</span>' : '') + '</div>' +
             '<div class="vm-name" title="' + vmEsc(c.name) + '">' + vmEsc(c.name) + '</div>' +
             '<div class="vm-meta">' + vmEsc(vmCardMeta(c)) + '</div>' + range +
             '<div class="vm-btns">' +
@@ -1522,6 +1579,7 @@
         // Trim edits during a merge would change clips the running job is still reading.
         var tl = vmEl('vmTl');
         if (tl) tl.classList.toggle('vm-tl-locked', !!busy);
+        if (vmCropBox) vmCropBox.setInteractive(!busy);
         var sel = vmClipById(vm.selectedId);
         if (sel && tl && !vmEl('vmClipPanel').hidden) vmTlLayout(sel);
         vmRenderStrip();
@@ -1640,15 +1698,24 @@
         });
     }
 
-    // Card thumbnail for the clip's current rotation, turned from the unrotated original.
+    // Card thumbnail for the clip's current rotation and crop, made from the unrotated original.
     async function vmRotateThumb(c) {
         var tok = c.thumbTok = (c.thumbTok || 0) + 1;
         var rot = vmRotOf(c), base = c.thumb0, next = base;
-        if (rot && base) {
+        if ((rot || c.crop) && base) {
             try {
                 var im = await vmLoadImage(base);
                 if (tok !== c.thumbTok) return;
-                var u = await vmCanvasToUrl(vmTurnedCanvas(im, im.naturalWidth, im.naturalHeight, rot));
+                var cv = rot ? vmTurnedCanvas(im, im.naturalWidth, im.naturalHeight, rot) : im;
+                var cvW = rot ? cv.width : im.naturalWidth, cvH = rot ? cv.height : im.naturalHeight;
+                if (c.crop) {
+                    var t = vmTurnedOf(c), k = c.crop, fx = cvW / Math.max(1, t.w), fy = cvH / Math.max(1, t.h);
+                    var out = document.createElement('canvas');
+                    out.width = Math.max(2, Math.round(k.w * fx)); out.height = Math.max(2, Math.round(k.h * fy));
+                    out.getContext('2d').drawImage(cv, k.x * fx, k.y * fy, k.w * fx, k.h * fy, 0, 0, out.width, out.height);
+                    cv = out;
+                }
+                var u = await vmCanvasToUrl(cv);
                 if (tok !== c.thumbTok || !c.url) { URL.revokeObjectURL(u); return; }
                 next = u;
             } catch (e) { next = base; }
@@ -1669,10 +1736,17 @@
     function vmSetRotate(c, deg) {
         deg = ((deg % 360) + 360) % 360;
         if (VM_ROTATIONS.indexOf(deg) < 0 || vmRotOf(c) === deg || vm.job) return;
+        var steps = ((deg - vmRotOf(c)) / 90 + 4) % 4;
+        if (c.crop) { var t0 = vmTurnedOf(c); c.crop = vmTurnRect(c.crop, t0.w, t0.h, steps); }
+        // A shaped crop turns with the picture: 16:9 becomes 9:16 (a shape without a turned twin becomes Free).
+        if (steps % 2 && c.cropRatio && /^\d+:\d+$/.test(c.cropRatio)) {
+            var m = /^(\d+):(\d+)$/.exec(c.cropRatio), sw = m[2] + ':' + m[1];
+            c.cropRatio = VM_CROP_RATIOS.some(function (x) { return x.v === sw; }) ? sw : 'free';
+        }
         c.rotate = deg;
         vmDropStrip(c);
         vmClearResult();
-        if (vm.selectedId === c.id) { vmPreviewLayout(c); vmSyncRotRadios(c); }
+        if (vm.selectedId === c.id) { vmPreviewLayout(c); vmSyncRotRadios(c); vmCropSync(c); }
         vmRenderStrip();
         vmScheduleOutputLine();
         vmRotateThumb(c).then(function () {
@@ -1696,10 +1770,97 @@
         var vw = c.info.displayW || v.videoWidth || 16, vh = c.info.displayH || v.videoHeight || 9;
         var Wc = wrap.clientWidth || 560, Hc = wrap.clientHeight || 300;
         var r = turned ? vh / vw : vw / vh;
-        var visW = Math.min(Wc, Hc * r), visH = visW / r;
+        // Room inside the stage for the crop handles, which reach past the picture's edges.
+        var pad = window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 24 : 16;
+        var visW = Math.max(40, Math.min(Wc - 2 * pad, (Hc - 2 * pad) * r)), visH = visW / r;
         v.style.width = Math.round(turned ? visH : visW) + 'px';
         v.style.height = Math.round(turned ? visW : visH) + 'px';
         v.style.transform = 'translate(-50%, -50%) rotate(' + rot + 'deg)';
+        // The crop box covers exactly the turned picture.
+        var cs = vmEl('vmCropStage');
+        if (cs) {
+            cs.style.width = Math.round(visW) + 'px'; cs.style.height = Math.round(visH) + 'px';
+            cs.style.left = Math.round((Wc - visW) / 2) + 'px'; cs.style.top = Math.round((Hc - visH) / 2) + 'px';
+        }
+    }
+
+    // ------------------------------------------------------------------ crop (per clip)
+
+    var vmCropBox = null, vmCropBoxPromise = null;
+    function vmLoadCropBox() {
+        if (window.FtolCropBox) return Promise.resolve(window.FtolCropBox);
+        if (!vmCropBoxPromise) {
+            vmCropBoxPromise = new Promise(function (resolve, reject) {
+                var sc = document.createElement('script');
+                sc.src = VM_CROPBOX_URL; sc.async = true;
+                sc.onload = function () { window.FtolCropBox ? resolve(window.FtolCropBox) : reject(new Error('crop box missing')); };
+                sc.onerror = function () { vmCropBoxPromise = null; reject(new Error('crop box failed to load')); };
+                document.head.appendChild(sc);
+            });
+        }
+        return vmCropBoxPromise;
+    }
+
+    // Shows the selected clip's crop on its preview (creating the crop box on first use).
+    function vmCropSync(c) {
+        var row = vmEl('vmCropRow');
+        if (!c || !window.FtolCropBox) { if (row) row.hidden = !window.FtolCropBox; return; }
+        row.hidden = false;
+        var t = vmTurnedOf(c), r = c.crop || { x: 0, y: 0, w: t.w, h: t.h };
+        if (!vmCropBox) {
+            vmCropBox = window.FtolCropBox.create(vmEl('vmCropStage'), {
+                srcW: t.w, srcH: t.h, rect: r, label: 'Crop area for this clip. Drag to move, drag a corner or edge to resize. Arrow keys move it; Alt or Option with the arrow keys resizes it.',
+                onChange: function (rect, phase) {
+                    var cc = vmClipById(vm.selectedId);
+                    if (!cc || vm.job) return;
+                    vmApplyCrop(cc, rect, phase === 'end');
+                }
+            });
+        } else vmCropBox.setSource(t.w, t.h, r);
+        vmCropBox.setAspect(vmCropRatioValue(c, c.cropRatio), true, true);
+        vmCropBox.setInteractive(!vm.job);
+        vmMarkCropPills(c);
+        vmCropText(c);
+    }
+
+    function vmApplyCrop(c, rect, done) {
+        var t = vmTurnedOf(c);
+        var full = !rect || (rect.x === 0 && rect.y === 0 && rect.w >= t.w && rect.h >= t.h);
+        c.crop = full ? null : { x: rect.x, y: rect.y, w: rect.w, h: rect.h };
+        vmCropText(c);
+        vmCardSync(c);
+        if (!done) return;
+        vmClearResult();
+        vmRenderCount();
+        vmScheduleOutputLine();
+        vmRotateThumb(c).then(function () { if (c.url) vmRenderStrip(); });
+    }
+
+    function vmMarkCropPills(c) {
+        var r = document.querySelectorAll('#vmCropRow input[name="vmCropRatio"]');
+        for (var i = 0; i < r.length; i++) r[i].checked = r[i].value === (c.cropRatio || 'free');
+    }
+    function vmCropText(c) {
+        var el = vmEl('vmCropTxt');
+        if (!el) return;
+        var t = vmTurnedOf(c), k = c.crop;
+        el.textContent = k ? 'Keeps ' + k.w + 'x' + k.h + ' of ' + t.w + 'x' + t.h : 'Whole picture (' + t.w + 'x' + t.h + ')';
+    }
+
+    function vmSetCropRatio(c, v) {
+        if (!c || !vmCropBox || vm.job) return;
+        c.cropRatio = v;
+        vmCropBox.setAspect(vmCropRatioValue(c, v), true);
+        vmApplyCrop(c, vmCropBox.getRect(), true);
+        vmMarkCropPills(c);
+    }
+
+    function vmResetCrop(c) {
+        if (!c || vm.job) return;
+        c.cropRatio = 'free';
+        if (vmCropBox) vmCropBox.reset(true);
+        vmApplyCrop(c, null, true);
+        vmMarkCropPills(c);
     }
 
     // The editor shows the whole clip as a strip of frames: two handles mark the part to keep,
@@ -1720,6 +1881,7 @@
         vmEl('vmPanelName').textContent = (vmIndexOf(id) + 1) + '. ' + c.name;
         vmSyncRotRadios(c);
         vmPreviewLayout(c);
+        vmCropSync(c);
         if (!same) {
             vmTl.drag = null;
             vmTl.shown = c.trimStart;
@@ -1839,7 +2001,7 @@
     function vmTlFrames(c) {
         var box = vmEl('vmTlFrames'), tr = vmEl('vmTlTrack');
         var w = Math.max(120, tr.clientWidth || 600), h = Math.max(24, tr.clientHeight || 56);
-        var ds = vmDispOf(c), ar = ds.w && ds.h ? ds.w / ds.h : 16 / 9;
+        var ds = vmTurnedOf(c), ar = ds.w && ds.h ? ds.w / ds.h : 16 / 9; // the strip shows whole frames
         if (!c.strip) c.strip = { n: vmClamp(Math.round(w / Math.max(24, h * ar)), 4, 16), urls: [], busy: false, done: false, dead: false };
         var html = '';
         for (var k = 0; k < c.strip.n; k++) {
@@ -2041,7 +2203,12 @@
         // ready stays false until this clip's metadata loads, so events left over from the
         // previous clip cannot move this clip's playhead.
         vmTl.seeking = false; vmTl.pending = null; vmTl.ready = false;
-        v.onerror = function () { note.textContent = 'Preview is not available for this clip in this browser - it will still be merged.'; vmTlPlayIcon(); };
+        v.removeAttribute('poster');
+        v.onerror = function () {
+            note.textContent = 'This browser cannot play this clip, so the preview shows a still frame - cropping and trimming still work, and the clip will still be merged.';
+            vmTlPlayIcon();
+            vmPreviewStill(c);
+        };
         v.onloadedmetadata = function () {
             vmPreviewLayout(c);
             vmTl.ready = true;
@@ -2061,6 +2228,26 @@
         v.onended = v.onpause;
         v.src = c.url;
         vmTlPlayIcon();
+    }
+
+    // A clip the browser cannot play shows a still frame (as the poster of the turned <video>, so
+    // it is turned with it) - decoded by Mediabunny when possible, else the card's own thumbnail.
+    var vmStillTok = 0;
+    async function vmPreviewStill(c) {
+        var tok = ++vmStillTok, v = vmEl('vmPreview'), url = c.thumb0 || null;
+        if (url && v) v.setAttribute('poster', url);
+        if (!(c.vTrack && c.info.canDecodeVideo && vm.mb)) return;
+        try {
+            var k = Math.min(1, 960 / Math.max(1, c.info.displayW, c.info.displayH));
+            var sink = new vm.mb.CanvasSink(c.vTrack, { width: Math.max(2, Math.round(c.info.displayW * k)), height: Math.max(2, Math.round(c.info.displayH * k)), fit: 'fill', poolSize: 1 });
+            var wc = await sink.getCanvas(c.info.firstTs + Math.min(c.trimStart + 0.05, Math.max(0, c.info.durationS - 0.05)));
+            if (!wc || !wc.canvas || tok !== vmStillTok || vm.selectedId !== c.id) return;
+            var u = await vmCanvasToUrl(wc.canvas);
+            if (tok !== vmStillTok || vm.selectedId !== c.id) { URL.revokeObjectURL(u); return; }
+            if (c.stillUrl) { try { URL.revokeObjectURL(c.stillUrl); } catch (e) { /* ignore */ } }
+            c.stillUrl = u;
+            v.setAttribute('poster', u);
+        } catch (e) { /* keep the thumbnail */ }
     }
 
     // ------------------------------------------------------------------ drag to reorder (mouse + touch)
@@ -2142,11 +2329,11 @@
                 '<div class="vm-drop-sub">MP4, MOV, WebM, MKV and more - files stay on your device. <a href="#" id="vmSamples">Try two sample clips</a></div>' +
             '</div>' +
             '<div id="vmFlash" class="vm-flash" hidden></div>' +
-            '<div class="vm-row-head"><b>Clips</b> <span id="vmCount" class="vm-muted"></span><span class="vm-muted vm-reorder-hint">Drag a thumbnail or use the arrows to change the order. Tap a clip to trim or rotate it.</span></div>' +
+            '<div class="vm-row-head"><b>Clips</b> <span id="vmCount" class="vm-muted"></span><span class="vm-muted vm-reorder-hint">Drag a thumbnail or use the arrows to change the order. Tap a clip to trim, rotate or crop it.</span></div>' +
             '<div id="vmStrip" class="vm-strip" role="list"></div>' +
             '<div id="vmClipPanel" class="vm-panel" hidden>' +
                 '<div class="vm-panel-head"><b id="vmPanelName"></b> <button type="button" id="vmPanelClose" class="w3-button w3-small w3-light-grey">Done</button></div>' +
-                '<div id="vmPreviewWrap" class="vm-preview-wrap"><video id="vmPreview" class="vm-preview" playsinline preload="auto"></video></div>' +
+                '<div id="vmPreviewWrap" class="vm-preview-wrap"><video id="vmPreview" class="vm-preview" playsinline preload="auto"></video><div id="vmCropStage" class="vm-crop-stage"></div></div>' +
                 '<div id="vmPreviewNote" class="vm-muted"></div>' +
                 '<div id="vmRotBox" class="vm-rot" role="radiogroup" aria-label="Rotate this clip clockwise">' +
                     '<span class="vm-rot-label">Rotate</span>' +
@@ -2154,6 +2341,14 @@
                         return '<label class="vm-pill vm-rot-pill"><input type="radio" class="vm-lockable" name="vmRot" value="' + d + '"' + (d ? '' : ' checked') + '> ' + d + '&deg;</label>';
                     }).join('') +
                     '<span class="vm-muted">clockwise</span>' +
+                '</div>' +
+                '<div id="vmCropRow" class="vm-crop" role="radiogroup" aria-label="Crop this clip" hidden>' +
+                    '<span class="vm-rot-label">Crop</span>' +
+                    VM_CROP_RATIOS.map(function (r) {
+                        return '<label class="vm-pill vm-crop-pill"><input type="radio" class="vm-lockable" name="vmCropRatio" value="' + r.v + '"' + (r.v === 'free' ? ' checked' : '') + '> ' + r.label + '</label>';
+                    }).join('') +
+                    '<button type="button" id="vmCropReset" class="w3-button w3-small w3-light-grey vm-lockable">Reset crop</button>' +
+                    '<div class="vm-crop-help"><span id="vmCropTxt" class="vm-crop-txt"></span> <span class="vm-muted">Drag the box on the preview, or its corners and edges, to keep only that part of every frame of this clip.</span></div>' +
                 '</div>' +
                 '<div id="vmTrimBox" class="vm-trim">' +
                     '<div class="vm-tl-bar">' +
@@ -2316,6 +2511,12 @@
         });
         // The whole stage toggles playback, including the black bars beside a portrait or turned picture.
         vmEl('vmPreviewWrap').addEventListener('click', function () { vmTlPlayToggle(false); });
+        vmEl('vmCropRow').addEventListener('change', function (e) {
+            if (e.target.name !== 'vmCropRatio') return;
+            vmSetCropRatio(vmClipById(vm.selectedId), e.target.value);
+        });
+        vmEl('vmCropReset').addEventListener('click', function () { vmResetCrop(vmClipById(vm.selectedId)); });
+        vmLoadCropBox().then(function () { var c = vmClipById(vm.selectedId); if (c && !vmEl('vmClipPanel').hidden) vmCropSync(c); }, function () { /* crop row stays hidden */ });
         vmEl('vmRotBox').addEventListener('change', function (e) {
             if (e.target.name !== 'vmRot') return;
             var c = vmClipById(vm.selectedId);

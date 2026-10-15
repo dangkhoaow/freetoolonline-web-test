@@ -328,6 +328,8 @@ const HOWTO_ROUTES = new Set([
   '/developer-tools/remove-duplicate-lines.html',
   // 2026-10-02 video-merger rebuild: 5-step w3-pale-green "How to merge videos" panel in BODYHTML
   '/video-tools/video-merger.html',
+  // 2026-10-15 video-cropper: 4-step w3-pale-green "How to crop a video" panel in BODYHTML
+  '/video-tools/video-cropper.html',
 ]);
 
 // P10.3.1 - Per-tool og:image differentiation (Phase 10 Cycle 4).
