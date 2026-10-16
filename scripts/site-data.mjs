@@ -14,6 +14,25 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // commission-calculator-guides locale fanout (new-tool-discovery-loop-runbook, deferred-guides drain, 2026-10-16)
+  '/guides/commission-calculator-step-by-step.html',
+  '/guides/commission-calculator-when.html',
+  '/guides/commission-calculator-vs-alternatives.html',
+  '/guides/pt/commission-calculator-step-by-step.html',
+  '/guides/pt/commission-calculator-when.html',
+  '/guides/pt/commission-calculator-vs-alternatives.html',
+  '/guides/es/commission-calculator-step-by-step.html',
+  '/guides/es/commission-calculator-when.html',
+  '/guides/es/commission-calculator-vs-alternatives.html',
+  '/guides/vi/commission-calculator-step-by-step.html',
+  '/guides/vi/commission-calculator-when.html',
+  '/guides/vi/commission-calculator-vs-alternatives.html',
+  '/guides/id/commission-calculator-step-by-step.html',
+  '/guides/id/commission-calculator-when.html',
+  '/guides/id/commission-calculator-vs-alternatives.html',
+  '/guides/de/commission-calculator-step-by-step.html',
+  '/guides/de/commission-calculator-when.html',
+  '/guides/de/commission-calculator-vs-alternatives.html',
   // layered-image-editor-linux-omarchy mock tool + 18 guide routes retired 2026-10-11 (operator decision 2026-10-10) - see ALIAS_ROUTES.
   '/guides/pt/hevc-converter-mov-when.html', // hevc-converter-mov-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/es/hevc-converter-mov-when.html', // hevc-converter-mov-when es locale fanout (new_guide_locale_completeness backfill 20261006)
@@ -7711,6 +7730,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // commission-calculator-guides locale fanout (new-tool-discovery-loop-runbook, deferred-guides drain, 2026-10-16) - registered in BOTH INFO_ROUTES and GUIDE_ROUTES per the documented builder-gap backfill pattern above (isGuideRoute() depends on GUIDE_ROUTES membership for ad slots + related-links).
+  '/guides/commission-calculator-step-by-step.html',
+  '/guides/commission-calculator-when.html',
+  '/guides/commission-calculator-vs-alternatives.html',
+  '/guides/pt/commission-calculator-step-by-step.html',
+  '/guides/pt/commission-calculator-when.html',
+  '/guides/pt/commission-calculator-vs-alternatives.html',
+  '/guides/es/commission-calculator-step-by-step.html',
+  '/guides/es/commission-calculator-when.html',
+  '/guides/es/commission-calculator-vs-alternatives.html',
+  '/guides/vi/commission-calculator-step-by-step.html',
+  '/guides/vi/commission-calculator-when.html',
+  '/guides/vi/commission-calculator-vs-alternatives.html',
+  '/guides/id/commission-calculator-step-by-step.html',
+  '/guides/id/commission-calculator-when.html',
+  '/guides/id/commission-calculator-vs-alternatives.html',
+  '/guides/de/commission-calculator-step-by-step.html',
+  '/guides/de/commission-calculator-when.html',
+  '/guides/de/commission-calculator-vs-alternatives.html',
   // layered-image-editor-linux-omarchy mock tool + 18 guide routes retired 2026-10-11 (operator decision 2026-10-10) - see ALIAS_ROUTES.
   // hevc-converter-mov-when pt locale fanout (new_guide_locale_completeness backfill 20261006)
   '/guides/pt/hevc-converter-mov-when.html',
@@ -18054,6 +18092,25 @@ export const ALIAS_ROUTES = {
 // non-kebab entries to this map.
 // ─────────────────────────────────────────────────────────────────────────
 export const JSP_BY_ROUTE = {
+  // commission-calculator-guides (new-tool-discovery-loop-runbook, deferred-guides drain, 2026-10-16): 3 EN angles x en/pt/es/vi/id/de = 18 guides for /utility-tools/commission-calculator.html (shipped tool-only fire771 under content freeze).
+  '/guides/commission-calculator-step-by-step.html': 'guide/commission-calculator-step-by-step.jsp',
+  '/guides/commission-calculator-when.html': 'guide/commission-calculator-when.jsp',
+  '/guides/commission-calculator-vs-alternatives.html': 'guide/commission-calculator-vs-alternatives.jsp',
+  '/guides/pt/commission-calculator-step-by-step.html': 'guide/pt/commission-calculator-step-by-step.jsp',
+  '/guides/pt/commission-calculator-when.html': 'guide/pt/commission-calculator-when.jsp',
+  '/guides/pt/commission-calculator-vs-alternatives.html': 'guide/pt/commission-calculator-vs-alternatives.jsp',
+  '/guides/es/commission-calculator-step-by-step.html': 'guide/es/commission-calculator-step-by-step.jsp',
+  '/guides/es/commission-calculator-when.html': 'guide/es/commission-calculator-when.jsp',
+  '/guides/es/commission-calculator-vs-alternatives.html': 'guide/es/commission-calculator-vs-alternatives.jsp',
+  '/guides/vi/commission-calculator-step-by-step.html': 'guide/vi/commission-calculator-step-by-step.jsp',
+  '/guides/vi/commission-calculator-when.html': 'guide/vi/commission-calculator-when.jsp',
+  '/guides/vi/commission-calculator-vs-alternatives.html': 'guide/vi/commission-calculator-vs-alternatives.jsp',
+  '/guides/id/commission-calculator-step-by-step.html': 'guide/id/commission-calculator-step-by-step.jsp',
+  '/guides/id/commission-calculator-when.html': 'guide/id/commission-calculator-when.jsp',
+  '/guides/id/commission-calculator-vs-alternatives.html': 'guide/id/commission-calculator-vs-alternatives.jsp',
+  '/guides/de/commission-calculator-step-by-step.html': 'guide/de/commission-calculator-step-by-step.jsp',
+  '/guides/de/commission-calculator-when.html': 'guide/de/commission-calculator-when.jsp',
+  '/guides/de/commission-calculator-vs-alternatives.html': 'guide/de/commission-calculator-vs-alternatives.jsp',
   // layered-image-editor-linux-omarchy mock tool + 18 guide routes retired 2026-10-11 (operator decision 2026-10-10) - see ALIAS_ROUTES.
   '/places-3d/angel-falls.html': 'place/angel-falls.jsp',
   '/places-3d/yosemite-falls.html': 'place/yosemite-falls.jsp',
