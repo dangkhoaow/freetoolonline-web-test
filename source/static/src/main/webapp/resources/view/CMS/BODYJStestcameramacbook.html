@@ -1,0 +1,120 @@
+<script>
+    // Camera / webcam test - fully in-browser. Registry: device_tester_mediastream.
+    // Page: /test-camera-macbook.html
+    //
+    // getUserMedia({video:true}) -> attach to a <video> live preview, gated
+    // behind an explicit Start click (no auto-request on page load, per the
+    // device_tester_mediastream acceptance criteria). Reports the detected
+    // capture resolution + camera label, lets the reader switch between
+    // connected cameras (built-in laptop camera vs an external webcam), and a
+    // Stop button releases every track so the camera indicator light turns off.
+    // No frame is recorded, captured, or uploaded; there is no backend.
+    // The framework calls doAfterPageRendered() after the page renders.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var stream = null;
+        var videoDevices = [];
+        var deviceIdx = 0;
+
+        function el(id) { return document.getElementById(id); }
+        function setStatus(msg) { var s = el('camStatus'); if (s) s.textContent = msg; }
+        function show(id, on) { var n = el(id); if (n) n.style.display = on ? '' : 'none'; }
+        function setText(id, msg) { var n = el(id); if (n) n.textContent = msg; }
+
+        function stopStream() {
+            if (stream) {
+                try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+            }
+            stream = null;
+            var v = el('camVideo');
+            if (v) { try { v.pause(); } catch (e2) {} v.srcObject = null; }
+            show('camStop', false);
+            show('camSwitch', false);
+            setText('camRes', 'N/A');
+            setText('camName', 'N/A');
+        }
+
+        function reportTrack() {
+            var v = el('camVideo');
+            if (!v) return;
+            function upd() {
+                var w = v.videoWidth, h = v.videoHeight;
+                if (w && h) setText('camRes', w + ' x ' + h);
+            }
+            v.onloadedmetadata = upd;
+            v.onplaying = function () { setTimeout(upd, 300); };
+            try {
+                var tr = stream && stream.getVideoTracks ? stream.getVideoTracks()[0] : null;
+                if (tr) setText('camName', tr.label || 'Camera (label hidden by the browser until allowed)');
+            } catch (e) {}
+        }
+
+        function enumerate() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return Promise.resolve([]);
+            return navigator.mediaDevices.enumerateDevices().then(function (list) {
+                videoDevices = list.filter(function (d) { return d.kind === 'videoinput'; });
+                show('camSwitch', videoDevices.length > 1);
+                return videoDevices;
+            }).catch(function () { return []; });
+        }
+
+        function startCamera(constraints) {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                setStatus('This browser does not support camera access (getUserMedia). Try the latest Chrome, Edge, Firefox, or Safari.');
+                return;
+            }
+            setStatus('Requesting camera permission - click Allow in the browser prompt...');
+            navigator.mediaDevices.getUserMedia(constraints || { video: true, audio: false })
+                .then(function (s) {
+                    stream = s;
+                    var v = el('camVideo');
+                    if (v) { v.srcObject = s; var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+                    show('camStop', true);
+                    setStatus('Camera is live. If you can see the preview above, the camera works. Click Stop when you are done.');
+                    reportTrack();
+                    return enumerate();
+                })
+                .catch(function (err) {
+                    var name = err && err.name ? err.name : '';
+                    if (name === 'NotAllowedError' || name === 'SecurityError') {
+                        setStatus('Camera permission was blocked. Click the camera icon in your browser address bar (or open Site settings) and set Camera to Allow, then click Start Camera again.');
+                    } else if (name === 'NotFoundError' || name === 'OverconstrainedError') {
+                        setStatus('No camera was found. Make sure the lid is open and no other app (Zoom, FaceTime, Photo Booth) is holding the camera, then click Start Camera again.');
+                    } else if (name === 'NotReadableError' || name === 'AbortError') {
+                        setStatus('The camera is busy - another app (Zoom, FaceTime, Photo Booth) may be using it. Close that app and click Start Camera again.');
+                    } else {
+                        setStatus('Could not start the camera: ' + (err && err.message ? err.message : String(err)));
+                    }
+                });
+        }
+
+        var startBtn = el('camStart');
+        if (startBtn) startBtn.addEventListener('click', function () {
+            stopStream();
+            startCamera({ video: true, audio: false });
+        });
+
+        var stopBtn = el('camStop');
+        if (stopBtn) stopBtn.addEventListener('click', function () {
+            stopStream();
+            setStatus('Camera stopped - the indicator light is now off. Click Start Camera to test again.');
+        });
+
+        var switchBtn = el('camSwitch');
+        if (switchBtn) switchBtn.addEventListener('click', function () {
+            if (videoDevices.length < 2) return;
+            deviceIdx = (deviceIdx + 1) % videoDevices.length;
+            var id = videoDevices[deviceIdx] && videoDevices[deviceIdx].deviceId;
+            stopStream();
+            startCamera({ video: id ? { deviceId: { exact: id } } : true, audio: false });
+        });
+
+        // Release the camera if the reader navigates away so the light goes off.
+        window.addEventListener('beforeunload', stopStream);
+
+        setStatus('Click Start Camera, then allow access when your browser asks. The live preview stays on your device - nothing is recorded or uploaded.');
+        console.log('[camera-test] wired: getUserMedia live-preview / resolution / switch / stop');
+    }
+</script>

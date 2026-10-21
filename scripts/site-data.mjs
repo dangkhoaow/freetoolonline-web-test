@@ -18064,6 +18064,7 @@ export const ALIAS_ROUTES = {
   '/hevc-converter-mov.html': '/image-converter-tools/hevc-converter-mov.html',
   '/pcfg-password-cracking-patterns-generator-pure-go-2026.html': '/developer-tools/pcfg-password-cracking-patterns-generator-pure-go-2026.html',
   '/final-grade-calculator.html': '/utility-tools/final-grade-calculator.html',
+  '/test-camera-macbook.html': '/device-test-tools/test-camera-macbook.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -30877,6 +30878,7 @@ export const JSP_BY_ROUTE = {
   '/developer-tools/pcfg-password-cracking-patterns-generator-pure-go-2026.html': 'utility/pcfg-password-cracking-patterns-generator-pure-go-2026.jsp',
   '/guides/pcfg-password-cracking-patterns-generator-pure-go-2026-when.html': 'guide/pcfg-password-cracking-patterns-generator-pure-go-2026-when.jsp',
   '/utility-tools/final-grade-calculator.html': 'utility/final-grade-calculator.jsp',
+  '/device-test-tools/test-camera-macbook.html': 'convert/test-camera-macbook.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
