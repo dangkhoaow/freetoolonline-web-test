@@ -14,6 +14,25 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // final-grade-calculator-guides locale fanout (new-tool-discovery-loop-runbook, deferred-guides drain, 2026-10-30)
+  '/guides/final-grade-calculator-step-by-step.html',
+  '/guides/final-grade-calculator-when.html',
+  '/guides/final-grade-calculator-vs-alternatives.html',
+  '/guides/pt/final-grade-calculator-step-by-step.html',
+  '/guides/pt/final-grade-calculator-when.html',
+  '/guides/pt/final-grade-calculator-vs-alternatives.html',
+  '/guides/es/final-grade-calculator-step-by-step.html',
+  '/guides/es/final-grade-calculator-when.html',
+  '/guides/es/final-grade-calculator-vs-alternatives.html',
+  '/guides/vi/final-grade-calculator-step-by-step.html',
+  '/guides/vi/final-grade-calculator-when.html',
+  '/guides/vi/final-grade-calculator-vs-alternatives.html',
+  '/guides/id/final-grade-calculator-step-by-step.html',
+  '/guides/id/final-grade-calculator-when.html',
+  '/guides/id/final-grade-calculator-vs-alternatives.html',
+  '/guides/de/final-grade-calculator-step-by-step.html',
+  '/guides/de/final-grade-calculator-when.html',
+  '/guides/de/final-grade-calculator-vs-alternatives.html',
   // commission-calculator-guides locale fanout (new-tool-discovery-loop-runbook, deferred-guides drain, 2026-10-16)
   '/guides/commission-calculator-step-by-step.html',
   '/guides/commission-calculator-when.html',
@@ -7730,6 +7749,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // final-grade-calculator-guides locale fanout (new-tool-discovery-loop-runbook, deferred-guides drain, 2026-10-30)
+  '/guides/final-grade-calculator-step-by-step.html',
+  '/guides/final-grade-calculator-when.html',
+  '/guides/final-grade-calculator-vs-alternatives.html',
+  '/guides/pt/final-grade-calculator-step-by-step.html',
+  '/guides/pt/final-grade-calculator-when.html',
+  '/guides/pt/final-grade-calculator-vs-alternatives.html',
+  '/guides/es/final-grade-calculator-step-by-step.html',
+  '/guides/es/final-grade-calculator-when.html',
+  '/guides/es/final-grade-calculator-vs-alternatives.html',
+  '/guides/vi/final-grade-calculator-step-by-step.html',
+  '/guides/vi/final-grade-calculator-when.html',
+  '/guides/vi/final-grade-calculator-vs-alternatives.html',
+  '/guides/id/final-grade-calculator-step-by-step.html',
+  '/guides/id/final-grade-calculator-when.html',
+  '/guides/id/final-grade-calculator-vs-alternatives.html',
+  '/guides/de/final-grade-calculator-step-by-step.html',
+  '/guides/de/final-grade-calculator-when.html',
+  '/guides/de/final-grade-calculator-vs-alternatives.html',
   // commission-calculator-guides locale fanout (new-tool-discovery-loop-runbook, deferred-guides drain, 2026-10-16) - registered in BOTH INFO_ROUTES and GUIDE_ROUTES per the documented builder-gap backfill pattern above (isGuideRoute() depends on GUIDE_ROUTES membership for ad slots + related-links).
   '/guides/commission-calculator-step-by-step.html',
   '/guides/commission-calculator-when.html',
@@ -18093,6 +18131,25 @@ export const ALIAS_ROUTES = {
 // non-kebab entries to this map.
 // ─────────────────────────────────────────────────────────────────────────
 export const JSP_BY_ROUTE = {
+  // final-grade-calculator-guides locale fanout (new-tool-discovery-loop-runbook, deferred-guides drain, 2026-10-30)
+  '/guides/final-grade-calculator-step-by-step.html': 'guide/final-grade-calculator-step-by-step.jsp',
+  '/guides/final-grade-calculator-when.html': 'guide/final-grade-calculator-when.jsp',
+  '/guides/final-grade-calculator-vs-alternatives.html': 'guide/final-grade-calculator-vs-alternatives.jsp',
+  '/guides/pt/final-grade-calculator-step-by-step.html': 'guide/pt/final-grade-calculator-step-by-step.jsp',
+  '/guides/pt/final-grade-calculator-when.html': 'guide/pt/final-grade-calculator-when.jsp',
+  '/guides/pt/final-grade-calculator-vs-alternatives.html': 'guide/pt/final-grade-calculator-vs-alternatives.jsp',
+  '/guides/es/final-grade-calculator-step-by-step.html': 'guide/es/final-grade-calculator-step-by-step.jsp',
+  '/guides/es/final-grade-calculator-when.html': 'guide/es/final-grade-calculator-when.jsp',
+  '/guides/es/final-grade-calculator-vs-alternatives.html': 'guide/es/final-grade-calculator-vs-alternatives.jsp',
+  '/guides/vi/final-grade-calculator-step-by-step.html': 'guide/vi/final-grade-calculator-step-by-step.jsp',
+  '/guides/vi/final-grade-calculator-when.html': 'guide/vi/final-grade-calculator-when.jsp',
+  '/guides/vi/final-grade-calculator-vs-alternatives.html': 'guide/vi/final-grade-calculator-vs-alternatives.jsp',
+  '/guides/id/final-grade-calculator-step-by-step.html': 'guide/id/final-grade-calculator-step-by-step.jsp',
+  '/guides/id/final-grade-calculator-when.html': 'guide/id/final-grade-calculator-when.jsp',
+  '/guides/id/final-grade-calculator-vs-alternatives.html': 'guide/id/final-grade-calculator-vs-alternatives.jsp',
+  '/guides/de/final-grade-calculator-step-by-step.html': 'guide/de/final-grade-calculator-step-by-step.jsp',
+  '/guides/de/final-grade-calculator-when.html': 'guide/de/final-grade-calculator-when.jsp',
+  '/guides/de/final-grade-calculator-vs-alternatives.html': 'guide/de/final-grade-calculator-vs-alternatives.jsp',
   // commission-calculator-guides (new-tool-discovery-loop-runbook, deferred-guides drain, 2026-10-16): 3 EN angles x en/pt/es/vi/id/de = 18 guides for /utility-tools/commission-calculator.html (shipped tool-only fire771 under content freeze).
   '/guides/commission-calculator-step-by-step.html': 'guide/commission-calculator-step-by-step.jsp',
   '/guides/commission-calculator-when.html': 'guide/commission-calculator-when.jsp',
