@@ -330,6 +330,17 @@ const HOWTO_ROUTES = new Set([
   '/video-tools/video-merger.html',
   // 2026-10-15 video-cropper: 4-step w3-pale-green "How to crop a video" panel in BODYHTML
   '/video-tools/video-cropper.html',
+  // cycle20261101-9 competitor_weakness_exploit (schema_completeness vs unikey.org):
+  // the iphone-photo-format guide gained a 3-step w3-pale-green "Switch your
+  // iPhone to JPG" <ol> in BODYHTML across all 6 locales. Register each locale
+  // route so extractHowToSteps emits HowTo JSON-LD (closes the missing-schema gap:
+  // competitor carried only Person schema, no HowTo/FAQPage/SoftwareApplication).
+  '/guides/en/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/de/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/es/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/id/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/pt/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/vi/iphone-photo-format-explained-heic-jpg-png-raw.html',
 ]);
 
 // P10.3.1 - Per-tool og:image differentiation (Phase 10 Cycle 4).
@@ -1561,7 +1572,12 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   if (articleJsonLd) {
     console.log(`[schema:article] ${normalizedRoute} type=${isNewsPage ? 'NewsArticle' : 'Article'} headline="${browserTitle}".`);
   }
-  const shouldIncludeHowTo = showAds && !isHubPage && HOWTO_ROUTES.has(normalizedRoute);
+  // cycle20261101-9: HOWTO_ROUTES membership is an explicit curator allowlist.
+  // Guide/article pages run with showAds=false (they live in the guides section),
+  // so the legacy `showAds &&` gate silently suppressed HowTo even for allowlisted
+  // guide routes. Allow article pages through when they are explicitly listed, so
+  // the iphone-photo-format guide's 3-step panel emits HowTo JSON-LD.
+  const shouldIncludeHowTo = (showAds || isArticlePage) && !isHubPage && HOWTO_ROUTES.has(normalizedRoute);
   const howToSteps = shouldIncludeHowTo ? extractHowToSteps(pageData.bodyHtml, pageName, normalizedRoute) : [];
   const howToJsonLd = shouldIncludeHowTo
     ? buildHowToJsonLd({ canonicalUrl, name: browserTitle, description, steps: howToSteps })
