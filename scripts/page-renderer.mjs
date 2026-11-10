@@ -330,6 +330,10 @@ const HOWTO_ROUTES = new Set([
   '/video-tools/video-merger.html',
   // 2026-10-15 video-cropper: 4-step w3-pale-green "How to crop a video" panel in BODYHTML
   '/video-tools/video-cropper.html',
+  // cycle20261110-6 competitor_weakness_exploit (schema_completeness): text-html-editor already has a
+  // 3-step w3-pale-green "How to edit HTML in a live preview" <ol> in BODYHTML but was never allowlisted,
+  // so HowTo JSON-LD was not emitted (FAQPage + SoftwareApplication already were).
+  '/developer-tools/text-html-editor.html',
   // cycle20261101-9 competitor_weakness_exploit (schema_completeness vs unikey.org):
   // the iphone-photo-format guide gained a 3-step w3-pale-green "Switch your
   // iPhone to JPG" <ol> in BODYHTML across all 6 locales. Register each locale
